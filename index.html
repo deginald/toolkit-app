@@ -293,6 +293,24 @@
     <p class="eyebrow-mini">Loading&hellip;</p>
   </div>
 
+  <div id="role-screen" class="center-screen" hidden>
+    <div>
+      <p class="eyebrow-mini">Pace &middot; Coach &middot; Consult &middot; Ledger &middot; Hair Passport</p>
+      <h2 class="screen-title">Who's this for?</h2>
+      <p class="screen-sub" style="margin-top:6px;">Choose how you'll be using this.</p>
+    </div>
+    <div class="option-grid" style="width:100%; max-width:320px;">
+      <div class="option-card" id="btn-role-client">
+        <span class="oc-label">Client</span>
+        <span class="oc-sub">Track your hair history</span>
+      </div>
+      <div class="option-card" id="btn-role-pro">
+        <span class="oc-label">Professional</span>
+        <span class="oc-sub">Barber or student</span>
+      </div>
+    </div>
+  </div>
+
   <div id="auth-screen" class="center-screen" hidden>
     <div>
       <p class="eyebrow-mini">Pace &middot; Coach &middot; Consult &middot; Ledger</p>
@@ -303,6 +321,10 @@
       <div class="field">
         <label>Your name</label>
         <div class="input-row"><input id="auth-name" type="text" placeholder="e.g. Jordan Smith" autocomplete="name" required></div>
+      </div>
+      <div class="field">
+        <label>License number <span style="text-transform:none; font-weight:600;">(if licensed)</span></label>
+        <div class="input-row"><input id="auth-license" type="text" placeholder="e.g. BB-123456" autocomplete="off"></div>
       </div>
       <div class="field">
         <label>Personal code</label>
@@ -775,6 +797,7 @@ function defaultProfile(name){
   return {
     name: name || 'You',
     title: 'Student',
+    license: '',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     pace: {
@@ -1221,7 +1244,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
   const LEDGER_MAP = { 'skin-fade':'skin-fade', 'womens-layers':'womens-layered', 'beard-trim':'beard-trim', 'relaxer':'relaxer', 'color':'color', 'perm':'perm', 'bleach':'bleach', 'exposure-incident':'exposure' };
 
-  const cstate = { category:'cuts', technique:null, stepIndex:0, checklistChecked:{}, timerState:{}, checkpointCaptured:false, checkpointPhotos:[], elapsed:0, elapsedTimerId:null };
+  const cstate = { category:'cuts', technique:null, stepIndex:0, checklistChecked:{}, timerState:{}, checkpointCaptured:false, checkpointPhotos:[], elapsed:0, elapsedTimerId:null, savedVisitId:null };
   let attachedClient = null; // { code, name, visits }
 
   function fmtTime(totalSeconds){ const m = Math.floor(totalSeconds/60); const s = totalSeconds % 60; return `${m}:${s.toString().padStart(2,'0')}`; }
@@ -1242,7 +1265,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   function showScreen(name){ root.querySelectorAll('[data-screen]').forEach(el=> el.classList.toggle('show', el.dataset.screen===name)); }
 
   function startTechnique(tech){
-    cstate.technique = tech; cstate.stepIndex = 0; cstate.checklistChecked = {}; cstate.timerState = {}; cstate.checkpointCaptured = false; cstate.checkpointPhotos = []; cstate.elapsed = 0;
+    cstate.technique = tech; cstate.stepIndex = 0; cstate.checklistChecked = {}; cstate.timerState = {}; cstate.checkpointCaptured = false; cstate.checkpointPhotos = []; cstate.elapsed = 0; cstate.savedVisitId = null;
     if (cstate.elapsedTimerId) clearInterval(cstate.elapsedTimerId);
     cstate.elapsedTimerId = setInterval(()=>{ cstate.elapsed++; root.querySelector('#walk-elapsed').textContent = fmtTime(cstate.elapsed); }, 1000);
     root.querySelector('#walk-tech-name').textContent = tech.name;
@@ -1410,6 +1433,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       notesInput.placeholder = cstate.technique.category === 'chemical'
         ? 'Formula, developer strength, and timing used…'
         : 'Guard lengths, technique notes for next time…';
+      cstate.savedVisitId = null;
       const saveBtn = root.querySelector('#btn-save-passport');
       saveBtn.disabled = false;
       saveBtn.textContent = 'Save this visit';
@@ -1427,36 +1451,51 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     saveBtn.disabled = true;
     if (!dbAvailable){
       statusEl.textContent = "Live saving isn't connected right now — this visit wasn't saved.";
+      saveBtn.disabled = false;
       return;
     }
-    statusEl.textContent = 'Uploading photos…';
+    const isUpdate = !!cstate.savedVisitId;
+    statusEl.textContent = isUpdate ? 'Saving notes…' : 'Uploading photos…';
     try{
-      const photos = [];
-      const files = cstate.checkpointPhotos;
-      for (let i=0; i<files.length; i++){
-        const file = files[i];
-        const safeName = (file.name || 'photo.jpg').replace(/[^a-zA-Z0-9_.-]/g,'_');
-        const path = `${attachedClient.code}/${Date.now()}-${i}-${safeName}`;
-        const { error: upErr } = await supabaseClient.storage.from('client-photos').upload(path, file);
-        if (upErr) throw upErr;
-        const { data: urlData } = supabaseClient.storage.from('client-photos').getPublicUrl(path);
-        photos.push({ url: urlData.publicUrl, path });
+      let updatedVisits;
+      let savedId;
+      if (isUpdate){
+        const existing = (attachedClient.visits || []).find(v => v.id === cstate.savedVisitId);
+        if (!existing) throw new Error('saved visit not found');
+        existing.notes = root.querySelector('#passport-notes').value.trim();
+        updatedVisits = attachedClient.visits;
+        savedId = existing.id;
+      } else {
+        const photos = [];
+        const files = cstate.checkpointPhotos;
+        for (let i=0; i<files.length; i++){
+          const file = files[i];
+          const safeName = (file.name || 'photo.jpg').replace(/[^a-zA-Z0-9_.-]/g,'_');
+          const path = `${attachedClient.code}/${Date.now()}-${i}-${safeName}`;
+          const { error: upErr } = await supabaseClient.storage.from('client-photos').upload(path, file);
+          if (upErr) throw upErr;
+          const { data: urlData } = supabaseClient.storage.from('client-photos').getPublicUrl(path);
+          photos.push({ url: urlData.publicUrl, path });
+        }
+        const visit = {
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
+          date: todayIso(),
+          barberName: profile.name,
+          serviceType: cstate.technique.category === 'chemical' ? 'chemical' : (cstate.technique.category === 'safety' ? 'other' : 'cut'),
+          notes: root.querySelector('#passport-notes').value.trim(),
+          photos,
+          favorite: false
+        };
+        updatedVisits = (attachedClient.visits || []).concat([visit]);
+        savedId = visit.id;
       }
-      const visit = {
-        id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
-        date: todayIso(),
-        barberName: profile.name,
-        serviceType: cstate.technique.category === 'chemical' ? 'chemical' : (cstate.technique.category === 'safety' ? 'other' : 'cut'),
-        notes: root.querySelector('#passport-notes').value.trim(),
-        photos,
-        favorite: false
-      };
-      const updatedVisits = (attachedClient.visits || []).concat([visit]);
       const { error } = await supabaseClient.from('clients').update({ visits: updatedVisits, updated_at: new Date().toISOString() }).eq('code', attachedClient.code);
       if (error) throw error;
       attachedClient.visits = updatedVisits;
-      statusEl.textContent = 'Saved to their Hair Passport.';
-      saveBtn.textContent = 'Saved';
+      cstate.savedVisitId = savedId;
+      statusEl.textContent = 'Saved to their Hair Passport. You can still edit the notes and save again before logging out.';
+      saveBtn.textContent = 'Update this visit';
+      saveBtn.disabled = false;
     }catch(e){
       console.warn('save visit failed', e);
       statusEl.textContent = "Couldn't save — check your connection and try again.";
@@ -1807,7 +1846,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   root.querySelector('#title-select').addEventListener('change', function(){
     profile.title = this.value;
     const tbTitle = document.getElementById('tb-title');
-    if (tbTitle) tbTitle.textContent = profile.title;
+    if (tbTitle) tbTitle.textContent = tbTitleText();
     persistProfile({title: profile.title});
   });
 
@@ -1907,6 +1946,7 @@ async function tryLoadProfile(code){
       profile = defaultProfile(data.name);
       profile.name = data.name || profile.name;
       profile.title = data.title || profile.title;
+      profile.license = data.license || '';
       profile.createdAt = data.created_at || profile.createdAt;
       profile.updatedAt = data.updated_at || profile.updatedAt;
       profile.pace = Object.assign(defaultProfile().pace, data.pace||{});
@@ -1918,13 +1958,14 @@ async function tryLoadProfile(code){
   return false;
 }
 
-async function createProfile(code, name){
+async function createProfile(code, name, license){
   profile = defaultProfile(name);
+  profile.license = license || '';
   profileCode = code;
   if (dbAvailable){
     try{
       const { error } = await supabaseClient.from('profiles').insert({
-        code, name: profile.name, title: profile.title,
+        code, name: profile.name, title: profile.title, license: profile.license,
         pace: profile.pace, techniques: profile.techniques
       });
       if (error) throw error;
@@ -1934,13 +1975,18 @@ async function createProfile(code, name){
   return true;
 }
 
+function tbTitleText(){
+  return profile.title + (profile.license ? ' · Lic. ' + profile.license : '');
+}
+
 function enterApp(){
   document.getElementById('loading-screen').hidden = true;
+  document.getElementById('role-screen').hidden = true;
   document.getElementById('auth-screen').hidden = true;
   document.getElementById('app-shell').hidden = false;
   document.getElementById('degraded-banner').hidden = dbAvailable;
   document.getElementById('tb-name').textContent = profile.name;
-  document.getElementById('tb-title').textContent = profile.title;
+  document.getElementById('tb-title').textContent = tbTitleText();
   window.initPaceTab();
   window.initCoachTab();
   window.initConsultTab();
@@ -1948,8 +1994,14 @@ function enterApp(){
   showTab('pace');
 }
 
+function showRoleScreen(){
+  document.getElementById('loading-screen').hidden = true;
+  document.getElementById('role-screen').hidden = false;
+}
+
 function showAuthScreen(prefillCode){
   document.getElementById('loading-screen').hidden = true;
+  document.getElementById('role-screen').hidden = true;
   document.getElementById('auth-screen').hidden = false;
   if (!dbAvailable){
     document.getElementById('auth-note').textContent = "Live saving isn't connected right now — you can still try everything out, but it won't be kept.";
@@ -1957,17 +2009,25 @@ function showAuthScreen(prefillCode){
   if (prefillCode) document.getElementById('auth-code').value = prefillCode;
 }
 
+document.getElementById('btn-role-client').addEventListener('click', ()=>{
+  window.location.href = 'passport.html';
+});
+document.getElementById('btn-role-pro').addEventListener('click', ()=>{
+  showAuthScreen(null);
+});
+
 document.getElementById('auth-form').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const name = document.getElementById('auth-name').value.trim() || 'You';
+  const license = document.getElementById('auth-license').value.trim();
   const code = sanitizeCode(document.getElementById('auth-code').value);
   if (!code) return;
   let loaded = false;
   if (dbAvailable){
     loaded = await tryLoadProfile(code);
-    if (!loaded) await createProfile(code, name);
+    if (!loaded) await createProfile(code, name, license);
   } else {
-    await createProfile(code, name);
+    await createProfile(code, name, license);
   }
   try{ localStorage.setItem('pilotProfileCode', code); }catch(err){}
   enterApp();
@@ -2059,14 +2119,25 @@ async function boot(){
     return;
   }
 
-  let savedCode = null;
-  try{ savedCode = localStorage.getItem('pilotProfileCode'); }catch(e){}
+  let savedProCode = null, savedClientCode = null;
+  try{ savedProCode = localStorage.getItem('pilotProfileCode'); }catch(e){}
+  try{ savedClientCode = localStorage.getItem('passportClientCode'); }catch(e){}
 
-  if (savedCode && dbAvailable){
-    const ok = await tryLoadProfile(savedCode);
-    if (ok){ enterApp(); return; }
+  if (savedClientCode && !savedProCode){
+    window.location.href = 'passport.html';
+    return;
   }
-  showAuthScreen(savedCode);
+
+  if (savedProCode){
+    if (dbAvailable){
+      const ok = await tryLoadProfile(savedProCode);
+      if (ok){ enterApp(); return; }
+    }
+    showAuthScreen(savedProCode);
+    return;
+  }
+
+  showRoleScreen();
 }
 
 boot();
