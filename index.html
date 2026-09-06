@@ -323,6 +323,11 @@
         <span class="oc-label">I'm a Professional</span>
         <span class="oc-sub">Barber, cosmetologist, or student.</span>
       </div>
+      <div class="option-card" id="btn-role-directory" style="grid-column:1 / -1;">
+        <span class="oc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.7"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+        <span class="oc-label">Find a Pro</span>
+        <span class="oc-sub">Browse barbers and stylists near you, and see their ratings and reviews.</span>
+      </div>
     </div>
     <p class="brand-footer" style="margin-top:10px;">A Stronger Hair Community<br>Together.</p>
   </div>
@@ -791,6 +796,54 @@
         <button class="btn btn-ghost" id="btn-role-change-cancel" style="flex:1;">Cancel</button>
         <button class="btn btn-danger" id="btn-role-change-confirm" style="flex:1;">Yes, make this change</button>
       </div>
+
+      <div id="listing-ineligible" style="display:none; border-top:1px solid var(--line); padding-top:16px;">
+        <p class="eyebrow-mini">Public directory</p>
+        <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Your public listing</h2>
+        <p class="screen-sub">Public listings on Find a Pro are available once you're no longer a Student and have a license number on file.</p>
+      </div>
+
+      <div id="listing-eligible" style="display:none; border-top:1px solid var(--line); padding-top:16px; flex-direction:column; gap:14px;">
+        <div>
+          <p class="eyebrow-mini">Public directory</p>
+          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Your public listing</h2>
+          <p class="screen-sub">Let clients find you and rate real visits on the Find a Pro directory.</p>
+        </div>
+        <label class="check-row">
+          <input type="checkbox" id="listing-public-toggle">
+          <span>List me publicly on Find a Pro</span>
+        </label>
+        <div id="listing-fields" style="display:none; flex-direction:column; gap:14px;">
+          <div class="field">
+            <label>Shop / business name</label>
+            <div class="input-row"><input id="listing-shop-name" type="text" placeholder="e.g. Fresh Cuts Barbershop"></div>
+          </div>
+          <div class="field">
+            <label>City</label>
+            <div class="input-row"><input id="listing-city" type="text" placeholder="e.g. Fayetteville"></div>
+          </div>
+          <div class="field">
+            <label>State</label>
+            <div class="input-row"><input id="listing-state" type="text" placeholder="e.g. NC" maxlength="2" style="text-transform:uppercase;"></div>
+          </div>
+          <div class="field">
+            <label>Instagram <span style="text-transform:none; font-weight:600;">(optional)</span></label>
+            <div class="input-row"><input id="listing-instagram" type="text" placeholder="e.g. https://instagram.com/yourshop"></div>
+          </div>
+          <div class="field">
+            <label>Facebook <span style="text-transform:none; font-weight:600;">(optional)</span></label>
+            <div class="input-row"><input id="listing-facebook" type="text" placeholder="e.g. https://facebook.com/yourshop"></div>
+          </div>
+          <div class="field">
+            <label>Website <span style="text-transform:none; font-weight:600;">(optional)</span></label>
+            <div class="input-row"><input id="listing-website" type="text" placeholder="e.g. https://yourshop.com"></div>
+          </div>
+          <button class="btn btn-primary" id="btn-save-listing" type="button">Save listing</button>
+          <p class="foot-note-small" id="listing-save-note">&nbsp;</p>
+          <a class="btn btn-outline" id="btn-view-listing" style="display:none; text-align:center; text-decoration:none;" target="_blank" rel="noopener">View my public listing</a>
+        </div>
+      </div>
+
       <div class="spacer"></div>
       <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
         <p class="eyebrow-mini" style="color:var(--behind);">Danger zone</p>
@@ -881,7 +934,12 @@ function defaultProfile(name){
       schedule: {Sun:0, Mon:0, Tue:0, Wed:0, Thu:0, Fri:0, Sat:0},
       breaks: [], absences: []
     },
-    techniques: defaultTechniques()
+    techniques: defaultTechniques(),
+    publicListing: false,
+    shopName: '',
+    shopCity: '',
+    shopState: '',
+    social: { instagram: '', facebook: '', website: '' }
   };
 }
 
@@ -912,6 +970,11 @@ async function persistProfile(fields){
   if (fields.techniques) row.techniques = fields.techniques;
   if (fields.title) row.title = fields.title;
   if (fields.name) row.name = fields.name;
+  if (fields.publicListing !== undefined) row.public_listing = fields.publicListing;
+  if (fields.shopName !== undefined) row.shop_name = fields.shopName;
+  if (fields.shopCity !== undefined) row.shop_city = fields.shopCity;
+  if (fields.shopState !== undefined) row.shop_state = fields.shopState;
+  if (fields.social !== undefined) row.social = fields.social;
   try{
     const { error } = await supabaseClient.from('profiles').update(row).eq('code', profileCode);
     if (error) throw error;
@@ -1590,6 +1653,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
           id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
           date: todayIso(),
           barberName: profile.name,
+          barberCode: profileCode,
           serviceType: cstate.technique.category === 'chemical' ? 'chemical' : (cstate.technique.category === 'safety' ? 'other' : 'cut'),
           notes: root.querySelector('#passport-notes').value.trim(),
           photos,
@@ -2138,6 +2202,11 @@ async function tryLoadProfile(code){
       profile.updatedAt = data.updated_at || profile.updatedAt;
       profile.pace = Object.assign(defaultProfile().pace, data.pace||{});
       profile.techniques = Array.isArray(data.techniques) && data.techniques.length ? data.techniques : defaultTechniques();
+      profile.publicListing = !!data.public_listing;
+      profile.shopName = data.shop_name || '';
+      profile.shopCity = data.shop_city || '';
+      profile.shopState = data.shop_state || '';
+      profile.social = Object.assign({ instagram:'', facebook:'', website:'' }, data.social || {});
       profileCode = code;
       return true;
     }
@@ -2243,6 +2312,9 @@ document.getElementById('btn-role-client').addEventListener('click', ()=>{
 document.getElementById('btn-role-pro').addEventListener('click', ()=>{
   showAuthScreen(lastKnownProCode);
 });
+document.getElementById('btn-role-directory').addEventListener('click', ()=>{
+  window.location.href = 'directory.html';
+});
 document.getElementById('btn-auth-back').addEventListener('click', ()=>{
   showRoleScreen();
 });
@@ -2293,9 +2365,67 @@ function resetRoleChangePrompt(){
   document.getElementById('account-role-confirm-row').style.display = 'none';
 }
 
+function listingEligible(){
+  return !isStudent() && !!profile.license;
+}
+
+function updateListingViewLink(){
+  const link = document.getElementById('btn-view-listing');
+  if (profile.publicListing && profileCode){
+    link.style.display = 'block';
+    link.href = 'directory.html?pro=' + encodeURIComponent(profileCode);
+  } else {
+    link.style.display = 'none';
+  }
+}
+
+function populateAccountListing(){
+  const eligible = listingEligible();
+  document.getElementById('listing-eligible').style.display = eligible ? 'flex' : 'none';
+  document.getElementById('listing-ineligible').style.display = eligible ? 'none' : 'block';
+  if (!eligible) return;
+  document.getElementById('listing-public-toggle').checked = !!profile.publicListing;
+  document.getElementById('listing-shop-name').value = profile.shopName || '';
+  document.getElementById('listing-city').value = profile.shopCity || '';
+  document.getElementById('listing-state').value = profile.shopState || '';
+  const social = profile.social || {};
+  document.getElementById('listing-instagram').value = social.instagram || '';
+  document.getElementById('listing-facebook').value = social.facebook || '';
+  document.getElementById('listing-website').value = social.website || '';
+  document.getElementById('listing-fields').style.display = profile.publicListing ? 'flex' : 'none';
+  document.getElementById('listing-save-note').textContent = ' ';
+  updateListingViewLink();
+}
+
+document.getElementById('listing-public-toggle').addEventListener('change', function(){
+  document.getElementById('listing-fields').style.display = this.checked ? 'flex' : 'none';
+});
+
+document.getElementById('btn-save-listing').addEventListener('click', async ()=>{
+  const isPublic = document.getElementById('listing-public-toggle').checked;
+  profile.publicListing = isPublic;
+  profile.shopName = document.getElementById('listing-shop-name').value.trim();
+  profile.shopCity = document.getElementById('listing-city').value.trim();
+  profile.shopState = document.getElementById('listing-state').value.trim().toUpperCase();
+  profile.social = {
+    instagram: document.getElementById('listing-instagram').value.trim(),
+    facebook: document.getElementById('listing-facebook').value.trim(),
+    website: document.getElementById('listing-website').value.trim()
+  };
+  const note = document.getElementById('listing-save-note');
+  note.textContent = 'Saving…';
+  await persistProfile({
+    publicListing: profile.publicListing, shopName: profile.shopName, shopCity: profile.shopCity,
+    shopState: profile.shopState, social: profile.social
+  });
+  note.textContent = isPublic ? 'Saved — you’re live on Find a Pro.' : 'Saved.';
+  updateListingViewLink();
+});
+
 function showAccountScreen(){
   populateAccountTitleSelect();
   resetRoleChangePrompt();
+  populateAccountListing();
   document.getElementById('app-shell').hidden = true;
   document.getElementById('account-screen').hidden = false;
 }
@@ -2336,6 +2466,7 @@ document.getElementById('btn-role-change-confirm').addEventListener('click', asy
   document.getElementById('tb-title').textContent = tbTitleText();
   await persistProfile({title: profile.title});
   populateAccountTitleSelect();
+  populateAccountListing();
   applyRoleVisibility();
   const currentTab = (document.querySelector('.tab-btn.active') || {}).dataset ? document.querySelector('.tab-btn.active').dataset.tabbtn : 'coach';
   showTab(currentTab || 'coach');

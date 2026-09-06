@@ -103,6 +103,15 @@
   .detail-row span:last-child{ font-weight:700; text-align:right; }
   .detail-notes{ font-size:13.5px; line-height:1.55; color:var(--ink); white-space:pre-wrap; }
 
+  .rate-row{ display:flex; flex-direction:column; gap:4px; }
+  .rate-row-head{ display:flex; justify-content:space-between; align-items:baseline; }
+  .rate-row-head span:first-child{ font-size:12.5px; font-weight:700; }
+  .rate-row-head span:last-child{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:15px; color:var(--brass); }
+  .rate-slider{ width:100%; accent-color:var(--brass); height:6px; }
+  .check-row{ display:flex; align-items:center; gap:9px; padding:11px 12px; border:1px solid var(--line); border-radius:10px; background:var(--paper); cursor:pointer; }
+  .check-row input{ width:16px; height:16px; accent-color:var(--brass); flex-shrink:0; }
+  .check-row span{ font-size:12.5px; font-weight:600; }
+
   .toast{ position:fixed; left:50%; transform:translateX(-50%) translateY(6px); bottom:24px; max-width:400px; width:calc(100% - 48px); background:var(--good); color:#fff; text-align:center; padding:10px; border-radius:10px; font-size:12.5px; font-weight:700; opacity:0; transition:opacity .2s ease, transform .2s ease; pointer-events:none; z-index:20; }
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
   .toast.danger{ background:var(--behind); }
@@ -189,6 +198,40 @@
           <p class="eyebrow-mini" style="margin-bottom:6px;">Notes from this visit</p>
           <p class="detail-notes" id="detail-notes">&mdash;</p>
         </div>
+
+        <div id="rate-visit-block" style="display:none; flex-direction:column; gap:14px; border-top:1px solid var(--line); padding-top:16px;">
+          <div>
+            <p class="eyebrow-mini" style="margin-bottom:2px;">Rate this visit</p>
+            <p class="screen-sub">This rating counts toward your provider's public score on Find a Pro.</p>
+          </div>
+          <div class="rate-row">
+            <div class="rate-row-head"><span>Professionalism</span><span id="rate-professionalism-val">3</span></div>
+            <input type="range" min="1" max="5" step="1" value="3" class="rate-slider" id="rate-professionalism">
+          </div>
+          <div class="rate-row">
+            <div class="rate-row-head"><span>Skill</span><span id="rate-skill-val">3</span></div>
+            <input type="range" min="1" max="5" step="1" value="3" class="rate-slider" id="rate-skill">
+          </div>
+          <div class="rate-row">
+            <div class="rate-row-head"><span>Shop Environment</span><span id="rate-environment-val">3</span></div>
+            <input type="range" min="1" max="5" step="1" value="3" class="rate-slider" id="rate-environment">
+          </div>
+          <div class="rate-row">
+            <div class="rate-row-head"><span>Kid-Friendly</span><span id="rate-kid_friendly-val">3</span></div>
+            <input type="range" min="1" max="5" step="1" value="3" class="rate-slider" id="rate-kid_friendly">
+          </div>
+          <div class="field">
+            <label>Comment <span style="text-transform:none; font-weight:600;">(optional)</span></label>
+            <div class="input-row"><textarea id="rate-comment" placeholder="What stood out about this visit?" style="min-height:60px;"></textarea></div>
+          </div>
+          <label class="check-row">
+            <input type="checkbox" id="rate-show-name">
+            <span>Show my name on this review (otherwise it posts anonymously)</span>
+          </label>
+          <button class="btn btn-primary" id="btn-submit-rating" type="button">Submit rating</button>
+          <p class="foot-note-small" id="rate-status-note">&nbsp;</p>
+        </div>
+
         <div class="spacer"></div>
         <div class="btn-row">
           <button class="btn btn-outline" id="btn-toggle-favorite" style="flex:1;">&#9733; Favorite</button>
@@ -235,7 +278,7 @@ try{
 let dbAvailable = !!supabaseClient;
 let client = null;
 let clientCode = null;
-let dstate = { selectedVisitId: null, deleteArmed:false };
+let dstate = { selectedVisitId: null, deleteArmed:false, existingReviewId:null };
 
 function todayIso(){ return new Date().toISOString().slice(0,10); }
 function sanitizeCode(raw){
@@ -388,7 +431,42 @@ function showScreen(name){
   });
 }
 
-function openDetail(id){
+const RATING_KEYS = ['professionalism','skill','environment','kid_friendly'];
+
+function resetRatingForm(){
+  RATING_KEYS.forEach(key=>{
+    document.getElementById('rate-'+key).value = 3;
+    document.getElementById('rate-'+key+'-val').textContent = '3';
+  });
+  document.getElementById('rate-comment').value = '';
+  document.getElementById('rate-show-name').checked = false;
+  document.getElementById('rate-status-note').textContent = ' ';
+  document.getElementById('btn-submit-rating').textContent = 'Submit rating';
+}
+
+async function loadExistingRating(visitId){
+  dstate.existingReviewId = null;
+  resetRatingForm();
+  if (!dbAvailable) return;
+  try{
+    const { data, error } = await supabaseClient.from('reviews').select('*').eq('visit_id', visitId).eq('client_code', clientCode);
+    if (error) throw error;
+    const existing = (data || [])[0];
+    if (existing){
+      dstate.existingReviewId = existing.id;
+      RATING_KEYS.forEach(key=>{
+        const v = existing[key] || 3;
+        document.getElementById('rate-'+key).value = v;
+        document.getElementById('rate-'+key+'-val').textContent = v;
+      });
+      document.getElementById('rate-comment').value = existing.comment || '';
+      document.getElementById('rate-show-name').checked = !!existing.display_name;
+      document.getElementById('btn-submit-rating').textContent = 'Update rating';
+    }
+  }catch(e){ console.warn('load rating failed', e); }
+}
+
+async function openDetail(id){
   dstate.selectedVisitId = id;
   dstate.deleteArmed = false;
   const v = client.visits.find(x=>x.id===id);
@@ -404,8 +482,59 @@ function openDetail(id){
   favBtn.classList.toggle('btn-outline', true);
   const delBtn = document.getElementById('btn-delete-visit');
   delBtn.textContent = 'Delete this visit';
+  const rateBlock = document.getElementById('rate-visit-block');
+  if (v.barberCode){
+    rateBlock.style.display = 'flex';
+    await loadExistingRating(v.id);
+  } else {
+    rateBlock.style.display = 'none';
+  }
   showScreen('detail');
 }
+
+RATING_KEYS.forEach(key=>{
+  document.getElementById('rate-'+key).addEventListener('input', function(){
+    document.getElementById('rate-'+key+'-val').textContent = this.value;
+  });
+});
+
+document.getElementById('btn-submit-rating').addEventListener('click', async ()=>{
+  const v = client.visits.find(x=>x.id===dstate.selectedVisitId);
+  if (!v || !v.barberCode) return;
+  const note = document.getElementById('rate-status-note');
+  if (!dbAvailable){
+    note.textContent = "Live saving isn't connected right now — this rating wasn't saved.";
+    return;
+  }
+  const showName = document.getElementById('rate-show-name').checked;
+  const payload = {
+    barber_code: v.barberCode,
+    client_code: clientCode,
+    visit_id: v.id,
+    professionalism: Number(document.getElementById('rate-professionalism').value),
+    skill: Number(document.getElementById('rate-skill').value),
+    environment: Number(document.getElementById('rate-environment').value),
+    kid_friendly: Number(document.getElementById('rate-kid_friendly').value),
+    comment: document.getElementById('rate-comment').value.trim(),
+    display_name: showName ? client.name : ''
+  };
+  note.textContent = 'Saving…';
+  try{
+    if (dstate.existingReviewId){
+      const { error } = await supabaseClient.from('reviews').update(payload).eq('id', dstate.existingReviewId);
+      if (error) throw error;
+    } else {
+      const { data, error } = await supabaseClient.from('reviews').insert(payload);
+      if (error) throw error;
+      dstate.existingReviewId = (data && data[0] && data[0].id) || null;
+    }
+    note.textContent = 'Thanks — your rating was saved.';
+    document.getElementById('btn-submit-rating').textContent = 'Update rating';
+  }catch(e){
+    console.warn('rating save failed', e);
+    note.textContent = "Couldn't save your rating — try again.";
+  }
+});
 
 document.getElementById('btn-back-home').addEventListener('click', ()=>{ renderHome(); showScreen('home'); });
 
