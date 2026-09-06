@@ -797,6 +797,17 @@
         <button class="btn btn-danger" id="btn-role-change-confirm" style="flex:1;">Yes, make this change</button>
       </div>
 
+      <div id="account-license-field" style="display:none; border-top:1px solid var(--line); padding-top:16px;">
+        <p class="eyebrow-mini">License</p>
+        <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Your license number</h2>
+        <p class="screen-sub">Needed to appear on Find a Pro. Add it here if you graduated from Student status in the app, or if you left it blank when you signed up.</p>
+        <div class="field">
+          <div class="input-row"><input id="account-license" type="text" placeholder="e.g. BB-123456" autocomplete="off"></div>
+        </div>
+        <button class="btn btn-primary" id="btn-save-license" type="button">Save license number</button>
+        <p class="foot-note-small" id="license-save-note">&nbsp;</p>
+      </div>
+
       <div id="listing-ineligible" style="display:none; border-top:1px solid var(--line); padding-top:16px;">
         <p class="eyebrow-mini">Public directory</p>
         <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Your public listing</h2>
@@ -970,6 +981,7 @@ async function persistProfile(fields){
   if (fields.techniques) row.techniques = fields.techniques;
   if (fields.title) row.title = fields.title;
   if (fields.name) row.name = fields.name;
+  if (fields.license !== undefined) row.license = fields.license;
   if (fields.publicListing !== undefined) row.public_listing = fields.publicListing;
   if (fields.shopName !== undefined) row.shop_name = fields.shopName;
   if (fields.shopCity !== undefined) row.shop_city = fields.shopCity;
@@ -2369,6 +2381,29 @@ function listingEligible(){
   return !isStudent() && !!profile.license;
 }
 
+function updateAccountLicenseVisibility(){
+  const sel = document.getElementById('account-title-select');
+  const title = sel && sel.value ? sel.value : profile.title;
+  document.getElementById('account-license-field').style.display = (title !== 'Student') ? 'block' : 'none';
+}
+
+function populateAccountLicense(){
+  document.getElementById('account-license').value = profile.license || '';
+  document.getElementById('license-save-note').textContent = ' ';
+  updateAccountLicenseVisibility();
+}
+
+document.getElementById('btn-save-license').addEventListener('click', async ()=>{
+  const val = document.getElementById('account-license').value.trim();
+  profile.license = val;
+  const note = document.getElementById('license-save-note');
+  note.textContent = 'Saving…';
+  await persistProfile({ license: profile.license });
+  document.getElementById('tb-title').textContent = tbTitleText();
+  note.textContent = 'Saved.';
+  populateAccountListing();
+});
+
 function updateListingViewLink(){
   const link = document.getElementById('btn-view-listing');
   if (profile.publicListing && profileCode){
@@ -2425,6 +2460,7 @@ document.getElementById('btn-save-listing').addEventListener('click', async ()=>
 function showAccountScreen(){
   populateAccountTitleSelect();
   resetRoleChangePrompt();
+  populateAccountLicense();
   populateAccountListing();
   document.getElementById('app-shell').hidden = true;
   document.getElementById('account-screen').hidden = false;
@@ -2450,6 +2486,8 @@ document.getElementById('account-title-select').addEventListener('change', funct
     profile.title = newTitle;
     document.getElementById('tb-title').textContent = tbTitleText();
     persistProfile({title: profile.title});
+    updateAccountLicenseVisibility();
+    populateAccountListing();
     showToast('Role updated');
   }
 });
@@ -2466,6 +2504,7 @@ document.getElementById('btn-role-change-confirm').addEventListener('click', asy
   document.getElementById('tb-title').textContent = tbTitleText();
   await persistProfile({title: profile.title});
   populateAccountTitleSelect();
+  populateAccountLicense();
   populateAccountListing();
   applyRoleVisibility();
   const currentTab = (document.querySelector('.tab-btn.active') || {}).dataset ? document.querySelector('.tab-btn.active').dataset.tabbtn : 'coach';
