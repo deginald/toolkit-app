@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All Hair Connect — Find a Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --bg:#0C0D10; --ink:#F5F0E6; --paper:#1A1E25; --surface:#20262F; --line:#343C48; --muted:#9C968C;
+    --brass:#D3A24F; --brass-tint:#3A2C16;
+    --good:#69B889; --good-tint:#16261B;
+    --behind:#E08573; --behind-tint:#2E1E1C;
+    --shadow: 0 24px 48px -20px rgba(0,0,0,0.6);
+  }
+  *{box-sizing:border-box;}
+  [hidden]{ display:none !important; }
+  html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  html,body{ height:100%; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:'Public Sans', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+
+  .eyebrow-mini{ font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin:0; }
+  .screen-title{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.01em; margin:2px 0 0; }
+  .screen-sub{ font-size:13.5px; color:var(--muted); line-height:1.5; margin:0; }
+
+  .brand-mark{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:40px; letter-spacing:-0.02em; line-height:1; margin:0;
+    background:linear-gradient(135deg, #EFD39B 0%, #D3A24F 45%, #9A7530 70%, #C9C9C9 100%);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; }
+  .brand-name{ font-size:12px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--ink); margin:6px 0 0; }
+
+  #app-root{ max-width:460px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; background:var(--bg); box-shadow:0 0 0 1px var(--line); }
+  .center-screen{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; gap:14px; text-align:center; }
+
+  .link-btn{ border:none; background:transparent; color:var(--brass); font-family:'Public Sans',sans-serif; font-weight:700; font-size:12.5px; cursor:pointer; padding:6px 0; }
+  .btn{ border:none; border-radius:11px; padding:13px 18px; font-family:'Public Sans',sans-serif; font-weight:700; font-size:14px; cursor:pointer; text-align:center; }
+  .btn-primary{ background:var(--brass); color:#241A0C; }
+  .btn-outline{ background:transparent; color:var(--brass); border:1px solid var(--brass); }
+  .btn-ghost{ background:var(--paper); color:var(--ink); border:1px solid var(--line); }
+
+  .content{ flex:1; overflow-y:auto; padding:20px 20px 32px; display:flex; flex-direction:column; gap:16px; }
+
+  .field{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+  .field label{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); }
+  .input-row{ display:flex; align-items:center; border:1px solid var(--line); border-radius:10px; background:var(--paper); padding:0 12px; min-width:0; }
+  .input-row input{ border:none; background:transparent; outline:none; font-family:'Public Sans',sans-serif; font-size:14px; font-weight:600; color:var(--ink); padding:11px 4px; width:100%; min-width:0; }
+
+  .walk-header{ display:flex; align-items:center; gap:10px; }
+  .back-btn{ background:var(--paper); border:1px solid var(--line); width:32px; height:32px; border-radius:9px; font-size:16px; color:var(--ink); cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+
+  .pro-card{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:14px; display:flex; flex-direction:column; gap:6px; cursor:pointer; text-align:left; width:100%; font-family:inherit; color:inherit; }
+  .pro-card:hover{ border-color:var(--brass); }
+  .pro-name{ font-family:'Libre Franklin',sans-serif; font-weight:700; font-size:15.5px; }
+  .pro-title{ font-size:11.5px; color:var(--brass); font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
+  .pro-shop{ font-size:12.5px; color:var(--ink); }
+  .pro-loc{ font-size:11.5px; color:var(--muted); }
+  .pro-rating{ font-size:12.5px; color:var(--muted); margin-top:2px; }
+  .pro-rating .stars{ color:var(--brass); letter-spacing:1px; }
+
+  .empty-note{ border:1px dashed var(--line); border-radius:14px; padding:22px 16px; text-align:center; color:var(--muted); font-size:13px; line-height:1.5; }
+
+  .detail-card{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:16px; display:flex; flex-direction:column; gap:10px; }
+  .social-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .social-chip{ border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:12px; font-weight:700; color:var(--ink); text-decoration:none; background:var(--surface); }
+  .social-chip:hover{ border-color:var(--brass); color:var(--brass); }
+
+  .cat-score-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:12.5px; padding:6px 0; border-bottom:1px solid var(--line); }
+  .cat-score-row:last-child{ border-bottom:none; }
+  .cat-score-row span:first-child{ color:var(--muted); font-weight:600; }
+  .cat-score-row .stars{ color:var(--brass); letter-spacing:1px; font-size:14px; }
+
+  .review-card{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:14px; display:flex; flex-direction:column; gap:8px; }
+  .review-top{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .review-author{ font-weight:700; font-size:13px; }
+  .review-date{ font-size:11px; color:var(--muted); }
+  .review-stars-row{ display:flex; flex-wrap:wrap; gap:10px; font-size:11.5px; color:var(--muted); }
+  .review-stars-row .stars{ color:var(--brass); }
+  .review-comment{ font-size:13px; color:var(--ink); line-height:1.5; white-space:pre-wrap; }
+</style>
+</head>
+<body>
+
+<div id="app-root">
+
+  <div id="loading-screen" class="center-screen">
+    <p class="eyebrow-mini">Loading&hellip;</p>
+  </div>
+
+  <div id="list-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:100vh;">
+    <header style="padding:20px 20px 4px;">
+      <button type="button" class="link-btn" id="btn-directory-exit" style="padding:0 0 10px;">&larr; All Hair Connect</button>
+      <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
+        <p class="brand-mark" style="font-size:34px;">AHC</p>
+        <p class="brand-name">Find a Pro</p>
+        <p class="screen-sub" style="margin-top:6px;">Browse barbers and stylists, see their ratings, and read real reviews from verified visits.</p>
+      </div>
+    </header>
+    <main class="content">
+      <div class="field">
+        <label>Search by city or state</label>
+        <div class="input-row"><input id="search-input" type="text" placeholder="e.g. Fayetteville or NC"></div>
+      </div>
+      <div id="pro-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+    </main>
+  </div>
+
+  <div id="detail-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:100vh;">
+    <main class="content">
+      <div class="walk-header">
+        <button class="back-btn" id="btn-back-list">&larr;</button>
+        <div><div class="eyebrow-mini">Find a Pro</div></div>
+      </div>
+      <div>
+        <h2 class="screen-title" id="detail-name">&nbsp;</h2>
+        <p class="pro-title" id="detail-title">&nbsp;</p>
+        <p class="screen-sub" id="detail-shop-line" style="margin-top:6px;">&nbsp;</p>
+      </div>
+      <div class="social-row" id="detail-social"></div>
+      <div class="detail-card" id="detail-scores"></div>
+      <div>
+        <p class="eyebrow-mini2" style="font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin:0 0 10px;">Reviews</p>
+        <div id="detail-reviews" style="display:flex; flex-direction:column; gap:12px;"></div>
+      </div>
+    </main>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = "https://ruhvkfogfoabbvcvlbvp.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1aHZrZm9nZm9hYmJ2Y3ZsYnZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NTI2OTYsImV4cCI6MjEwNDIyODY5Nn0.1M3FX5EHzeDOa7Q2MqUjPczFWzueuec9oCmfLBQ6JZY";
+
+let supabaseClient = null;
+try{
+  if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY &&
+      !SUPABASE_URL.startsWith('YOUR_') && !SUPABASE_ANON_KEY.startsWith('YOUR_')){
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+}catch(e){ supabaseClient = null; }
+
+const dbAvailable = !!supabaseClient;
+const CATEGORIES = [
+  { key:'professionalism', label:'Professionalism' },
+  { key:'skill', label:'Skill' },
+  { key:'environment', label:'Shop Environment' },
+  { key:'kid_friendly', label:'Kid-Friendly' }
+];
+
+function starsFor(n){
+  const rounded = Math.round(n || 0);
+  return '★★★★★☆☆☆☆☆'.slice(5 - rounded, 10 - rounded);
+}
+
+async function fetchPublicPros(){
+  const { data, error } = await supabaseClient.from('profiles').select('*').eq('public_listing', true);
+  if (error) throw error;
+  return Array.isArray(data) ? data : [];
+}
+
+async function fetchReviewsFor(code){
+  const { data, error } = await supabaseClient.from('reviews').select('*').eq('barber_code', code);
+  if (error) throw error;
+  return Array.isArray(data) ? data : [];
+}
+
+function aggregateReviews(reviews){
+  const result = { count: reviews.length, overall: null, byCategory: {} };
+  CATEGORIES.forEach(cat=>{
+    const vals = reviews.map(r=>r[cat.key]).filter(v=> typeof v === 'number');
+    result.byCategory[cat.key] = vals.length ? (vals.reduce((a,b)=>a+b,0) / vals.length) : null;
+  });
+  const allVals = Object.values(result.byCategory).filter(v=>v!==null);
+  result.overall = allVals.length ? (allVals.reduce((a,b)=>a+b,0) / allVals.length) : null;
+  return result;
+}
+
+let allPros = [];
+let allAggregates = {}; // code -> aggregate
+
+function locationLine(p){
+  const bits = [p.shop_city, p.shop_state].filter(Boolean);
+  return bits.join(', ');
+}
+
+function matchesSearch(p, term){
+  if (!term) return true;
+  const hay = [p.name, p.shop_name, p.shop_city, p.shop_state].filter(Boolean).join(' ').toLowerCase();
+  return hay.includes(term.toLowerCase());
+}
+
+function renderList(){
+  const term = document.getElementById('search-input').value.trim();
+  const holder = document.getElementById('pro-list');
+  const filtered = allPros.filter(p=> matchesSearch(p, term));
+  if (!filtered.length){
+    holder.innerHTML = '<div class="empty-note">No listed barbers or stylists match that search yet.</div>';
+    return;
+  }
+  holder.innerHTML = '';
+  filtered.forEach(p=>{
+    const agg = allAggregates[p.code] || { count:0, overall:null };
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'pro-card';
+    const ratingLine = agg.count
+      ? `<span class="stars">${starsFor(agg.overall)}</span> ${agg.overall.toFixed(1)} · ${agg.count} review${agg.count===1?'':'s'}`
+      : 'No reviews yet';
+    card.innerHTML = `
+      <div class="pro-name">${p.name || 'Unnamed'}</div>
+      <div class="pro-title">${p.title || ''}</div>
+      ${p.shop_name ? `<div class="pro-shop">${p.shop_name}</div>` : ''}
+      ${locationLine(p) ? `<div class="pro-loc">${locationLine(p)}</div>` : ''}
+      <div class="pro-rating">${ratingLine}</div>
+    `;
+    card.addEventListener('click', ()=> showDetail(p.code));
+    holder.appendChild(card);
+  });
+}
+
+async function showDetail(code){
+  const p = allPros.find(x=>x.code===code);
+  if (!p){ return; }
+  document.getElementById('list-screen').hidden = true;
+  document.getElementById('detail-screen').hidden = false;
+
+  document.getElementById('detail-name').textContent = p.name || 'Unnamed';
+  document.getElementById('detail-title').textContent = p.title || '';
+  document.getElementById('detail-shop-line').textContent = [p.shop_name, locationLine(p)].filter(Boolean).join(' · ');
+
+  const social = p.social || {};
+  const socialHolder = document.getElementById('detail-social');
+  socialHolder.innerHTML = '';
+  [['Instagram', social.instagram], ['Facebook', social.facebook], ['Website', social.website]].forEach(([label, url])=>{
+    if (!url) return;
+    const a = document.createElement('a');
+    a.className = 'social-chip';
+    a.href = /^https?:\/\//i.test(url) ? url : ('https://' + url);
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = label;
+    socialHolder.appendChild(a);
+  });
+
+  let reviews = [];
+  try{ reviews = await fetchReviewsFor(code); }catch(e){ console.warn('reviews load failed', e); }
+  const agg = aggregateReviews(reviews);
+  allAggregates[code] = agg;
+
+  const scoresHolder = document.getElementById('detail-scores');
+  if (!agg.count){
+    scoresHolder.innerHTML = '<p class="screen-sub" style="margin:0;">No reviews yet — ratings appear here once clients rate a real, logged visit.</p>';
+  } else {
+    let rows = `<div class="cat-score-row"><span>Overall</span><span class="stars">${starsFor(agg.overall)} ${agg.overall.toFixed(1)}</span></div>`;
+    CATEGORIES.forEach(cat=>{
+      const v = agg.byCategory[cat.key];
+      rows += `<div class="cat-score-row"><span>${cat.label}</span><span class="stars">${v===null ? '—' : starsFor(v) + ' ' + v.toFixed(1)}</span></div>`;
+    });
+    scoresHolder.innerHTML = rows;
+  }
+
+  const reviewsHolder = document.getElementById('detail-reviews');
+  if (!reviews.length){
+    reviewsHolder.innerHTML = '<div class="empty-note">No reviews yet.</div>';
+  } else {
+    reviewsHolder.innerHTML = '';
+    reviews.slice().sort((a,b)=> (b.created_at||'').localeCompare(a.created_at||'')).forEach(r=>{
+      const card = document.createElement('div');
+      card.className = 'review-card';
+      const dateLabel = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '';
+      let statsRow = CATEGORIES.map(cat => `<span><span class="stars">${starsFor(r[cat.key])}</span> ${cat.label}</span>`).join('');
+      card.innerHTML = `
+        <div class="review-top">
+          <span class="review-author">${r.display_name ? r.display_name : 'Anonymous'}</span>
+          <span class="review-date">${dateLabel}</span>
+        </div>
+        <div class="review-stars-row">${statsRow}</div>
+        ${r.comment ? `<div class="review-comment">${r.comment}</div>` : ''}
+      `;
+      reviewsHolder.appendChild(card);
+    });
+  }
+}
+
+document.getElementById('btn-back-list').addEventListener('click', ()=>{
+  document.getElementById('detail-screen').hidden = true;
+  document.getElementById('list-screen').hidden = false;
+  renderList();
+});
+document.getElementById('search-input').addEventListener('input', renderList);
+document.getElementById('btn-directory-exit').addEventListener('click', ()=>{
+  window.location.href = 'index.html';
+});
+
+async function boot(){
+  if (!dbAvailable){
+    document.getElementById('loading-screen').hidden = true;
+    document.getElementById('list-screen').hidden = false;
+    document.getElementById('pro-list').innerHTML = '<div class="empty-note">Live data isn\'t connected right now — the directory can\'t load.</div>';
+    return;
+  }
+  try{
+    allPros = (await fetchPublicPros()).filter(p => p.code);
+    await Promise.all(allPros.map(async p=>{
+      try{ allAggregates[p.code] = aggregateReviews(await fetchReviewsFor(p.code)); }
+      catch(e){ allAggregates[p.code] = { count:0, overall:null, byCategory:{} }; }
+    }));
+  }catch(e){
+    console.warn('directory load failed', e);
+    allPros = [];
+  }
+
+  document.getElementById('loading-screen').hidden = true;
+
+  const params = new URLSearchParams(window.location.search);
+  const proCode = params.get('pro');
+  document.getElementById('list-screen').hidden = false;
+  renderList();
+  if (proCode && allPros.some(p=>p.code===proCode)){
+    await showDetail(proCode);
+  }
+}
+
+boot();
+</script>
+</body>
+</html>
