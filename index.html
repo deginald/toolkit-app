@@ -332,6 +332,7 @@
   </div>
 
   <div id="auth-screen" class="center-screen" hidden>
+    <button type="button" class="link-btn" id="btn-auth-back" style="align-self:flex-start; margin:-8px 0 -4px; padding:6px 0;">&larr; Back</button>
     <div>
       <p class="eyebrow-mini">Pace &middot; Coach &middot; Consult &middot; Ledger</p>
       <h2 class="screen-title" id="auth-heading">First time signing up</h2>
@@ -843,6 +844,7 @@ function defaultProfile(name){
 let dbAvailable = !!supabaseClient;
 let profile = null;
 let profileCode = null;
+let lastKnownProCode = null;
 
 function showToast(msg){
   const t = document.getElementById('toast');
@@ -2127,6 +2129,7 @@ function enterApp(){
 
 function showRoleScreen(){
   document.getElementById('loading-screen').hidden = true;
+  document.getElementById('auth-screen').hidden = true;
   document.getElementById('role-screen').hidden = false;
 }
 
@@ -2160,7 +2163,10 @@ document.getElementById('btn-role-client').addEventListener('click', ()=>{
   window.location.href = 'passport.html';
 });
 document.getElementById('btn-role-pro').addEventListener('click', ()=>{
-  showAuthScreen(null);
+  showAuthScreen(lastKnownProCode);
+});
+document.getElementById('btn-auth-back').addEventListener('click', ()=>{
+  showRoleScreen();
 });
 
 document.getElementById('auth-form').addEventListener('submit', async (e)=>{
@@ -2269,6 +2275,7 @@ async function boot(){
   let savedProCode = null, savedClientCode = null;
   try{ savedProCode = localStorage.getItem('pilotProfileCode'); }catch(e){}
   try{ savedClientCode = localStorage.getItem('passportClientCode'); }catch(e){}
+  lastKnownProCode = savedProCode;
 
   if (savedClientCode && !savedProCode){
     window.location.href = 'passport.html';
