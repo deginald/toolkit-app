@@ -88,6 +88,15 @@
   .mode-btn{ flex:1; border:none; background:transparent; color:var(--muted); font-family:'Public Sans',sans-serif; font-size:12.5px; font-weight:700; padding:9px 6px; border-radius:7px; cursor:pointer; }
   .mode-btn.active{ background:var(--surface); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,0.08); }
 
+  .pv-card{ border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:12px; display:flex; flex-direction:column; gap:8px; }
+  .pv-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .pv-date{ font-family:'Libre Franklin',sans-serif; font-weight:700; font-size:13.5px; }
+  .pv-meta{ font-size:11.5px; color:var(--muted); margin-top:-4px; }
+  .pv-service-tag{ display:inline-flex; width:fit-content; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; padding:3px 8px; border-radius:999px; background:var(--brass-tint); color:var(--brass); flex-shrink:0; }
+  .pv-photos{ display:flex; gap:6px; flex-wrap:wrap; }
+  .pv-photo{ width:64px; height:64px; border-radius:9px; object-fit:cover; background:var(--line); flex-shrink:0; display:block; }
+  .pv-notes{ font-size:12.5px; color:var(--ink); line-height:1.45; white-space:pre-wrap; }
+
   .btn{ border:none; border-radius:11px; padding:13px 18px; font-family:'Public Sans',sans-serif; font-weight:700; font-size:14px; cursor:pointer; text-align:center; }
   .btn-primary{ background:var(--brass); color:#241A0C; flex:1; }
   .btn-primary:hover{ filter:brightness(1.05); }
@@ -518,6 +527,8 @@
             </div>
             <div id="client-attach-loaded" style="display:none; flex-direction:column; gap:8px;">
               <p class="screen-sub" id="client-attach-summary" style="margin:0;">&nbsp;</p>
+              <button class="link-btn" id="btn-toggle-prev-visits" type="button" style="display:none; text-align:left; padding:0;">View previous visits</button>
+              <div id="prev-visits-list" style="display:none; flex-direction:column; gap:10px;"></div>
               <button class="btn btn-ghost" id="btn-client-clear" type="button" style="width:100%;">Remove</button>
             </div>
           </div>
@@ -1519,10 +1530,47 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   /* ---- Hair Passport client attach (Coach) ---- */
   let pendingNewClientCode = null;
 
+  const PV_SERVICE_LABELS = { cut:'Haircut', chemical:'Chemical service', other:'Other' };
+
+  function renderPrevVisits(){
+    const listEl = root.querySelector('#prev-visits-list');
+    const visits = (attachedClient.visits||[]).slice().sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (b.id||'').localeCompare(a.id||''));
+    if (!visits.length){
+      listEl.innerHTML = '<p class="screen-sub" style="margin:0;">No previous visits on file yet.</p>';
+      return;
+    }
+    listEl.innerHTML = visits.map(v=>{
+      const dateLabel = v.date ? new Date(v.date+'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : 'Undated visit';
+      const photos = Array.isArray(v.photos) ? v.photos : [];
+      const photosHtml = photos.length
+        ? '<div class="pv-photos">' + photos.map(p=>`<a href="${p.url}" target="_blank" rel="noopener"><img class="pv-photo" src="${p.url}" alt="Photo from ${dateLabel} visit"></a>`).join('') + '</div>'
+        : '';
+      const notesHtml = v.notes
+        ? `<div class="pv-notes">${v.notes}</div>`
+        : '<div class="pv-notes" style="font-style:italic; color:var(--muted);">No notes recorded.</div>';
+      return `
+        <div class="pv-card">
+          <div class="pv-top">
+            <span class="pv-date">${dateLabel}</span>
+            <span class="pv-service-tag">${PV_SERVICE_LABELS[v.serviceType] || 'Visit'}</span>
+          </div>
+          <div class="pv-meta">${v.barberName ? v.barberName : 'Provider not noted'}</div>
+          ${photosHtml}
+          ${notesHtml}
+        </div>
+      `;
+    }).join('');
+  }
+
   function renderClientAttach(){
     const searchEl = root.querySelector('#client-attach-search');
     const newNameEl = root.querySelector('#client-attach-newname');
     const loadedEl = root.querySelector('#client-attach-loaded');
+    const toggleBtn = root.querySelector('#btn-toggle-prev-visits');
+    const listEl = root.querySelector('#prev-visits-list');
+    listEl.style.display = 'none';
+    listEl.innerHTML = '';
+    toggleBtn.textContent = 'View previous visits';
     if (attachedClient){
       searchEl.style.display = 'none';
       newNameEl.style.display = 'none';
@@ -1530,11 +1578,27 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const visitCount = (attachedClient.visits||[]).length;
       root.querySelector('#client-attach-summary').textContent =
         `Attached: ${attachedClient.name} (${visitCount} visit${visitCount===1?'':'s'} on file)`;
+      toggleBtn.style.display = visitCount > 0 ? '' : 'none';
     } else {
       searchEl.style.display = '';
       loadedEl.style.display = 'none';
+      toggleBtn.style.display = 'none';
     }
   }
+
+  root.querySelector('#btn-toggle-prev-visits').addEventListener('click', ()=>{
+    const listEl = root.querySelector('#prev-visits-list');
+    const toggleBtn = root.querySelector('#btn-toggle-prev-visits');
+    const showing = listEl.style.display !== 'none';
+    if (showing){
+      listEl.style.display = 'none';
+      toggleBtn.textContent = 'View previous visits';
+    } else {
+      renderPrevVisits();
+      listEl.style.display = 'flex';
+      toggleBtn.textContent = 'Hide previous visits';
+    }
+  });
 
   root.querySelector('#btn-client-lookup').addEventListener('click', async ()=>{
     const statusEl = root.querySelector('#client-lookup-status');
