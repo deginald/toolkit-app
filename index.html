@@ -479,6 +479,22 @@
 
         <div class="screen-body show" data-screen="picker">
           <p class="screen-sub">Pick a technique &mdash; Coach walks you through it step by step.</p>
+          <div class="card" id="client-attach-card" style="gap:10px;">
+            <p class="eyebrow-mini2" style="margin:0;">Attach to a client's Hair Passport (optional)</p>
+            <div id="client-attach-search">
+              <div class="input-row"><input id="client-code-input" type="text" placeholder="Client's passport code"></div>
+              <button class="btn btn-outline" id="btn-client-lookup" type="button" style="margin-top:8px; width:100%;">Look up</button>
+              <p class="screen-sub" id="client-lookup-status" style="margin-top:6px;">&nbsp;</p>
+            </div>
+            <div id="client-attach-newname" style="display:none;">
+              <div class="input-row"><input id="client-new-name" type="text" placeholder="Client's name"></div>
+              <button class="btn btn-primary" id="btn-client-create" type="button" style="margin-top:8px; width:100%;">Start their Hair Passport</button>
+            </div>
+            <div id="client-attach-loaded" style="display:none; flex-direction:column; gap:8px;">
+              <p class="screen-sub" id="client-attach-summary" style="margin:0;">&nbsp;</p>
+              <button class="btn btn-ghost" id="btn-client-clear" type="button" style="width:100%;">Remove</button>
+            </div>
+          </div>
           <div class="mode-toggle">
             <button type="button" class="mode-btn active" data-cat="cuts">Haircuts</button>
             <button type="button" class="mode-btn" data-cat="chemical">Chemical</button>
@@ -516,6 +532,12 @@
             <div class="cl-row"><span>Steps completed</span><span id="cl-steps">0/0</span></div>
             <div class="cl-row"><span>Time on this service</span><span id="cl-time">0:00</span></div>
             <div class="cl-row"><span>Checkpoint photo</span><span id="cl-checkpoint">&mdash;</span></div>
+          </div>
+          <div id="passport-save-row" style="display:none; flex-direction:column; gap:10px;">
+            <p class="eyebrow-mini2" style="margin:0;">Save to <span id="passport-client-name"></span>'s Hair Passport</p>
+            <div class="input-row"><textarea id="passport-notes" placeholder="Notes for next time…" style="min-height:60px;"></textarea></div>
+            <button class="btn btn-primary" id="btn-save-passport" type="button">Save this visit</button>
+            <p class="screen-sub" id="passport-save-status" style="margin:0;">&nbsp;</p>
           </div>
           <div class="spacer"></div>
           <div class="btn-row" id="ledger-handoff-row" style="display:none;">
@@ -1199,7 +1221,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
   const LEDGER_MAP = { 'skin-fade':'skin-fade', 'womens-layers':'womens-layered', 'beard-trim':'beard-trim', 'relaxer':'relaxer', 'color':'color', 'perm':'perm', 'bleach':'bleach', 'exposure-incident':'exposure' };
 
-  const cstate = { category:'cuts', technique:null, stepIndex:0, checklistChecked:{}, timerState:{}, checkpointCaptured:false, elapsed:0, elapsedTimerId:null };
+  const cstate = { category:'cuts', technique:null, stepIndex:0, checklistChecked:{}, timerState:{}, checkpointCaptured:false, checkpointPhotos:[], elapsed:0, elapsedTimerId:null };
+  let attachedClient = null; // { code, name, visits }
 
   function fmtTime(totalSeconds){ const m = Math.floor(totalSeconds/60); const s = totalSeconds % 60; return `${m}:${s.toString().padStart(2,'0')}`; }
   function meta(tech){ const timedCount = tech.steps.filter(s=>s.kind==='timer').length; return `${tech.steps.length} steps${timedCount ? ' · ' + timedCount + ' timed' : ''}`; }
@@ -1219,7 +1242,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   function showScreen(name){ root.querySelectorAll('[data-screen]').forEach(el=> el.classList.toggle('show', el.dataset.screen===name)); }
 
   function startTechnique(tech){
-    cstate.technique = tech; cstate.stepIndex = 0; cstate.checklistChecked = {}; cstate.timerState = {}; cstate.checkpointCaptured = false; cstate.elapsed = 0;
+    cstate.technique = tech; cstate.stepIndex = 0; cstate.checklistChecked = {}; cstate.timerState = {}; cstate.checkpointCaptured = false; cstate.checkpointPhotos = []; cstate.elapsed = 0;
     if (cstate.elapsedTimerId) clearInterval(cstate.elapsedTimerId);
     cstate.elapsedTimerId = setInterval(()=>{ cstate.elapsed++; root.querySelector('#walk-elapsed').textContent = fmtTime(cstate.elapsed); }, 1000);
     root.querySelector('#walk-tech-name').textContent = tech.name;
@@ -1234,7 +1257,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const step = currentStep();
     if (step.kind === 'checklist'){ const checked = cstate.checklistChecked[cstate.stepIndex] || []; return checked.length === step.items.length; }
     if (step.kind === 'timer'){ const t = cstate.timerState[cstate.stepIndex]; return t && t.done; }
-    if (step.kind === 'final'){ return cstate.checkpointCaptured; }
+    if (step.kind === 'final'){ return attachedClient ? cstate.checkpointPhotos.length > 0 : cstate.checkpointCaptured; }
     return true;
   }
 
@@ -1274,11 +1297,22 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         </div></div>`;
     }
     if (step.kind === 'final'){
-      html += `<div class="checkpoint-box ${cstate.checkpointCaptured?'done':''}" id="checkpoint-box">
-        <div class="checkpoint-icon">${cstate.checkpointCaptured ? '&#10003;' : '&#128247;'}</div>
-        <p class="screen-sub" style="margin:0;">${cstate.checkpointCaptured ? 'Checkpoint saved' : 'Capture a checkpoint photo'}</p>
-        ${cstate.checkpointCaptured ? '' : '<button class="btn btn-primary" id="btn-capture" style="flex:none; padding:10px 16px;">Capture checkpoint</button>'}
-      </div>`;
+      if (attachedClient){
+        const photoCount = cstate.checkpointPhotos.length;
+        html += `<div class="checkpoint-box ${photoCount?'done':''}" id="checkpoint-box">
+          <div class="checkpoint-icon">${photoCount ? '&#10003;' : '&#128247;'}</div>
+          <p class="screen-sub" style="margin:0;">${photoCount ? photoCount + ' photo' + (photoCount===1?'':'s') + ' added' : 'Add a few photos of the finished result'}</p>
+          <p class="screen-sub" style="margin:0; font-size:11px;">Front, back, and sides work best &mdash; 3 or more gives the fullest picture.</p>
+          <input type="file" accept="image/*" capture="environment" multiple id="checkpoint-file-input" style="display:none;">
+          <button class="btn btn-primary" id="btn-capture" type="button" style="flex:none; padding:10px 16px;">${photoCount ? 'Add more photos' : 'Add photos'}</button>
+        </div>`;
+      } else {
+        html += `<div class="checkpoint-box ${cstate.checkpointCaptured?'done':''}" id="checkpoint-box">
+          <div class="checkpoint-icon">${cstate.checkpointCaptured ? '&#10003;' : '&#128247;'}</div>
+          <p class="screen-sub" style="margin:0;">${cstate.checkpointCaptured ? 'Checkpoint saved' : 'Capture a checkpoint photo'}</p>
+          ${cstate.checkpointCaptured ? '' : '<button class="btn btn-primary" id="btn-capture" type="button" style="flex:none; padding:10px 16px;">Capture checkpoint</button>'}
+        </div>`;
+      }
     }
     html += `</div>`;
     holder.innerHTML = html;
@@ -1299,8 +1333,17 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       holder.querySelector('#timer-toggle').addEventListener('click', ()=> toggleTimer());
       holder.querySelector('#timer-skip').addEventListener('click', ()=> skipTimer());
     }
-    if (step.kind === 'final' && !cstate.checkpointCaptured){
-      holder.querySelector('#btn-capture').addEventListener('click', ()=>{ cstate.checkpointCaptured = true; renderStep(); });
+    if (step.kind === 'final'){
+      if (attachedClient){
+        holder.querySelector('#btn-capture').addEventListener('click', ()=> holder.querySelector('#checkpoint-file-input').click());
+        holder.querySelector('#checkpoint-file-input').addEventListener('change', (e)=>{
+          const newFiles = Array.from(e.target.files || []);
+          cstate.checkpointPhotos = cstate.checkpointPhotos.concat(newFiles);
+          renderStep();
+        });
+      } else if (!cstate.checkpointCaptured){
+        holder.querySelector('#btn-capture').addEventListener('click', ()=>{ cstate.checkpointCaptured = true; renderStep(); });
+      }
     }
     root.querySelector('#btn-step-next').disabled = !canAdvance();
   }
@@ -1343,7 +1386,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#cl-steps').textContent = `${cstate.technique.steps.length}/${cstate.technique.steps.length}`;
     root.querySelector('#cl-time').textContent = fmtTime(cstate.elapsed);
     const hasCheckpointStep = cstate.technique.steps.some(s=>s.kind==='final');
-    root.querySelector('#cl-checkpoint').textContent = !hasCheckpointStep ? 'N/A' : (cstate.checkpointCaptured ? 'Saved' : 'Skipped');
+    root.querySelector('#cl-checkpoint').textContent = !hasCheckpointStep ? 'N/A' :
+      (attachedClient ? (cstate.checkpointPhotos.length ? cstate.checkpointPhotos.length + ' photos' : 'Skipped') : (cstate.checkpointCaptured ? 'Saved' : 'Skipped'));
 
     const ledgerId = LEDGER_MAP[cstate.technique.id];
     const handoffRow = root.querySelector('#ledger-handoff-row');
@@ -1356,7 +1400,68 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     } else {
       handoffRow.style.display = 'none';
     }
+
+    const passportRow = root.querySelector('#passport-save-row');
+    if (attachedClient && cstate.checkpointPhotos.length){
+      passportRow.style.display = 'flex';
+      root.querySelector('#passport-client-name').textContent = attachedClient.name;
+      const notesInput = root.querySelector('#passport-notes');
+      notesInput.value = '';
+      notesInput.placeholder = cstate.technique.category === 'chemical'
+        ? 'Formula, developer strength, and timing used…'
+        : 'Guard lengths, technique notes for next time…';
+      const saveBtn = root.querySelector('#btn-save-passport');
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save this visit';
+      root.querySelector('#passport-save-status').textContent = '';
+      saveBtn.onclick = savePassportVisit;
+    } else {
+      passportRow.style.display = 'none';
+    }
     showScreen('complete');
+  }
+
+  async function savePassportVisit(){
+    const saveBtn = root.querySelector('#btn-save-passport');
+    const statusEl = root.querySelector('#passport-save-status');
+    saveBtn.disabled = true;
+    if (!dbAvailable){
+      statusEl.textContent = "Live saving isn't connected right now — this visit wasn't saved.";
+      return;
+    }
+    statusEl.textContent = 'Uploading photos…';
+    try{
+      const photos = [];
+      const files = cstate.checkpointPhotos;
+      for (let i=0; i<files.length; i++){
+        const file = files[i];
+        const safeName = (file.name || 'photo.jpg').replace(/[^a-zA-Z0-9_.-]/g,'_');
+        const path = `${attachedClient.code}/${Date.now()}-${i}-${safeName}`;
+        const { error: upErr } = await supabaseClient.storage.from('client-photos').upload(path, file);
+        if (upErr) throw upErr;
+        const { data: urlData } = supabaseClient.storage.from('client-photos').getPublicUrl(path);
+        photos.push({ url: urlData.publicUrl, path });
+      }
+      const visit = {
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
+        date: todayIso(),
+        barberName: profile.name,
+        serviceType: cstate.technique.category === 'chemical' ? 'chemical' : (cstate.technique.category === 'safety' ? 'other' : 'cut'),
+        notes: root.querySelector('#passport-notes').value.trim(),
+        photos,
+        favorite: false
+      };
+      const updatedVisits = (attachedClient.visits || []).concat([visit]);
+      const { error } = await supabaseClient.from('clients').update({ visits: updatedVisits, updated_at: new Date().toISOString() }).eq('code', attachedClient.code);
+      if (error) throw error;
+      attachedClient.visits = updatedVisits;
+      statusEl.textContent = 'Saved to their Hair Passport.';
+      saveBtn.textContent = 'Saved';
+    }catch(e){
+      console.warn('save visit failed', e);
+      statusEl.textContent = "Couldn't save — check your connection and try again.";
+      saveBtn.disabled = false;
+    }
   }
 
   root.querySelector('#btn-choose-another').addEventListener('click', ()=> showScreen('picker'));
@@ -1368,7 +1473,75 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     });
   });
 
-  window.initCoachTab = function(){ renderTechList(); showScreen('picker'); };
+  /* ---- Hair Passport client attach (Coach) ---- */
+  let pendingNewClientCode = null;
+
+  function renderClientAttach(){
+    const searchEl = root.querySelector('#client-attach-search');
+    const newNameEl = root.querySelector('#client-attach-newname');
+    const loadedEl = root.querySelector('#client-attach-loaded');
+    if (attachedClient){
+      searchEl.style.display = 'none';
+      newNameEl.style.display = 'none';
+      loadedEl.style.display = 'flex';
+      const visitCount = (attachedClient.visits||[]).length;
+      root.querySelector('#client-attach-summary').textContent =
+        `Attached: ${attachedClient.name} (${visitCount} visit${visitCount===1?'':'s'} on file)`;
+    } else {
+      searchEl.style.display = '';
+      loadedEl.style.display = 'none';
+    }
+  }
+
+  root.querySelector('#btn-client-lookup').addEventListener('click', async ()=>{
+    const statusEl = root.querySelector('#client-lookup-status');
+    const code = sanitizeCode(root.querySelector('#client-code-input').value);
+    if (!code){ statusEl.textContent = 'Enter a code first.'; return; }
+    if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
+    statusEl.textContent = 'Looking up…';
+    root.querySelector('#client-attach-newname').style.display = 'none';
+    try{
+      const { data, error } = await supabaseClient.from('clients').select('*').eq('code', code).maybeSingle();
+      if (error) throw error;
+      if (data){
+        attachedClient = { code, name: data.name || 'Client', visits: Array.isArray(data.visits) ? data.visits : [] };
+        statusEl.textContent = '';
+        renderClientAttach();
+      } else {
+        statusEl.textContent = 'No passport found for that code.';
+        pendingNewClientCode = code;
+        root.querySelector('#client-attach-newname').style.display = '';
+      }
+    }catch(e){
+      console.warn('client lookup failed', e);
+      statusEl.textContent = "Couldn't reach the client database.";
+    }
+  });
+
+  root.querySelector('#btn-client-create').addEventListener('click', async ()=>{
+    const name = root.querySelector('#client-new-name').value.trim();
+    if (!name || !pendingNewClientCode) return;
+    attachedClient = { code: pendingNewClientCode, name, visits: [] };
+    if (dbAvailable){
+      try{
+        const { error } = await supabaseClient.from('clients').insert({ code: pendingNewClientCode, name, visits: [] });
+        if (error) throw error;
+      }catch(e){ console.warn('create client failed', e); }
+    }
+    pendingNewClientCode = null;
+    root.querySelector('#client-new-name').value = '';
+    root.querySelector('#client-lookup-status').textContent = '';
+    renderClientAttach();
+  });
+
+  root.querySelector('#btn-client-clear').addEventListener('click', ()=>{
+    attachedClient = null;
+    root.querySelector('#client-code-input').value = '';
+    root.querySelector('#client-lookup-status').textContent = '';
+    renderClientAttach();
+  });
+
+  window.initCoachTab = function(){ renderTechList(); renderClientAttach(); showScreen('picker'); };
 })();
 
 /* =========================================================

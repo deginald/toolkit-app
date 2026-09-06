@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hair Passport</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --ink:#1E2530; --paper:#F1EEE6; --surface:#FFFFFF; --line:#DAD4C4; --muted:#8B8577;
+    --brass:#B9863C; --brass-tint:#F1E4CB;
+    --good:#3F7D58; --good-tint:#E1EDE4;
+    --behind:#B8433A; --behind-tint:#F7E4E1;
+    --shadow: 0 24px 48px -20px rgba(30,37,48,0.35);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#ECE7DC; --paper:#14181F; --surface:#1D232C; --line:#333B47; --muted:#8D8B84;
+      --brass:#D3A25F; --brass-tint:#33291A;
+      --good:#69B889; --good-tint:#1B2C22;
+      --behind:#E08573; --behind-tint:#2E1E1C;
+      --shadow: 0 24px 48px -20px rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#ECE7DC; --paper:#14181F; --surface:#1D232C; --line:#333B47; --muted:#8D8B84;
+    --brass:#D3A25F; --brass-tint:#33291A;
+    --good:#69B889; --good-tint:#1B2C22;
+    --behind:#E08573; --behind-tint:#2E1E1C;
+    --shadow: 0 24px 48px -20px rgba(0,0,0,0.6);
+  }
+
+  *{box-sizing:border-box;}
+  [hidden]{ display:none !important; }
+  html,body{ height:100%; }
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:'Public Sans', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+
+  .eyebrow-mini{ font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin:0; }
+  .screen-title{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.01em; margin:2px 0 0; }
+  .screen-sub{ font-size:13.5px; color:var(--muted); line-height:1.5; margin:0; }
+
+  #app-root{ max-width:460px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; background:var(--surface); box-shadow:0 0 0 1px var(--line); }
+  .center-screen{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; gap:14px; text-align:center; }
+
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:16px 20px; border-bottom:1px solid var(--line); }
+  .topbar .tb-name{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; }
+  .topbar .tb-sub{ font-size:12px; color:var(--muted); font-weight:600; }
+  .link-btn{ border:none; background:transparent; color:var(--brass); font-family:'Public Sans',sans-serif; font-weight:700; font-size:12.5px; cursor:pointer; padding:6px 0; }
+
+  #passport-shell{ display:flex; flex-direction:column; flex:1; min-height:100vh; }
+  .content{ flex:1; overflow-y:auto; padding:20px 20px 32px; display:flex; flex-direction:column; gap:18px; }
+
+  .field{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+  .field label{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); }
+  .input-row{ display:flex; align-items:center; border:1px solid var(--line); border-radius:10px; background:var(--paper); padding:0 12px; min-width:0; }
+  .input-row input, .input-row textarea{ border:none; background:transparent; outline:none; font-family:'Public Sans',sans-serif; font-size:14px; font-weight:600; color:var(--ink); padding:11px 4px; width:100%; min-width:0; }
+  .input-row textarea{ resize:vertical; min-height:70px; padding:11px 4px; font-weight:500; }
+
+  .btn{ border:none; border-radius:11px; padding:13px 18px; font-family:'Public Sans',sans-serif; font-weight:700; font-size:14px; cursor:pointer; text-align:center; }
+  .btn-primary{ background:var(--brass); color:#241A0C; flex:1; }
+  .btn-primary:hover{ filter:brightness(1.05); }
+  .btn-primary:disabled{ background:var(--line); color:var(--muted); cursor:not-allowed; filter:none; }
+  .btn-ghost{ background:var(--paper); color:var(--ink); border:1px solid var(--line); }
+  .btn-outline{ background:transparent; color:var(--brass); border:1px solid var(--brass); }
+  .btn-danger{ background:transparent; color:var(--behind); border:1px solid var(--behind); }
+  .spacer{ flex:1; }
+  .btn-row{ display:flex; gap:8px; }
+
+  .auth-form{ display:flex; flex-direction:column; gap:14px; width:100%; max-width:320px; text-align:left; }
+  .foot-note-small{ font-size:11.5px; color:var(--muted); line-height:1.5; max-width:340px; }
+
+  .code-card{ border:1px solid var(--brass); background:var(--brass-tint); border-radius:16px; padding:20px; display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; }
+  .code-card .cc-label{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--brass); }
+  .code-card .cc-code{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:22px; letter-spacing:0.02em; word-break:break-all; }
+  .code-card .cc-hint{ font-size:12px; color:var(--ink); }
+  #qr-holder{ background:#fff; padding:10px; border-radius:12px; display:flex; align-items:center; justify-content:center; }
+  #qr-holder canvas, #qr-holder svg{ display:block; }
+
+  .section-head{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+  .section-head h2{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:0; }
+
+  .empty-note{ border:1px dashed var(--line); border-radius:14px; padding:22px 16px; text-align:center; color:var(--muted); font-size:13px; line-height:1.5; }
+
+  .visit-list{ display:flex; flex-direction:column; gap:12px; }
+  .visit-card{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:14px; display:flex; flex-direction:column; gap:10px; cursor:pointer; text-align:left; width:100%; font-family:inherit; color:inherit; }
+  .visit-card:hover{ border-color:var(--brass); }
+  .vc-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  .vc-date{ font-family:'Libre Franklin',sans-serif; font-weight:700; font-size:14.5px; }
+  .vc-meta{ font-size:11.5px; color:var(--muted); margin-top:2px; }
+  .vc-star{ font-size:18px; line-height:1; background:none; border:none; cursor:pointer; color:var(--line); flex-shrink:0; }
+  .vc-star.on{ color:var(--brass); }
+  .vc-photos{ display:flex; gap:6px; }
+  .vc-photo{ width:64px; height:64px; border-radius:9px; object-fit:cover; background:var(--line); flex-shrink:0; }
+  .vc-photo-more{ width:64px; height:64px; border-radius:9px; background:var(--surface); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--muted); flex-shrink:0; }
+  .vc-notes-preview{ font-size:12px; color:var(--muted); line-height:1.4; }
+  .service-tag{ display:inline-flex; width:fit-content; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; padding:3px 8px; border-radius:999px; background:var(--brass-tint); color:var(--brass); }
+
+  .walk-header{ display:flex; align-items:center; gap:10px; }
+  .back-btn{ background:var(--paper); border:1px solid var(--line); width:32px; height:32px; border-radius:9px; font-size:16px; color:var(--ink); cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+
+  .detail-photos{ display:flex; flex-direction:column; gap:10px; }
+  .detail-photo{ width:100%; border-radius:14px; display:block; background:var(--line); }
+  .detail-card{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+  .detail-row{ display:flex; justify-content:space-between; gap:10px; font-size:12.5px; }
+  .detail-row span:first-child{ color:var(--muted); font-weight:600; }
+  .detail-row span:last-child{ font-weight:700; text-align:right; }
+  .detail-notes{ font-size:13.5px; line-height:1.55; color:var(--ink); white-space:pre-wrap; }
+
+  .toast{ position:fixed; left:50%; transform:translateX(-50%) translateY(6px); bottom:24px; max-width:400px; width:calc(100% - 48px); background:var(--good); color:#fff; text-align:center; padding:10px; border-radius:10px; font-size:12.5px; font-weight:700; opacity:0; transition:opacity .2s ease, transform .2s ease; pointer-events:none; z-index:20; }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.danger{ background:var(--behind); }
+</style>
+</head>
+<body>
+
+<div id="app-root">
+
+  <div id="loading-screen" class="center-screen">
+    <p class="eyebrow-mini">Loading&hellip;</p>
+  </div>
+
+  <div id="auth-screen" class="center-screen" hidden>
+    <div>
+      <p class="eyebrow-mini">Hair Passport</p>
+      <h2 class="screen-title">Your hair, your history</h2>
+      <p class="screen-sub" style="margin-top:6px;">Enter your name and pick a personal code. Give that code to any barber and they can pull up your past visits &mdash; there's no password reset, so keep it somewhere you'll remember.</p>
+    </div>
+    <form class="auth-form" id="auth-form">
+      <div class="field">
+        <label>Your name</label>
+        <div class="input-row"><input id="auth-name" type="text" placeholder="e.g. Jordan Smith" autocomplete="name" required></div>
+      </div>
+      <div class="field">
+        <label>Personal code</label>
+        <div class="input-row"><input id="auth-code" type="text" placeholder="e.g. jordan-2026" autocomplete="off" required></div>
+      </div>
+      <button class="btn btn-primary" type="submit">Continue</button>
+      <p class="foot-note-small" id="auth-note">Using a code you've used before loads your history. A new code starts a fresh passport.</p>
+    </form>
+  </div>
+
+  <div id="passport-shell" hidden>
+    <div id="degraded-banner" class="foot-note-small" style="padding:10px 20px; background:var(--behind-tint); color:var(--ink); text-align:center;" hidden>Live saving isn't connected right now &mdash; changes here won't be kept.</div>
+    <header class="topbar">
+      <div>
+        <div class="tb-name" id="tb-name">&nbsp;</div>
+        <div class="tb-sub">Hair Passport</div>
+      </div>
+      <button class="link-btn" id="btn-switch-profile">Switch profile</button>
+    </header>
+
+    <main class="content">
+
+      <div class="screen-body" data-screen="home">
+        <div class="code-card">
+          <span class="cc-label">Your code</span>
+          <div id="qr-holder"></div>
+          <span class="cc-code" id="home-code">&nbsp;</span>
+          <span class="cc-hint">Show this to your barber at your next visit</span>
+        </div>
+
+        <div class="section-head">
+          <h2>Your visits</h2>
+        </div>
+        <div id="visit-list-holder"></div>
+      </div>
+
+      <div class="screen-body" data-screen="detail" style="display:none; flex-direction:column; gap:16px;">
+        <div class="walk-header">
+          <button class="back-btn" id="btn-back-home">&larr;</button>
+          <div><div class="vc-date" id="detail-date">&nbsp;</div></div>
+        </div>
+        <div class="detail-photos" id="detail-photos"></div>
+        <div class="detail-card">
+          <div class="detail-row"><span>Barber</span><span id="detail-barber">&mdash;</span></div>
+          <div class="detail-row"><span>Service</span><span id="detail-service">&mdash;</span></div>
+        </div>
+        <div>
+          <p class="eyebrow-mini" style="margin-bottom:6px;">Notes from this visit</p>
+          <p class="detail-notes" id="detail-notes">&mdash;</p>
+        </div>
+        <div class="spacer"></div>
+        <div class="btn-row">
+          <button class="btn btn-outline" id="btn-toggle-favorite" style="flex:1;">&#9733; Favorite</button>
+        </div>
+        <button class="btn btn-danger" id="btn-delete-visit">Delete this visit</button>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="toast" class="toast">Saved</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script>
+/* =========================================================
+   SUPABASE SETUP — same project as the barber-side Toolkit app
+   ========================================================= */
+const SUPABASE_URL = "https://ruhvkfogfoabbvcvlbvp.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1aHZrZm9nZm9hYmJ2Y3ZsYnZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NTI2OTYsImV4cCI6MjEwNDIyODY5Nn0.1M3FX5EHzeDOa7Q2MqUjPczFWzueuec9oCmfLBQ6JZY";
+
+let supabaseClient = null;
+try{
+  if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY &&
+      !SUPABASE_URL.startsWith('YOUR_') && !SUPABASE_ANON_KEY.startsWith('YOUR_')){
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+}catch(e){ supabaseClient = null; }
+
+let dbAvailable = !!supabaseClient;
+let client = null;
+let clientCode = null;
+let dstate = { selectedVisitId: null, deleteArmed:false };
+
+function todayIso(){ return new Date().toISOString().slice(0,10); }
+function sanitizeCode(raw){
+  let c = (raw||'').trim().toLowerCase().replace(/[^a-z0-9_.~:@+-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+  if (c.length > 60) c = c.slice(0,60);
+  return c;
+}
+function defaultClient(name){
+  return { code:null, name: name || 'You', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString() };
+}
+function showToast(msg, danger){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('danger', !!danger);
+  t.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=> t.classList.remove('show'), 1800);
+}
+
+async function fetchClientRow(code){
+  const { data, error } = await supabaseClient.from('clients').select('*').eq('code', code).maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+async function tryLoadClient(code){
+  try{
+    const data = await fetchClientRow(code);
+    if (data){
+      client = defaultClient(data.name);
+      client.name = data.name || client.name;
+      client.visits = Array.isArray(data.visits) ? data.visits : [];
+      client.created_at = data.created_at || client.created_at;
+      clientCode = code;
+      return true;
+    }
+  }catch(e){ console.warn('load failed', e); }
+  return false;
+}
+
+async function createClientRecord(code, name){
+  client = defaultClient(name);
+  clientCode = code;
+  if (dbAvailable){
+    try{
+      const { error } = await supabaseClient.from('clients').insert({ code, name: client.name, visits: [] });
+      if (error) throw error;
+    }catch(e){ console.warn('create failed', e); }
+  }
+  return true;
+}
+
+async function persistClient(){
+  if (!dbAvailable || !clientCode) return;
+  try{
+    const { error } = await supabaseClient.from('clients').update({
+      name: client.name, visits: client.visits, updated_at: new Date().toISOString()
+    }).eq('code', clientCode);
+    if (error) throw error;
+  }catch(e){ console.warn('save failed', e); showToast("Couldn't save — try again", true); }
+}
+
+function renderQr(){
+  const holder = document.getElementById('qr-holder');
+  holder.innerHTML = '';
+  if (window.QRCode && clientCode){
+    try{
+      const canvas = document.createElement('canvas');
+      holder.appendChild(canvas);
+      window.QRCode.toCanvas(canvas, clientCode, { width: 160, margin: 1, color:{ dark:'#1E2530', light:'#FFFFFF' } }, function(err){
+        if (err){ holder.innerHTML = ''; }
+      });
+    }catch(e){ holder.innerHTML = ''; }
+  }
+}
+
+function sortedVisits(){
+  return client.visits.slice().sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (b.id||'').localeCompare(a.id||''));
+}
+
+const SERVICE_LABELS = { cut:'Haircut', chemical:'Chemical service', other:'Other' };
+
+function renderHome(){
+  document.getElementById('tb-name').textContent = client.name;
+  document.getElementById('home-code').textContent = clientCode;
+  renderQr();
+
+  const holder = document.getElementById('visit-list-holder');
+  const visits = sortedVisits();
+  if (visits.length === 0){
+    holder.innerHTML = '<div class="empty-note">No visits yet. Share your code with your barber and it\'ll show up here after your next appointment.</div>';
+    return;
+  }
+  holder.innerHTML = '';
+  const list = document.createElement('div');
+  list.className = 'visit-list';
+  visits.forEach(v=>{
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'visit-card';
+    const dateLabel = v.date ? new Date(v.date+'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : 'Undated visit';
+    const photos = Array.isArray(v.photos) ? v.photos : [];
+    let photosHtml = '';
+    if (photos.length){
+      photosHtml = '<div class="vc-photos">' + photos.slice(0,3).map(p=>`<img class="vc-photo" src="${p.url}" alt="">`).join('') +
+        (photos.length > 3 ? `<div class="vc-photo-more">+${photos.length-3}</div>` : '') + '</div>';
+    }
+    card.innerHTML = `
+      <div class="vc-top">
+        <div>
+          <div class="vc-date">${dateLabel}</div>
+          <div class="vc-meta">${v.barberName ? v.barberName : 'Barber not noted'}</div>
+        </div>
+        <button type="button" class="vc-star ${v.favorite?'on':''}" data-star="${v.id}">&#9733;</button>
+      </div>
+      <span class="service-tag">${SERVICE_LABELS[v.serviceType] || 'Visit'}</span>
+      ${photosHtml}
+      ${v.notes ? `<div class="vc-notes-preview">${v.notes.length > 90 ? v.notes.slice(0,90)+'…' : v.notes}</div>` : ''}
+    `;
+    card.addEventListener('click', (e)=>{
+      if (e.target.closest('[data-star]')) return;
+      openDetail(v.id);
+    });
+    list.appendChild(card);
+  });
+  holder.appendChild(list);
+
+  holder.querySelectorAll('[data-star]').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const id = btn.dataset.star;
+      const v = client.visits.find(x=>x.id===id);
+      if (v){ v.favorite = !v.favorite; renderHome(); await persistClient(); }
+    });
+  });
+}
+
+function showScreen(name){
+  document.querySelectorAll('.screen-body').forEach(el=>{
+    el.style.display = el.dataset.screen === name ? 'flex' : 'none';
+  });
+}
+
+function openDetail(id){
+  dstate.selectedVisitId = id;
+  dstate.deleteArmed = false;
+  const v = client.visits.find(x=>x.id===id);
+  if (!v) return;
+  document.getElementById('detail-date').textContent = v.date ? new Date(v.date+'T00:00:00').toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}) : 'Undated visit';
+  document.getElementById('detail-barber').textContent = v.barberName || 'Not noted';
+  document.getElementById('detail-service').textContent = SERVICE_LABELS[v.serviceType] || 'Visit';
+  document.getElementById('detail-notes').textContent = v.notes || 'No notes from this visit.';
+  const photosHolder = document.getElementById('detail-photos');
+  photosHolder.innerHTML = (Array.isArray(v.photos) ? v.photos : []).map(p=>`<img class="detail-photo" src="${p.url}" alt="">`).join('') || '<p class="screen-sub">No photos from this visit.</p>';
+  const favBtn = document.getElementById('btn-toggle-favorite');
+  favBtn.textContent = (v.favorite ? '★ Favorited' : '☆ Favorite');
+  favBtn.classList.toggle('btn-outline', true);
+  const delBtn = document.getElementById('btn-delete-visit');
+  delBtn.textContent = 'Delete this visit';
+  showScreen('detail');
+}
+
+document.getElementById('btn-back-home').addEventListener('click', ()=>{ renderHome(); showScreen('home'); });
+
+document.getElementById('btn-toggle-favorite').addEventListener('click', async ()=>{
+  const v = client.visits.find(x=>x.id===dstate.selectedVisitId);
+  if (!v) return;
+  v.favorite = !v.favorite;
+  openDetail(v.id);
+  await persistClient();
+});
+
+document.getElementById('btn-delete-visit').addEventListener('click', async function(){
+  if (!dstate.deleteArmed){
+    dstate.deleteArmed = true;
+    this.textContent = 'Tap again to confirm delete';
+    setTimeout(()=>{ if (dstate.deleteArmed){ dstate.deleteArmed=false; this.textContent='Delete this visit'; } }, 3000);
+    return;
+  }
+  client.visits = client.visits.filter(x=>x.id !== dstate.selectedVisitId);
+  await persistClient();
+  showToast('Visit deleted');
+  renderHome();
+  showScreen('home');
+});
+
+/* =========================================================
+   AUTH / BOOT
+   ========================================================= */
+function enterApp(){
+  document.getElementById('loading-screen').hidden = true;
+  document.getElementById('auth-screen').hidden = true;
+  document.getElementById('passport-shell').hidden = false;
+  document.getElementById('degraded-banner').hidden = dbAvailable;
+  renderHome();
+  showScreen('home');
+}
+
+function showAuthScreen(prefillCode){
+  document.getElementById('loading-screen').hidden = true;
+  document.getElementById('auth-screen').hidden = false;
+  if (!dbAvailable){
+    document.getElementById('auth-note').textContent = "Live saving isn't connected right now — you can still try everything out, but it won't be kept.";
+  }
+  if (prefillCode) document.getElementById('auth-code').value = prefillCode;
+}
+
+document.getElementById('auth-form').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const name = document.getElementById('auth-name').value.trim() || 'You';
+  const code = sanitizeCode(document.getElementById('auth-code').value);
+  if (!code) return;
+  let loaded = false;
+  if (dbAvailable){
+    loaded = await tryLoadClient(code);
+    if (!loaded) await createClientRecord(code, name);
+  } else {
+    await createClientRecord(code, name);
+  }
+  try{ localStorage.setItem('passportClientCode', code); }catch(err){}
+  enterApp();
+});
+
+document.getElementById('btn-switch-profile').addEventListener('click', ()=>{
+  try{ localStorage.removeItem('passportClientCode'); }catch(e){}
+  window.location.href = window.location.pathname;
+});
+
+async function boot(){
+  dbAvailable = !!supabaseClient;
+  let savedCode = null;
+  try{ savedCode = localStorage.getItem('passportClientCode'); }catch(e){}
+
+  if (savedCode && dbAvailable){
+    const ok = await tryLoadClient(savedCode);
+    if (ok){ enterApp(); return; }
+  }
+  showAuthScreen(savedCode);
+}
+
+boot();
+</script>
+</body>
+</html>
