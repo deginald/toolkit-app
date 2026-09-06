@@ -153,7 +153,10 @@
         <div class="tb-name" id="tb-name">&nbsp;</div>
         <div class="tb-sub">Hair Passport</div>
       </div>
-      <button class="link-btn" id="btn-switch-profile">Switch profile</button>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <button class="link-btn" id="btn-open-account">Account</button>
+        <button class="link-btn" id="btn-switch-profile">Switch profile</button>
+      </div>
     </header>
 
     <main class="content">
@@ -191,6 +194,19 @@
           <button class="btn btn-outline" id="btn-toggle-favorite" style="flex:1;">&#9733; Favorite</button>
         </div>
         <button class="btn btn-danger" id="btn-delete-visit">Delete this visit</button>
+      </div>
+
+      <div class="screen-body" data-screen="account">
+        <div class="walk-header">
+          <button class="back-btn" id="btn-back-home-from-account">&larr;</button>
+          <div><div class="vc-date">Account</div></div>
+        </div>
+        <div class="spacer"></div>
+        <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
+          <p class="eyebrow-mini" style="color:var(--behind);">Danger zone</p>
+          <button class="btn btn-danger" id="btn-delete-account">Delete my account</button>
+          <p class="foot-note-small">This permanently deletes your Hair Passport and frees your code for someone else to use. It can't be undone.</p>
+        </div>
       </div>
 
     </main>
@@ -270,6 +286,15 @@ async function createClientRecord(code, name){
     }catch(e){ console.warn('create failed', e); }
   }
   return true;
+}
+
+async function deleteClientRow(code){
+  if (!dbAvailable || !code) return true;
+  try{
+    const { error } = await supabaseClient.from('clients').delete().eq('code', code);
+    if (error) throw error;
+    return true;
+  }catch(e){ console.warn('delete failed', e); return false; }
 }
 
 async function persistClient(){
@@ -487,6 +512,31 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
 document.getElementById('btn-switch-profile').addEventListener('click', ()=>{
   try{ localStorage.removeItem('passportClientCode'); }catch(e){}
   window.location.href = window.location.pathname;
+});
+
+document.getElementById('btn-open-account').addEventListener('click', ()=> showScreen('account'));
+document.getElementById('btn-back-home-from-account').addEventListener('click', ()=> showScreen('home'));
+
+let deleteAccountArmed = false;
+document.getElementById('btn-delete-account').addEventListener('click', async function(){
+  if (!deleteAccountArmed){
+    deleteAccountArmed = true;
+    this.textContent = 'Tap again to permanently delete';
+    setTimeout(()=>{ if (deleteAccountArmed){ deleteAccountArmed = false; this.textContent = 'Delete my account'; } }, 4000);
+    return;
+  }
+  deleteAccountArmed = false;
+  this.disabled = true;
+  await deleteClientRow(clientCode);
+  try{ localStorage.removeItem('passportClientCode'); }catch(e){}
+  client = null; clientCode = null;
+  this.disabled = false;
+  this.textContent = 'Delete my account';
+  document.getElementById('passport-shell').hidden = true;
+  document.getElementById('auth-name').value = '';
+  document.getElementById('auth-code').value = '';
+  showToast('Account deleted');
+  showAuthScreen(null);
 });
 
 async function boot(){
