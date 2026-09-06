@@ -68,6 +68,10 @@
   .spacer{ flex:1; }
   .btn-row{ display:flex; gap:8px; }
 
+  .mode-toggle{ display:flex; border:1px solid var(--line); border-radius:10px; padding:3px; gap:3px; background:var(--paper); }
+  .mode-btn{ flex:1; border:none; background:transparent; color:var(--muted); font-family:'Public Sans',sans-serif; font-size:12.5px; font-weight:700; padding:9px 6px; border-radius:7px; cursor:pointer; }
+  .mode-btn.active{ background:var(--surface); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+
   .auth-form{ display:flex; flex-direction:column; gap:14px; width:100%; max-width:320px; text-align:left; }
   .foot-note-small{ font-size:11.5px; color:var(--muted); line-height:1.5; max-width:340px; }
 
@@ -124,8 +128,12 @@
   <div id="auth-screen" class="center-screen" hidden>
     <div>
       <p class="eyebrow-mini">Hair Passport</p>
-      <h2 class="screen-title">Your hair, your history</h2>
-      <p class="screen-sub" style="margin-top:6px;">Enter your name and pick a personal code. Give that code to any barber or stylist and they can pull up your past visits &mdash; there's no password reset, so keep it somewhere you'll remember.</p>
+      <h2 class="screen-title" id="auth-heading">First time here</h2>
+      <p class="screen-sub" style="margin-top:6px;" id="auth-subhead">Pick a name and a personal code of your own. Give that code to any barber or stylist and they can pull up your visits &mdash; there's no password reset, so keep it somewhere you'll remember.</p>
+    </div>
+    <div class="mode-toggle" style="width:100%; max-width:320px;">
+      <button type="button" class="mode-btn active" id="btn-auth-mode-new">First time</button>
+      <button type="button" class="mode-btn" id="btn-auth-mode-returning">Returning</button>
     </div>
     <form class="auth-form" id="auth-form">
       <div class="field">
@@ -136,8 +144,9 @@
         <label>Personal code</label>
         <div class="input-row"><input id="auth-code" type="text" placeholder="e.g. jordan-2026" autocomplete="off" required></div>
       </div>
-      <button class="btn btn-primary" type="submit">Continue</button>
-      <p class="foot-note-small" id="auth-note">Using a code you've used before loads your history. A new code starts a fresh passport.</p>
+      <button class="btn btn-primary" type="submit" id="auth-submit-btn">Create my passport</button>
+      <p class="foot-note-small" id="auth-error" style="color:var(--behind); margin:0;">&nbsp;</p>
+      <p class="foot-note-small" id="auth-note">&nbsp;</p>
     </form>
   </div>
 
@@ -413,25 +422,62 @@ function enterApp(){
   showScreen('home');
 }
 
+function setAuthMode(mode){
+  const isNew = mode !== 'returning';
+  document.getElementById('btn-auth-mode-new').classList.toggle('active', isNew);
+  document.getElementById('btn-auth-mode-returning').classList.toggle('active', !isNew);
+  document.getElementById('auth-heading').textContent = isNew ? 'First time here' : 'Welcome back';
+  document.getElementById('auth-subhead').textContent = isNew
+    ? "Pick a name and a personal code of your own. Give that code to any barber or stylist and they can pull up your visits — there's no password reset, so keep it somewhere you'll remember."
+    : 'Enter your name and the personal code you set up before.';
+  document.getElementById('auth-submit-btn').textContent = isNew ? 'Create my passport' : 'Continue';
+  document.getElementById('auth-error').textContent = ' ';
+}
+
+document.getElementById('btn-auth-mode-new').addEventListener('click', ()=> setAuthMode('new'));
+document.getElementById('btn-auth-mode-returning').addEventListener('click', ()=> setAuthMode('returning'));
+
 function showAuthScreen(prefillCode){
   document.getElementById('loading-screen').hidden = true;
   document.getElementById('auth-screen').hidden = false;
+  setAuthMode(prefillCode ? 'returning' : 'new');
   if (!dbAvailable){
     document.getElementById('auth-note').textContent = "Live saving isn't connected right now — you can still try everything out, but it won't be kept.";
+  } else {
+    document.getElementById('auth-note').textContent = ' ';
   }
   if (prefillCode) document.getElementById('auth-code').value = prefillCode;
 }
 
 document.getElementById('auth-form').addEventListener('submit', async (e)=>{
   e.preventDefault();
+  const errorEl = document.getElementById('auth-error');
+  errorEl.textContent = ' ';
   const name = document.getElementById('auth-name').value.trim() || 'You';
   const code = sanitizeCode(document.getElementById('auth-code').value);
   if (!code) return;
-  let loaded = false;
-  if (dbAvailable){
-    loaded = await tryLoadClient(code);
-    if (!loaded) await createClientRecord(code, name);
+  const isReturning = document.getElementById('btn-auth-mode-returning').classList.contains('active');
+
+  if (!dbAvailable){
+    await createClientRecord(code, name);
+    try{ localStorage.setItem('passportClientCode', code); }catch(err){}
+    enterApp();
+    return;
+  }
+
+  if (isReturning){
+    const loaded = await tryLoadClient(code);
+    if (!loaded){
+      errorEl.textContent = 'We couldn’t find an account with that code. If you’re new, switch to "First time" above to create one.';
+      return;
+    }
   } else {
+    let existing = null;
+    try{ existing = await fetchClientRow(code); }catch(err){ console.warn('code check failed', err); }
+    if (existing){
+      errorEl.textContent = 'That code is already taken — please choose a different one.';
+      return;
+    }
     await createClientRecord(code, name);
   }
   try{ localStorage.setItem('passportClientCode', code); }catch(err){}
