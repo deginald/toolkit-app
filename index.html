@@ -714,7 +714,7 @@
    Never put the service_role key or database password here.
    ========================================================= */
 const SUPABASE_URL = "https://ruhvkfogfoabbvcvlbvp.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1aHZrZm9nZm9hYmJ2Y3ZsYnZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NTI2OTYsImV4cCI6MjEwNDIyODY5Nn0.1M3FX5EHzeDOa7Q2MqUjPczFWzueuec9oCmfLBQ6JZY";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.[REDACTED_KEY].1M3FX5EHzeDOa7Q2MqUjPczFWzueuec9oCmfLBQ6JZY";
 
 let supabaseClient = null;
 try{
@@ -1075,10 +1075,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     persistProfile({pace:P()});
   });
 
-  root.querySelector('#in-total').addEventListener('change', ()=> persistProfile({pace:P()}));
-  root.querySelector('#in-earned').addEventListener('change', ()=> persistProfile({pace:P()}));
-  root.querySelector('#in-asof').addEventListener('change', ()=> persistProfile({pace:P()}));
-
   window.initPaceTab = function(){
     root.querySelector('#in-total').value = P().total || '';
     root.querySelector('#in-earned').value = P().earned || '';
@@ -1094,9 +1090,13 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     P().earned = parseFloat(root.querySelector('#in-earned').value)||0;
     P().asOf = root.querySelector('#in-asof').value || todayIso();
   };
-  root.querySelector('#in-total').addEventListener('change', window._paceSyncBeforeSave);
-  root.querySelector('#in-earned').addEventListener('change', window._paceSyncBeforeSave);
-  root.querySelector('#in-asof').addEventListener('change', window._paceSyncBeforeSave);
+  function _syncAndPersistPace(){
+    window._paceSyncBeforeSave();
+    persistProfile({pace:P()});
+  }
+  root.querySelector('#in-total').addEventListener('change', _syncAndPersistPace);
+  root.querySelector('#in-earned').addEventListener('change', _syncAndPersistPace);
+  root.querySelector('#in-asof').addEventListener('change', _syncAndPersistPace);
 })();
 
 /* =========================================================
