@@ -3,30 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Toolkit</title>
+<title>All Hair Connect</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
 <style>
   :root{
-    --ink:#1E2530; --paper:#F1EEE6; --surface:#FFFFFF; --line:#DAD4C4; --muted:#8B8577;
-    --brass:#B9863C; --brass-tint:#F1E4CB;
-    --good:#3F7D58; --good-tint:#E1EDE4;
-    --behind:#B8433A; --behind-tint:#F7E4E1;
-    --shadow: 0 24px 48px -20px rgba(30,37,48,0.35);
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --ink:#ECE7DC; --paper:#14181F; --surface:#1D232C; --line:#333B47; --muted:#8D8B84;
-      --brass:#D3A25F; --brass-tint:#33291A;
-      --good:#69B889; --good-tint:#1B2C22;
-      --behind:#E08573; --behind-tint:#2E1E1C;
-      --shadow: 0 24px 48px -20px rgba(0,0,0,0.6);
-    }
-  }
-  :root[data-theme="dark"]{
-    --ink:#ECE7DC; --paper:#14181F; --surface:#1D232C; --line:#333B47; --muted:#8D8B84;
-    --brass:#D3A25F; --brass-tint:#33291A;
-    --good:#69B889; --good-tint:#1B2C22;
+    --bg:#0C0D10; --ink:#F5F0E6; --paper:#1A1E25; --surface:#20262F; --line:#343C48; --muted:#9C968C;
+    --brass:#D3A24F; --brass-tint:#3A2C16;
+    --good:#69B889; --good-tint:#16261B;
     --behind:#E08573; --behind-tint:#2E1E1C;
     --shadow: 0 24px 48px -20px rgba(0,0,0,0.6);
   }
@@ -35,14 +19,22 @@
   [hidden]{ display:none !important; }
   html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   html,body{ height:100%; }
-  body{ margin:0; background:var(--paper); color:var(--ink); font-family:'Public Sans', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:'Public Sans', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
 
   .eyebrow-mini{ font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin:0; }
   .screen-title{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.01em; margin:2px 0 0; }
   .screen-sub{ font-size:13.5px; color:var(--muted); line-height:1.5; margin:0; }
 
+  .brand-mark{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:54px; letter-spacing:-0.02em; line-height:1; margin:0;
+    background:linear-gradient(135deg, #EFD39B 0%, #D3A24F 45%, #9A7530 70%, #C9C9C9 100%);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; }
+  .brand-name{ font-size:14px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--ink); margin:8px 0 0; }
+  .brand-tagline{ font-size:10.5px; font-weight:600; letter-spacing:0.09em; text-transform:uppercase; color:var(--muted); margin:8px 0 0; line-height:1.7; }
+  .brand-footer{ font-size:10px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:var(--muted); text-align:center; line-height:1.7; margin:0; }
+  .oc-icon{ color:var(--brass); display:flex; align-items:center; justify-content:center; margin-bottom:2px; }
+
   /* ---- shell layout ---- */
-  #app-root{ max-width:460px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; background:var(--surface); box-shadow:0 0 0 1px var(--line); }
+  #app-root{ max-width:460px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; background:var(--bg); box-shadow:0 0 0 1px var(--line); }
   .center-screen{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; gap:14px; text-align:center; }
 
   .banner{ font-size:12.5px; padding:10px 16px; text-align:center; background:var(--brass-tint); color:var(--ink); border-bottom:1px solid var(--line); }
@@ -229,10 +221,10 @@
   .profile-card .pc-tag{ font-size:10.5px; color:var(--brass); font-weight:700; text-transform:uppercase; letter-spacing:0.06em; }
 
   .option-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .option-card{ border:1px solid var(--line); background:var(--paper); border-radius:12px; padding:14px 10px; text-align:center; cursor:pointer; display:flex; flex-direction:column; gap:3px; }
+  .option-card{ border:1px solid var(--line); background:var(--paper); border-radius:14px; padding:20px 12px; text-align:center; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:6px; }
   .option-card.selected{ border-color:var(--brass); background:var(--brass-tint); }
   .option-card .oc-label{ font-weight:700; font-size:14px; }
-  .option-card .oc-sub{ font-size:11px; color:var(--muted); }
+  .option-card .oc-sub{ font-size:11px; color:var(--muted); line-height:1.4; }
   .option-card.selected .oc-sub{ color:var(--brass); }
 
   .chip-grid{ display:flex; flex-wrap:wrap; gap:8px; }
@@ -314,21 +306,24 @@
   </div>
 
   <div id="role-screen" class="center-screen" hidden>
-    <div>
-      <p class="eyebrow-mini">Pace &middot; Coach &middot; Consult &middot; Ledger &middot; Hair Passport</p>
-      <h2 class="screen-title">Who's this for?</h2>
-      <p class="screen-sub" style="margin-top:6px;">Choose how you'll be using this.</p>
+    <div style="display:flex; flex-direction:column; align-items:center;">
+      <p class="brand-mark">AHC</p>
+      <p class="brand-name">All Hair Connect</p>
+      <p class="brand-tagline">Your Hair. Your History.<br>Your Connection.</p>
     </div>
-    <div class="option-grid" style="width:100%; max-width:320px;">
+    <div class="option-grid" style="width:100%; max-width:320px; margin-top:6px;">
       <div class="option-card" id="btn-role-client">
-        <span class="oc-label">Client</span>
-        <span class="oc-sub">Track your hair history</span>
+        <span class="oc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M3.5 20.5c0-4.7 3.8-8.5 8.5-8.5s8.5 3.8 8.5 8.5" fill="currentColor"/></svg></span>
+        <span class="oc-label">I'm a Client</span>
+        <span class="oc-sub">Manage your hair history and connect with professionals.</span>
       </div>
       <div class="option-card" id="btn-role-pro">
-        <span class="oc-label">Professional</span>
-        <span class="oc-sub">Barber, cosmetologist, or student</span>
+        <span class="oc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6.2" cy="6.2" r="2.4" stroke="currentColor" stroke-width="1.7"/><circle cx="6.2" cy="17.8" r="2.4" stroke="currentColor" stroke-width="1.7"/><path d="M8 7.6L20 18.5M8 16.4L20 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+        <span class="oc-label">I'm a Professional</span>
+        <span class="oc-sub">Barber, cosmetologist, or student.</span>
       </div>
     </div>
+    <p class="brand-footer" style="margin-top:10px;">A Stronger Hair Community<br>Together.</p>
   </div>
 
   <div id="auth-screen" class="center-screen" hidden>
