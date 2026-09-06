@@ -96,6 +96,12 @@
   .pv-photos{ display:flex; gap:6px; flex-wrap:wrap; }
   .pv-photo{ width:64px; height:64px; border-radius:9px; object-fit:cover; background:var(--line); flex-shrink:0; display:block; }
   .pv-notes{ font-size:12.5px; color:var(--ink); line-height:1.45; white-space:pre-wrap; }
+  .pv-photo{ cursor:pointer; }
+
+  .lightbox-overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:500; display:flex; align-items:center; justify-content:center; padding:56px 20px 20px; }
+  .lightbox-img{ max-width:100%; max-height:100%; border-radius:10px; object-fit:contain; }
+  .lightbox-close{ position:fixed; top:14px; right:14px; width:44px; height:44px; border-radius:50%; border:none; background:rgba(255,255,255,0.15); color:#fff; font-size:26px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .lightbox-close:hover{ background:rgba(255,255,255,0.25); }
 
   .btn{ border:none; border-radius:11px; padding:13px 18px; font-family:'Public Sans',sans-serif; font-weight:700; font-size:14px; cursor:pointer; text-align:center; }
   .btn-primary{ background:var(--brass); color:#241A0C; flex:1; }
@@ -201,6 +207,10 @@
   .checkpoint-box{ display:flex; flex-direction:column; align-items:center; gap:10px; padding:22px 16px; border:1px dashed var(--brass); border-radius:14px; background:var(--brass-tint); text-align:center; }
   .checkpoint-box.done{ border-style:solid; border-color:var(--good); background:var(--good-tint); }
   .checkpoint-icon{ font-size:26px; }
+  .checkpoint-photo-grid{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; width:100%; }
+  .checkpoint-photo-wrap{ position:relative; width:72px; height:72px; flex-shrink:0; }
+  .checkpoint-photo{ width:100%; height:100%; border-radius:9px; object-fit:cover; display:block; cursor:pointer; background:var(--line); }
+  .checkpoint-photo-remove{ position:absolute; top:-7px; right:-7px; width:24px; height:24px; border-radius:50%; border:none; background:var(--ink); color:var(--surface); font-size:15px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(0,0,0,0.3); }
 
   .complete-wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; padding:18px 8px; }
   .complete-check{ width:52px; height:52px; border-radius:50%; background:var(--good-tint); color:var(--good); display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto; }
@@ -763,6 +773,11 @@
   </div>
 
   <div id="toast" class="toast">Saved</div>
+
+  <div id="photo-lightbox" class="lightbox-overlay" hidden>
+    <button class="lightbox-close" id="btn-lightbox-close" type="button" aria-label="Close">&times;</button>
+    <img class="lightbox-img" id="lightbox-img" src="" alt="">
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -1261,6 +1276,11 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
   const cstate = { category:'cuts', technique:null, stepIndex:0, checklistChecked:{}, timerState:{}, checkpointCaptured:false, checkpointPhotos:[], elapsed:0, elapsedTimerId:null, savedVisitId:null };
   let attachedClient = null; // { code, name, visits }
+  let checkpointPhotoUrls = [];
+  function revokeCheckpointPhotoUrls(){
+    checkpointPhotoUrls.forEach(u=>{ try{ URL.revokeObjectURL(u); }catch(e){} });
+    checkpointPhotoUrls = [];
+  }
 
   function fmtTime(totalSeconds){ const m = Math.floor(totalSeconds/60); const s = totalSeconds % 60; return `${m}:${s.toString().padStart(2,'0')}`; }
   function meta(tech){ const timedCount = tech.steps.filter(s=>s.kind==='timer').length; return `${tech.steps.length} steps${timedCount ? ' · ' + timedCount + ' timed' : ''}`; }
@@ -1280,6 +1300,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   function showScreen(name){ root.querySelectorAll('[data-screen]').forEach(el=> el.classList.toggle('show', el.dataset.screen===name)); }
 
   function startTechnique(tech){
+    revokeCheckpointPhotoUrls();
     cstate.technique = tech; cstate.stepIndex = 0; cstate.checklistChecked = {}; cstate.timerState = {}; cstate.checkpointCaptured = false; cstate.checkpointPhotos = []; cstate.elapsed = 0; cstate.savedVisitId = null;
     if (cstate.elapsedTimerId) clearInterval(cstate.elapsedTimerId);
     cstate.elapsedTimerId = setInterval(()=>{ cstate.elapsed++; root.querySelector('#walk-elapsed').textContent = fmtTime(cstate.elapsed); }, 1000);
@@ -1337,10 +1358,18 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (step.kind === 'final'){
       if (attachedClient){
         const photoCount = cstate.checkpointPhotos.length;
+        revokeCheckpointPhotoUrls();
+        checkpointPhotoUrls = cstate.checkpointPhotos.map(f => URL.createObjectURL(f));
+        const gridHtml = photoCount ? '<div class="checkpoint-photo-grid">' + checkpointPhotoUrls.map((url,idx)=>`
+          <div class="checkpoint-photo-wrap">
+            <img class="checkpoint-photo" data-idx="${idx}" src="${url}" alt="Captured photo ${idx+1}">
+            <button type="button" class="checkpoint-photo-remove" data-remove-idx="${idx}" aria-label="Remove this photo">&times;</button>
+          </div>`).join('') + '</div>' : '';
         html += `<div class="checkpoint-box ${photoCount?'done':''}" id="checkpoint-box">
           <div class="checkpoint-icon">${photoCount ? '&#10003;' : '&#128247;'}</div>
           <p class="screen-sub" style="margin:0;">${photoCount ? photoCount + ' photo' + (photoCount===1?'':'s') + ' added' : 'Add a few photos of the finished result'}</p>
-          <p class="screen-sub" style="margin:0; font-size:11px;">Front, back, and sides work best &mdash; 3 or more gives the fullest picture.</p>
+          <p class="screen-sub" style="margin:0; font-size:11px;">Front, back, and sides work best &mdash; 3 or more gives the fullest picture. Tap a photo to view it larger, or the &times; to remove and retake it.</p>
+          ${gridHtml}
           <input type="file" accept="image/*" capture="environment" multiple id="checkpoint-file-input" style="display:none;">
           <button class="btn btn-primary" id="btn-capture" type="button" style="flex:none; padding:10px 16px;">${photoCount ? 'Add more photos' : 'Add photos'}</button>
         </div>`;
@@ -1378,6 +1407,16 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
           const newFiles = Array.from(e.target.files || []);
           cstate.checkpointPhotos = cstate.checkpointPhotos.concat(newFiles);
           renderStep();
+        });
+        holder.querySelectorAll('.checkpoint-photo-remove').forEach(btn=>{
+          btn.addEventListener('click', ()=>{
+            const idx = parseInt(btn.dataset.removeIdx, 10);
+            cstate.checkpointPhotos.splice(idx, 1);
+            renderStep();
+          });
+        });
+        holder.querySelectorAll('.checkpoint-photo').forEach(img=>{
+          img.addEventListener('click', ()=> openLightbox(img.src, img.alt));
         });
       } else if (!cstate.checkpointCaptured){
         holder.querySelector('#btn-capture').addEventListener('click', ()=>{ cstate.checkpointCaptured = true; renderStep(); });
@@ -1543,7 +1582,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const dateLabel = v.date ? new Date(v.date+'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : 'Undated visit';
       const photos = Array.isArray(v.photos) ? v.photos : [];
       const photosHtml = photos.length
-        ? '<div class="pv-photos">' + photos.map(p=>`<a href="${p.url}" target="_blank" rel="noopener"><img class="pv-photo" src="${p.url}" alt="Photo from ${dateLabel} visit"></a>`).join('') + '</div>'
+        ? '<div class="pv-photos">' + photos.map(p=>`<img class="pv-photo" src="${p.url}" alt="Photo from ${dateLabel} visit">`).join('') + '</div>'
         : '';
       const notesHtml = v.notes
         ? `<div class="pv-notes">${v.notes}</div>`
@@ -1561,6 +1600,29 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       `;
     }).join('');
   }
+
+  function openLightbox(url, alt){
+    const overlay = document.getElementById('photo-lightbox');
+    const img = document.getElementById('lightbox-img');
+    img.src = url;
+    img.alt = alt || '';
+    overlay.hidden = false;
+  }
+  function closeLightbox(){
+    document.getElementById('photo-lightbox').hidden = true;
+    document.getElementById('lightbox-img').src = '';
+  }
+  root.querySelector('#prev-visits-list').addEventListener('click', (e)=>{
+    const img = e.target.closest('.pv-photo');
+    if (img) openLightbox(img.src, img.alt);
+  });
+  document.getElementById('btn-lightbox-close').addEventListener('click', closeLightbox);
+  document.getElementById('photo-lightbox').addEventListener('click', (e)=>{
+    if (e.target.id === 'photo-lightbox') closeLightbox();
+  });
+  document.addEventListener('keydown', (e)=>{
+    if (e.key === 'Escape') closeLightbox();
+  });
 
   function renderClientAttach(){
     const searchEl = root.querySelector('#client-attach-search');
