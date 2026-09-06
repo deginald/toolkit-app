@@ -306,7 +306,7 @@
       </div>
       <div class="option-card" id="btn-role-pro">
         <span class="oc-label">Professional</span>
-        <span class="oc-sub">Barber or student</span>
+        <span class="oc-sub">Barber, cosmetologist, or student</span>
       </div>
     </div>
   </div>
@@ -314,15 +314,19 @@
   <div id="auth-screen" class="center-screen" hidden>
     <div>
       <p class="eyebrow-mini">Pace &middot; Coach &middot; Consult &middot; Ledger</p>
-      <h2 class="screen-title">One shared record</h2>
-      <p class="screen-sub" style="margin-top:6px;">Enter your name and pick a personal code. The code is what gets you back into your data next time &mdash; there's no password reset, so keep it somewhere you'll remember.</p>
+      <h2 class="screen-title" id="auth-heading">First time signing up</h2>
+      <p class="screen-sub" style="margin-top:6px;" id="auth-subhead">Enter your name, your license number if you're licensed, and pick a personal code. There's no password reset, so keep the code somewhere you'll remember.</p>
+    </div>
+    <div class="mode-toggle" style="width:100%; max-width:320px;">
+      <button type="button" class="mode-btn active" id="btn-auth-mode-new">First time</button>
+      <button type="button" class="mode-btn" id="btn-auth-mode-returning">Returning</button>
     </div>
     <form class="auth-form" id="auth-form">
       <div class="field">
         <label>Your name</label>
         <div class="input-row"><input id="auth-name" type="text" placeholder="e.g. Jordan Smith" autocomplete="name" required></div>
       </div>
-      <div class="field">
+      <div class="field" id="auth-license-field">
         <label>License number <span style="text-transform:none; font-weight:600;">(if licensed)</span></label>
         <div class="input-row"><input id="auth-license" type="text" placeholder="e.g. BB-123456" autocomplete="off"></div>
       </div>
@@ -330,7 +334,7 @@
         <label>Personal code</label>
         <div class="input-row"><input id="auth-code" type="text" placeholder="e.g. jordan-fall26" autocomplete="off" required></div>
       </div>
-      <button class="btn btn-primary" type="submit">Continue</button>
+      <button class="btn btn-primary" type="submit" id="auth-submit-btn">Create my profile</button>
       <p class="foot-note-small" id="auth-note">Using a code you've used before loads that record. A new code starts a fresh one.</p>
     </form>
   </div>
@@ -1999,10 +2003,26 @@ function showRoleScreen(){
   document.getElementById('role-screen').hidden = false;
 }
 
+function setAuthMode(mode){
+  const isNew = mode !== 'returning';
+  document.getElementById('btn-auth-mode-new').classList.toggle('active', isNew);
+  document.getElementById('btn-auth-mode-returning').classList.toggle('active', !isNew);
+  document.getElementById('auth-license-field').style.display = isNew ? '' : 'none';
+  document.getElementById('auth-heading').textContent = isNew ? 'First time signing up' : 'Welcome back';
+  document.getElementById('auth-subhead').textContent = isNew
+    ? "Enter your name, your license number if you're licensed, and pick a personal code. There's no password reset, so keep the code somewhere you'll remember."
+    : "Enter your name and the personal code you set up before.";
+  document.getElementById('auth-submit-btn').textContent = isNew ? 'Create my profile' : 'Continue';
+}
+
+document.getElementById('btn-auth-mode-new').addEventListener('click', ()=> setAuthMode('new'));
+document.getElementById('btn-auth-mode-returning').addEventListener('click', ()=> setAuthMode('returning'));
+
 function showAuthScreen(prefillCode){
   document.getElementById('loading-screen').hidden = true;
   document.getElementById('role-screen').hidden = true;
   document.getElementById('auth-screen').hidden = false;
+  setAuthMode(prefillCode ? 'returning' : 'new');
   if (!dbAvailable){
     document.getElementById('auth-note').textContent = "Live saving isn't connected right now — you can still try everything out, but it won't be kept.";
   }

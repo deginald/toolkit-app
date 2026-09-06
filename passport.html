@@ -124,7 +124,7 @@
     <div>
       <p class="eyebrow-mini">Hair Passport</p>
       <h2 class="screen-title">Your hair, your history</h2>
-      <p class="screen-sub" style="margin-top:6px;">Enter your name and pick a personal code. Give that code to any barber and they can pull up your past visits &mdash; there's no password reset, so keep it somewhere you'll remember.</p>
+      <p class="screen-sub" style="margin-top:6px;">Enter your name and pick a personal code. Give that code to any barber or stylist and they can pull up your past visits &mdash; there's no password reset, so keep it somewhere you'll remember.</p>
     </div>
     <form class="auth-form" id="auth-form">
       <div class="field">
@@ -157,7 +157,7 @@
           <span class="cc-label">Your code</span>
           <div id="qr-holder"></div>
           <span class="cc-code" id="home-code">&nbsp;</span>
-          <span class="cc-hint">Show this to your barber at your next visit</span>
+          <span class="cc-hint">Show this to your barber or stylist at your next visit</span>
         </div>
 
         <div class="section-head">
@@ -173,7 +173,7 @@
         </div>
         <div class="detail-photos" id="detail-photos"></div>
         <div class="detail-card">
-          <div class="detail-row"><span>Barber</span><span id="detail-barber">&mdash;</span></div>
+          <div class="detail-row"><span>Provider</span><span id="detail-barber">&mdash;</span></div>
           <div class="detail-row"><span>Service</span><span id="detail-service">&mdash;</span></div>
         </div>
         <div>
@@ -304,7 +304,7 @@ function renderHome(){
   const holder = document.getElementById('visit-list-holder');
   const visits = sortedVisits();
   if (visits.length === 0){
-    holder.innerHTML = '<div class="empty-note">No visits yet. Share your code with your barber and it\'ll show up here after your next appointment.</div>';
+    holder.innerHTML = '<div class="empty-note">No visits yet. Share your code with your barber or stylist and it\'ll show up here after your next appointment.</div>';
     return;
   }
   holder.innerHTML = '';
@@ -325,7 +325,7 @@ function renderHome(){
       <div class="vc-top">
         <div>
           <div class="vc-date">${dateLabel}</div>
-          <div class="vc-meta">${v.barberName ? v.barberName : 'Barber not noted'}</div>
+          <div class="vc-meta">${v.barberName ? v.barberName : 'Provider not noted'}</div>
         </div>
         <button type="button" class="vc-star ${v.favorite?'on':''}" data-star="${v.id}">&#9733;</button>
       </div>
