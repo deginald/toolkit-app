@@ -985,7 +985,7 @@ async function fetchProfileRow(code){
 
 async function persistProfile(fields){
   profile.updatedAt = new Date().toISOString();
-  if (!dbAvailable || !profileCode) return;
+  if (!dbAvailable || !profileCode) return { ok:false, message: "Not connected right now — this change wasn't saved." };
   const row = { updated_at: profile.updatedAt };
   if (fields.pace) row.pace = fields.pace;
   if (fields.techniques) row.techniques = fields.techniques;
@@ -1000,11 +1000,17 @@ async function persistProfile(fields){
   if (fields.shopAddress !== undefined) row.shop_address = fields.shopAddress;
   if (fields.social !== undefined) row.social = fields.social;
   try{
-    const { error } = await supabaseClient.from('profiles').update(row).eq('code', profileCode);
+    const { data, error } = await supabaseClient.from('profiles').update(row).eq('code', profileCode).select();
     if (error) throw error;
+    if (!data || !data.length){
+      console.warn('save affected 0 rows for code', profileCode);
+      return { ok:false, message: "no matching account found on the server." };
+    }
+    return { ok:true };
   }catch(e){
-    // best-effort; keep working locally even if a save fails
+    // keep working locally even if a save fails, but let the caller know it didn't really save
     console.warn('save failed', e);
+    return { ok:false, message: (e && e.message) ? e.message : "Something went wrong saving — try again." };
   }
 }
 
@@ -2412,9 +2418,9 @@ document.getElementById('btn-save-license').addEventListener('click', async ()=>
   profile.license = val;
   const note = document.getElementById('license-save-note');
   note.textContent = 'Saving…';
-  await persistProfile({ license: profile.license });
+  const result = await persistProfile({ license: profile.license });
   document.getElementById('tb-title').textContent = tbTitleText();
-  note.textContent = 'Saved.';
+  note.textContent = (result && result.ok) ? 'Saved.' : ("Couldn't save — " + ((result && result.message) || 'try again.'));
   populateAccountListing();
 });
 
@@ -2467,11 +2473,16 @@ document.getElementById('btn-save-listing').addEventListener('click', async ()=>
   };
   const note = document.getElementById('listing-save-note');
   note.textContent = 'Saving…';
-  await persistProfile({
+  const result = await persistProfile({
     publicListing: profile.publicListing, shopName: profile.shopName, shopCity: profile.shopCity,
     shopState: profile.shopState, shopPhone: profile.shopPhone, shopAddress: profile.shopAddress, social: profile.social
   });
-  note.textContent = isPublic ? 'Saved — you’re live on Find a Pro.' : 'Saved.';
+  if (result && result.ok){
+    note.textContent = isPublic ? 'Saved — you’re live on Find a Pro.' : 'Saved.';
+  } else {
+    // Revert the toggle/UI to what's actually on the server rather than showing a false "Saved."
+    note.textContent = "Couldn't save — " + ((result && result.message) || 'try again.');
+  }
   updateListingViewLink();
 });
 
