@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect — Hair Passport</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
@@ -115,6 +115,25 @@
   .toast{ position:fixed; left:50%; transform:translateX(-50%) translateY(6px); bottom:24px; max-width:400px; width:calc(100% - 48px); background:var(--good); color:#fff; text-align:center; padding:10px; border-radius:10px; font-size:12.5px; font-weight:700; opacity:0; transition:opacity .2s ease, transform .2s ease; pointer-events:none; z-index:20; }
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
   .toast.danger{ background:var(--behind); }
+</style>
+
+<meta name="theme-color" content="#0C0D10">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AHC">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<style id="ahc-pwa-safe-area">
+@media (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+  }
+}
 </style>
 </head>
 <body>
@@ -790,5 +809,7 @@ async function continueBoot(){
 
 boot();
 </script>
+
+<script src="/pwa-register.js"></script>
 </body>
 </html>
