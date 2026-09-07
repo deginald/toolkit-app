@@ -98,7 +98,7 @@
     <main class="content">
       <div class="field">
         <label>Search by city or state</label>
-        <div class="input-row"><input id="search-input" type="text" placeholder="e.g. Fayetteville or NC"></div>
+        <div class="input-row"><input id="search-input" type="text" placeholder="e.g. city or state"></div>
       </div>
       <div id="pro-list" style="display:flex; flex-direction:column; gap:12px;"></div>
     </main>
@@ -153,16 +153,25 @@ function starsFor(n){
   return '★★★★★☆☆☆☆☆'.slice(5 - rounded, 10 - rounded);
 }
 
+function toTitleCase(str){
+  if (!str) return str;
+  return str.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
+}
+
 async function fetchPublicPros(){
   const { data, error } = await supabaseClient.from('profiles').select('*').eq('public_listing', true);
   if (error) throw error;
-  return Array.isArray(data) ? data : [];
+  const rows = Array.isArray(data) ? data : [];
+  rows.forEach(p=>{ if (p.name) p.name = toTitleCase(p.name); });
+  return rows;
 }
 
 async function fetchReviewsFor(code){
   const { data, error } = await supabaseClient.from('reviews').select('*').eq('barber_code', code);
   if (error) throw error;
-  return Array.isArray(data) ? data : [];
+  const rows = Array.isArray(data) ? data : [];
+  rows.forEach(r=>{ if (r.display_name) r.display_name = toTitleCase(r.display_name); });
+  return rows;
 }
 
 function aggregateReviews(reviews){

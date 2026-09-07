@@ -880,7 +880,7 @@
           </div>
           <div class="field">
             <label>City</label>
-            <div class="input-row"><input id="listing-city" type="text" placeholder="e.g. Fayetteville"></div>
+            <div class="input-row"><input id="listing-city" type="text" placeholder="e.g. your city"></div>
           </div>
           <div class="field">
             <label>State</label>
@@ -892,7 +892,7 @@
           </div>
           <div class="field">
             <label>Shop address <span style="text-transform:none; font-weight:600;">(optional)</span></label>
-            <div class="input-row"><input id="listing-address" type="text" placeholder="e.g. 123 Main St, Fayetteville, NC"></div>
+            <div class="input-row"><input id="listing-address" type="text" placeholder="e.g. 123 Main St, Your City, ST"></div>
           </div>
           <div class="field">
             <label>Instagram <span style="text-transform:none; font-weight:600;">(optional)</span></label>
@@ -1094,6 +1094,11 @@ function sanitizeCode(raw){
   let c = (raw||'').trim().toLowerCase().replace(/[^a-z0-9_.~:@+-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
   if (c.length > 60) c = c.slice(0,60);
   return c;
+}
+
+function toTitleCase(str){
+  if (!str) return str;
+  return str.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
 }
 
 /* =========================================================
@@ -2301,7 +2306,8 @@ async function tryLoadProfile(code){
     const data = await fetchProfileRow(code);
     if (data){
       profile = defaultProfile(data.name);
-      profile.name = data.name || profile.name;
+      profile.name = toTitleCase(data.name) || profile.name;
+      profile._nameNeedsSync = !!(data.name && data.name !== profile.name);
       profile.title = data.title || profile.title;
       profile.license = data.license || '';
       profile.createdAt = data.created_at || profile.createdAt;
@@ -2363,8 +2369,17 @@ function syncNdaToServer(){
   }
 }
 
+function syncNameToServer(){
+  if (!profile) return;
+  if (profile._nameNeedsSync){
+    profile._nameNeedsSync = false;
+    persistProfile({ name: profile.name });
+  }
+}
+
 function enterApp(){
   syncNdaToServer();
+  syncNameToServer();
   document.getElementById('loading-screen').hidden = true;
   document.getElementById('role-screen').hidden = true;
   document.getElementById('auth-screen').hidden = true;
@@ -2440,7 +2455,7 @@ document.getElementById('btn-auth-back').addEventListener('click', ()=>{
 
 document.getElementById('auth-form').addEventListener('submit', async (e)=>{
   e.preventDefault();
-  const name = document.getElementById('auth-name').value.trim() || 'You';
+  const name = toTitleCase(document.getElementById('auth-name').value.trim()) || 'You';
   const title = document.getElementById('auth-title').value;
   const license = document.getElementById('auth-license').value.trim();
   const code = sanitizeCode(document.getElementById('auth-code').value);
@@ -2682,7 +2697,7 @@ async function initSharedView(code){
       return;
     }
     const techniques = Array.isArray(data.techniques) && data.techniques.length ? data.techniques : defaultTechniques();
-    view.querySelector('#shared-name').textContent = data.name || 'Unnamed';
+    view.querySelector('#shared-name').textContent = toTitleCase(data.name) || 'Unnamed';
     view.querySelector('#shared-title-line').textContent = (data.title || 'Student') + ' · Self-rated Skill Graph';
 
     const rated = techniques.filter(t=>t.rated);

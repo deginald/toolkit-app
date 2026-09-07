@@ -358,6 +358,10 @@ function sanitizeCode(raw){
   if (c.length > 60) c = c.slice(0,60);
   return c;
 }
+function toTitleCase(str){
+  if (!str) return str;
+  return str.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
+}
 function defaultClient(name){
   return { code:null, name: name || 'You', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'' };
 }
@@ -381,7 +385,8 @@ async function tryLoadClient(code){
     const data = await fetchClientRow(code);
     if (data){
       client = defaultClient(data.name);
-      client.name = data.name || client.name;
+      client.name = toTitleCase(data.name) || client.name;
+      client._nameNeedsSync = !!(data.name && data.name !== client.name);
       client.visits = Array.isArray(data.visits) ? data.visits : [];
       client.created_at = data.created_at || client.created_at;
       client.ndaVersion = data.nda_version || '';
@@ -429,6 +434,14 @@ function syncNdaToServer(){
   if (client && client.ndaVersion !== NDA_VERSION){
     client.ndaVersion = NDA_VERSION;
     client.ndaAcceptedAt = new Date().toISOString();
+    persistClient();
+  }
+}
+
+function syncNameToServer(){
+  if (!client) return;
+  if (client._nameNeedsSync){
+    client._nameNeedsSync = false;
     persistClient();
   }
 }
@@ -648,6 +661,7 @@ document.getElementById('btn-delete-visit').addEventListener('click', async func
    ========================================================= */
 function enterApp(){
   syncNdaToServer();
+  syncNameToServer();
   document.getElementById('loading-screen').hidden = true;
   document.getElementById('auth-screen').hidden = true;
   document.getElementById('passport-shell').hidden = false;
@@ -691,7 +705,7 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const errorEl = document.getElementById('auth-error');
   errorEl.textContent = ' ';
-  const name = document.getElementById('auth-name').value.trim() || 'You';
+  const name = toTitleCase(document.getElementById('auth-name').value.trim()) || 'You';
   const code = sanitizeCode(document.getElementById('auth-code').value);
   if (!code) return;
   const isReturning = document.getElementById('btn-auth-mode-returning').classList.contains('active');
