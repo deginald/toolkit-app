@@ -114,6 +114,7 @@
         <h2 class="screen-title" id="detail-name">&nbsp;</h2>
         <p class="pro-title" id="detail-title">&nbsp;</p>
         <p class="screen-sub" id="detail-shop-line" style="margin-top:6px;">&nbsp;</p>
+        <p class="screen-sub" id="detail-contact-line" style="margin-top:2px; display:none;">&nbsp;</p>
       </div>
       <div class="social-row" id="detail-social"></div>
       <div class="detail-card" id="detail-scores"></div>
@@ -227,6 +228,17 @@ async function showDetail(code){
   document.getElementById('detail-name').textContent = p.name || 'Unnamed';
   document.getElementById('detail-title').textContent = p.title || '';
   document.getElementById('detail-shop-line').textContent = [p.shop_name, locationLine(p)].filter(Boolean).join(' · ');
+
+  const contactBits = [];
+  if (p.shop_address) contactBits.push(p.shop_address);
+  if (p.shop_phone) contactBits.push(p.shop_phone);
+  const contactLine = document.getElementById('detail-contact-line');
+  if (contactBits.length){
+    contactLine.textContent = contactBits.join(' · ');
+    contactLine.style.display = 'block';
+  } else {
+    contactLine.style.display = 'none';
+  }
 
   const social = p.social || {};
   const socialHolder = document.getElementById('detail-social');

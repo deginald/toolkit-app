@@ -818,7 +818,7 @@
         <div>
           <p class="eyebrow-mini">Public directory</p>
           <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Your public listing</h2>
-          <p class="screen-sub">Let clients find you and rate real visits on the Find a Pro directory.</p>
+          <p class="screen-sub">Let clients find you and rate real visits on the Find a Pro directory. Any phone number or address you add here should be your shop's, not your personal contact info.</p>
         </div>
         <label class="check-row">
           <input type="checkbox" id="listing-public-toggle">
@@ -836,6 +836,14 @@
           <div class="field">
             <label>State</label>
             <div class="input-row"><input id="listing-state" type="text" placeholder="e.g. NC" maxlength="2" style="text-transform:uppercase;"></div>
+          </div>
+          <div class="field">
+            <label>Shop phone number <span style="text-transform:none; font-weight:600;">(optional, business only)</span></label>
+            <div class="input-row"><input id="listing-phone" type="tel" placeholder="e.g. (910) 555-0123"></div>
+          </div>
+          <div class="field">
+            <label>Shop address <span style="text-transform:none; font-weight:600;">(optional, business only)</span></label>
+            <div class="input-row"><input id="listing-address" type="text" placeholder="e.g. 123 Main St, Fayetteville, NC"></div>
           </div>
           <div class="field">
             <label>Instagram <span style="text-transform:none; font-weight:600;">(optional)</span></label>
@@ -950,6 +958,8 @@ function defaultProfile(name){
     shopName: '',
     shopCity: '',
     shopState: '',
+    shopPhone: '',
+    shopAddress: '',
     social: { instagram: '', facebook: '', website: '' }
   };
 }
@@ -986,6 +996,8 @@ async function persistProfile(fields){
   if (fields.shopName !== undefined) row.shop_name = fields.shopName;
   if (fields.shopCity !== undefined) row.shop_city = fields.shopCity;
   if (fields.shopState !== undefined) row.shop_state = fields.shopState;
+  if (fields.shopPhone !== undefined) row.shop_phone = fields.shopPhone;
+  if (fields.shopAddress !== undefined) row.shop_address = fields.shopAddress;
   if (fields.social !== undefined) row.social = fields.social;
   try{
     const { error } = await supabaseClient.from('profiles').update(row).eq('code', profileCode);
@@ -2218,6 +2230,8 @@ async function tryLoadProfile(code){
       profile.shopName = data.shop_name || '';
       profile.shopCity = data.shop_city || '';
       profile.shopState = data.shop_state || '';
+      profile.shopPhone = data.shop_phone || '';
+      profile.shopAddress = data.shop_address || '';
       profile.social = Object.assign({ instagram:'', facebook:'', website:'' }, data.social || {});
       profileCode = code;
       return true;
@@ -2423,6 +2437,8 @@ function populateAccountListing(){
   document.getElementById('listing-shop-name').value = profile.shopName || '';
   document.getElementById('listing-city').value = profile.shopCity || '';
   document.getElementById('listing-state').value = profile.shopState || '';
+  document.getElementById('listing-phone').value = profile.shopPhone || '';
+  document.getElementById('listing-address').value = profile.shopAddress || '';
   const social = profile.social || {};
   document.getElementById('listing-instagram').value = social.instagram || '';
   document.getElementById('listing-facebook').value = social.facebook || '';
@@ -2442,6 +2458,8 @@ document.getElementById('btn-save-listing').addEventListener('click', async ()=>
   profile.shopName = document.getElementById('listing-shop-name').value.trim();
   profile.shopCity = document.getElementById('listing-city').value.trim();
   profile.shopState = document.getElementById('listing-state').value.trim().toUpperCase();
+  profile.shopPhone = document.getElementById('listing-phone').value.trim();
+  profile.shopAddress = document.getElementById('listing-address').value.trim();
   profile.social = {
     instagram: document.getElementById('listing-instagram').value.trim(),
     facebook: document.getElementById('listing-facebook').value.trim(),
@@ -2451,7 +2469,7 @@ document.getElementById('btn-save-listing').addEventListener('click', async ()=>
   note.textContent = 'Saving…';
   await persistProfile({
     publicListing: profile.publicListing, shopName: profile.shopName, shopCity: profile.shopCity,
-    shopState: profile.shopState, social: profile.social
+    shopState: profile.shopState, shopPhone: profile.shopPhone, shopAddress: profile.shopAddress, social: profile.social
   });
   note.textContent = isPublic ? 'Saved — you’re live on Find a Pro.' : 'Saved.';
   updateListingViewLink();
