@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>All Hair Connect — Hair Passport</title>
+<title>All Hair Connect: Hair Passport</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
 <style>
@@ -316,7 +316,7 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
 /* =========================================================
-   SUPABASE SETUP — same project as the barber-side Toolkit app
+   SUPABASE SETUP: same project as the barber-side Toolkit app
    ========================================================= */
 const SUPABASE_URL = "https://ruhvkfogfoabbvcvlbvp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1aHZrZm9nZm9hYmJ2Y3ZsYnZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2NTI2OTYsImV4cCI6MjEwNDIyODY5Nn0.1M3FX5EHzeDOa7Q2MqUjPczFWzueuec9oCmfLBQ6JZY";
@@ -432,7 +432,7 @@ async function persistClient(){
     if (client.ndaAcceptedAt !== undefined) row.nda_accepted_at = client.ndaAcceptedAt;
     const { error } = await supabaseClient.from('clients').update(row).eq('code', clientCode);
     if (error) throw error;
-  }catch(e){ console.warn('save failed', e); showToast("Couldn't save — try again", true); }
+  }catch(e){ console.warn('save failed', e); showToast("Couldn't save: try again", true); }
 }
 
 function syncNdaToServer(){
@@ -612,7 +612,7 @@ document.getElementById('btn-submit-rating').addEventListener('click', async ()=
   if (!v || !v.barberCode) return;
   const note = document.getElementById('rate-status-note');
   if (!dbAvailable){
-    note.textContent = "Live saving isn't connected right now — this rating wasn't saved.";
+    note.textContent = "Live saving isn't connected right now. This rating wasn't saved.";
     return;
   }
   const showName = document.getElementById('rate-show-name').checked;
@@ -637,11 +637,11 @@ document.getElementById('btn-submit-rating').addEventListener('click', async ()=
       if (error) throw error;
       dstate.existingReviewId = (data && data[0] && data[0].id) || null;
     }
-    note.textContent = 'Thanks — your rating was saved.';
+    note.textContent = 'Thanks! Your rating was saved.';
     document.getElementById('btn-submit-rating').textContent = 'Update rating';
   }catch(e){
     console.warn('rating save failed', e);
-    note.textContent = "Couldn't save your rating — try again.";
+    note.textContent = "Couldn't save your rating: try again.";
   }
 });
 
@@ -689,7 +689,7 @@ function setAuthMode(mode){
   document.getElementById('btn-auth-mode-returning').classList.toggle('active', !isNew);
   document.getElementById('auth-heading').textContent = isNew ? 'First time here' : 'Welcome back';
   document.getElementById('auth-subhead').textContent = isNew
-    ? "Pick a name and a personal code of your own. Give that code to any barber or stylist and they can pull up your visits — there's no password reset, so keep it somewhere you'll remember."
+    ? "Pick a name and a personal code of your own. Give that code to any barber or stylist and they can pull up your visits. There's no password reset, so keep it somewhere you'll remember."
     : 'Enter your name and the personal code you set up before.';
   document.getElementById('auth-submit-btn').textContent = isNew ? 'Create my passport' : 'Continue';
   document.getElementById('auth-error').textContent = ' ';
@@ -707,7 +707,7 @@ function showAuthScreen(prefillCode){
   document.getElementById('auth-screen').hidden = false;
   setAuthMode(prefillCode ? 'returning' : 'new');
   if (!dbAvailable){
-    document.getElementById('auth-note').textContent = "Live saving isn't connected right now — you can still try everything out, but it won't be kept.";
+    document.getElementById('auth-note').textContent = "Live saving isn't connected right now. You can still try everything out, but it won't be kept.";
   } else {
     document.getElementById('auth-note').textContent = ' ';
   }
@@ -740,7 +740,7 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
     let existing = null;
     try{ existing = await fetchClientRow(code); }catch(err){ console.warn('code check failed', err); }
     if (existing){
-      errorEl.textContent = 'That code is already taken — please choose a different one.';
+      errorEl.textContent = 'That code is already taken. Please choose a different one.';
       return;
     }
     await createClientRecord(code, name);

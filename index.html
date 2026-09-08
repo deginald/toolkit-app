@@ -995,7 +995,7 @@
 <script>
 /* =========================================================
    SUPABASE SETUP
-   Fill these in once the Supabase project exists — Project URL
+   Fill these in once the Supabase project exists: Project URL
    and the public "anon" key, both from Project Settings > API.
    Never put the service_role key or database password here.
    ========================================================= */
@@ -1049,9 +1049,9 @@ function defaultTechniques(){
     { id:'beard-trim', category:'cuts', name:'Beard Trim & Line-up', rated:false, rating:5 },
     { id:'clipper-cut', category:'cuts', name:"Men's Clipper Cut", rated:false, rating:5 },
     { id:'scissor-comb', category:'cuts', name:'Scissor-Over-Comb', rated:false, rating:5 },
-    { id:'relaxer', category:'chemical', name:'Relaxer — Virgin Application', rated:false, rating:5 },
+    { id:'relaxer', category:'chemical', name:'Relaxer: Virgin Application', rated:false, rating:5 },
     { id:'color', category:'chemical', name:'Single-Process Color', rated:false, rating:5 },
-    { id:'perm', category:'chemical', name:'Perm — Rod Wrap', rated:false, rating:5 },
+    { id:'perm', category:'chemical', name:'Perm: Rod Wrap', rated:false, rating:5 },
     { id:'bleach', category:'chemical', name:'Full-Head Lightening', rated:false, rating:5 },
     { id:'exposure', category:'safety', name:'Exposure Incident Response', rated:false, rating:5 }
   ];
@@ -1105,7 +1105,7 @@ async function fetchProfileRow(code){
 
 async function persistProfile(fields){
   profile.updatedAt = new Date().toISOString();
-  if (!dbAvailable || !profileCode) return { ok:false, message: "Not connected right now — this change wasn't saved." };
+  if (!dbAvailable || !profileCode) return { ok:false, message: "Not connected right now. This change wasn't saved." };
   const row = { updated_at: profile.updatedAt };
   if (fields.pace) row.pace = fields.pace;
   if (fields.techniques) row.techniques = fields.techniques;
@@ -1132,7 +1132,7 @@ async function persistProfile(fields){
   }catch(e){
     // keep working locally even if a save fails, but let the caller know it didn't really save
     console.warn('save failed', e);
-    return { ok:false, message: (e && e.message) ? e.message : "Something went wrong saving — try again." };
+    return { ok:false, message: (e && e.message) ? e.message : "Something went wrong saving. Try again." };
   }
 }
 
@@ -1323,7 +1323,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const hrs = P().schedule[d];
       const pill = document.createElement('span');
       pill.className = 'sched-pill' + (hrs>0 ? ' active' : '');
-      pill.textContent = `${SHORT[i]} ${hrs>0 ? hrs+'h' : '—'}`;
+      pill.textContent = `${SHORT[i]} ${hrs>0 ? hrs+'h' : '-'}`;
       schedRow.appendChild(pill);
     });
 
@@ -1357,7 +1357,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const recoverOn = root.querySelector('#recover-switch').classList.contains('on');
     const newDate = simulate(asOf, earned, total, P().schedule, blocked, partials, recoverOn ? 'Sat' : null, 4);
 
-    root.querySelector('#res-old').textContent = pstate.originalDate ? fmtDate(pstate.originalDate) : '—';
+    root.querySelector('#res-old').textContent = pstate.originalDate ? fmtDate(pstate.originalDate) : '-';
     root.querySelector('#res-new').textContent = fmtDate(newDate);
 
     const absDays = absenceDayCount(P().absences);
@@ -1476,7 +1476,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         {kind:'final', badge:'kind-final', label:'Finish', title:'Style & finish', body:'Blow-dry or style as requested. Final mirror check with the client from all angles.'}
       ]},
       { id:'beard-trim', name:'Beard Trim & Line-up', category:'cuts', steps:[
-        {kind:'consult', badge:'kind-consult', label:'Consultation', title:'Confirm the shape', body:'Confirm desired length and shape — full beard, line-up only, or a fade into the beard.'},
+        {kind:'consult', badge:'kind-consult', label:'Consultation', title:'Confirm the shape', body:'Confirm desired length and shape: full beard, line-up only, or a fade into the beard.'},
         {kind:'checklist', badge:'kind-prep', label:'Prep', title:'Sanitize & prep', items:['Clean and sanitize clippers/trimmer','Comb through the beard','Cape the client']},
         {kind:'tech', badge:'kind-tech', label:'Technique', title:'Set the length', body:'Trim to guard length, working with the grain first, then against it for evenness.'},
         {kind:'tech', badge:'kind-tech', label:'Technique', title:'Define the lines', body:'Outline the cheek line, neckline, and mustache with a trimmer for crisp, straight edges.'},
@@ -1484,11 +1484,11 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       ]}
     ],
     chemical: [
-      { id:'relaxer', name:'Relaxer — Virgin Application', category:'chemical', steps:[
+      { id:'relaxer', name:'Relaxer: Virgin Application', category:'chemical', steps:[
         {kind:'consult', badge:'kind-safety', label:'Safety check', title:'Check scalp & history', body:'Confirm scalp condition and prior chemical history. Do not proceed if the scalp is irritated, cut, or abraded.'},
         {kind:'checklist', badge:'kind-prep', label:'Prep', title:'Protect & section', items:['Apply base/protective cream to scalp and hairline','Section hair into four quadrants','Gloves on']},
         {kind:'tech', badge:'kind-tech', label:'Technique', title:'Apply, resistant areas first', body:'Apply from the most resistant area (nape) to the least resistant, avoiding the scalp on the first pass.'},
-        {kind:'tech', badge:'kind-tech', label:'Technique', title:"Smooth, don't re-comb", body:"Smooth with the back of the comb only — do not re-comb through sections you've already processed."},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:"Smooth, don't re-comb", body:"Smooth with the back of the comb only. Do not re-comb through sections you've already processed."},
         {kind:'timer', badge:'kind-safety', label:'Safety check', title:'Monitor processing time', body:'Check elasticity every few minutes. Do not exceed the maximum processing time for this hair type.', seconds:90, real:'~15 min'},
         {kind:'timer', badge:'kind-safety', label:'Safety check', title:'Rinse & neutralize', body:'Rinse thoroughly with warm water, then apply neutralizing shampoo for its full contact time.', seconds:45, real:'~5 min'},
         {kind:'tech', badge:'kind-tech', label:'Technique', title:'Condition & assess', body:'Deep condition. Check for scalp irritation before continuing to style.'},
@@ -1497,14 +1497,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       { id:'color', name:'Single-Process Color', category:'chemical', steps:[
         {kind:'consult', badge:'kind-safety', label:'Safety check', title:'Confirm formula & test', body:'Confirm formula and level with the client. A patch test 48 hours prior and a strand test before full application are both required.'},
         {kind:'checklist', badge:'kind-prep', label:'Prep', title:'Protect & section', items:['Apply barrier cream at the hairline','Section into four quadrants','Gloves on']},
-        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Mix the formula', body:"Mix color and developer to the manufacturer's ratio immediately before application — never mix ahead of time."},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Mix the formula', body:"Mix color and developer to the manufacturer's ratio immediately before application. Never mix ahead of time."},
         {kind:'tech', badge:'kind-tech', label:'Technique', title:'Apply', body:'On virgin hair, apply mid-shaft to ends first, keeping a quarter-inch from the scalp. On a retouch, apply to new growth first.'},
         {kind:'timer', badge:'kind-timer', label:'Processing', title:'Process the color', body:"Process per the formula's timing. Check development partway through with a strand test.", seconds:80, real:'~30 min'},
         {kind:'tech', badge:'kind-tech', label:'Technique', title:'Rinse & condition', body:'Rinse until the water runs clear, shampoo once, then condition.'},
         {kind:'final', badge:'kind-final', label:'Finish', title:'Style & aftercare', body:'Style as requested. Advise the client on color-safe products and fade-resistant care.'}
       ]},
-      { id:'perm', name:'Perm — Rod Wrap', category:'chemical', steps:[
-        {kind:'consult', badge:'kind-safety', label:'Safety check', title:'Test curl & elasticity', body:'Confirm the curl size and pattern desired. Test elasticity and porosity — do not perm over-processed or damaged hair.'},
+      { id:'perm', name:'Perm: Rod Wrap', category:'chemical', steps:[
+        {kind:'consult', badge:'kind-safety', label:'Safety check', title:'Test curl & elasticity', body:'Confirm the curl size and pattern desired. Test elasticity and porosity. Do not perm over-processed or damaged hair.'},
         {kind:'checklist', badge:'kind-prep', label:'Prep', title:'Protect & section', items:['Apply protective cream at the hairline','Section into wrapping panels','Gloves on']},
         {kind:'tech', badge:'kind-tech', label:'Technique', title:'Wrap the rods', body:'Wrap each subsection smoothly and evenly onto the rod, from ends to scalp, with even tension throughout.'},
         {kind:'tech', badge:'kind-tech', label:'Technique', title:'Apply the perm solution', body:'Saturate each rod thoroughly and evenly, avoiding oversaturation at the scalp.'},
@@ -1514,10 +1514,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         {kind:'final', badge:'kind-final', label:'Finish', title:'Style & aftercare', body:'Style with fingers, not a brush, while damp. Advise on perm aftercare and timing before the next chemical service.'}
       ]},
       { id:'bleach', name:'Full-Head Lightening (Bleach)', category:'chemical', steps:[
-        {kind:'consult', badge:'kind-safety', label:'Safety check', title:'Check history & test', body:'Confirm the target level and check for prior chemical services — lightening over color-treated hair carries extra risk of breakage.'},
+        {kind:'consult', badge:'kind-safety', label:'Safety check', title:'Check history & test', body:'Confirm the target level and check for prior chemical services. Lightening over color-treated hair carries extra risk of breakage.'},
         {kind:'checklist', badge:'kind-prep', label:'Prep', title:'Protect & section', items:['Apply barrier cream at the hairline','Section into four quadrants','Gloves on']},
         {kind:'tech', badge:'kind-tech', label:'Technique', title:'Mix the lightener', body:"Mix bleach and developer to the manufacturer's ratio immediately before application."},
-        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Apply, resistant areas first', body:'Apply to the most resistant area first — typically the back and roots — working quickly and evenly.'},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Apply, resistant areas first', body:'Apply to the most resistant area first (typically the back and roots), working quickly and evenly.'},
         {kind:'timer', badge:'kind-safety', label:'Safety check', title:'Monitor lift closely', body:'Check lift every 5–10 minutes with a strand test. Never leave lightener processing unchecked.', seconds:70, real:'~10 min, checked often'},
         {kind:'tech', badge:'kind-tech', label:'Technique', title:'Rinse & treat', body:'Rinse thoroughly with cool-to-lukewarm water, then follow with a bond-rebuilding or protein treatment.'},
         {kind:'tech', badge:'kind-tech', label:'Technique', title:'Tone if needed', body:"Apply toner if the client's lift needs neutralizing, per the desired end result."},
@@ -1539,9 +1539,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         {kind:'safety', badge:'kind-safety', label:'Step 10', title:'Apply styptic powder', body:'Dispense styptic powder onto a cotton round and use a cotton swab to apply it to the injury to stop any residual bleeding.'},
         {kind:'safety', badge:'kind-safety', label:'Step 11', title:'Bandage the wound', body:'Apply an adhesive bandage to completely cover the wound.'},
         {kind:'safety', badge:'kind-safety', label:'Step 12', title:'Clean the workstation', body:'Clean and disinfect the workstation, as necessary.'},
-        {kind:'safety', badge:'kind-safety', label:'Step 13', title:'Dispose of contaminated items', body:'Discard all single-use, contaminated objects such as wipes or cotton balls in a plastic bag and then in a trash bag. Deposit sharp disposables in a sharps box. Dispose of double-bagged items and sharps containers as required by state or local law — information on these laws may be found on your local board website or through the OSHA website. In general, all of these items (except sharps) may go into the regular trash.'},
+        {kind:'safety', badge:'kind-safety', label:'Step 13', title:'Dispose of contaminated items', body:'Discard all single-use, contaminated objects such as wipes or cotton balls in a plastic bag and then in a trash bag. Deposit sharp disposables in a sharps box. Dispose of double-bagged items and sharps containers as required by state or local law. Information on these laws may be found on your local board website or through the OSHA website. In general, all of these items (except sharps) may go into the regular trash.'},
         {kind:'timer', badge:'kind-safety', label:'Step 14a', title:'Disinfect tools & implements', body:'Before you remove your gloves, thoroughly clean all tools and implements that came in contact with blood or other body fluids, and completely immerse them in an EPA-registered hospital disinfectant solution.', seconds:60, real:'10 min'},
-        {kind:'safety', badge:'kind-safety', label:'Step 14b', title:'Remove your gloves safely', body:"Blood may carry pathogens, so never touch an open sore or a wound. Remove one glove by holding it in your other gloved hand, sliding a finger under the glove at its base, and pulling it over the other contaminated glove — never allowing either glove to come into contact with your skin."},
+        {kind:'safety', badge:'kind-safety', label:'Step 14b', title:'Remove your gloves safely', body:"Blood may carry pathogens, so never touch an open sore or a wound. Remove one glove by holding it in your other gloved hand, sliding a finger under the glove at its base, and pulling it over the other contaminated glove, never allowing either glove to come into contact with your skin."},
         {kind:'safety', badge:'kind-safety', label:'Step 15', title:'Wash up & follow up', body:'Wash your hands with soap and warm water before returning to the service. Recommend that the client see a physician if any signs of redness, swelling, pain, or irritation develop.'}
       ]}
     ]
@@ -1785,7 +1785,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const notesEl = root.querySelector('#'+ids.notes);
     saveBtn.disabled = true;
     if (!dbAvailable){
-      statusEl.textContent = "Live saving isn't connected right now — this visit wasn't saved.";
+      statusEl.textContent = "Live saving isn't connected right now. This visit wasn't saved.";
       saveBtn.disabled = false;
       return;
     }
@@ -1837,12 +1837,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       saveBtn.disabled = false;
     }catch(e){
       console.warn('save visit failed', e);
-      statusEl.textContent = "Couldn't save — check your connection and try again.";
+      statusEl.textContent = "Couldn't save: check your connection and try again.";
       saveBtn.disabled = false;
     }
   }
 
-  /* ---- Skip coaching: attach a client, take photos, save — no technique required ---- */
+  /* ---- Skip coaching: attach a client, take photos, save. No technique required. ---- */
   function updateQuickSaveEnabled(){
     root.querySelector('#btn-qv-save').disabled = cstate.checkpointPhotos.length === 0;
   }
@@ -1997,7 +1997,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       return;
     }
     if (!dbAvailable){
-      statusEl.textContent = "Live saving isn't connected right now — this change wasn't saved.";
+      statusEl.textContent = "Live saving isn't connected right now. This change wasn't saved.";
       return;
     }
     saveBtn.disabled = true;
@@ -2010,7 +2010,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       renderPrevVisits();
     }catch(e){
       console.warn('note edit save failed', e);
-      statusEl.textContent = "Couldn't save — try again.";
+      statusEl.textContent = "Couldn't save: try again.";
       saveBtn.disabled = false;
     }
   }
@@ -2336,7 +2336,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       grid.appendChild(el);
     });
     root.querySelector('#btn-texture-next').disabled = !qstate.texture;
-    root.querySelector('#texture-sub').textContent = (attachedClient && attachedClient.hairProfile && attachedClient.hairProfile.texture) ? 'Pre-filled from their Hair Passport — confirm or update.' : "What's the hair texture?";
+    root.querySelector('#texture-sub').textContent = (attachedClient && attachedClient.hairProfile && attachedClient.hairProfile.texture) ? 'Pre-filled from their Hair Passport. Confirm or update.' : "What's the hair texture?";
   }
   root.querySelector('#btn-texture-next').addEventListener('click', ()=>{
     renderChips('condition-grid', CONDITIONS, qstate.conditions, 'healthy', updateConditionNext);
@@ -2406,20 +2406,20 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   root.querySelectorAll('[data-back]').forEach(btn=> btn.addEventListener('click', ()=> showScreen(btn.dataset.back)));
 
   const TEXTURE_REC = {
-    straight:{cat:'Lightweight Leave-In Conditioner', note:'Straight hair shows product buildup fast — keep it light.'},
+    straight:{cat:'Lightweight Leave-In Conditioner', note:'Straight hair shows product buildup fast. Keep it light.'},
     wavy:{cat:'Curl-Defining Lightweight Cream', note:'Enough hold to define waves without weighing them down.'},
-    curly:{cat:'Rich Moisture Leave-In Cream', note:'Curls lose moisture fastest at the ends — richer leave-in helps.'},
+    curly:{cat:'Rich Moisture Leave-In Cream', note:'Curls lose moisture fastest at the ends. Richer leave-in helps.'},
     coily:{cat:'Leave-In + Sealing Oil', note:'Coily hair needs both moisture and a sealant to lock it in.'}
   };
   const CONDITION_REC = {
-    chemical:{cat:'Bond-Rebuilding Treatment', note:'Chemical services break internal bonds — rebuild before they weaken further.'},
+    chemical:{cat:'Bond-Rebuilding Treatment', note:'Chemical services break internal bonds. Rebuild before they weaken further.'},
     color:{cat:'Sulfate-Free, Color-Safe Shampoo', note:'Protects tone and slows fading between appointments.'},
     heat:{cat:'Heat Protectant Spray', note:'Daily heat styling calls for protection at every use, not just some.'},
     dry:{cat:'Weekly Deep Conditioning Mask', note:'Brittle hair needs consistent moisture, not an occasional treatment.'},
-    fine:{cat:'Lightweight Protein Treatment', note:'Fine hair needs strength without added weight — go light on protein.'}
+    fine:{cat:'Lightweight Protein Treatment', note:'Fine hair needs strength without added weight. Go light on protein.'}
   };
   const SCALP_REC = {
-    dryscalp:{cat:'Hydrating Scalp Oil', note:'Treat the scalp separately from the lengths — dryness starts at the root.'},
+    dryscalp:{cat:'Hydrating Scalp Oil', note:'Treat the scalp separately from the lengths. Dryness starts at the root.'},
     flaky:{cat:'Gentle Anti-Flake Shampoo', note:'Mild, frequent-use formula rather than a harsh medicated one first.'},
     itchy:{cat:'Fragrance-Free, Sulfate-Free Shampoo', note:"Rule out product sensitivity before assuming it's dandruff."},
     oily:{cat:'Clarifying Shampoo (Scalp-Focused)', note:'Clarify at the scalp, condition mid-shaft to ends only.'},
@@ -2447,7 +2447,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     try{
       const recs = outcome === 'refer' ? [] : buildRecommendations();
       const notes = outcome === 'refer'
-        ? ('Referred for medical evaluation — ' + (root.querySelector('#refer-reasons').textContent || '').replace(/^Flagged for:\s*/, ''))
+        ? ('Referred for medical evaluation: ' + (root.querySelector('#refer-reasons').textContent || '').replace(/^Flagged for:\s*/, ''))
         : '';
       const visit = {
         id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
@@ -2483,17 +2483,17 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   root.querySelectorAll('[data-finish]').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
       const outcome = btn.dataset.finish;
-      let sub = outcome === 'refer' ? 'Referral recommended — no product suggested.' : `${buildRecommendations().length} recommendation(s) logged.`;
+      let sub = outcome === 'refer' ? 'Referral recommended. No product suggested.' : `${buildRecommendations().length} recommendation(s) logged.`;
       const coach = root.querySelector('#coach-notes');
       if (qstate.practice){
         const tip = outcome === 'refer'
-          ? "Good catch — recognizing when NOT to recommend a product is the harder half of this skill."
-          : "Solid consultation — you covered texture, condition, and scalp. Next time, also ask about styling habits and product buildup before finalizing recommendations.";
+          ? "Good catch. Recognizing when NOT to recommend a product is the harder half of this skill."
+          : "Solid consultation. You covered texture, condition, and scalp. Next time, also ask about styling habits and product buildup before finalizing recommendations.";
         coach.innerHTML = `<div class="coach-box"><span class="cb-label">Coaching notes</span><p>${tip}</p></div>`;
       } else { coach.innerHTML = ''; }
       if (attachedClient){
         const ok = await saveConsultVisit(outcome);
-        sub += ok ? ` Saved to ${attachedClient.name}'s Hair Passport.` : " Couldn't save to their Hair Passport — try again.";
+        sub += ok ? ` Saved to ${attachedClient.name}'s Hair Passport.` : " Couldn't save to their Hair Passport. Try again.";
       }
       root.querySelector('#complete-sub').textContent = sub;
       showScreen('complete');
@@ -2535,7 +2535,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#ledger-name').textContent = profile.name;
     const { overallPct, ratedCount } = computeOverall();
     root.querySelector('#progress-ring').style.setProperty('--pct', overallPct===null ? 0 : overallPct);
-    root.querySelector('#progress-ring-label').textContent = overallPct===null ? '—' : overallPct + '%';
+    root.querySelector('#progress-ring-label').textContent = overallPct===null ? '-' : overallPct + '%';
     root.querySelector('#overview-verified').textContent = overallPct===null ? 'No self-ratings yet' : overallPct + '% overall skill level';
     root.querySelector('#overview-pending').textContent = ratedCount + ' of ' + profile.techniques.length + ' techniques rated';
 
@@ -2567,7 +2567,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#tech-cat-label').textContent = CATEGORY_NAMES[t.category];
     root.querySelector('#tech-name').textContent = t.name;
     root.querySelector('#rating-slider').value = t.rating;
-    root.querySelector('#rating-display').textContent = t.rated ? (t.rating + ' / 10') : 'Not yet rated — move the slider';
+    root.querySelector('#rating-display').textContent = t.rated ? (t.rating + ' / 10') : 'Not yet rated, move the slider';
     root.querySelector('#btn-clear-rating').style.display = t.rated ? 'inline-block' : 'none';
   }
 
@@ -2596,7 +2596,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
   function renderCredentialSummary(summaryElId, listElId){
     const { overallPct, ratedCount } = computeOverall();
-    let rows = '<div class="summary-row"><span>Overall skill level</span><span>' + (overallPct===null?'—':overallPct+'%') + '</span></div>' +
+    let rows = '<div class="summary-row"><span>Overall skill level</span><span>' + (overallPct===null?'-':overallPct+'%') + '</span></div>' +
       '<div class="summary-row"><span>Techniques rated</span><span>' + ratedCount + ' of ' + profile.techniques.length + '</span></div>';
     CATEGORY_ORDER.forEach(catId=>{
       const { pct } = categoryStats(catId);
@@ -2636,7 +2636,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     renderCredentialSummary('portfolio-summary', 'portfolio-list');
     const url = shareUrl();
     root.querySelector('#share-link-input').value = url;
-    const subject = encodeURIComponent(profile.name + '’s Skill Graph — All Hair Connect');
+    const subject = encodeURIComponent(profile.name + '’s Skill Graph: All Hair Connect');
     const body = encodeURIComponent("Here's my self-rated Skill Graph on All Hair Connect: " + url);
     root.querySelector('#btn-share-email').href = 'mailto:?subject=' + subject + '&body=' + body;
     root.querySelector('#btn-share-text').href = smsHref(body);
@@ -2793,7 +2793,7 @@ function showAuthScreen(prefillCode){
   }
   setAuthMode(prefillCode ? 'returning' : 'new');
   if (!dbAvailable){
-    document.getElementById('auth-note').textContent = "Live saving isn't connected right now — you can still try everything out, but it won't be kept.";
+    document.getElementById('auth-note').textContent = "Live saving isn't connected right now. You can still try everything out, but it won't be kept.";
   }
   if (prefillCode) document.getElementById('auth-code').value = prefillCode;
 }
@@ -2835,7 +2835,7 @@ document.getElementById('btn-switch-profile').addEventListener('click', ()=>{
 });
 
 /* =========================================================
-   ACCOUNT SCREEN — role change & delete account
+   ACCOUNT SCREEN: role change & delete account
    ========================================================= */
 let pendingRoleChange = null;
 
@@ -2880,7 +2880,7 @@ document.getElementById('btn-save-license').addEventListener('click', async ()=>
   note.textContent = 'Saving…';
   const result = await persistProfile({ license: profile.license });
   document.getElementById('tb-title').textContent = tbTitleText();
-  note.textContent = (result && result.ok) ? 'Saved.' : ("Couldn't save — " + ((result && result.message) || 'try again.'));
+  note.textContent = (result && result.ok) ? 'Saved.' : ("Couldn't save: " + ((result && result.message) || 'try again.'));
   populateAccountListing();
 });
 
@@ -2938,10 +2938,10 @@ document.getElementById('btn-save-listing').addEventListener('click', async ()=>
     shopState: profile.shopState, shopPhone: profile.shopPhone, shopAddress: profile.shopAddress, social: profile.social
   });
   if (result && result.ok){
-    note.textContent = isPublic ? 'Saved — you’re live on Find a Pro.' : 'Saved.';
+    note.textContent = isPublic ? 'Saved. You’re live on Find a Pro.' : 'Saved.';
   } else {
     // Revert the toggle/UI to what's actually on the server rather than showing a false "Saved."
-    note.textContent = "Couldn't save — " + ((result && result.message) || 'try again.');
+    note.textContent = "Couldn't save: " + ((result && result.message) || 'try again.');
   }
   updateListingViewLink();
 });
@@ -2998,7 +2998,7 @@ document.getElementById('btn-role-change-confirm').addEventListener('click', asy
   applyRoleVisibility();
   const currentTab = (document.querySelector('.tab-btn.active') || {}).dataset ? document.querySelector('.tab-btn.active').dataset.tabbtn : 'coach';
   showTab(currentTab || 'coach');
-  showToast('Role updated — Pace and Ledger are no longer available');
+  showToast('Role updated. Pace and Ledger are no longer available');
 });
 
 let deleteAccountArmed = false;
@@ -3060,7 +3060,7 @@ async function initSharedView(code){
 
     const rated = techniques.filter(t=>t.rated);
     const overallPct = rated.length ? Math.round(rated.reduce((s,t)=>s+t.rating,0) / (rated.length*10) * 100) : null;
-    let rows = '<div class="summary-row"><span>Overall skill level</span><span>' + (overallPct===null?'—':overallPct+'%') + '</span></div>' +
+    let rows = '<div class="summary-row"><span>Overall skill level</span><span>' + (overallPct===null?'-':overallPct+'%') + '</span></div>' +
       '<div class="summary-row"><span>Techniques rated</span><span>' + rated.length + ' of ' + techniques.length + '</span></div>';
     CATEGORY_ORDER.forEach(catId=>{
       const items = techniques.filter(t=>t.category===catId);

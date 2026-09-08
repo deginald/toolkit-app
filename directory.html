@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>All Hair Connect — Find a Pro</title>
+<title>All Hair Connect: Find a Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
 <style>
@@ -270,12 +270,12 @@ async function showDetail(code){
 
   const scoresHolder = document.getElementById('detail-scores');
   if (!agg.count){
-    scoresHolder.innerHTML = '<p class="screen-sub" style="margin:0;">No reviews yet — ratings appear here once clients rate a real, logged visit.</p>';
+    scoresHolder.innerHTML = '<p class="screen-sub" style="margin:0;">No reviews yet. Ratings appear here once clients rate a real, logged visit.</p>';
   } else {
     let rows = `<div class="cat-score-row"><span>Overall</span><span class="stars">${starsFor(agg.overall)} ${agg.overall.toFixed(1)}</span></div>`;
     CATEGORIES.forEach(cat=>{
       const v = agg.byCategory[cat.key];
-      rows += `<div class="cat-score-row"><span>${cat.label}</span><span class="stars">${v===null ? '—' : starsFor(v) + ' ' + v.toFixed(1)}</span></div>`;
+      rows += `<div class="cat-score-row"><span>${cat.label}</span><span class="stars">${v===null ? '-' : starsFor(v) + ' ' + v.toFixed(1)}</span></div>`;
     });
     scoresHolder.innerHTML = rows;
   }
@@ -317,7 +317,7 @@ async function boot(){
   if (!dbAvailable){
     document.getElementById('loading-screen').hidden = true;
     document.getElementById('list-screen').hidden = false;
-    document.getElementById('pro-list').innerHTML = '<div class="empty-note">Live data isn\'t connected right now — the directory can\'t load.</div>';
+    document.getElementById('pro-list').innerHTML = '<div class="empty-note">Live data isn\'t connected right now. The directory can\'t load.</div>';
     return;
   }
   try{
