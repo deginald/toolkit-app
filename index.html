@@ -2248,7 +2248,11 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const t = TEXTURES.find(x=>x.id===p.texture);
     const condLabels = (p.conditions||[]).map(c=>{ const found = CONDITIONS.find(x=>x.id===c); return found ? found.label : null; }).filter(Boolean).join(', ') || 'None noted';
     const dateLabel = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '';
-    holder.innerHTML = `<div class="profile-card"><span class="pc-tag">From their Hair Passport</span><span class="pc-name">${t ? t.label : 'Texture not yet on file'} &middot; ${condLabels}</span>${dateLabel ? `<span class="pc-detail">Last consult: ${dateLabel}</span>` : ''}</div>`;
+    const lastVisitWithRecs = (attachedClient.visits || []).slice().reverse().find(v => Array.isArray(v.recommendedProducts) && v.recommendedProducts.length);
+    const recsHtml = lastVisitWithRecs
+      ? `<div class="pv-recs" style="margin-top:6px;"><div class="pv-recs-heading">Recommended Products (last visit)</div>${lastVisitWithRecs.recommendedProducts.map(r=>`<div class="pv-rec-item"><strong>${r.cat}:</strong> ${r.note}</div>`).join('')}</div>`
+      : '';
+    holder.innerHTML = `<div class="profile-card"><span class="pc-tag">From their Hair Passport</span><span class="pc-name">${t ? t.label : 'Texture not yet on file'} &middot; ${condLabels}</span>${dateLabel ? `<span class="pc-detail">Last consult: ${dateLabel}</span>` : ''}</div>${recsHtml}`;
   }
 
   function renderClientAttach(){
