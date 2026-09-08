@@ -433,7 +433,7 @@
   </div>
 
   <div id="app-shell" hidden>
-    <div id="degraded-banner" class="banner warn" hidden>Live saving isn't connected right now &mdash; your changes here won't be kept. Everything still works to try out.</div>
+    <div id="degraded-banner" class="banner warn" hidden>Live saving isn't connected right now. Your changes here won't be kept. Everything still works to try out.</div>
     <header class="topbar">
       <div>
         <div class="tb-name" id="tb-name">&nbsp;</div>
@@ -478,14 +478,14 @@
           <div class="field">
             <label>Your normal weekly schedule</label>
             <div class="day-grid" id="day-grid"></div>
-            <p class="screen-sub" style="margin-top:2px;">Half-hours are fine &mdash; e.g. 6.5</p>
+            <p class="screen-sub" style="margin-top:2px;">Half-hours are fine (e.g. 6.5)</p>
           </div>
           <div class="spacer"></div>
           <button class="btn btn-primary" data-goto="calendar">Next: school calendar</button>
         </div>
 
         <div class="screen-body" data-screen="calendar">
-          <p class="screen-sub">Add breaks and holidays already on your school's calendar &mdash; these don't count against you.</p>
+          <p class="screen-sub">Add breaks and holidays already on your school's calendar. These don't count against you.</p>
           <div class="field">
             <label>Upcoming breaks</label>
             <div id="break-list" style="display:flex; flex-direction:column; gap:8px;"></div>
@@ -527,7 +527,7 @@
         </div>
 
         <div class="screen-body" data-screen="absence">
-          <p class="screen-sub">Add every absence as it happens &mdash; this is a planning entry, not an official absence report.</p>
+          <p class="screen-sub">Add every absence as it happens. This is a planning entry, not an official absence report.</p>
           <div class="field">
             <label>Logged absences</label>
             <div id="absence-list" style="display:flex; flex-direction:column; gap:8px;"></div>
@@ -600,7 +600,7 @@
         </div>
 
         <div class="screen-body show" data-screen="picker">
-          <p class="screen-sub">Pick a technique &mdash; Coach walks you through it step by step.</p>
+          <p class="screen-sub">Pick a technique and Coach walks you through it step by step.</p>
           <div class="card" id="client-attach-card" style="gap:10px;">
             <p class="eyebrow-mini2" style="margin:0;">Attach to a client's Hair Passport (optional)</p>
             <div id="client-attach-search">
@@ -616,11 +616,11 @@
               <p class="screen-sub" id="client-attach-summary" style="margin:0;">&nbsp;</p>
               <button class="link-btn" id="btn-toggle-prev-visits" type="button" style="display:none; text-align:left; padding:0;">View previous visits</button>
               <div id="prev-visits-list" style="display:none; flex-direction:column; gap:10px;"></div>
-              <button class="btn btn-outline" id="btn-skip-coaching" type="button" style="width:100%;">Skip coaching &mdash; just take photos</button>
+              <button class="btn btn-outline" id="btn-skip-coaching" type="button" style="width:100%;">Skip coaching, just take photos</button>
               <button class="btn btn-ghost" id="btn-client-clear" type="button" style="width:100%;">Remove</button>
             </div>
           </div>
-          <p class="screen-sub" style="margin:2px 0 -6px;">Coaching below is optional &mdash; a step-by-step guide you can use or skip.</p>
+          <p class="screen-sub" style="margin:2px 0 -6px;">Coaching below is optional: a step-by-step guide you can use or skip.</p>
           <div class="mode-toggle">
             <button type="button" class="mode-btn active" data-cat="cuts">Haircuts</button>
             <button type="button" class="mode-btn" data-cat="chemical">Chemical</button>
@@ -632,7 +632,7 @@
         <div class="screen-body" data-screen="quick">
           <div class="walk-header">
             <button class="back-btn" id="btn-quick-back">&larr;</button>
-            <div class="walk-titles"><div class="walk-name">New visit &mdash; no coaching</div></div>
+            <div class="walk-titles"><div class="walk-name">New visit (no coaching)</div></div>
           </div>
           <p class="screen-sub">Saving straight to <strong id="quick-client-name">&nbsp;</strong>'s Hair Passport.</p>
           <div class="mode-toggle" id="quick-service-toggle">
@@ -675,7 +675,7 @@
           <div class="complete-log">
             <div class="cl-row"><span>Steps completed</span><span id="cl-steps">0/0</span></div>
             <div class="cl-row"><span>Time on this service</span><span id="cl-time">0:00</span></div>
-            <div class="cl-row"><span>Checkpoint photo</span><span id="cl-checkpoint">&mdash;</span></div>
+            <div class="cl-row"><span>Checkpoint photo</span><span id="cl-checkpoint">-</span></div>
           </div>
           <div id="passport-save-row" style="display:none; flex-direction:column; gap:10px;">
             <p class="eyebrow-mini2" style="margin:0;">Save to <span id="passport-client-name"></span>'s Hair Passport</p>
@@ -777,7 +777,7 @@
           <div class="refer-box">
             <h3>Recommend a dermatologist visit</h3>
             <p class="refer-reasons" id="refer-reasons"></p>
-            <p>No product recommendation is given here &mdash; a barbering or cosmetology license doesn't cover diagnosing or treating scalp conditions like this. Recommend the client see a dermatologist or physician before any further chemical or scalp service.</p>
+            <p>No product recommendation is given here. A barbering or cosmetology license doesn't cover diagnosing or treating scalp conditions like this. Recommend the client see a dermatologist or physician before any further chemical or scalp service.</p>
           </div>
           <div class="spacer"></div>
           <button class="btn btn-primary" data-finish="refer">Log &amp; finish</button>
@@ -808,7 +808,7 @@
             <h2 class="screen-title" id="ledger-name">&nbsp;</h2>
           </div>
           <div class="overview-card">
-            <div class="ring" id="progress-ring"><div class="ring-inner" id="progress-ring-label">&mdash;</div></div>
+            <div class="ring" id="progress-ring"><div class="ring-inner" id="progress-ring-label">-</div></div>
             <div class="overview-stats">
               <span class="os-big" id="overview-verified">No self-ratings yet</span>
               <span class="os-label" id="overview-pending">&nbsp;</span>
@@ -845,7 +845,7 @@
           <div id="portfolio-list" style="display:flex; flex-direction:column; gap:14px;"></div>
           <div class="spacer"></div>
           <div>
-            <p class="eyebrow-mini2">Shareable link &mdash; anyone with it sees a live, read-only view</p>
+            <p class="eyebrow-mini2">Shareable link: anyone with it sees a live, read-only view</p>
             <div class="link-row">
               <input type="text" class="link-input" id="share-link-input" readonly>
               <button class="btn btn-outline" id="btn-open-shared" style="flex:none; padding:9px 14px;">Open</button>
@@ -977,7 +977,7 @@
     <p class="screen-sub" id="shared-title-line">&nbsp;</p>
     <div class="summary-card" id="shared-summary"></div>
     <div id="shared-list" style="display:flex; flex-direction:column; gap:14px;"></div>
-    <p class="foot-note-small" id="shared-note" style="margin-top:8px;">This link reads live &mdash; if they update a rating later, reopening it shows the current numbers.</p>
+    <p class="foot-note-small" id="shared-note" style="margin-top:8px;">This link reads live. If they update a rating later, reopening it shows the current numbers.</p>
   </div>
 
   <div id="toast" class="toast">Saved</div>
@@ -1643,7 +1643,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         html += `<div class="checkpoint-box ${photoCount?'done':''}" id="checkpoint-box">
           <div class="checkpoint-icon">${photoCount ? '&#10003;' : '&#128247;'}</div>
           <p class="screen-sub" style="margin:0;">${photoCount ? photoCount + ' photo' + (photoCount===1?'':'s') + ' added' : 'Add a few photos of the finished result'}</p>
-          <p class="screen-sub" style="margin:0; font-size:11px;">Front, back, and sides work best &mdash; 3 or more gives the fullest picture. Tap a photo to view it larger, or the &times; to remove and retake it.</p>
+          <p class="screen-sub" style="margin:0; font-size:11px;">Front, back, and sides work best. 3 or more gives the fullest picture. Tap a photo to view it larger, or the &times; to remove and retake it.</p>
           ${gridHtml}
           <input type="file" accept="image/*" capture="environment" multiple id="checkpoint-file-input" style="display:none;">
           <button class="btn btn-primary" id="btn-capture" type="button" style="flex:none; padding:10px 16px;">${photoCount ? 'Add more photos' : 'Add photos'}</button>
@@ -1859,7 +1859,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     holder.innerHTML = `<div class="checkpoint-box ${photoCount?'done':''}">
       <div class="checkpoint-icon">${photoCount ? '&#10003;' : '&#128247;'}</div>
       <p class="screen-sub" style="margin:0;">${photoCount ? photoCount + ' photo' + (photoCount===1?'':'s') + ' added' : 'Add a few photos of the finished result'}</p>
-      <p class="screen-sub" style="margin:0; font-size:11px;">Front, back, and sides work best &mdash; 3 or more gives the fullest picture. Tap a photo to view it larger, or the &times; to remove and retake it.</p>
+      <p class="screen-sub" style="margin:0; font-size:11px;">Front, back, and sides work best. 3 or more gives the fullest picture. Tap a photo to view it larger, or the &times; to remove and retake it.</p>
       ${gridHtml}
       <input type="file" accept="image/*" capture="environment" multiple id="qv-checkpoint-file-input" style="display:none;">
       <button class="btn btn-primary" id="qv-btn-capture" type="button" style="flex:none; padding:10px 16px;">${photoCount ? 'Add more photos' : 'Add photos'}</button>
@@ -1944,7 +1944,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         : '';
       const recs = Array.isArray(v.recommendedProducts) ? v.recommendedProducts : [];
       const recsHtml = recs.length
-        ? `<div class="pv-recs"><div class="pv-recs-heading">Recommended Products</div>` + recs.map(r=>`<div class="pv-rec-item"><strong>${r.cat}</strong> &mdash; ${r.note}</div>`).join('') + `</div>`
+        ? `<div class="pv-recs"><div class="pv-recs-heading">Recommended Products</div>` + recs.map(r=>`<div class="pv-rec-item"><strong>${r.cat}:</strong> ${r.note}</div>`).join('') + `</div>`
         : '';
       // Only the barber who logged the visit can edit its notes afterward.
       const canEdit = !!(v.barberCode && v.barberCode === profileCode);
