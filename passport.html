@@ -475,7 +475,8 @@ function renderQr(){
     try{
       const canvas = document.createElement('canvas');
       holder.appendChild(canvas);
-      window.QRCode.toCanvas(canvas, clientCode, { width: 220, margin: 4, color:{ dark:'#1E2530', light:'#FFFFFF' } }, function(err){
+      const qrUrl = window.location.origin + window.location.pathname + '?code=' + encodeURIComponent(clientCode);
+      window.QRCode.toCanvas(canvas, qrUrl, { width: 220, margin: 4, color:{ dark:'#1E2530', light:'#FFFFFF' } }, function(err){
         if (err){ holder.innerHTML = ''; }
       });
     }catch(e){ holder.innerHTML = ''; }
@@ -942,6 +943,20 @@ async function boot(){
 }
 
 async function continueBoot(){
+  const params = new URLSearchParams(window.location.search);
+  const urlCode = sanitizeCode(params.get('code') || '');
+
+  if (urlCode && dbAvailable){
+    const ok = await tryLoadClient(urlCode);
+    if (ok){
+      try{ localStorage.setItem('passportClientCode', urlCode); }catch(e){}
+      enterApp();
+      return;
+    }
+    showAuthScreen(urlCode);
+    return;
+  }
+
   let savedCode = null;
   try{ savedCode = localStorage.getItem('passportClientCode'); }catch(e){}
 
@@ -949,7 +964,7 @@ async function continueBoot(){
     const ok = await tryLoadClient(savedCode);
     if (ok){ enterApp(); return; }
   }
-  showAuthScreen(savedCode);
+  showAuthScreen(urlCode || savedCode);
 }
 
 // iOS Safari/Chrome sometimes leave the page scrolled up (hiding the header behind the
