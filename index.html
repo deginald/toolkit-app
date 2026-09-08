@@ -93,6 +93,9 @@
   .pv-notes-edit-row{ display:flex; gap:8px; }
   .pv-notes-edit-row .btn{ padding:9px 14px; font-size:12.5px; }
   .pv-notes-edit-status{ font-size:11.5px; color:var(--behind); }
+  .pv-recs{ border:1px solid var(--line); border-radius:10px; background:var(--paper); padding:10px 12px; display:flex; flex-direction:column; gap:5px; }
+  .pv-recs-heading{ font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--brass); }
+  .pv-rec-item{ font-size:12px; color:var(--ink); line-height:1.4; }
   .pv-photo{ cursor:pointer; }
 
   .lightbox-overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:500; display:flex; align-items:center; justify-content:center; padding:80px 20px 20px; }
@@ -613,15 +616,35 @@
               <p class="screen-sub" id="client-attach-summary" style="margin:0;">&nbsp;</p>
               <button class="link-btn" id="btn-toggle-prev-visits" type="button" style="display:none; text-align:left; padding:0;">View previous visits</button>
               <div id="prev-visits-list" style="display:none; flex-direction:column; gap:10px;"></div>
+              <button class="btn btn-outline" id="btn-skip-coaching" type="button" style="width:100%;">Skip coaching &mdash; just take photos</button>
               <button class="btn btn-ghost" id="btn-client-clear" type="button" style="width:100%;">Remove</button>
             </div>
           </div>
+          <p class="screen-sub" style="margin:2px 0 -6px;">Coaching below is optional &mdash; a step-by-step guide you can use or skip.</p>
           <div class="mode-toggle">
             <button type="button" class="mode-btn active" data-cat="cuts">Haircuts</button>
             <button type="button" class="mode-btn" data-cat="chemical">Chemical</button>
             <button type="button" class="mode-btn" data-cat="safety">Safety</button>
           </div>
           <div class="tech-list" id="tech-list"></div>
+        </div>
+
+        <div class="screen-body" data-screen="quick">
+          <div class="walk-header">
+            <button class="back-btn" id="btn-quick-back">&larr;</button>
+            <div class="walk-titles"><div class="walk-name">New visit &mdash; no coaching</div></div>
+          </div>
+          <p class="screen-sub">Saving straight to <strong id="quick-client-name">&nbsp;</strong>'s Hair Passport.</p>
+          <div class="mode-toggle" id="quick-service-toggle">
+            <button type="button" class="mode-btn active" data-quick-service="cut">Haircut</button>
+            <button type="button" class="mode-btn" data-quick-service="chemical">Chemical</button>
+            <button type="button" class="mode-btn" data-quick-service="other">Other</button>
+          </div>
+          <div id="qv-checkpoint-holder"></div>
+          <div class="input-row"><textarea id="qv-notes" placeholder="Notes for next time…" style="min-height:60px;"></textarea></div>
+          <button class="btn btn-primary" id="btn-qv-save" type="button">Save this visit</button>
+          <p class="screen-sub" id="qv-save-status" style="margin:0;">&nbsp;</p>
+          <div class="spacer"></div>
         </div>
 
         <div class="screen-body" data-screen="walk">
@@ -677,11 +700,23 @@
 
         <div class="screen-body show" data-screen="start">
           <p class="screen-sub">A few quick questions before any product gets recommended.</p>
-          <div class="mode-toggle">
-            <button type="button" class="mode-btn active" data-client="new">New client</button>
-            <button type="button" class="mode-btn" data-client="returning">Returning client</button>
+          <div class="card" id="consult-client-attach-card" style="gap:10px;">
+            <p class="eyebrow-mini2" style="margin:0;">Attach to a client's Hair Passport (optional)</p>
+            <div id="consult-client-attach-search">
+              <div class="input-row"><input id="consult-client-code-input" type="text" placeholder="Client's passport code"></div>
+              <button class="btn btn-outline" id="btn-consult-client-lookup" type="button" style="margin-top:8px; width:100%;">Look up</button>
+              <p class="screen-sub" id="consult-client-lookup-status" style="margin-top:6px;">&nbsp;</p>
+            </div>
+            <div id="consult-client-attach-newname" style="display:none;">
+              <div class="input-row"><input id="consult-client-new-name" type="text" placeholder="Client's name"></div>
+              <button class="btn btn-primary" id="btn-consult-client-create" type="button" style="margin-top:8px; width:100%;">Start their Hair Passport</button>
+            </div>
+            <div id="consult-client-attach-loaded" style="display:none; flex-direction:column; gap:8px;">
+              <p class="screen-sub" id="consult-client-attach-summary" style="margin:0;">&nbsp;</p>
+              <div id="profile-preview"></div>
+              <button class="btn btn-ghost" id="btn-consult-client-clear" type="button" style="width:100%;">Remove</button>
+            </div>
           </div>
-          <div id="profile-preview"></div>
           <div class="check-row" id="practice-row"><input type="checkbox" id="practice-toggle"><span>Practice mode (student training)</span></div>
           <div class="spacer"></div>
           <button class="btn btn-primary" id="btn-start">Begin consultation</button>
@@ -732,8 +767,7 @@
           <div id="rec-list" style="display:flex; flex-direction:column; gap:8px;"></div>
           <div class="spacer"></div>
           <div class="btn-row">
-            <button class="btn btn-ghost" id="btn-add-passport">Add to Hair Passport</button>
-            <button class="btn btn-primary" data-finish="recommend">Log &amp; finish</button>
+            <button class="btn btn-primary" data-finish="recommend" style="flex:1;">Log &amp; finish</button>
           </div>
         </div>
 
@@ -1515,7 +1549,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
   const LEDGER_MAP = { 'skin-fade':'skin-fade', 'womens-layers':'womens-layered', 'beard-trim':'beard-trim', 'relaxer':'relaxer', 'color':'color', 'perm':'perm', 'bleach':'bleach', 'exposure-incident':'exposure' };
 
-  const cstate = { category:'cuts', technique:null, stepIndex:0, checklistChecked:{}, timerState:{}, checkpointCaptured:false, checkpointPhotos:[], elapsed:0, elapsedTimerId:null, savedVisitId:null };
+  const cstate = { category:'cuts', technique:null, stepIndex:0, checklistChecked:{}, timerState:{}, checkpointCaptured:false, checkpointPhotos:[], elapsed:0, elapsedTimerId:null, savedVisitId:null, quickServiceType:'cut' };
   let attachedClient = null; // { code, name, visits }
   let checkpointPhotoUrls = [];
   function revokeCheckpointPhotoUrls(){
@@ -1737,16 +1771,18 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       saveBtn.disabled = false;
       saveBtn.textContent = 'Save this visit';
       root.querySelector('#passport-save-status').textContent = '';
-      saveBtn.onclick = savePassportVisit;
+      saveBtn.onclick = ()=> savePassportVisit();
     } else {
       passportRow.style.display = 'none';
     }
     showScreen('complete');
   }
 
-  async function savePassportVisit(){
-    const saveBtn = root.querySelector('#btn-save-passport');
-    const statusEl = root.querySelector('#passport-save-status');
+  async function savePassportVisit(ids){
+    ids = ids || { notes:'passport-notes', status:'passport-save-status', saveBtn:'btn-save-passport' };
+    const saveBtn = root.querySelector('#'+ids.saveBtn);
+    const statusEl = root.querySelector('#'+ids.status);
+    const notesEl = root.querySelector('#'+ids.notes);
     saveBtn.disabled = true;
     if (!dbAvailable){
       statusEl.textContent = "Live saving isn't connected right now — this visit wasn't saved.";
@@ -1761,7 +1797,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       if (isUpdate){
         const existing = (attachedClient.visits || []).find(v => v.id === cstate.savedVisitId);
         if (!existing) throw new Error('saved visit not found');
-        existing.notes = root.querySelector('#passport-notes').value.trim();
+        existing.notes = notesEl.value.trim();
         updatedVisits = attachedClient.visits;
         savedId = existing.id;
       } else {
@@ -1776,13 +1812,16 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
           const { data: urlData } = supabaseClient.storage.from('client-photos').getPublicUrl(path);
           photos.push({ url: urlData.publicUrl, path });
         }
+        const serviceType = cstate.technique
+          ? (cstate.technique.category === 'chemical' ? 'chemical' : (cstate.technique.category === 'safety' ? 'other' : 'cut'))
+          : (cstate.quickServiceType || 'other');
         const visit = {
           id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
           date: todayIso(),
           barberName: profile.name,
           barberCode: profileCode,
-          serviceType: cstate.technique.category === 'chemical' ? 'chemical' : (cstate.technique.category === 'safety' ? 'other' : 'cut'),
-          notes: root.querySelector('#passport-notes').value.trim(),
+          serviceType,
+          notes: notesEl.value.trim(),
           photos,
           favorite: false
         };
@@ -1803,11 +1842,82 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
   }
 
+  /* ---- Skip coaching: attach a client, take photos, save — no technique required ---- */
+  function updateQuickSaveEnabled(){
+    root.querySelector('#btn-qv-save').disabled = cstate.checkpointPhotos.length === 0;
+  }
+  function renderQuickPhotoBox(){
+    const holder = root.querySelector('#qv-checkpoint-holder');
+    const photoCount = cstate.checkpointPhotos.length;
+    revokeCheckpointPhotoUrls();
+    checkpointPhotoUrls = cstate.checkpointPhotos.map(f => URL.createObjectURL(f));
+    const gridHtml = photoCount ? '<div class="checkpoint-photo-grid">' + checkpointPhotoUrls.map((url,idx)=>`
+      <div class="checkpoint-photo-wrap">
+        <img class="checkpoint-photo" data-idx="${idx}" src="${url}" alt="Captured photo ${idx+1}">
+        <button type="button" class="checkpoint-photo-remove" data-remove-idx="${idx}" aria-label="Remove this photo">&times;</button>
+      </div>`).join('') + '</div>' : '';
+    holder.innerHTML = `<div class="checkpoint-box ${photoCount?'done':''}">
+      <div class="checkpoint-icon">${photoCount ? '&#10003;' : '&#128247;'}</div>
+      <p class="screen-sub" style="margin:0;">${photoCount ? photoCount + ' photo' + (photoCount===1?'':'s') + ' added' : 'Add a few photos of the finished result'}</p>
+      <p class="screen-sub" style="margin:0; font-size:11px;">Front, back, and sides work best &mdash; 3 or more gives the fullest picture. Tap a photo to view it larger, or the &times; to remove and retake it.</p>
+      ${gridHtml}
+      <input type="file" accept="image/*" capture="environment" multiple id="qv-checkpoint-file-input" style="display:none;">
+      <button class="btn btn-primary" id="qv-btn-capture" type="button" style="flex:none; padding:10px 16px;">${photoCount ? 'Add more photos' : 'Add photos'}</button>
+    </div>`;
+    holder.querySelector('#qv-btn-capture').addEventListener('click', ()=> holder.querySelector('#qv-checkpoint-file-input').click());
+    holder.querySelector('#qv-checkpoint-file-input').addEventListener('change', (e)=>{
+      const newFiles = Array.from(e.target.files || []);
+      cstate.checkpointPhotos = cstate.checkpointPhotos.concat(newFiles);
+      renderQuickPhotoBox();
+    });
+    holder.querySelectorAll('.checkpoint-photo-remove').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const idx = parseInt(btn.dataset.removeIdx, 10);
+        cstate.checkpointPhotos.splice(idx, 1);
+        renderQuickPhotoBox();
+      });
+    });
+    holder.querySelectorAll('.checkpoint-photo').forEach(img=>{
+      img.addEventListener('click', ()=>{
+        const group = Array.from(holder.querySelectorAll('.checkpoint-photo'));
+        const photos = group.map(el => ({ url: el.src, alt: el.alt }));
+        openLightbox(photos, group.indexOf(img));
+      });
+    });
+    updateQuickSaveEnabled();
+  }
+  function renderQuickVisit(){
+    root.querySelector('#quick-client-name').textContent = attachedClient ? attachedClient.name : '';
+    root.querySelectorAll('#quick-service-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.quickService === cstate.quickServiceType));
+    root.querySelector('#qv-notes').value = '';
+    root.querySelector('#qv-save-status').textContent = '';
+    const saveBtn = root.querySelector('#btn-qv-save');
+    saveBtn.textContent = 'Save this visit';
+    saveBtn.onclick = ()=> savePassportVisit({ notes:'qv-notes', status:'qv-save-status', saveBtn:'btn-qv-save' });
+    renderQuickPhotoBox();
+  }
+  root.querySelectorAll('#quick-service-toggle .mode-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      cstate.quickServiceType = btn.dataset.quickService;
+      root.querySelectorAll('#quick-service-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b===btn));
+    });
+  });
+  root.querySelector('#btn-skip-coaching').addEventListener('click', ()=>{
+    if (!attachedClient) return;
+    cstate.technique = null;
+    cstate.savedVisitId = null;
+    cstate.checkpointPhotos = [];
+    cstate.quickServiceType = 'cut';
+    renderQuickVisit();
+    showScreen('quick');
+  });
+  root.querySelector('#btn-quick-back').addEventListener('click', ()=>{ renderClientAttach(); showScreen('picker'); });
+
   root.querySelector('#btn-choose-another').addEventListener('click', ()=> showScreen('picker'));
-  root.querySelectorAll('.mode-btn').forEach(btn=>{
+  root.querySelectorAll('.mode-btn[data-cat]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       cstate.category = btn.dataset.cat;
-      root.querySelectorAll('.mode-btn').forEach(b=> b.classList.toggle('active', b===btn));
+      root.querySelectorAll('.mode-btn[data-cat]').forEach(b=> b.classList.toggle('active', b===btn));
       renderTechList();
     });
   });
@@ -1815,7 +1925,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   /* ---- Hair Passport client attach (Coach) ---- */
   let pendingNewClientCode = null;
 
-  const PV_SERVICE_LABELS = { cut:'Haircut', chemical:'Chemical service', other:'Other' };
+  const PV_SERVICE_LABELS = { cut:'Haircut', chemical:'Chemical service', other:'Other', consult:'Consultation' };
 
   let editingVisitId = null;
 
@@ -1831,6 +1941,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const photos = Array.isArray(v.photos) ? v.photos : [];
       const photosHtml = photos.length
         ? '<div class="pv-photos">' + photos.map(p=>`<img class="pv-photo" src="${p.url}" alt="Photo from ${dateLabel} visit">`).join('') + '</div>'
+        : '';
+      const recs = Array.isArray(v.recommendedProducts) ? v.recommendedProducts : [];
+      const recsHtml = recs.length
+        ? `<div class="pv-recs"><div class="pv-recs-heading">Recommended Products</div>` + recs.map(r=>`<div class="pv-rec-item"><strong>${r.cat}</strong> &mdash; ${r.note}</div>`).join('') + `</div>`
         : '';
       // Only the barber who logged the visit can edit its notes afterward.
       const canEdit = !!(v.barberCode && v.barberCode === profileCode);
@@ -1859,6 +1973,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
           </div>
           <div class="pv-meta">${v.barberName ? v.barberName : 'Provider not noted'}</div>
           ${photosHtml}
+          ${recsHtml}
           ${notesBlock}
         </div>
       `;
@@ -2112,9 +2227,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     {id:'pain', label:'Severe pain', severe:true}, {id:'spreading', label:'Spreading / worsening', severe:true},
     {id:'patchloss', label:'Hair loss in patches', severe:true}
   ];
-  const RETURNING_PROFILE = { name:'Jordan T. (example client)', texture:'curly', note:'Color-treated · no known allergies', lastVisit:'Last consult: Jun 2026' };
+  let attachedClient = null; // { code, name, visits, hairProfile }
+  let pendingNewClientCode = null;
 
-  const qstate = { clientMode:'new', practice:false, texture:null, conditions:[], scalp:[], duration:null, severe:[], visitedTriage:false };
+  const qstate = { practice:false, texture:null, conditions:[], scalp:[], duration:null, severe:[], visitedTriage:false };
 
   function toggleSet(arr, id, exclusive){
     const idx = arr.indexOf(id);
@@ -2127,20 +2243,84 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
   function renderProfilePreview(){
     const holder = root.querySelector('#profile-preview');
-    if (qstate.clientMode !== 'returning'){ holder.innerHTML = ''; return; }
-    const p = RETURNING_PROFILE;
-    holder.innerHTML = `<div class="profile-card"><span class="pc-tag">Example &middot; illustrates Hair Passport lookup</span><span class="pc-name">${p.name}</span><span class="pc-detail">${TEXTURES.find(t=>t.id===p.texture).label} &middot; ${p.note}</span><span class="pc-detail">${p.lastVisit}</span></div>`;
+    if (!attachedClient || !attachedClient.hairProfile || !attachedClient.hairProfile.texture){ holder.innerHTML = ''; return; }
+    const p = attachedClient.hairProfile;
+    const t = TEXTURES.find(x=>x.id===p.texture);
+    const condLabels = (p.conditions||[]).map(c=>{ const found = CONDITIONS.find(x=>x.id===c); return found ? found.label : null; }).filter(Boolean).join(', ') || 'None noted';
+    const dateLabel = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '';
+    holder.innerHTML = `<div class="profile-card"><span class="pc-tag">From their Hair Passport</span><span class="pc-name">${t ? t.label : 'Texture not yet on file'} &middot; ${condLabels}</span>${dateLabel ? `<span class="pc-detail">Last consult: ${dateLabel}</span>` : ''}</div>`;
   }
-  root.querySelectorAll('[data-client]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      qstate.clientMode = btn.dataset.client;
-      root.querySelectorAll('[data-client]').forEach(b=> b.classList.toggle('active', b===btn));
-      renderProfilePreview();
-    });
+
+  function renderClientAttach(){
+    const searchEl = root.querySelector('#consult-client-attach-search');
+    const newNameEl = root.querySelector('#consult-client-attach-newname');
+    const loadedEl = root.querySelector('#consult-client-attach-loaded');
+    if (attachedClient){
+      searchEl.style.display = 'none';
+      newNameEl.style.display = 'none';
+      loadedEl.style.display = 'flex';
+      root.querySelector('#consult-client-attach-summary').textContent = `Attached: ${attachedClient.name}`;
+    } else {
+      searchEl.style.display = '';
+      newNameEl.style.display = 'none';
+      loadedEl.style.display = 'none';
+    }
+    renderProfilePreview();
+  }
+
+  root.querySelector('#btn-consult-client-lookup').addEventListener('click', async ()=>{
+    const statusEl = root.querySelector('#consult-client-lookup-status');
+    const code = sanitizeCode(root.querySelector('#consult-client-code-input').value);
+    if (!code){ statusEl.textContent = 'Enter a code first.'; return; }
+    if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
+    statusEl.textContent = 'Looking up…';
+    root.querySelector('#consult-client-attach-newname').style.display = 'none';
+    try{
+      const { data, error } = await supabaseClient.from('clients').select('*').eq('code', code).maybeSingle();
+      if (error) throw error;
+      if (data){
+        attachedClient = { code, name: data.name || 'Client', visits: Array.isArray(data.visits) ? data.visits : [], hairProfile: data.hair_profile || null };
+        statusEl.textContent = '';
+        renderClientAttach();
+      } else {
+        statusEl.textContent = 'No passport found for that code.';
+        pendingNewClientCode = code;
+        root.querySelector('#consult-client-attach-newname').style.display = '';
+      }
+    }catch(e){
+      console.warn('client lookup failed', e);
+      statusEl.textContent = "Couldn't reach the client database.";
+    }
   });
+
+  root.querySelector('#btn-consult-client-create').addEventListener('click', async ()=>{
+    const name = root.querySelector('#consult-client-new-name').value.trim();
+    if (!name || !pendingNewClientCode) return;
+    attachedClient = { code: pendingNewClientCode, name, visits: [], hairProfile: null };
+    if (dbAvailable){
+      try{
+        const { error } = await supabaseClient.from('clients').insert({ code: pendingNewClientCode, name, visits: [] });
+        if (error) throw error;
+      }catch(e){ console.warn('create client failed', e); }
+    }
+    pendingNewClientCode = null;
+    root.querySelector('#consult-client-new-name').value = '';
+    root.querySelector('#consult-client-lookup-status').textContent = '';
+    renderClientAttach();
+  });
+
+  root.querySelector('#btn-consult-client-clear').addEventListener('click', ()=>{
+    attachedClient = null;
+    root.querySelector('#consult-client-code-input').value = '';
+    root.querySelector('#consult-client-lookup-status').textContent = '';
+    renderClientAttach();
+  });
+
   root.querySelector('#practice-toggle').addEventListener('change', e=>{ qstate.practice = e.target.checked; });
   root.querySelector('#btn-start').addEventListener('click', ()=>{
-    if (qstate.clientMode === 'returning') qstate.texture = RETURNING_PROFILE.texture;
+    if (attachedClient && attachedClient.hairProfile && attachedClient.hairProfile.texture){
+      qstate.texture = attachedClient.hairProfile.texture;
+    }
     renderTexture();
     showScreen('texture');
   });
@@ -2156,7 +2336,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       grid.appendChild(el);
     });
     root.querySelector('#btn-texture-next').disabled = !qstate.texture;
-    root.querySelector('#texture-sub').textContent = qstate.clientMode==='returning' ? 'Pre-filled from their Hair Passport — confirm or update.' : "What's the hair texture?";
+    root.querySelector('#texture-sub').textContent = (attachedClient && attachedClient.hairProfile && attachedClient.hairProfile.texture) ? 'Pre-filled from their Hair Passport — confirm or update.' : "What's the hair texture?";
   }
   root.querySelector('#btn-texture-next').addEventListener('click', ()=>{
     renderChips('condition-grid', CONDITIONS, qstate.conditions, 'healthy', updateConditionNext);
@@ -2262,7 +2442,33 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const recs = buildRecommendations();
     root.querySelector('#rec-list').innerHTML = recs.map(r=> `<div class="rec-card"><span class="rec-cat">${r.cat}</span><span class="rec-note">${r.note}</span><span class="rec-retail">Retail category match</span></div>`).join('');
   }
-  root.querySelector('#btn-add-passport').addEventListener('click', ()=> showToast("Saved — once Hair Passport is built, this syncs to the client's record"));
+  async function saveConsultVisit(outcome){
+    if (!attachedClient || !dbAvailable) return false;
+    try{
+      const recs = outcome === 'refer' ? [] : buildRecommendations();
+      const notes = outcome === 'refer'
+        ? ('Referred for medical evaluation — ' + (root.querySelector('#refer-reasons').textContent || '').replace(/^Flagged for:\s*/, ''))
+        : '';
+      const visit = {
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
+        date: todayIso(),
+        barberName: profile.name,
+        barberCode: profileCode,
+        serviceType: 'consult',
+        notes,
+        photos: [],
+        recommendedProducts: recs,
+        favorite: false
+      };
+      const updatedVisits = (attachedClient.visits || []).concat([visit]);
+      const hairProfile = { texture: qstate.texture, conditions: qstate.conditions.slice(), scalp: qstate.scalp.slice(), updatedAt: new Date().toISOString() };
+      const { error } = await supabaseClient.from('clients').update({ visits: updatedVisits, hair_profile: hairProfile, updated_at: new Date().toISOString() }).eq('code', attachedClient.code);
+      if (error) throw error;
+      attachedClient.visits = updatedVisits;
+      attachedClient.hairProfile = hairProfile;
+      return true;
+    }catch(e){ console.warn('consult save failed', e); return false; }
+  }
 
   function renderRefer(){
     const reasons = [];
@@ -2275,9 +2481,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
 
   root.querySelectorAll('[data-finish]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
+    btn.addEventListener('click', async ()=>{
       const outcome = btn.dataset.finish;
-      root.querySelector('#complete-sub').textContent = outcome === 'refer' ? 'Referral recommended — no product suggested.' : `${buildRecommendations().length} recommendation(s) logged.`;
+      let sub = outcome === 'refer' ? 'Referral recommended — no product suggested.' : `${buildRecommendations().length} recommendation(s) logged.`;
       const coach = root.querySelector('#coach-notes');
       if (qstate.practice){
         const tip = outcome === 'refer'
@@ -2285,16 +2491,22 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
           : "Solid consultation — you covered texture, condition, and scalp. Next time, also ask about styling habits and product buildup before finalizing recommendations.";
         coach.innerHTML = `<div class="coach-box"><span class="cb-label">Coaching notes</span><p>${tip}</p></div>`;
       } else { coach.innerHTML = ''; }
+      if (attachedClient){
+        const ok = await saveConsultVisit(outcome);
+        sub += ok ? ` Saved to ${attachedClient.name}'s Hair Passport.` : " Couldn't save to their Hair Passport — try again.";
+      }
+      root.querySelector('#complete-sub').textContent = sub;
       showScreen('complete');
     });
   });
   root.querySelector('#btn-restart').addEventListener('click', ()=>{
     qstate.texture=null; qstate.conditions=[]; qstate.scalp=[]; qstate.duration=null; qstate.severe=[]; qstate.visitedTriage=false;
     root.querySelector('#rec-list').innerHTML='';
+    renderClientAttach();
     showScreen('start');
   });
 
-  window.initConsultTab = function(){ renderProfilePreview(); renderTexture(); showScreen('start'); };
+  window.initConsultTab = function(){ renderClientAttach(); renderTexture(); showScreen('start'); };
 })();
 
 /* =========================================================

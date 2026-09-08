@@ -248,6 +248,11 @@
           <p class="detail-notes" id="detail-notes">&mdash;</p>
         </div>
 
+        <div id="detail-recs-block" style="display:none; flex-direction:column; gap:6px;">
+          <p class="eyebrow-mini" style="margin-bottom:0;">Recommended Products</p>
+          <div id="detail-recs-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+
         <div id="rate-visit-block" style="display:none; flex-direction:column; gap:14px; border-top:1px solid var(--line); padding-top:16px;">
           <div>
             <p class="eyebrow-mini" style="margin-bottom:2px;">Rate this visit</p>
@@ -464,7 +469,7 @@ function sortedVisits(){
   return client.visits.slice().sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (b.id||'').localeCompare(a.id||''));
 }
 
-const SERVICE_LABELS = { cut:'Haircut', chemical:'Chemical service', other:'Other' };
+const SERVICE_LABELS = { cut:'Haircut', chemical:'Chemical service', other:'Other', consult:'Consultation' };
 
 function renderHome(){
   document.getElementById('tb-name').textContent = client.name;
@@ -573,6 +578,14 @@ async function openDetail(id){
   document.getElementById('detail-notes').textContent = v.notes || 'No notes from this visit.';
   const photosHolder = document.getElementById('detail-photos');
   photosHolder.innerHTML = (Array.isArray(v.photos) ? v.photos : []).map(p=>`<img class="detail-photo" src="${p.url}" alt="">`).join('') || '<p class="screen-sub">No photos from this visit.</p>';
+  const recs = Array.isArray(v.recommendedProducts) ? v.recommendedProducts : [];
+  const recsBlock = document.getElementById('detail-recs-block');
+  if (recs.length){
+    recsBlock.style.display = 'flex';
+    document.getElementById('detail-recs-list').innerHTML = recs.map(r=>`<div class="detail-card" style="gap:2px;"><strong>${r.cat}</strong><span class="screen-sub">${r.note}</span></div>`).join('');
+  } else {
+    recsBlock.style.display = 'none';
+  }
   const favBtn = document.getElementById('btn-toggle-favorite');
   favBtn.textContent = (v.favorite ? '★ Favorited' : '☆ Favorite');
   favBtn.classList.toggle('btn-outline', true);
