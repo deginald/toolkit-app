@@ -796,6 +796,104 @@
         </div>
       </section>
 
+      <!-- ============ BOOKING ============ -->
+      <section class="tab-pane" data-tab="booking" id="tab-booking">
+        <div class="tab-head">
+          <p class="eyebrow-mini">Appointments</p>
+          <h2>Booking</h2>
+        </div>
+
+        <div class="screen-body show" data-screen="setup" style="gap:16px;">
+          <label class="check-row">
+            <input type="checkbox" id="bk-enable-toggle">
+            <span>Turn on appointment booking</span>
+          </label>
+          <p class="screen-sub" id="bk-enable-hint">Off. Clients can't book with you yet. Turn this on to set up your services, hours, and get your booking link.</p>
+
+          <div id="bk-setup-body" style="display:none; flex-direction:column; gap:20px;">
+
+            <div style="display:flex; flex-direction:column; gap:8px; align-items:center; border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--surface);">
+              <p class="eyebrow-mini2" style="margin:0;">Your booking link</p>
+              <canvas id="bk-qr-canvas" width="150" height="150" style="border-radius:8px;"></canvas>
+              <div class="link-row" style="width:100%;">
+                <input type="text" class="link-input" id="bk-link-input" readonly>
+                <button class="btn btn-outline" id="btn-bk-copy-link" style="flex:none; padding:9px 14px;">Copy</button>
+              </div>
+              <p class="foot-note-small" id="bk-copy-note">&nbsp;</p>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <p class="eyebrow-mini">Your services</p>
+              <div id="bk-services-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+              <div class="card" style="gap:10px;">
+                <div class="field"><label>Service name</label><div class="input-row"><input id="bk-svc-name" type="text" placeholder="e.g. Haircut"></div></div>
+                <div class="field"><label>Price ($)</label><div class="input-row"><input id="bk-svc-price" type="number" min="0" step="1" placeholder="e.g. 35"></div></div>
+                <div class="field">
+                  <label>Length</label>
+                  <select class="title-select" id="bk-svc-duration">
+                    <option value="15">15 min</option>
+                    <option value="30" selected>30 min</option>
+                    <option value="45">45 min</option>
+                    <option value="60">1 hr</option>
+                    <option value="75">1 hr 15 min</option>
+                    <option value="90">1 hr 30 min</option>
+                    <option value="105">1 hr 45 min</option>
+                    <option value="120">2 hr</option>
+                    <option value="150">2 hr 30 min</option>
+                    <option value="180">3 hr</option>
+                  </select>
+                </div>
+                <button class="btn btn-outline" id="btn-bk-add-service" type="button">Add service</button>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <p class="eyebrow-mini">Weekly hours</p>
+              <div id="bk-hours-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <p class="eyebrow-mini">Date overrides</p>
+              <p class="screen-sub" style="margin:0;">Close a specific date, or set different hours just for that day.</p>
+              <div id="bk-overrides-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+              <div class="card" style="gap:10px;">
+                <div class="field"><label>Date</label><div class="input-row"><input id="bk-ov-date" type="date"></div></div>
+                <label class="check-row"><input type="checkbox" id="bk-ov-closed"><span>Closed all day</span></label>
+                <div id="bk-ov-hours-row" style="display:flex; gap:8px;">
+                  <div class="field" style="flex:1;"><label>Open</label><div class="input-row"><input id="bk-ov-open" type="time" value="09:00"></div></div>
+                  <div class="field" style="flex:1;"><label>Close</label><div class="input-row"><input id="bk-ov-close" type="time" value="18:00"></div></div>
+                </div>
+                <button class="btn btn-outline" id="btn-bk-add-override" type="button">Add date override</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Cancellation / no-show policy <span style="text-transform:none; font-weight:600;">(optional, shown to clients before they book)</span></label>
+              <div class="input-row"><textarea id="bk-policy" placeholder="e.g. Please give 24 hours notice to cancel or reschedule. No-shows may be charged a fee." style="min-height:70px;"></textarea></div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <p class="eyebrow-mini">Payment links <span style="text-transform:none; font-weight:600;">(optional)</span></p>
+              <div class="field"><label>Venmo username</label><div class="input-row"><input id="bk-pay-venmo" type="text" placeholder="e.g. your-venmo-username"></div></div>
+              <div class="field"><label>Cash App $cashtag</label><div class="input-row"><input id="bk-pay-cashapp" type="text" placeholder="e.g. $yourcashtag"></div></div>
+              <div class="field"><label>Zelle <span style="text-transform:none; font-weight:600;">(phone or email, no direct link, shown as text)</span></label><div class="input-row"><input id="bk-pay-zelle" type="text" placeholder="e.g. (910) 555-0123"></div></div>
+              <div class="field"><label>Apple Pay / Apple Cash <span style="text-transform:none; font-weight:600;">(phone or email, no direct link, shown as text)</span></label><div class="input-row"><input id="bk-pay-applepay" type="text" placeholder="e.g. (910) 555-0123"></div></div>
+            </div>
+
+            <button class="btn btn-primary" id="btn-bk-save" type="button">Save booking setup</button>
+            <p class="foot-note-small" id="bk-save-note">&nbsp;</p>
+          </div>
+
+          <div class="spacer"></div>
+
+          <div id="bk-appts-section" style="display:none; flex-direction:column; gap:10px; border-top:1px solid var(--line); padding-top:16px;">
+            <p class="eyebrow-mini">Upcoming appointments</p>
+            <div id="bk-appts-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+            <p class="screen-sub" id="bk-appts-empty" style="display:none;">Nothing booked yet.</p>
+          </div>
+        </div>
+      </section>
+
       <!-- ============ LEDGER ============ -->
       <section class="tab-pane" data-tab="ledger" id="tab-ledger">
         <div class="tab-head">
@@ -865,6 +963,7 @@
       <button class="tab-btn active" data-tabbtn="pace">Pace</button>
       <button class="tab-btn" data-tabbtn="coach">Coach</button>
       <button class="tab-btn" data-tabbtn="consult">Consult</button>
+      <button class="tab-btn" data-tabbtn="booking">Booking</button>
       <button class="tab-btn" data-tabbtn="ledger">Ledger</button>
     </nav>
   </div>
@@ -993,6 +1092,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
 /* =========================================================
    SUPABASE SETUP
@@ -1081,7 +1181,25 @@ function defaultProfile(name){
     shopAddress: '',
     ndaVersion: '',
     ndaAcceptedAt: '',
-    social: { instagram: '', facebook: '', website: '' }
+    social: { instagram: '', facebook: '', website: '' },
+    bookingEnabled: false,
+    bookingServices: [],
+    bookingHours: defaultBookingHours(),
+    bookingOverrides: [],
+    bookingPolicy: '',
+    paymentLinks: { venmo:'', cashapp:'', zelle:'', applepay:'' }
+  };
+}
+
+function defaultBookingHours(){
+  return {
+    sun:{closed:true, open:'09:00', close:'18:00'},
+    mon:{closed:false, open:'09:00', close:'18:00'},
+    tue:{closed:false, open:'09:00', close:'18:00'},
+    wed:{closed:false, open:'09:00', close:'18:00'},
+    thu:{closed:false, open:'09:00', close:'18:00'},
+    fri:{closed:false, open:'09:00', close:'18:00'},
+    sat:{closed:false, open:'09:00', close:'15:00'}
   };
 }
 
@@ -1122,6 +1240,12 @@ async function persistProfile(fields){
   if (fields.ndaVersion !== undefined) row.nda_version = fields.ndaVersion;
   if (fields.ndaAcceptedAt !== undefined) row.nda_accepted_at = fields.ndaAcceptedAt;
   if (fields.social !== undefined) row.social = fields.social;
+  if (fields.bookingEnabled !== undefined) row.booking_enabled = fields.bookingEnabled;
+  if (fields.bookingServices !== undefined) row.booking_services = fields.bookingServices;
+  if (fields.bookingHours !== undefined) row.booking_hours = fields.bookingHours;
+  if (fields.bookingOverrides !== undefined) row.booking_overrides = fields.bookingOverrides;
+  if (fields.bookingPolicy !== undefined) row.booking_policy = fields.bookingPolicy;
+  if (fields.paymentLinks !== undefined) row.payment_links = fields.paymentLinks;
   try{
     const { data, error } = await supabaseClient.from('profiles').update(row).eq('code', profileCode).select();
     if (error) throw error;
@@ -1156,6 +1280,7 @@ function showTab(name){
   document.querySelectorAll('.tab-pane').forEach(p=> p.classList.toggle('show', p.dataset.tab===name));
   document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tabbtn===name));
   if (name === 'ledger') enterLedgerTab();
+  if (name === 'booking' && window.initBookingTab) window.initBookingTab();
 }
 function applyRoleVisibility(){
   const show = isStudent();
@@ -2662,6 +2787,208 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 })();
 
 /* =========================================================
+   BOOKING
+   ========================================================= */
+(function(){
+  const root = document.getElementById('tab-booking');
+  const DAY_KEYS = ['sun','mon','tue','wed','thu','fri','sat'];
+  const DAY_LABELS = {sun:'Sunday', mon:'Monday', tue:'Tuesday', wed:'Wednesday', thu:'Thursday', fri:'Friday', sat:'Saturday'};
+  function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function fmtDuration(mins){
+    const h = Math.floor(mins/60), m = mins%60;
+    if (h && m) return `${h} hr ${m} min`;
+    if (h) return `${h} hr`;
+    return `${m} min`;
+  }
+  function bookingUrl(){ return window.location.href.replace(/index\.html.*$/, '').replace(/\/[^\/]*$/, '/') + 'directory.html?pro=' + encodeURIComponent(profileCode); }
+
+  function renderServices(){
+    const list = root.querySelector('#bk-services-list');
+    const svcs = profile.bookingServices || [];
+    list.innerHTML = svcs.length ? svcs.map(s=> `<div class="detail-row"><span>${s.name}: $${s.price} · ${fmtDuration(s.duration)}</span><button type="button" class="link-btn" data-remove-service="${s.id}">Remove</button></div>`).join('') : '<p class="screen-sub" style="margin:0;">No services added yet. Add at least one below so clients have something to book.</p>';
+  }
+  root.querySelector('#bk-services-list').addEventListener('click', e=>{
+    const id = e.target.dataset.removeService;
+    if (!id) return;
+    profile.bookingServices = (profile.bookingServices||[]).filter(s=>s.id!==id);
+    renderServices();
+  });
+  root.querySelector('#btn-bk-add-service').addEventListener('click', ()=>{
+    const name = root.querySelector('#bk-svc-name').value.trim();
+    const price = parseFloat(root.querySelector('#bk-svc-price').value);
+    const duration = parseInt(root.querySelector('#bk-svc-duration').value, 10);
+    if (!name || isNaN(price) || price < 0){ return; }
+    profile.bookingServices = (profile.bookingServices||[]).concat([{ id:genId(), name, price, duration }]);
+    root.querySelector('#bk-svc-name').value = '';
+    root.querySelector('#bk-svc-price').value = '';
+    renderServices();
+  });
+
+  function renderHours(){
+    const list = root.querySelector('#bk-hours-list');
+    const hours = profile.bookingHours || defaultBookingHours();
+    list.innerHTML = DAY_KEYS.map(k=>{
+      const d = hours[k] || {closed:true, open:'09:00', close:'18:00'};
+      return `<div class="toggle-row" data-day="${k}" style="flex-wrap:wrap;">
+        <span class="switch-label" style="width:90px;">${DAY_LABELS[k]}</span>
+        <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:200px;">
+          <input type="time" class="bk-hour-open" value="${d.open||'09:00'}" style="border:1px solid var(--line); border-radius:8px; padding:6px 8px; font-size:12px; ${d.closed?'opacity:.4;':''}" ${d.closed?'disabled':''}>
+          <span style="font-size:11px; color:var(--muted);">to</span>
+          <input type="time" class="bk-hour-close" value="${d.close||'18:00'}" style="border:1px solid var(--line); border-radius:8px; padding:6px 8px; font-size:12px; ${d.closed?'opacity:.4;':''}" ${d.closed?'disabled':''}>
+          <label style="display:flex; align-items:center; gap:4px; font-size:11px; color:var(--muted); margin-left:auto;"><input type="checkbox" class="bk-hour-closed" ${d.closed?'checked':''}> Closed</label>
+        </div>
+      </div>`;
+    }).join('');
+    list.querySelectorAll('.bk-hour-closed').forEach(cb=>{
+      cb.addEventListener('change', function(){
+        const row = this.closest('[data-day]');
+        row.querySelector('.bk-hour-open').disabled = this.checked;
+        row.querySelector('.bk-hour-close').disabled = this.checked;
+        row.querySelector('.bk-hour-open').style.opacity = this.checked ? '.4' : '1';
+        row.querySelector('.bk-hour-close').style.opacity = this.checked ? '.4' : '1';
+      });
+    });
+  }
+  function collectHours(){
+    const out = {};
+    root.querySelectorAll('#bk-hours-list [data-day]').forEach(row=>{
+      const k = row.dataset.day;
+      out[k] = {
+        closed: row.querySelector('.bk-hour-closed').checked,
+        open: row.querySelector('.bk-hour-open').value || '09:00',
+        close: row.querySelector('.bk-hour-close').value || '18:00'
+      };
+    });
+    return out;
+  }
+
+  function renderOverrides(){
+    const list = root.querySelector('#bk-overrides-list');
+    const overrides = profile.bookingOverrides || [];
+    list.innerHTML = overrides.length ? overrides.map((o,i)=>{
+      const label = new Date(o.date+'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+      const detail = o.closed ? 'Closed' : `${o.open} to ${o.close}`;
+      return `<div class="detail-row"><span>${label}: ${detail}</span><button type="button" class="link-btn" data-remove-override="${i}">Remove</button></div>`;
+    }).join('') : '<p class="screen-sub" style="margin:0;">No date overrides yet.</p>';
+  }
+  root.querySelector('#bk-overrides-list').addEventListener('click', e=>{
+    const i = e.target.dataset.removeOverride;
+    if (i === undefined) return;
+    profile.bookingOverrides = (profile.bookingOverrides||[]).filter((_,idx)=> idx!==parseInt(i,10));
+    renderOverrides();
+  });
+  root.querySelector('#bk-ov-closed').addEventListener('change', function(){
+    root.querySelector('#bk-ov-hours-row').style.display = this.checked ? 'none' : 'flex';
+  });
+  root.querySelector('#btn-bk-add-override').addEventListener('click', ()=>{
+    const date = root.querySelector('#bk-ov-date').value;
+    if (!date) return;
+    const closed = root.querySelector('#bk-ov-closed').checked;
+    const open = root.querySelector('#bk-ov-open').value || '09:00';
+    const close = root.querySelector('#bk-ov-close').value || '18:00';
+    profile.bookingOverrides = (profile.bookingOverrides||[]).filter(o=>o.date!==date).concat([{ date, closed, open, close }]).sort((a,b)=> a.date<b.date?-1:1);
+    root.querySelector('#bk-ov-date').value = '';
+    root.querySelector('#bk-ov-closed').checked = false;
+    root.querySelector('#bk-ov-hours-row').style.display = 'flex';
+    renderOverrides();
+  });
+
+  function renderLinkAndQR(){
+    const url = bookingUrl();
+    root.querySelector('#bk-link-input').value = url;
+    const canvas = root.querySelector('#bk-qr-canvas');
+    if (window.QRCode && profileCode){
+      window.QRCode.toCanvas(canvas, url, { width:150, margin:1, color:{ dark:'#1E2530', light:'#FFFFFF' } }, function(){});
+    }
+  }
+  root.querySelector('#btn-bk-copy-link').addEventListener('click', async ()=>{
+    const note = root.querySelector('#bk-copy-note');
+    try{
+      await navigator.clipboard.writeText(root.querySelector('#bk-link-input').value);
+      note.textContent = 'Copied.';
+    }catch(e){
+      root.querySelector('#bk-link-input').select();
+      note.textContent = 'Select and copy the link above.';
+    }
+  });
+
+  function renderSetupFromProfile(){
+    root.querySelector('#bk-enable-toggle').checked = !!profile.bookingEnabled;
+    updateEnabledVisibility();
+    renderServices();
+    renderHours();
+    renderOverrides();
+    renderLinkAndQR();
+    root.querySelector('#bk-policy').value = profile.bookingPolicy || '';
+    const pay = profile.paymentLinks || {};
+    root.querySelector('#bk-pay-venmo').value = pay.venmo || '';
+    root.querySelector('#bk-pay-cashapp').value = pay.cashapp || '';
+    root.querySelector('#bk-pay-zelle').value = pay.zelle || '';
+    root.querySelector('#bk-pay-applepay').value = pay.applepay || '';
+  }
+  function updateEnabledVisibility(){
+    const on = root.querySelector('#bk-enable-toggle').checked;
+    root.querySelector('#bk-setup-body').style.display = on ? 'flex' : 'none';
+    root.querySelector('#bk-enable-hint').style.display = on ? 'none' : 'block';
+    root.querySelector('#bk-appts-section').style.display = (on && profile.bookingEnabled) ? 'flex' : 'none';
+  }
+  root.querySelector('#bk-enable-toggle').addEventListener('change', updateEnabledVisibility);
+
+  root.querySelector('#btn-bk-save').addEventListener('click', async ()=>{
+    const note = root.querySelector('#bk-save-note');
+    profile.bookingEnabled = root.querySelector('#bk-enable-toggle').checked;
+    profile.bookingHours = collectHours();
+    profile.bookingPolicy = root.querySelector('#bk-policy').value.trim();
+    profile.paymentLinks = {
+      venmo: root.querySelector('#bk-pay-venmo').value.trim(),
+      cashapp: root.querySelector('#bk-pay-cashapp').value.trim(),
+      zelle: root.querySelector('#bk-pay-zelle').value.trim(),
+      applepay: root.querySelector('#bk-pay-applepay').value.trim()
+    };
+    note.textContent = 'Saving…';
+    const result = await persistProfile({ bookingEnabled: profile.bookingEnabled, bookingServices: profile.bookingServices, bookingHours: profile.bookingHours, bookingOverrides: profile.bookingOverrides, bookingPolicy: profile.bookingPolicy, paymentLinks: profile.paymentLinks });
+    note.textContent = result.ok ? 'Saved.' : ("Couldn't save: " + (result.message || 'try again.'));
+    updateEnabledVisibility();
+    if (profile.bookingEnabled) loadAppointments();
+  });
+
+  async function loadAppointments(){
+    const listEl = root.querySelector('#bk-appts-list');
+    const emptyEl = root.querySelector('#bk-appts-empty');
+    if (!dbAvailable || !profileCode){ listEl.innerHTML=''; emptyEl.style.display='block'; return; }
+    try{
+      const { data, error } = await supabaseClient.from('appointments').select('*').eq('barber_code', profileCode).eq('status','booked');
+      if (error) throw error;
+      const today = todayIso();
+      const appts = (data || []).filter(a=> a.appt_date >= today).sort((a,b)=> (a.appt_date+a.start_time) < (b.appt_date+b.start_time) ? -1 : 1);
+      emptyEl.style.display = appts.length ? 'none' : 'block';
+      listEl.innerHTML = appts.map(a=>{
+        const dateLabel = new Date(a.appt_date+'T00:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+        const svcNames = (a.services||[]).map(s=>s.name).join(', ');
+        return `<div class="detail-card" style="gap:4px;"><strong>${dateLabel}, ${a.start_time}</strong><span class="screen-sub" style="margin:0;">${a.client_name}: ${svcNames}, $${a.total_price}</span><button type="button" class="link-btn" data-cancel-appt="${a.id}" style="align-self:flex-start; color:var(--behind);">Cancel appointment</button></div>`;
+      }).join('');
+    }catch(e){
+      console.warn('load appointments failed', e);
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+    }
+  }
+  root.querySelector('#bk-appts-list').addEventListener('click', async e=>{
+    const id = e.target.dataset.cancelAppt;
+    if (!id) return;
+    try{
+      await supabaseClient.from('appointments').update({ status:'cancelled' }).eq('id', id);
+    }catch(err){ console.warn('cancel failed', err); }
+    loadAppointments();
+  });
+
+  window.initBookingTab = function(){
+    renderSetupFromProfile();
+    if (profile.bookingEnabled) loadAppointments();
+  };
+})();
+
+/* =========================================================
    AUTH / PROFILE LOAD / SHARED READ-ONLY VIEW / BOOT
    ========================================================= */
 async function tryLoadProfile(code){
@@ -2686,6 +3013,12 @@ async function tryLoadProfile(code){
       profile.ndaVersion = data.nda_version || '';
       profile.ndaAcceptedAt = data.nda_accepted_at || '';
       profile.social = Object.assign({ instagram:'', facebook:'', website:'' }, data.social || {});
+      profile.bookingEnabled = !!data.booking_enabled;
+      profile.bookingServices = Array.isArray(data.booking_services) ? data.booking_services : [];
+      profile.bookingHours = Object.assign(defaultBookingHours(), data.booking_hours || {});
+      profile.bookingOverrides = Array.isArray(data.booking_overrides) ? data.booking_overrides : [];
+      profile.bookingPolicy = data.booking_policy || '';
+      profile.paymentLinks = Object.assign({ venmo:'', cashapp:'', zelle:'', applepay:'' }, data.payment_links || {});
       profileCode = code;
       return true;
     }

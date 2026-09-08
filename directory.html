@@ -60,6 +60,13 @@
   .empty-note{ border:1px dashed var(--line); border-radius:14px; padding:22px 16px; text-align:center; color:var(--muted); font-size:13px; line-height:1.5; }
 
   .detail-card{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:16px; display:flex; flex-direction:column; gap:10px; }
+  .eyebrow-mini2{ font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin:0; }
+  .check-row{ display:flex; align-items:center; gap:9px; padding:11px 12px; border:1px solid var(--line); border-radius:10px; background:var(--paper); cursor:pointer; }
+  .summary-card{ border:1px solid var(--line); border-radius:12px; background:var(--paper); padding:12px 14px; display:flex; flex-direction:column; gap:6px; }
+  .summary-row{ display:flex; justify-content:space-between; gap:10px; font-size:12.5px; }
+  .bkc-svc-row{ display:flex; align-items:center; gap:9px; padding:11px 12px; border:1px solid var(--line); border-radius:10px; background:var(--paper); cursor:pointer; }
+  .bkc-slot-btn{ border:1px solid var(--brass); background:var(--paper); color:var(--brass); border-radius:9px; padding:8px 12px; font-size:12.5px; font-weight:700; cursor:pointer; }
+  .bkc-slot-btn.selected{ background:var(--brass); color:#241A0C; }
   .social-row{ display:flex; flex-wrap:wrap; gap:8px; }
   .social-chip{ border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:12px; font-weight:700; color:var(--ink); text-decoration:none; background:var(--surface); }
   .social-chip:hover{ border-color:var(--brass); color:var(--brass); }
@@ -117,6 +124,59 @@
         <p class="screen-sub" id="detail-contact-line" style="margin-top:2px; display:none;">&nbsp;</p>
       </div>
       <div class="social-row" id="detail-social"></div>
+
+      <div id="detail-booking-block" style="display:none; flex-direction:column; gap:14px; border:1px solid var(--brass); background:var(--brass-tint); border-radius:14px; padding:16px;">
+        <p class="eyebrow-mini" style="color:var(--brass); margin:0;">Book an appointment</p>
+
+        <div id="bkc-step-services" style="display:flex; flex-direction:column; gap:10px;">
+          <div id="bkc-services-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+          <div class="summary-row"><span>Total</span><span id="bkc-total-label">$0 · 0 min</span></div>
+          <button class="btn btn-primary" id="btn-bkc-next-date" type="button" disabled>Choose a date & time</button>
+        </div>
+
+        <div id="bkc-step-slots" style="display:none; flex-direction:column; gap:10px;">
+          <button type="button" class="link-btn" id="btn-bkc-back-services" style="align-self:flex-start;">&larr; Back to services</button>
+          <div class="field"><label>Date</label><div class="input-row"><input id="bkc-date" type="date"></div></div>
+          <div id="bkc-slots-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+          <p class="screen-sub" id="bkc-slots-empty" style="display:none; margin:0;">No open times that day. Try another date.</p>
+        </div>
+
+        <div id="bkc-step-confirm" style="display:none; flex-direction:column; gap:12px;">
+          <button type="button" class="link-btn" id="btn-bkc-back-slots" style="align-self:flex-start;">&larr; Back to times</button>
+          <div class="summary-card" id="bkc-confirm-summary"></div>
+
+          <div id="bkc-client-search">
+            <div class="field"><label>Your Hair Passport code</label><div class="input-row"><input id="bkc-client-code" type="text" placeholder="Your personal code"></div></div>
+            <button class="btn btn-outline" id="btn-bkc-client-lookup" type="button" style="width:100%; margin-top:8px;">Look up</button>
+            <p class="screen-sub" id="bkc-client-status" style="margin-top:6px;">&nbsp;</p>
+          </div>
+          <div id="bkc-client-newname" style="display:none; flex-direction:column; gap:10px;">
+            <div class="field"><label>Your name</label><div class="input-row"><input id="bkc-client-new-name" type="text" placeholder="Your name"></div></div>
+            <button class="btn btn-primary" id="btn-bkc-client-create" type="button" style="width:100%;">Create my Hair Passport</button>
+          </div>
+          <div id="bkc-client-loaded" style="display:none;">
+            <p class="screen-sub" id="bkc-client-attached-summary" style="margin:0;">&nbsp;</p>
+          </div>
+
+          <div id="bkc-policy-block" style="display:none; flex-direction:column; gap:8px;">
+            <p class="eyebrow-mini2" style="margin:0;">Cancellation policy</p>
+            <p class="screen-sub" id="bkc-policy-text" style="margin:0;"></p>
+            <label class="check-row"><input type="checkbox" id="bkc-policy-ack"><span>I've read and agree to this policy</span></label>
+          </div>
+
+          <button class="btn btn-primary" id="btn-bkc-confirm" type="button" disabled>Confirm booking</button>
+          <p class="screen-sub" id="bkc-confirm-status" style="margin:0;">&nbsp;</p>
+        </div>
+
+        <div id="bkc-step-success" style="display:none; flex-direction:column; gap:12px;">
+          <p class="screen-title" style="margin:0;">You're booked!</p>
+          <p class="screen-sub" id="bkc-success-summary" style="margin:0;"></p>
+          <div id="bkc-pay-links" style="display:flex; flex-direction:column; gap:8px;"></div>
+          <button class="btn btn-outline" id="btn-bkc-add-calendar" type="button">Add to calendar</button>
+          <button class="btn btn-ghost" id="btn-bkc-book-again" type="button">Book another appointment</button>
+        </div>
+      </div>
+
       <div class="detail-card" id="detail-scores"></div>
       <div>
         <p class="eyebrow-mini2" style="font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin:0 0 10px;">Reviews</p>
@@ -229,7 +289,18 @@ function renderList(){
 }
 
 async function showDetail(code){
-  const p = allPros.find(x=>x.code===code);
+  let p = allPros.find(x=>x.code===code);
+  if (!p){
+    // Not publicly listed. A booking-only (unlisted) pro can still be reached by their direct code link.
+    try{
+      const { data, error } = await supabaseClient.from('profiles').select('*').eq('code', code).maybeSingle();
+      if (error) throw error;
+      if (data){
+        if (data.name) data.name = toTitleCase(data.name);
+        p = data;
+      }
+    }catch(e){ console.warn('direct pro lookup failed', e); }
+  }
   if (!p){ return; }
   document.getElementById('list-screen').hidden = true;
   document.getElementById('detail-screen').hidden = false;
@@ -262,6 +333,8 @@ async function showDetail(code){
     a.textContent = label;
     socialHolder.appendChild(a);
   });
+
+  initBookingFor(p);
 
   let reviews = [];
   try{ reviews = await fetchReviewsFor(code); }catch(e){ console.warn('reviews load failed', e); }
@@ -303,6 +376,314 @@ async function showDetail(code){
   }
 }
 
+/* =========================================================
+   CLIENT BOOKING FLOW
+   ========================================================= */
+function todayIso(){ return new Date().toISOString().slice(0,10); }
+function sanitizeCode(raw){
+  let c = (raw||'').trim().toLowerCase().replace(/[^a-z0-9_.~:@+-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+  if (c.length > 60) c = c.slice(0,60);
+  return c;
+}
+function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function fmtDuration(mins){
+  const h = Math.floor(mins/60), m = mins%60;
+  if (h && m) return `${h} hr ${m} min`;
+  if (h) return `${h} hr`;
+  return `${m} min`;
+}
+function fmtTime12(hhmm){
+  const [h,m] = hhmm.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const h12 = ((h % 12) || 12);
+  return `${h12}:${String(m).padStart(2,'0')} ${period}`;
+}
+const DAY_KEYS = ['sun','mon','tue','wed','thu','fri','sat'];
+
+let bkc = { pro:null, selectedIds:[], date:null, startTime:null, client:null, pendingNewCode:null };
+
+function initBookingFor(pro){
+  const block = document.getElementById('detail-booking-block');
+  if (!pro.booking_enabled || !Array.isArray(pro.booking_services) || !pro.booking_services.length){
+    block.style.display = 'none';
+    return;
+  }
+  block.style.display = 'flex';
+  bkc = { pro, selectedIds:[], date:null, startTime:null, client:null, pendingNewCode:null };
+  renderBkcServices();
+  showBkcStep('services');
+  const params = new URLSearchParams(window.location.search);
+  const clientParam = sanitizeCode(params.get('client') || '');
+  if (clientParam){
+    document.getElementById('bkc-client-code').value = clientParam;
+  }
+}
+
+function showBkcStep(name){
+  ['services','slots','confirm','success'].forEach(n=>{
+    document.getElementById('bkc-step-'+n).style.display = (n===name) ? 'flex' : 'none';
+  });
+}
+
+function renderBkcServices(){
+  const holder = document.getElementById('bkc-services-list');
+  holder.innerHTML = (bkc.pro.booking_services||[]).map(s=> `
+    <label class="bkc-svc-row">
+      <input type="checkbox" class="bkc-svc-check" data-svc="${s.id}">
+      <span style="flex:1;">${s.name}</span>
+      <span style="font-weight:700;">$${s.price}</span>
+      <span style="color:var(--muted); font-size:11.5px;">${fmtDuration(s.duration)}</span>
+    </label>
+  `).join('');
+  holder.querySelectorAll('.bkc-svc-check').forEach(cb=>{
+    cb.addEventListener('change', function(){
+      const id = this.dataset.svc;
+      bkc.selectedIds = bkc.selectedIds.filter(x=>x!==id);
+      if (this.checked) bkc.selectedIds.push(id);
+      updateBkcTotal();
+    });
+  });
+  updateBkcTotal();
+}
+function selectedServices(){
+  return (bkc.pro.booking_services||[]).filter(s=> bkc.selectedIds.includes(s.id));
+}
+function updateBkcTotal(){
+  const svcs = selectedServices();
+  const totalPrice = svcs.reduce((a,s)=>a+Number(s.price||0),0);
+  const totalMins = svcs.reduce((a,s)=>a+Number(s.duration||0),0);
+  document.getElementById('bkc-total-label').textContent = `$${totalPrice} · ${fmtDuration(totalMins || 0)}`;
+  document.getElementById('btn-bkc-next-date').disabled = svcs.length === 0;
+}
+document.getElementById('btn-bkc-next-date').addEventListener('click', ()=>{
+  showBkcStep('slots');
+  const dateInput = document.getElementById('bkc-date');
+  if (!dateInput.value) dateInput.value = todayIso();
+  bkc.date = dateInput.value;
+  renderBkcSlots();
+});
+document.getElementById('btn-bkc-back-services').addEventListener('click', ()=> showBkcStep('services'));
+document.getElementById('bkc-date').addEventListener('change', function(){
+  bkc.date = this.value;
+  renderBkcSlots();
+});
+
+function overrideFor(dateStr){
+  return (bkc.pro.booking_overrides||[]).find(o=>o.date===dateStr) || null;
+}
+function hoursFor(dateStr){
+  const ov = overrideFor(dateStr);
+  if (ov) return ov;
+  const dayKey = DAY_KEYS[new Date(dateStr+'T00:00:00').getDay()];
+  return (bkc.pro.booking_hours || {})[dayKey] || {closed:true};
+}
+function toMinutes(hhmm){ const [h,m] = hhmm.split(':').map(Number); return h*60+m; }
+function toHHMM(mins){ const h = Math.floor(mins/60), m = mins%60; return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'); }
+
+async function renderBkcSlots(){
+  const listEl = document.getElementById('bkc-slots-list');
+  const emptyEl = document.getElementById('bkc-slots-empty');
+  listEl.innerHTML = '';
+  emptyEl.style.display = 'none';
+  const totalMins = selectedServices().reduce((a,s)=>a+Number(s.duration||0),0);
+  const hours = hoursFor(bkc.date);
+  if (!hours || hours.closed || !totalMins){ emptyEl.style.display = 'block'; return; }
+
+  let existing = [];
+  if (dbAvailable){
+    try{
+      const { data, error } = await supabaseClient.from('appointments').select('*').eq('barber_code', bkc.pro.code).eq('status','booked');
+      if (error) throw error;
+      existing = (data||[]).filter(a=> a.appt_date === bkc.date);
+    }catch(e){ console.warn('load existing appts failed', e); }
+  }
+  const busy = existing.map(a=> [toMinutes(a.start_time), toMinutes(a.end_time)]);
+
+  const openMin = toMinutes(hours.open||'09:00');
+  const closeMin = toMinutes(hours.close||'18:00');
+  const nowMin = (bkc.date === todayIso()) ? (new Date().getHours()*60 + new Date().getMinutes()) : -1;
+  const slots = [];
+  for (let t = openMin; t + totalMins <= closeMin; t += 15){
+    if (t < nowMin) continue;
+    const overlaps = busy.some(([bs,be])=> t < be && (t+totalMins) > bs);
+    if (!overlaps) slots.push(t);
+  }
+  if (!slots.length){ emptyEl.style.display = 'block'; return; }
+  listEl.innerHTML = slots.map(t=> `<button type="button" class="bkc-slot-btn" data-start="${toHHMM(t)}">${fmtTime12(toHHMM(t))}</button>`).join('');
+  listEl.querySelectorAll('.bkc-slot-btn').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      listEl.querySelectorAll('.bkc-slot-btn').forEach(b=>b.classList.remove('selected'));
+      this.classList.add('selected');
+      bkc.startTime = this.dataset.start;
+      setTimeout(()=>{ showBkcStep('confirm'); renderBkcConfirm(); }, 150);
+    });
+  });
+}
+
+function renderBkcConfirm(){
+  const svcs = selectedServices();
+  const totalPrice = svcs.reduce((a,s)=>a+Number(s.price||0),0);
+  const totalMins = svcs.reduce((a,s)=>a+Number(s.duration||0),0);
+  const endTime = toHHMM(toMinutes(bkc.startTime) + totalMins);
+  bkc.endTime = endTime;
+  const dateLabel = new Date(bkc.date+'T00:00:00').toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'});
+  document.getElementById('bkc-confirm-summary').innerHTML = `
+    <div class="summary-row"><span>With</span><span>${bkc.pro.name}</span></div>
+    <div class="summary-row"><span>Services</span><span>${svcs.map(s=>s.name).join(', ')}</span></div>
+    <div class="summary-row"><span>When</span><span>${dateLabel}, ${fmtTime12(bkc.startTime)}</span></div>
+    <div class="summary-row"><span>Total</span><span>$${totalPrice} · ${fmtDuration(totalMins)}</span></div>
+  `;
+  document.getElementById('bkc-client-search').style.display = 'block';
+  document.getElementById('bkc-client-newname').style.display = 'none';
+  document.getElementById('bkc-client-loaded').style.display = 'none';
+  document.getElementById('bkc-client-status').textContent = ' ';
+  bkc.client = null;
+  const policyBlock = document.getElementById('bkc-policy-block');
+  if (bkc.pro.booking_policy){
+    policyBlock.style.display = 'flex';
+    document.getElementById('bkc-policy-text').textContent = bkc.pro.booking_policy;
+    document.getElementById('bkc-policy-ack').checked = false;
+  } else {
+    policyBlock.style.display = 'none';
+  }
+  updateConfirmEnabled();
+
+  const clientParam = sanitizeCode(new URLSearchParams(window.location.search).get('client') || '');
+  if (clientParam){
+    document.getElementById('bkc-client-code').value = clientParam;
+    bkcLookupClient();
+  }
+}
+document.getElementById('btn-bkc-back-slots').addEventListener('click', ()=> showBkcStep('slots'));
+
+async function bkcLookupClient(){
+  const statusEl = document.getElementById('bkc-client-status');
+  const code = sanitizeCode(document.getElementById('bkc-client-code').value);
+  if (!code){ statusEl.textContent = 'Enter your code first.'; return; }
+  if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
+  statusEl.textContent = 'Looking up…';
+  document.getElementById('bkc-client-newname').style.display = 'none';
+  try{
+    const { data, error } = await supabaseClient.from('clients').select('*').eq('code', code).maybeSingle();
+    if (error) throw error;
+    if (data){
+      bkc.client = { code, name: toTitleCase(data.name) || 'Client' };
+      statusEl.textContent = '';
+      document.getElementById('bkc-client-search').style.display = 'none';
+      document.getElementById('bkc-client-loaded').style.display = 'block';
+      document.getElementById('bkc-client-attached-summary').textContent = `Booking as: ${bkc.client.name}`;
+    } else {
+      statusEl.textContent = "No Hair Passport found for that code. Enter your name to create one.";
+      bkc.pendingNewCode = code;
+      document.getElementById('bkc-client-newname').style.display = 'flex';
+    }
+  }catch(e){
+    console.warn('client lookup failed', e);
+    statusEl.textContent = "Couldn't reach the client database.";
+  }
+  updateConfirmEnabled();
+}
+document.getElementById('btn-bkc-client-lookup').addEventListener('click', bkcLookupClient);
+
+document.getElementById('btn-bkc-client-create').addEventListener('click', async ()=>{
+  const name = document.getElementById('bkc-client-new-name').value.trim();
+  if (!name || !bkc.pendingNewCode) return;
+  bkc.client = { code: bkc.pendingNewCode, name: toTitleCase(name) };
+  if (dbAvailable){
+    try{
+      const { error } = await supabaseClient.from('clients').insert({ code: bkc.pendingNewCode, name: bkc.client.name, visits: [] });
+      if (error) throw error;
+    }catch(e){ console.warn('create client failed', e); }
+  }
+  document.getElementById('bkc-client-newname').style.display = 'none';
+  document.getElementById('bkc-client-search').style.display = 'none';
+  document.getElementById('bkc-client-loaded').style.display = 'block';
+  document.getElementById('bkc-client-attached-summary').textContent = `Booking as: ${bkc.client.name}`;
+  updateConfirmEnabled();
+});
+
+document.getElementById('bkc-policy-ack').addEventListener('change', updateConfirmEnabled);
+function updateConfirmEnabled(){
+  const policyOk = !bkc.pro.booking_policy || document.getElementById('bkc-policy-ack').checked;
+  document.getElementById('btn-bkc-confirm').disabled = !(bkc.client && policyOk);
+}
+
+document.getElementById('btn-bkc-confirm').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('bkc-confirm-status');
+  if (!bkc.client){ statusEl.textContent = 'Look up or create your Hair Passport first.'; return; }
+  const svcs = selectedServices();
+  const totalPrice = svcs.reduce((a,s)=>a+Number(s.price||0),0);
+  const totalMins = svcs.reduce((a,s)=>a+Number(s.duration||0),0);
+  const appt = {
+    id: genId(),
+    barber_code: bkc.pro.code,
+    barber_name: bkc.pro.name,
+    client_code: bkc.client.code,
+    client_name: bkc.client.name,
+    services: svcs.map(s=>({name:s.name, price:s.price, duration:s.duration})),
+    total_price: totalPrice,
+    total_minutes: totalMins,
+    appt_date: bkc.date,
+    start_time: bkc.startTime,
+    end_time: bkc.endTime,
+    status: 'booked'
+  };
+  if (!dbAvailable){ statusEl.textContent = "Live booking isn't connected right now. This wasn't saved."; return; }
+  statusEl.textContent = 'Booking…';
+  try{
+    const { error } = await supabaseClient.from('appointments').insert(appt);
+    if (error) throw error;
+    renderBkcSuccess(appt);
+    showBkcStep('success');
+  }catch(e){
+    console.warn('booking failed', e);
+    statusEl.textContent = "Couldn't save that booking. Try again.";
+  }
+});
+
+function renderBkcSuccess(appt){
+  const dateLabel = new Date(appt.appt_date+'T00:00:00').toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'});
+  document.getElementById('bkc-success-summary').textContent = `${appt.services.map(s=>s.name).join(', ')} with ${bkc.pro.name}, ${dateLabel}, ${fmtTime12(appt.start_time)}. Total: $${appt.total_price}.`;
+
+  const pay = bkc.pro.payment_links || {};
+  const payHolder = document.getElementById('bkc-pay-links');
+  const links = [];
+  if (pay.venmo) links.push(`<a class="btn btn-outline" style="text-decoration:none; text-align:center;" href="https://venmo.com/u/${encodeURIComponent(pay.venmo.replace(/^@/,''))}" target="_blank" rel="noopener">Pay with Venmo (@${pay.venmo.replace(/^@/,'')})</a>`);
+  if (pay.cashapp) links.push(`<a class="btn btn-outline" style="text-decoration:none; text-align:center;" href="https://cash.app/${encodeURIComponent(pay.cashapp.replace(/^\$/,'$'))}" target="_blank" rel="noopener">Pay with Cash App (${pay.cashapp.startsWith('$')?pay.cashapp:'$'+pay.cashapp})</a>`);
+  if (pay.zelle) links.push(`<div class="detail-row"><span>Zelle</span><span>${pay.zelle}</span></div>`);
+  if (pay.applepay) links.push(`<div class="detail-row"><span>Apple Pay / Cash</span><span>${pay.applepay}</span></div>`);
+  payHolder.innerHTML = links.length ? (`<p class="eyebrow-mini2" style="margin:0;">Total due: $${appt.total_price}</p>` + links.join('')) : '';
+
+  document.getElementById('btn-bkc-add-calendar').onclick = ()=> downloadIcs(appt, bkc.pro.name);
+  document.getElementById('btn-bkc-book-again').onclick = ()=>{
+    bkc.selectedIds = []; bkc.date = null; bkc.startTime = null; bkc.client = null;
+    document.querySelectorAll('.bkc-svc-check').forEach(cb=>cb.checked=false);
+    updateBkcTotal();
+    showBkcStep('services');
+  };
+}
+
+function downloadIcs(appt, proName){
+  const startDT = appt.appt_date.replace(/-/g,'') + 'T' + appt.start_time.replace(':','') + '00';
+  const endDT = appt.appt_date.replace(/-/g,'') + 'T' + appt.end_time.replace(':','') + '00';
+  const svcNames = appt.services.map(s=>s.name).join(', ');
+  const ics = [
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//All Hair Connect//Booking//EN','BEGIN:VEVENT',
+    'UID:' + appt.id + '@allhairconnect',
+    'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z',
+    'DTSTART:' + startDT, 'DTEND:' + endDT,
+    'SUMMARY:' + svcNames + ' with ' + proName,
+    'DESCRIPTION:Booked via All Hair Connect. Total $' + appt.total_price,
+    'END:VEVENT','END:VCALENDAR'
+  ].join('\r\n');
+  const blob = new Blob([ics], {type:'text/calendar'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'appointment.ics';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 document.getElementById('btn-back-list').addEventListener('click', ()=>{
   document.getElementById('detail-screen').hidden = true;
   document.getElementById('list-screen').hidden = false;
@@ -337,7 +718,7 @@ async function boot(){
   const proCode = params.get('pro');
   document.getElementById('list-screen').hidden = false;
   renderList();
-  if (proCode && allPros.some(p=>p.code===proCode)){
+  if (proCode){
     await showDetail(proCode);
   }
 }

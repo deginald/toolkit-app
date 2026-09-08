@@ -221,11 +221,27 @@
     <main class="content">
 
       <div class="screen-body" data-screen="home">
+        <div id="soon-banner" class="foot-note-small" style="padding:10px 14px; border-radius:10px; background:var(--brass-tint); color:var(--ink); border:1px solid var(--brass);" hidden></div>
+
         <div class="code-card">
           <span class="cc-label">Your code</span>
           <div id="qr-holder"></div>
           <span class="cc-code" id="home-code">&nbsp;</span>
           <span class="cc-hint">Show this to your barber or stylist at your next visit</span>
+        </div>
+
+        <div id="upcoming-section" style="display:none; flex-direction:column; gap:10px;">
+          <div class="section-head">
+            <h2>Upcoming appointments</h2>
+          </div>
+          <div id="upcoming-list-holder"></div>
+        </div>
+
+        <div id="bookagain-section" style="display:none; flex-direction:column; gap:10px;">
+          <div class="section-head">
+            <h2>Book again</h2>
+          </div>
+          <div id="bookagain-list-holder"></div>
         </div>
 
         <div class="section-head">
@@ -525,6 +541,139 @@ function renderHome(){
       if (v){ v.favorite = !v.favorite; renderHome(); await persistClient(); }
     });
   });
+
+  renderBookAgain();
+}
+
+function todayIso(){ return new Date().toISOString().slice(0,10); }
+
+function fmtTime12(hhmm){
+  const [h,m] = (hhmm||'0:0').split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const h12 = ((h % 12) || 12);
+  return `${h12}:${String(m).padStart(2,'0')} ${period}`;
+}
+
+function uniqueBarbers(){
+  const seen = {};
+  const order = [];
+  sortedVisits().forEach(v=>{
+    if (v.barberCode && !seen[v.barberCode]){
+      seen[v.barberCode] = { code: v.barberCode, name: v.barberName || 'your barber' };
+      order.push(v.barberCode);
+    }
+  });
+  return order.map(code=> seen[code]);
+}
+
+function renderBookAgain(){
+  const section = document.getElementById('bookagain-section');
+  const holder = document.getElementById('bookagain-list-holder');
+  const barbers = uniqueBarbers();
+  if (!barbers.length){ section.style.display = 'none'; return; }
+  section.style.display = 'flex';
+  holder.innerHTML = barbers.map(b => `
+    <a class="btn btn-outline" style="text-decoration:none; text-align:center;" href="directory.html?pro=${encodeURIComponent(b.code)}&client=${encodeURIComponent(clientCode)}">Book again with ${b.name}</a>
+  `).join('');
+}
+
+let upcomingAppts = [];
+
+async function loadUpcomingAppointments(){
+  const section = document.getElementById('upcoming-section');
+  if (!dbAvailable || !clientCode){ section.style.display = 'none'; renderSoonBanner([]); return; }
+  try{
+    const { data, error } = await supabaseClient.from('appointments').select('*').eq('client_code', clientCode).eq('status','booked');
+    if (error) throw error;
+    const today = todayIso();
+    const list = (data || []).filter(a => a.appt_date >= today).sort((a,b)=> (a.appt_date+a.start_time) < (b.appt_date+b.start_time) ? -1 : 1);
+    upcomingAppts = list;
+    renderUpcoming(list);
+    renderSoonBanner(list);
+  }catch(e){
+    console.warn('load appointments failed', e);
+    section.style.display = 'none';
+    renderSoonBanner([]);
+  }
+}
+
+function renderUpcoming(list){
+  const section = document.getElementById('upcoming-section');
+  const holder = document.getElementById('upcoming-list-holder');
+  if (!list.length){ section.style.display = 'none'; return; }
+  section.style.display = 'flex';
+  holder.innerHTML = list.map(a=>{
+    const dateLabel = new Date(a.appt_date+'T00:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+    const svcNames = (a.services||[]).map(s=>s.name).join(', ');
+    return `
+      <div class="detail-card" style="gap:6px;">
+        <strong>${dateLabel}, ${fmtTime12(a.start_time)}</strong>
+        <span class="screen-sub">${a.barber_name}: ${svcNames}</span>
+        <span class="screen-sub">Total: $${a.total_price}</span>
+        <div class="btn-row" style="margin-top:4px;">
+          <button type="button" class="btn btn-outline" style="flex:1;" data-ics="${a.id}">Add to calendar</button>
+          <button type="button" class="btn btn-danger" style="flex:1;" data-cancel-appt="${a.id}">Cancel</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  holder.querySelectorAll('[data-ics]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const a = list.find(x=>x.id === btn.dataset.ics);
+      if (a) downloadApptIcs(a);
+    });
+  });
+  holder.querySelectorAll('[data-cancel-appt]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const a = list.find(x=>x.id === btn.dataset.cancelAppt);
+      if (!a || !dbAvailable) return;
+      btn.disabled = true;
+      btn.textContent = 'Cancelling…';
+      try{
+        const { error } = await supabaseClient.from('appointments').update({status:'cancelled'}).eq('id', a.id);
+        if (error) throw error;
+        await loadUpcomingAppointments();
+      }catch(e){
+        console.warn('cancel failed', e);
+        btn.disabled = false;
+        btn.textContent = 'Cancel';
+      }
+    });
+  });
+}
+
+function renderSoonBanner(list){
+  const banner = document.getElementById('soon-banner');
+  const today = todayIso();
+  const soon = list.find(a => a.appt_date === today);
+  if (soon){
+    const svcNames = (soon.services||[]).map(s=>s.name).join(', ');
+    banner.textContent = `Today at ${fmtTime12(soon.start_time)}: ${svcNames} with ${soon.barber_name}.`;
+    banner.hidden = false;
+  } else {
+    banner.hidden = true;
+  }
+}
+
+function downloadApptIcs(appt){
+  const startDT = appt.appt_date.replace(/-/g,'') + 'T' + appt.start_time.replace(':','') + '00';
+  const endDT = appt.appt_date.replace(/-/g,'') + 'T' + appt.end_time.replace(':','') + '00';
+  const svcNames = (appt.services||[]).map(s=>s.name).join(', ');
+  const ics = [
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//All Hair Connect//Booking//EN','BEGIN:VEVENT',
+    'UID:' + appt.id + '@allhairconnect',
+    'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z',
+    'DTSTART:' + startDT, 'DTEND:' + endDT,
+    'SUMMARY:' + svcNames + ' with ' + appt.barber_name,
+    'DESCRIPTION:Booked via All Hair Connect. Total $' + appt.total_price,
+    'END:VEVENT','END:VCALENDAR'
+  ].join('\r\n');
+  const blob = new Blob([ics], {type:'text/calendar'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'appointment.ics';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function showScreen(name){
@@ -682,6 +831,7 @@ function enterApp(){
   document.getElementById('degraded-banner').hidden = dbAvailable;
   renderHome();
   showScreen('home');
+  loadUpcomingAppointments();
 }
 
 function setAuthMode(mode){
