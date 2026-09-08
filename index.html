@@ -1184,7 +1184,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
   function fmtRange(start, end){
     const s = new Date(start+'T00:00:00'), e = new Date(end+'T00:00:00');
-    return `${s.toLocaleDateString('en-US', {month:'short', day:'numeric'})} – ${e.toLocaleDateString('en-US', {month:'short', day:'numeric'})}`;
+    return `${s.toLocaleDateString('en-US', {month:'short', day:'numeric'})} to ${e.toLocaleDateString('en-US', {month:'short', day:'numeric'})}`;
   }
   function fmtSingleDate(dateStr){ return new Date(dateStr+'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric'}); }
   function daysBetween(start, end){ return Math.round((new Date(end+'T00:00:00') - new Date(start+'T00:00:00')) / 86400000) + 1; }
@@ -1518,7 +1518,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         {kind:'checklist', badge:'kind-prep', label:'Prep', title:'Protect & section', items:['Apply barrier cream at the hairline','Section into four quadrants','Gloves on']},
         {kind:'tech', badge:'kind-tech', label:'Technique', title:'Mix the lightener', body:"Mix bleach and developer to the manufacturer's ratio immediately before application."},
         {kind:'tech', badge:'kind-tech', label:'Technique', title:'Apply, resistant areas first', body:'Apply to the most resistant area first (typically the back and roots), working quickly and evenly.'},
-        {kind:'timer', badge:'kind-safety', label:'Safety check', title:'Monitor lift closely', body:'Check lift every 5–10 minutes with a strand test. Never leave lightener processing unchecked.', seconds:70, real:'~10 min, checked often'},
+        {kind:'timer', badge:'kind-safety', label:'Safety check', title:'Monitor lift closely', body:'Check lift every 5 to 10 minutes with a strand test. Never leave lightener processing unchecked.', seconds:70, real:'~10 min, checked often'},
         {kind:'tech', badge:'kind-tech', label:'Technique', title:'Rinse & treat', body:'Rinse thoroughly with cool-to-lukewarm water, then follow with a bond-rebuilding or protein treatment.'},
         {kind:'tech', badge:'kind-tech', label:'Technique', title:'Tone if needed', body:"Apply toner if the client's lift needs neutralizing, per the desired end result."},
         {kind:'final', badge:'kind-final', label:'Finish', title:'Condition & finish', body:'Deep condition. Style as requested and advise on strengthening aftercare.'}
@@ -2210,8 +2210,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 (function(){
   const root = document.getElementById('tab-consult');
   const TEXTURES = [
-    {id:'straight', label:'Straight', sub:'Type 1A–1C'}, {id:'wavy', label:'Wavy', sub:'Type 2A–2C'},
-    {id:'curly', label:'Curly', sub:'Type 3A–3C'}, {id:'coily', label:'Coily', sub:'Type 4A–4C'}
+    {id:'straight', label:'Straight', sub:'Type 1A to 1C'}, {id:'wavy', label:'Wavy', sub:'Type 2A to 2C'},
+    {id:'curly', label:'Curly', sub:'Type 3A to 3C'}, {id:'coily', label:'Coily', sub:'Type 4A to 4C'}
   ];
   const CONDITIONS = [
     {id:'chemical', label:'Chemically treated'}, {id:'color', label:'Color-treated'}, {id:'heat', label:'Heat-styled regularly'},
