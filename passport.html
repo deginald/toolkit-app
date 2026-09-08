@@ -98,6 +98,7 @@
   .detail-photos{ display:flex; flex-direction:column; gap:10px; }
   .detail-photo{ width:100%; border-radius:14px; display:block; background:var(--line); }
   .detail-card{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+  .rec-products{ font-size:12px; color:var(--brass); font-weight:600; }
   .detail-row{ display:flex; justify-content:space-between; gap:10px; font-size:12.5px; }
   .detail-row span:first-child{ color:var(--muted); font-weight:600; }
   .detail-row span:last-child{ font-weight:700; text-align:right; }
@@ -582,7 +583,7 @@ async function openDetail(id){
   const recsBlock = document.getElementById('detail-recs-block');
   if (recs.length){
     recsBlock.style.display = 'flex';
-    document.getElementById('detail-recs-list').innerHTML = recs.map(r=>`<div class="detail-card" style="gap:2px;"><strong>${r.cat}</strong><span class="screen-sub">${r.note}</span></div>`).join('');
+    document.getElementById('detail-recs-list').innerHTML = recs.map(r=>`<div class="detail-card" style="gap:2px;"><strong>${r.cat}</strong><span class="screen-sub">${r.note}</span>${(Array.isArray(r.products) && r.products.length) ? `<span class="rec-products">Try: ${r.products.join(' or ')}</span>` : ''}</div>`).join('');
   } else {
     recsBlock.style.display = 'none';
   }

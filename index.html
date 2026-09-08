@@ -96,6 +96,7 @@
   .pv-recs{ border:1px solid var(--line); border-radius:10px; background:var(--paper); padding:10px 12px; display:flex; flex-direction:column; gap:5px; }
   .pv-recs-heading{ font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--brass); }
   .pv-rec-item{ font-size:12px; color:var(--ink); line-height:1.4; }
+  .pv-rec-products{ display:block; font-size:11px; color:var(--brass); font-weight:600; margin-top:1px; }
   .pv-photo{ cursor:pointer; }
 
   .lightbox-overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:500; display:flex; align-items:center; justify-content:center; padding:80px 20px 20px; }
@@ -253,7 +254,7 @@
   .rec-card{ border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:12px 14px; display:flex; flex-direction:column; gap:5px; }
   .rec-cat{ font-family:'Libre Franklin',sans-serif; font-weight:700; font-size:14px; }
   .rec-note{ font-size:12.5px; color:var(--muted); line-height:1.4; }
-  .rec-retail{ font-size:10.5px; font-weight:700; color:var(--brass); text-transform:uppercase; letter-spacing:0.04em; margin-top:2px; }
+  .rec-retail{ font-size:11.5px; font-weight:600; color:var(--brass); margin-top:2px; }
 
   .refer-box{ border:1px solid var(--behind); background:var(--behind-tint); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:10px; }
   .refer-box h3{ font-family:'Libre Franklin',sans-serif; font-size:16px; font-weight:700; color:var(--behind); margin:0; }
@@ -1944,7 +1945,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         : '';
       const recs = Array.isArray(v.recommendedProducts) ? v.recommendedProducts : [];
       const recsHtml = recs.length
-        ? `<div class="pv-recs"><div class="pv-recs-heading">Recommended Products</div>` + recs.map(r=>`<div class="pv-rec-item"><strong>${r.cat}:</strong> ${r.note}</div>`).join('') + `</div>`
+        ? `<div class="pv-recs"><div class="pv-recs-heading">Recommended Products</div>` + recs.map(r=>`<div class="pv-rec-item"><strong>${r.cat}:</strong> ${r.note}${(Array.isArray(r.products) && r.products.length) ? `<span class="pv-rec-products">Try: ${r.products.join(' or ')}</span>` : ''}</div>`).join('') + `</div>`
         : '';
       // Only the barber who logged the visit can edit its notes afterward.
       const canEdit = !!(v.barberCode && v.barberCode === profileCode);
@@ -2250,7 +2251,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const dateLabel = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '';
     const lastVisitWithRecs = (attachedClient.visits || []).slice().reverse().find(v => Array.isArray(v.recommendedProducts) && v.recommendedProducts.length);
     const recsHtml = lastVisitWithRecs
-      ? `<div class="pv-recs" style="margin-top:6px;"><div class="pv-recs-heading">Recommended Products (last visit)</div>${lastVisitWithRecs.recommendedProducts.map(r=>`<div class="pv-rec-item"><strong>${r.cat}:</strong> ${r.note}</div>`).join('')}</div>`
+      ? `<div class="pv-recs" style="margin-top:6px;"><div class="pv-recs-heading">Recommended Products (last visit)</div>${lastVisitWithRecs.recommendedProducts.map(r=>`<div class="pv-rec-item"><strong>${r.cat}:</strong> ${r.note}${(Array.isArray(r.products) && r.products.length) ? `<span class="pv-rec-products">Try: ${r.products.join(' or ')}</span>` : ''}</div>`).join('')}</div>`
       : '';
     holder.innerHTML = `<div class="profile-card"><span class="pc-tag">From their Hair Passport</span><span class="pc-name">${t ? t.label : 'Texture not yet on file'} &middot; ${condLabels}</span>${dateLabel ? `<span class="pc-detail">Last consult: ${dateLabel}</span>` : ''}</div>${recsHtml}`;
   }
@@ -2410,25 +2411,25 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   root.querySelectorAll('[data-back]').forEach(btn=> btn.addEventListener('click', ()=> showScreen(btn.dataset.back)));
 
   const TEXTURE_REC = {
-    straight:{cat:'Lightweight Leave-In Conditioner', note:'Straight hair shows product buildup fast. Keep it light.'},
-    wavy:{cat:'Curl-Defining Lightweight Cream', note:'Enough hold to define waves without weighing them down.'},
-    curly:{cat:'Rich Moisture Leave-In Cream', note:'Curls lose moisture fastest at the ends. Richer leave-in helps.'},
-    coily:{cat:'Leave-In + Sealing Oil', note:'Coily hair needs both moisture and a sealant to lock it in.'}
+    straight:{cat:'Lightweight Leave-In Conditioner', note:'Straight hair shows product buildup fast. Keep it light.', products:['OUAI Leave-In Conditioner','Moroccanoil All-In-One Leave-In Conditioner']},
+    wavy:{cat:'Curl-Defining Lightweight Cream', note:'Enough hold to define waves without weighing them down.', products:['Bouclème Curl Cream','JVN Complete Air Dry Cream']},
+    curly:{cat:'Rich Moisture Leave-In Cream', note:'Curls lose moisture fastest at the ends. Richer leave-in helps.', products:['Pattern Beauty Leave-In Conditioner','Mielle Organics Pomegranate & Honey Leave-In Conditioner']},
+    coily:{cat:'Leave-In + Sealing Oil', note:'Coily hair needs both moisture and a sealant to lock it in.', products:['Mielle Organics Pomegranate & Honey Leave-In Conditioner + Tropic Isle Living Jamaican Black Castor Oil','TGIN Miracle RepairX Leave-In']}
   };
   const CONDITION_REC = {
-    chemical:{cat:'Bond-Rebuilding Treatment', note:'Chemical services break internal bonds. Rebuild before they weaken further.'},
-    color:{cat:'Sulfate-Free, Color-Safe Shampoo', note:'Protects tone and slows fading between appointments.'},
-    heat:{cat:'Heat Protectant Spray', note:'Daily heat styling calls for protection at every use, not just some.'},
-    dry:{cat:'Weekly Deep Conditioning Mask', note:'Brittle hair needs consistent moisture, not an occasional treatment.'},
-    fine:{cat:'Lightweight Protein Treatment', note:'Fine hair needs strength without added weight. Go light on protein.'}
+    chemical:{cat:'Bond-Rebuilding Treatment', note:'Chemical services break internal bonds. Rebuild before they weaken further.', products:['Olaplex No.3 Hair Perfector','K18 Leave-In Molecular Repair Hair Mask']},
+    color:{cat:'Sulfate-Free, Color-Safe Shampoo', note:'Protects tone and slows fading between appointments.', products:['Shu Uemura Color Lustre Shampoo',"L'Oréal Paris EverPure Sulfate-Free Moisture Shampoo"]},
+    heat:{cat:'Heat Protectant Spray', note:'Daily heat styling calls for protection at every use, not just some.', products:['CHI 44 Iron Guard Thermal Protection Spray','TRESemmé Heat Protection Styling Spray']},
+    dry:{cat:'Weekly Deep Conditioning Mask', note:'Brittle hair needs consistent moisture, not an occasional treatment.', products:["Briogeo Don't Despair, Repair! Deep Conditioning Mask",'SheaMoisture Manuka Honey & Mafura Oil Intensive Hydration Masque']},
+    fine:{cat:'Lightweight Protein Treatment', note:'Fine hair needs strength without added weight. Go light on protein.', products:['OUAI Fine to Medium Hair Treatment Masque',"L'Oréal Paris Elvive Total Repair 5 Protein Recharge"]}
   };
   const SCALP_REC = {
-    dryscalp:{cat:'Hydrating Scalp Oil', note:'Treat the scalp separately from the lengths. Dryness starts at the root.'},
-    flaky:{cat:'Gentle Anti-Flake Shampoo', note:'Mild, frequent-use formula rather than a harsh medicated one first.'},
-    itchy:{cat:'Fragrance-Free, Sulfate-Free Shampoo', note:"Rule out product sensitivity before assuming it's dandruff."},
-    oily:{cat:'Clarifying Shampoo (Scalp-Focused)', note:'Clarify at the scalp, condition mid-shaft to ends only.'},
-    sensitive:{cat:'Fragrance-Free, Hypoallergenic Line', note:'Sensitive scalps react to fragrance and sulfates first.'},
-    redness:{cat:'Fragrance-Free, Hypoallergenic Line', note:'Mild redness calls for cutting out likely irritants first.'}
+    dryscalp:{cat:'Hydrating Scalp Oil', note:'Treat the scalp separately from the lengths. Dryness starts at the root.', products:['Rhute Density Complex Pre-Wash Scalp Oil','Moroccanoil Dry Scalp Treatment']},
+    flaky:{cat:'Gentle Anti-Flake Shampoo', note:'Mild, frequent-use formula rather than a harsh medicated one first.', products:['Vanicream Anti-Dandruff Shampoo','Nizoral Anti-Dandruff Shampoo']},
+    itchy:{cat:'Fragrance-Free, Sulfate-Free Shampoo', note:"Rule out product sensitivity before assuming it's dandruff.", products:['Vanicream Free & Clear Shampoo','CeraVe 2-in-1 Anti-Dandruff Hydrating Shampoo']},
+    oily:{cat:'Clarifying Shampoo (Scalp-Focused)', note:'Clarify at the scalp, condition mid-shaft to ends only.', products:['Kristin Ess Clarifying Shampoo for Oily Hair','CeraVe Oil Control Shampoo']},
+    sensitive:{cat:'Fragrance-Free, Hypoallergenic Line', note:'Sensitive scalps react to fragrance and sulfates first.', products:['Vanicream Free & Clear Shampoo','CeraVe 2-in-1 Anti-Dandruff Hydrating Shampoo']},
+    redness:{cat:'Fragrance-Free, Hypoallergenic Line', note:'Mild redness calls for cutting out likely irritants first.', products:['Vanicream Free & Clear Shampoo','CeraVe 2-in-1 Anti-Dandruff Hydrating Shampoo']}
   };
   function buildRecommendations(){
     const recs = []; const seen = new Set();
@@ -2444,7 +2445,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const scalpLabels = qstate.scalp.map(s=> SCALP.find(x=>x.id===s).label).join(', ') || 'None noted';
     root.querySelector('#rec-summary').innerHTML = `<div class="summary-row"><span>Texture</span><span>${t.label}</span></div><div class="summary-row"><span>Condition</span><span>${condLabels}</span></div><div class="summary-row"><span>Scalp</span><span>${scalpLabels}</span></div>`;
     const recs = buildRecommendations();
-    root.querySelector('#rec-list').innerHTML = recs.map(r=> `<div class="rec-card"><span class="rec-cat">${r.cat}</span><span class="rec-note">${r.note}</span><span class="rec-retail">Retail category match</span></div>`).join('');
+    root.querySelector('#rec-list').innerHTML = recs.map(r=> `<div class="rec-card"><span class="rec-cat">${r.cat}</span><span class="rec-note">${r.note}</span>${(Array.isArray(r.products) && r.products.length) ? `<span class="rec-retail">Try: ${r.products.join(' or ')}</span>` : ''}</div>`).join('');
   }
   async function saveConsultVisit(outcome){
     if (!attachedClient || !dbAvailable) return false;
