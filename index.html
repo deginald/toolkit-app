@@ -89,6 +89,10 @@
   .pv-photos{ display:flex; gap:6px; flex-wrap:wrap; }
   .pv-photo{ width:64px; height:64px; border-radius:9px; object-fit:cover; background:var(--line); flex-shrink:0; display:block; }
   .pv-notes{ font-size:12.5px; color:var(--ink); line-height:1.45; white-space:pre-wrap; }
+  .pv-notes-edit-btn{ border:none; background:transparent; color:var(--brass); font-family:'Public Sans',sans-serif; font-weight:700; font-size:11.5px; cursor:pointer; padding:0; align-self:flex-start; }
+  .pv-notes-edit-row{ display:flex; gap:8px; }
+  .pv-notes-edit-row .btn{ padding:9px 14px; font-size:12.5px; }
+  .pv-notes-edit-status{ font-size:11.5px; color:var(--behind); }
   .pv-photo{ cursor:pointer; }
 
   .lightbox-overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:500; display:flex; align-items:center; justify-content:center; padding:80px 20px 20px; }
@@ -1813,6 +1817,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
   const PV_SERVICE_LABELS = { cut:'Haircut', chemical:'Chemical service', other:'Other' };
 
+  let editingVisitId = null;
+
   function renderPrevVisits(){
     const listEl = root.querySelector('#prev-visits-list');
     const visits = (attachedClient.visits||[]).slice().sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (b.id||'').localeCompare(a.id||''));
@@ -1826,9 +1832,25 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const photosHtml = photos.length
         ? '<div class="pv-photos">' + photos.map(p=>`<img class="pv-photo" src="${p.url}" alt="Photo from ${dateLabel} visit">`).join('') + '</div>'
         : '';
-      const notesHtml = v.notes
-        ? `<div class="pv-notes">${v.notes}</div>`
-        : '<div class="pv-notes" style="font-style:italic; color:var(--muted);">No notes recorded.</div>';
+      // Only the barber who logged the visit can edit its notes afterward.
+      const canEdit = !!(v.barberCode && v.barberCode === profileCode);
+      const isEditing = canEdit && editingVisitId === v.id;
+      let notesBlock;
+      if (isEditing){
+        notesBlock = `
+          <div class="input-row"><textarea class="pv-notes-textarea" data-visit-id="${v.id}" style="min-height:70px;"></textarea></div>
+          <div class="pv-notes-edit-row">
+            <button type="button" class="btn btn-primary pv-notes-save-btn" data-visit-id="${v.id}">Save notes</button>
+            <button type="button" class="btn btn-ghost pv-notes-cancel-btn">Cancel</button>
+          </div>
+          <div class="pv-notes-edit-status" data-visit-id="${v.id}"></div>
+        `;
+      } else {
+        const notesHtml = v.notes
+          ? `<div class="pv-notes">${v.notes}</div>`
+          : '<div class="pv-notes" style="font-style:italic; color:var(--muted);">No notes recorded.</div>';
+        notesBlock = notesHtml + (canEdit ? `<button type="button" class="pv-notes-edit-btn" data-visit-id="${v.id}">Edit notes</button>` : '');
+      }
       return `
         <div class="pv-card">
           <div class="pv-top">
@@ -1837,10 +1859,45 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
           </div>
           <div class="pv-meta">${v.barberName ? v.barberName : 'Provider not noted'}</div>
           ${photosHtml}
-          ${notesHtml}
+          ${notesBlock}
         </div>
       `;
     }).join('');
+    // Set the editable textarea's value via the DOM (not string interpolation) so notes
+    // containing special characters like </textarea> or & can't break the markup.
+    if (editingVisitId){
+      const ta = listEl.querySelector(`.pv-notes-textarea[data-visit-id="${editingVisitId}"]`);
+      if (ta){
+        const v = visits.find(x => x.id === editingVisitId);
+        ta.value = (v && v.notes) || '';
+        ta.focus();
+      }
+    }
+  }
+
+  async function saveEditedVisitNotes(visitId, newNotes, statusEl, saveBtn){
+    const visit = (attachedClient.visits || []).find(v => v.id === visitId);
+    if (!visit || visit.barberCode !== profileCode){
+      statusEl.textContent = "You can only edit notes on visits you saved.";
+      return;
+    }
+    if (!dbAvailable){
+      statusEl.textContent = "Live saving isn't connected right now — this change wasn't saved.";
+      return;
+    }
+    saveBtn.disabled = true;
+    statusEl.textContent = 'Saving…';
+    try{
+      visit.notes = newNotes;
+      const { error } = await supabaseClient.from('clients').update({ visits: attachedClient.visits, updated_at: new Date().toISOString() }).eq('code', attachedClient.code);
+      if (error) throw error;
+      editingVisitId = null;
+      renderPrevVisits();
+    }catch(e){
+      console.warn('note edit save failed', e);
+      statusEl.textContent = "Couldn't save — try again.";
+      saveBtn.disabled = false;
+    }
   }
 
   let lightboxPhotos = [];
@@ -1888,10 +1945,33 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
   root.querySelector('#prev-visits-list').addEventListener('click', (e)=>{
     const img = e.target.closest('.pv-photo');
-    if (!img) return;
-    const group = Array.from(img.closest('.pv-photos').querySelectorAll('.pv-photo'));
-    const photos = group.map(el => ({ url: el.src, alt: el.alt }));
-    openLightbox(photos, group.indexOf(img));
+    if (img){
+      const group = Array.from(img.closest('.pv-photos').querySelectorAll('.pv-photo'));
+      const photos = group.map(el => ({ url: el.src, alt: el.alt }));
+      openLightbox(photos, group.indexOf(img));
+      return;
+    }
+    const editBtn = e.target.closest('.pv-notes-edit-btn');
+    if (editBtn){
+      editingVisitId = editBtn.dataset.visitId;
+      renderPrevVisits();
+      return;
+    }
+    const cancelBtn = e.target.closest('.pv-notes-cancel-btn');
+    if (cancelBtn){
+      editingVisitId = null;
+      renderPrevVisits();
+      return;
+    }
+    const saveBtn = e.target.closest('.pv-notes-save-btn');
+    if (saveBtn){
+      const visitId = saveBtn.dataset.visitId;
+      const card = saveBtn.closest('.pv-card');
+      const textarea = card.querySelector(`.pv-notes-textarea[data-visit-id="${visitId}"]`);
+      const statusEl = card.querySelector(`.pv-notes-edit-status[data-visit-id="${visitId}"]`);
+      saveEditedVisitNotes(visitId, textarea.value.trim(), statusEl, saveBtn);
+      return;
+    }
   });
   document.getElementById('btn-lightbox-close').addEventListener('click', closeLightbox);
   document.getElementById('btn-lightbox-next').addEventListener('click', (e)=>{ e.stopPropagation(); lightboxShowNext(); });
@@ -1967,6 +2047,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       if (error) throw error;
       if (data){
         attachedClient = { code, name: data.name || 'Client', visits: Array.isArray(data.visits) ? data.visits : [] };
+        editingVisitId = null;
         statusEl.textContent = '';
         renderClientAttach();
       } else {
@@ -1984,6 +2065,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const name = root.querySelector('#client-new-name').value.trim();
     if (!name || !pendingNewClientCode) return;
     attachedClient = { code: pendingNewClientCode, name, visits: [] };
+    editingVisitId = null;
     if (dbAvailable){
       try{
         const { error } = await supabaseClient.from('clients').insert({ code: pendingNewClientCode, name, visits: [] });
@@ -1998,6 +2080,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
   root.querySelector('#btn-client-clear').addEventListener('click', ()=>{
     attachedClient = null;
+    editingVisitId = null;
     root.querySelector('#client-code-input').value = '';
     root.querySelector('#client-lookup-status').textContent = '';
     renderClientAttach();
