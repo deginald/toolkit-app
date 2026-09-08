@@ -814,7 +814,7 @@
 
             <div style="display:flex; flex-direction:column; gap:8px; align-items:center; border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--surface);">
               <p class="eyebrow-mini2" style="margin:0;">Your booking link</p>
-              <canvas id="bk-qr-canvas" width="150" height="150" style="border-radius:8px;"></canvas>
+              <canvas id="bk-qr-canvas" width="220" height="220" style="border-radius:8px; max-width:100%; height:auto;"></canvas>
               <div class="link-row" style="width:100%;">
                 <input type="text" class="link-input" id="bk-link-input" readonly>
                 <button class="btn btn-outline" id="btn-bk-copy-link" style="flex:none; padding:9px 14px;">Copy</button>
@@ -2898,7 +2898,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#bk-link-input').value = url;
     const canvas = root.querySelector('#bk-qr-canvas');
     if (window.QRCode && profileCode){
-      window.QRCode.toCanvas(canvas, url, { width:150, margin:1, color:{ dark:'#1E2530', light:'#FFFFFF' } }, function(){});
+      window.QRCode.toCanvas(canvas, url, { width:220, margin:4, color:{ dark:'#1E2530', light:'#FFFFFF' } }, function(){});
     }
   }
   root.querySelector('#btn-bk-copy-link').addEventListener('click', async ()=>{

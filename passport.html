@@ -475,7 +475,7 @@ function renderQr(){
     try{
       const canvas = document.createElement('canvas');
       holder.appendChild(canvas);
-      window.QRCode.toCanvas(canvas, clientCode, { width: 160, margin: 1, color:{ dark:'#1E2530', light:'#FFFFFF' } }, function(err){
+      window.QRCode.toCanvas(canvas, clientCode, { width: 220, margin: 4, color:{ dark:'#1E2530', light:'#FFFFFF' } }, function(err){
         if (err){ holder.innerHTML = ''; }
       });
     }catch(e){ holder.innerHTML = ''; }
