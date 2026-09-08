@@ -637,7 +637,7 @@ document.getElementById('btn-bkc-confirm').addEventListener('click', async ()=>{
     showBkcStep('success');
   }catch(e){
     console.warn('booking failed', e);
-    statusEl.textContent = "Couldn't save that booking. Try again.";
+    statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
   }
 });
 
