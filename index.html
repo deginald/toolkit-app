@@ -67,7 +67,7 @@
   .field{ display:flex; flex-direction:column; gap:6px; min-width:0; }
   .field label{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); }
   .input-row{ display:flex; align-items:center; border:1px solid var(--line); border-radius:10px; background:var(--paper); padding:0 12px; min-width:0; }
-  .input-row input, .input-row select{ border:none; background:transparent; outline:none; font-family:'Public Sans',sans-serif; font-size:14px; font-weight:600; color:var(--ink); padding:11px 4px; width:100%; min-width:0; font-variant-numeric:tabular-nums; }
+  .input-row input, .input-row select, .input-row textarea{ border:none; background:transparent; outline:none; font-family:'Public Sans',sans-serif; font-size:16px; font-weight:600; color:var(--ink); padding:11px 4px; width:100%; min-width:0; font-variant-numeric:tabular-nums; }
   .input-row .suffix{ font-size:12px; color:var(--muted); font-weight:600; white-space:nowrap; flex-shrink:0; }
 
   .day-grid{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }
@@ -75,7 +75,7 @@
   .day.active{ border-color:var(--brass); background:var(--brass-tint); }
   .day .dname{ font-size:10px; font-weight:700; color:var(--muted); letter-spacing:0.02em; }
   .day.active .dname{ color:var(--brass); }
-  .day input{ width:100%; min-width:0; max-width:34px; text-align:center; border:none; background:transparent; font-family:'Public Sans',sans-serif; font-weight:700; font-size:12px; padding:0; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .day input{ width:100%; min-width:0; max-width:34px; text-align:center; border:none; background:transparent; font-family:'Public Sans',sans-serif; font-weight:700; font-size:16px; padding:0; color:var(--ink); font-variant-numeric:tabular-nums; }
 
   .mode-toggle{ display:flex; border:1px solid var(--line); border-radius:10px; padding:3px; gap:3px; background:var(--paper); }
   .mode-btn{ flex:1; border:none; background:transparent; color:var(--muted); font-family:'Public Sans',sans-serif; font-size:12.5px; font-weight:700; padding:9px 6px; border-radius:7px; cursor:pointer; }
@@ -297,10 +297,10 @@
   .credential-card .cc-meta{ font-size:11px; color:var(--muted); }
 
   .link-row{ display:flex; gap:6px; align-items:center; }
-  .link-input{ flex:1; min-width:0; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:11px; color:var(--muted); background:var(--paper); font-family:'Public Sans',sans-serif; }
+  .link-input{ flex:1; min-width:0; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:16px; color:var(--muted); background:var(--paper); font-family:'Public Sans',sans-serif; }
   .share-banner{ border:1px solid var(--brass); background:var(--brass-tint); border-radius:12px; padding:10px 14px; font-size:12px; color:var(--ink); text-align:center; }
 
-  .title-select{ appearance:none; -webkit-appearance:none; -moz-appearance:none; font-family:'Public Sans',sans-serif; font-size:13px; font-weight:700; color:var(--ink); background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%238B8577' d='M4 6l4 4 4-4z'/%3E%3C/svg%3E") no-repeat right 10px center; background-size:11px; border:1px solid var(--line); border-radius:8px; padding:6px 30px 6px 10px; margin-top:2px; cursor:pointer; }
+  .title-select{ appearance:none; -webkit-appearance:none; -moz-appearance:none; font-family:'Public Sans',sans-serif; font-size:16px; font-weight:700; color:var(--ink); background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%238B8577' d='M4 6l4 4 4-4z'/%3E%3C/svg%3E") no-repeat right 10px center; background-size:11px; border:1px solid var(--line); border-radius:8px; padding:6px 30px 6px 10px; margin-top:2px; cursor:pointer; }
   .title-select:focus{ outline:2px solid var(--brass); outline-offset:1px; }
 
   .auth-form{ display:flex; flex-direction:column; gap:14px; width:100%; max-width:320px; text-align:left; }
@@ -2839,9 +2839,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       return `<div class="toggle-row" data-day="${k}" style="flex-wrap:wrap;">
         <span class="switch-label" style="width:90px;">${DAY_LABELS[k]}</span>
         <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:200px;">
-          <input type="time" class="bk-hour-open" value="${d.open||'09:00'}" style="border:1px solid var(--line); border-radius:8px; padding:6px 8px; font-size:12px; ${d.closed?'opacity:.4;':''}" ${d.closed?'disabled':''}>
+          <input type="time" class="bk-hour-open" value="${d.open||'09:00'}" style="border:1px solid var(--line); border-radius:8px; padding:6px 8px; font-size:16px; ${d.closed?'opacity:.4;':''}" ${d.closed?'disabled':''}>
           <span style="font-size:11px; color:var(--muted);">to</span>
-          <input type="time" class="bk-hour-close" value="${d.close||'18:00'}" style="border:1px solid var(--line); border-radius:8px; padding:6px 8px; font-size:12px; ${d.closed?'opacity:.4;':''}" ${d.closed?'disabled':''}>
+          <input type="time" class="bk-hour-close" value="${d.close||'18:00'}" style="border:1px solid var(--line); border-radius:8px; padding:6px 8px; font-size:16px; ${d.closed?'opacity:.4;':''}" ${d.closed?'disabled':''}>
           <label style="display:flex; align-items:center; gap:4px; font-size:11px; color:var(--muted); margin-left:auto;"><input type="checkbox" class="bk-hour-closed" ${d.closed?'checked':''}> Closed</label>
         </div>
       </div>`;
