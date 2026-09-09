@@ -250,6 +250,10 @@
   .summary-row{ display:flex; justify-content:space-between; gap:10px; font-size:12.5px; }
   .summary-row span:first-child{ color:var(--muted); font-weight:600; }
   .summary-row span:last-child{ font-weight:700; text-align:right; }
+  .detail-card{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+  .detail-row{ display:flex; justify-content:space-between; gap:10px; font-size:12.5px; }
+  .detail-row span:first-child{ color:var(--muted); font-weight:600; }
+  .detail-row span:last-child{ font-weight:700; text-align:right; }
 
   .rec-card{ border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:12px 14px; display:flex; flex-direction:column; gap:5px; }
   .rec-cat{ font-family:'Libre Franklin',sans-serif; font-weight:700; font-size:14px; }
@@ -894,6 +898,38 @@
         </div>
       </section>
 
+      <!-- ============ LOYALTY ============ -->
+      <section class="tab-pane" data-tab="loyalty" id="tab-loyalty">
+        <div class="tab-head">
+          <p class="eyebrow-mini">Reward regulars</p>
+          <h2>Loyalty</h2>
+        </div>
+
+        <div class="screen-body show" data-screen="dashboard" style="gap:20px;">
+
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <p class="eyebrow-mini">Your reward tiers</p>
+            <p class="screen-sub" style="margin:0;">Based on completed appointments booked through All Hair Connect (cancelled ones don't count). Once a client reaches your top tier and you mark it redeemed, their count starts over.</p>
+            <div id="loy-tiers-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+            <div class="card" style="gap:10px;">
+              <div class="field"><label>Visits needed</label><div class="input-row"><input id="loy-tier-visits" type="number" min="1" step="1" placeholder="e.g. 10"></div></div>
+              <div class="field"><label>Reward</label><div class="input-row"><input id="loy-tier-reward" type="text" placeholder="e.g. Free haircut"></div></div>
+              <button class="btn btn-outline" id="btn-loy-add-tier" type="button">Add tier</button>
+            </div>
+            <button class="btn btn-primary" id="btn-loy-save" type="button">Save reward tiers</button>
+            <p class="foot-note-small" id="loy-save-note">&nbsp;</p>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:10px; border-top:1px solid var(--line); padding-top:16px;">
+            <p class="eyebrow-mini">Rewards ready to give</p>
+            <div id="loy-ready-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+            <p class="screen-sub" id="loy-ready-empty" style="display:none; margin:0;">No rewards ready right now.</p>
+            <p class="screen-sub" id="loy-ready-hint" style="display:none; margin:0;">Add a reward tier above to start tracking client visits.</p>
+          </div>
+
+        </div>
+      </section>
+
       <!-- ============ EARNINGS ============ -->
       <section class="tab-pane" data-tab="earnings" id="tab-earnings">
         <div class="tab-head">
@@ -985,6 +1021,7 @@
       <button class="tab-btn" data-tabbtn="coach">Coach</button>
       <button class="tab-btn" data-tabbtn="consult">Consult</button>
       <button class="tab-btn" data-tabbtn="booking">Booking</button>
+      <button class="tab-btn" data-tabbtn="loyalty">Loyalty</button>
       <button class="tab-btn" data-tabbtn="earnings">Earnings</button>
       <button class="tab-btn" data-tabbtn="ledger">Ledger</button>
     </nav>
@@ -1209,7 +1246,8 @@ function defaultProfile(name){
     bookingHours: defaultBookingHours(),
     bookingOverrides: [],
     bookingPolicy: '',
-    paymentLinks: { venmo:'', cashapp:'', zelle:'', applepay:'' }
+    paymentLinks: { venmo:'', cashapp:'', zelle:'', applepay:'' },
+    loyaltyTiers: []
   };
 }
 
@@ -1268,6 +1306,7 @@ async function persistProfile(fields){
   if (fields.bookingOverrides !== undefined) row.booking_overrides = fields.bookingOverrides;
   if (fields.bookingPolicy !== undefined) row.booking_policy = fields.bookingPolicy;
   if (fields.paymentLinks !== undefined) row.payment_links = fields.paymentLinks;
+  if (fields.loyaltyTiers !== undefined) row.loyalty_tiers = fields.loyaltyTiers;
   try{
     const { data, error } = await supabaseClient.from('profiles').update(row).eq('code', profileCode).select();
     if (error) throw error;
@@ -1299,12 +1338,13 @@ function toTitleCase(str){
    ========================================================= */
 function showTab(name){
   if (!isStudent() && (name === 'pace' || name === 'ledger')) name = 'coach';
-  if (isStudent() && (name === 'booking' || name === 'earnings')) name = 'coach';
+  if (isStudent() && (name === 'booking' || name === 'earnings' || name === 'loyalty')) name = 'coach';
   document.querySelectorAll('.tab-pane').forEach(p=> p.classList.toggle('show', p.dataset.tab===name));
   document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tabbtn===name));
   if (name === 'ledger') enterLedgerTab();
   if (name === 'booking' && window.initBookingTab) window.initBookingTab();
   if (name === 'earnings' && window.initEarningsTab) window.initEarningsTab();
+  if (name === 'loyalty' && window.initLoyaltyTab) window.initLoyaltyTab();
 }
 function applyRoleVisibility(){
   const show = isStudent();
@@ -1312,10 +1352,12 @@ function applyRoleVisibility(){
   const ledgerBtn = document.querySelector('.tab-btn[data-tabbtn="ledger"]');
   const bookingBtn = document.querySelector('.tab-btn[data-tabbtn="booking"]');
   const earningsBtn = document.querySelector('.tab-btn[data-tabbtn="earnings"]');
+  const loyaltyBtn = document.querySelector('.tab-btn[data-tabbtn="loyalty"]');
   if (paceBtn) paceBtn.style.display = show ? '' : 'none';
   if (ledgerBtn) ledgerBtn.style.display = show ? '' : 'none';
   if (bookingBtn) bookingBtn.style.display = show ? 'none' : '';
   if (earningsBtn) earningsBtn.style.display = show ? 'none' : '';
+  if (loyaltyBtn) loyaltyBtn.style.display = show ? 'none' : '';
   const clientAttachCard = document.getElementById('client-attach-card');
   const consultClientAttachCard = document.getElementById('consult-client-attach-card');
   if (clientAttachCard) clientAttachCard.style.display = show ? 'none' : '';
@@ -3021,6 +3063,151 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 })();
 
 /* =========================================================
+   LOYALTY TAB
+   ========================================================= */
+(function(){
+  const root = document.getElementById('tab-loyalty');
+  function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+  function sortedTiers(){
+    return (profile.loyaltyTiers || []).slice().sort((a,b)=> a.visits - b.visits);
+  }
+
+  // Given a barber's sorted tiers, a client's total completed-visit count, and how many times
+  // each tier has been redeemed for that client, work out which tiers are earned-but-not-yet-
+  // redeemed right now. Redeeming the top tier is treated as completing a full cycle, so the
+  // count effectively starts over (computed here, nothing is ever reset in the database).
+  function computeTierState(tiers, totalVisits, redemptionCounts){
+    if (!tiers.length) return { pendingTiers: [] };
+    const topTier = tiers[tiers.length - 1];
+    const completedCycles = redemptionCounts[topTier.id] || 0;
+    const progressInCycle = totalVisits - (completedCycles * topTier.visits);
+    const pendingTiers = [];
+    tiers.forEach(t=>{
+      const earned = progressInCycle >= t.visits;
+      const redeemedThisCycle = (redemptionCounts[t.id] || 0) > completedCycles;
+      if (earned && !redeemedThisCycle) pendingTiers.push(t);
+    });
+    return { pendingTiers, progressInCycle, completedCycles };
+  }
+
+  function renderTiersList(){
+    const list = root.querySelector('#loy-tiers-list');
+    const tiers = sortedTiers();
+    list.innerHTML = tiers.length
+      ? tiers.map(t=> `<div class="detail-row"><span>${t.visits} visits: ${t.reward}</span><button type="button" class="link-btn" data-remove-tier="${t.id}">Remove</button></div>`).join('')
+      : '<p class="screen-sub" style="margin:0;">No reward tiers yet. Add one below, e.g. 10 visits for a free haircut.</p>';
+  }
+  root.querySelector('#loy-tiers-list').addEventListener('click', e=>{
+    const id = e.target.dataset.removeTier;
+    if (!id) return;
+    profile.loyaltyTiers = (profile.loyaltyTiers||[]).filter(t=>t.id!==id);
+    renderTiersList();
+  });
+  root.querySelector('#btn-loy-add-tier').addEventListener('click', ()=>{
+    const visits = parseInt(root.querySelector('#loy-tier-visits').value, 10);
+    const reward = root.querySelector('#loy-tier-reward').value.trim();
+    if (!visits || visits < 1 || !reward) return;
+    profile.loyaltyTiers = (profile.loyaltyTiers||[]).concat([{ id:genId(), visits, reward }]);
+    root.querySelector('#loy-tier-visits').value = '';
+    root.querySelector('#loy-tier-reward').value = '';
+    renderTiersList();
+  });
+  root.querySelector('#btn-loy-save').addEventListener('click', async ()=>{
+    const note = root.querySelector('#loy-save-note');
+    note.textContent = 'Saving…';
+    const result = await persistProfile({ loyaltyTiers: profile.loyaltyTiers });
+    note.textContent = result.ok ? 'Saved.' : ("Couldn't save: " + (result.message || 'try again.'));
+    loadReady();
+  });
+
+  async function loadReady(){
+    const listEl = root.querySelector('#loy-ready-list');
+    const emptyEl = root.querySelector('#loy-ready-empty');
+    const hintEl = root.querySelector('#loy-ready-hint');
+    const tiers = sortedTiers();
+
+    if (!tiers.length){
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'none';
+      hintEl.style.display = 'block';
+      return;
+    }
+    hintEl.style.display = 'none';
+
+    if (!dbAvailable || !profileCode){
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      return;
+    }
+
+    try{
+      const [apptsRes, redRes] = await Promise.all([
+        supabaseClient.from('appointments').select('*').eq('barber_code', profileCode).eq('status','booked'),
+        supabaseClient.from('loyalty_redemptions').select('*').eq('barber_code', profileCode)
+      ]);
+      if (apptsRes.error) throw apptsRes.error;
+      if (redRes.error) throw redRes.error;
+
+      const today = todayIso();
+      const completedAppts = (apptsRes.data || []).filter(a=> a.appt_date && a.appt_date <= today);
+
+      const clients = {};
+      completedAppts.forEach(a=>{
+        if (!clients[a.client_code]) clients[a.client_code] = { name: a.client_name, count: 0 };
+        clients[a.client_code].count++;
+      });
+
+      const redByClient = {};
+      (redRes.data || []).forEach(r=>{
+        if (!redByClient[r.client_code]) redByClient[r.client_code] = {};
+        redByClient[r.client_code][r.tier_id] = (redByClient[r.client_code][r.tier_id] || 0) + 1;
+      });
+
+      const readyClients = Object.keys(clients).map(code=>{
+        const state = computeTierState(tiers, clients[code].count, redByClient[code] || {});
+        return { code, name: clients[code].name, pendingTiers: state.pendingTiers };
+      }).filter(c=> c.pendingTiers.length);
+
+      emptyEl.style.display = readyClients.length ? 'none' : 'block';
+      listEl.innerHTML = readyClients.map(c=>{
+        const rows = c.pendingTiers.map(t=> `<div class="detail-row"><span>${t.reward}</span><button type="button" class="btn btn-outline" data-redeem-client="${c.code}" data-redeem-tier="${t.id}" data-redeem-name="${c.name}" style="flex:none; padding:6px 12px;">Mark redeemed</button></div>`).join('');
+        return `<div class="detail-card" style="gap:6px;"><strong>${c.name}</strong>${rows}</div>`;
+      }).join('');
+    }catch(e){
+      console.warn('load loyalty ready failed', e);
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+    }
+  }
+  root.querySelector('#loy-ready-list').addEventListener('click', async e=>{
+    const clientCode = e.target.dataset.redeemClient;
+    const tierId = e.target.dataset.redeemTier;
+    const clientName = e.target.dataset.redeemName;
+    if (!clientCode || !tierId) return;
+    const tier = sortedTiers().find(t=>t.id===tierId);
+    if (!tier) return;
+    e.target.disabled = true;
+    e.target.textContent = 'Marking…';
+    try{
+      const { error } = await supabaseClient.from('loyalty_redemptions').insert({
+        id: genId(), barber_code: profileCode, client_code: clientCode, client_name: clientName,
+        tier_id: tier.id, tier_reward: tier.reward, tier_visits: tier.visits
+      });
+      if (error) throw error;
+    }catch(err){
+      console.warn('redeem failed', err);
+    }
+    loadReady();
+  });
+
+  window.initLoyaltyTab = function(){
+    renderTiersList();
+    loadReady();
+  };
+})();
+
+/* =========================================================
    EARNINGS TAB
    ========================================================= */
 (function(){
@@ -3163,6 +3350,7 @@ async function tryLoadProfile(code){
       profile.bookingOverrides = Array.isArray(data.booking_overrides) ? data.booking_overrides : [];
       profile.bookingPolicy = data.booking_policy || '';
       profile.paymentLinks = Object.assign({ venmo:'', cashapp:'', zelle:'', applepay:'' }, data.payment_links || {});
+      profile.loyaltyTiers = Array.isArray(data.loyalty_tiers) ? data.loyalty_tiers : [];
       profileCode = code;
       return true;
     }

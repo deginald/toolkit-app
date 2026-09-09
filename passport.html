@@ -237,6 +237,13 @@
           <div id="upcoming-list-holder"></div>
         </div>
 
+        <div id="loyalty-section" style="display:none; flex-direction:column; gap:10px;">
+          <div class="section-head">
+            <h2>Rewards</h2>
+          </div>
+          <div id="loyalty-list-holder" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+
         <div id="bookagain-section" style="display:none; flex-direction:column; gap:10px;">
           <div class="section-head">
             <h2>Book again</h2>
@@ -656,6 +663,90 @@ function renderSoonBanner(list){
   }
 }
 
+// Given a barber's sorted reward tiers, a client's total completed-visit count with that barber,
+// and how many times each tier has been redeemed, work out which tiers are earned-but-not-yet-
+// redeemed and how far along the client is toward the next one. Redeeming the top tier is treated
+// as completing a full cycle, so the count effectively starts over (nothing is reset in the
+// database; this is recomputed fresh every time from the redemption history).
+function computeTierState(tiers, totalVisits, redemptionCounts){
+  if (!tiers.length) return { pendingTiers: [], nextTier: null, progressInCycle: totalVisits };
+  const topTier = tiers[tiers.length - 1];
+  const completedCycles = redemptionCounts[topTier.id] || 0;
+  const progressInCycle = totalVisits - (completedCycles * topTier.visits);
+  const pendingTiers = [];
+  let nextTier = null;
+  tiers.forEach(t=>{
+    const earned = progressInCycle >= t.visits;
+    const redeemedThisCycle = (redemptionCounts[t.id] || 0) > completedCycles;
+    if (earned && !redeemedThisCycle) pendingTiers.push(t);
+    if (!earned && !nextTier) nextTier = t;
+  });
+  return { pendingTiers, nextTier, progressInCycle };
+}
+
+async function loadLoyalty(){
+  const section = document.getElementById('loyalty-section');
+  if (!dbAvailable || !clientCode){ section.style.display = 'none'; return; }
+  try{
+    const { data: apptData, error: apptErr } = await supabaseClient.from('appointments').select('*').eq('client_code', clientCode).eq('status','booked');
+    if (apptErr) throw apptErr;
+    const today = todayIso();
+    const completed = (apptData || []).filter(a => a.appt_date && a.appt_date <= today);
+
+    const barberCounts = {};
+    completed.forEach(a=>{
+      if (!barberCounts[a.barber_code]) barberCounts[a.barber_code] = { name: a.barber_name, count: 0 };
+      barberCounts[a.barber_code].count++;
+    });
+    const barberCodes = Object.keys(barberCounts);
+    if (!barberCodes.length){ section.style.display = 'none'; return; }
+
+    const { data: redData, error: redErr } = await supabaseClient.from('loyalty_redemptions').select('*').eq('client_code', clientCode);
+    if (redErr) throw redErr;
+    const redByBarber = {};
+    (redData || []).forEach(r=>{
+      if (!redByBarber[r.barber_code]) redByBarber[r.barber_code] = {};
+      redByBarber[r.barber_code][r.tier_id] = (redByBarber[r.barber_code][r.tier_id] || 0) + 1;
+    });
+
+    const cards = [];
+    for (const code of barberCodes){
+      const { data: proData } = await supabaseClient.from('profiles').select('*').eq('code', code).maybeSingle();
+      if (!proData) continue;
+      const tiers = (Array.isArray(proData.loyalty_tiers) ? proData.loyalty_tiers : []).slice().sort((a,b)=> a.visits - b.visits);
+      if (!tiers.length) continue;
+      const state = computeTierState(tiers, barberCounts[code].count, redByBarber[code] || {});
+      cards.push({ name: barberCounts[code].name, pendingTiers: state.pendingTiers, nextTier: state.nextTier, progressInCycle: state.progressInCycle });
+    }
+    renderLoyalty(cards);
+  }catch(e){
+    console.warn('load loyalty failed', e);
+    section.style.display = 'none';
+  }
+}
+
+function renderLoyalty(cards){
+  const section = document.getElementById('loyalty-section');
+  const holder = document.getElementById('loyalty-list-holder');
+  if (!cards.length){ section.style.display = 'none'; return; }
+  section.style.display = 'flex';
+  holder.innerHTML = cards.map(c=>{
+    const pendingHtml = c.pendingTiers.map(t=>
+      `<div style="background:var(--good-tint); color:var(--good); border-radius:8px; padding:8px 10px; font-size:12.5px; font-weight:700;">Ready: ${t.reward}. Show this to ${c.name}.</div>`
+    ).join('');
+    const progressLine = c.nextTier
+      ? `<span class="screen-sub" style="margin:0;">${c.progressInCycle} of ${c.nextTier.visits} visits toward ${c.nextTier.reward}</span>`
+      : `<span class="screen-sub" style="margin:0;">All current rewards earned. Ask about redeeming to start your next one.</span>`;
+    const pct = c.nextTier ? Math.max(0, Math.min(100, Math.round((c.progressInCycle / c.nextTier.visits) * 100))) : 100;
+    return `<div class="detail-card" style="gap:8px;">
+      <strong>${c.name}</strong>
+      ${progressLine}
+      <div style="height:6px; border-radius:999px; background:var(--line); overflow:hidden;"><div style="height:100%; width:${pct}%; background:var(--brass);"></div></div>
+      ${pendingHtml}
+    </div>`;
+  }).join('');
+}
+
 function downloadApptIcs(appt){
   const startDT = appt.appt_date.replace(/-/g,'') + 'T' + appt.start_time.replace(':','') + '00';
   const endDT = appt.appt_date.replace(/-/g,'') + 'T' + appt.end_time.replace(':','') + '00';
@@ -833,6 +924,7 @@ function enterApp(){
   renderHome();
   showScreen('home');
   loadUpcomingAppointments();
+  loadLoyalty();
 }
 
 function setAuthMode(mode){
