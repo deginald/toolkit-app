@@ -156,11 +156,19 @@
           <div id="bkc-client-search">
             <div class="field"><label>Your Hair Passport code</label><div class="input-row"><input id="bkc-client-code" type="text" placeholder="Your personal code"></div></div>
             <button class="btn btn-outline" id="btn-bkc-client-lookup" type="button" style="width:100%; margin-top:8px;">Look up</button>
+            <button class="btn btn-ghost" id="btn-bkc-client-newclient" type="button" style="width:100%; margin-top:6px;">First time booking here? Create my Hair Passport</button>
             <p class="screen-sub" id="bkc-client-status" style="margin-top:6px;">&nbsp;</p>
           </div>
           <div id="bkc-client-newname" style="display:none; flex-direction:column; gap:10px;">
-            <div class="field"><label>Your name</label><div class="input-row"><input id="bkc-client-new-name" type="text" placeholder="Your name"></div></div>
+            <div class="field"><label>Your name</label><div class="input-row"><input id="bkc-client-new-name" type="text" placeholder="e.g. Jordan Smith"></div></div>
+            <div class="field">
+              <label>Your passport code</label>
+              <div class="input-row"><input id="bkc-client-new-code" type="text" placeholder="e.g. jordan-47"></div>
+            </div>
+            <p class="screen-sub" style="margin:0;">Remember this or save it. It's what you'll use to log in and see your visit history next time.</p>
             <button class="btn btn-primary" id="btn-bkc-client-create" type="button" style="width:100%;">Create my Hair Passport</button>
+            <button class="btn btn-ghost" id="btn-bkc-client-newclient-back" type="button" style="width:100%;">Back</button>
+            <p class="screen-sub" id="bkc-client-create-status" style="margin:0;">&nbsp;</p>
           </div>
           <div id="bkc-client-loaded" style="display:none;">
             <p class="screen-sub" id="bkc-client-attached-summary" style="margin:0;">&nbsp;</p>
@@ -393,6 +401,12 @@ function sanitizeCode(raw){
   if (c.length > 60) c = c.slice(0,60);
   return c;
 }
+function suggestClientCode(name){
+  const first = (name||'').trim().split(/\s+/)[0] || '';
+  const base = sanitizeCode(first) || 'client';
+  const suffix = Math.floor(10 + Math.random()*90);
+  return `${base}-${suffix}`;
+}
 function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 function fmtDuration(mins){
   const h = Math.floor(mins/60), m = mins%60;
@@ -408,7 +422,7 @@ function fmtTime12(hhmm){
 }
 const DAY_KEYS = ['sun','mon','tue','wed','thu','fri','sat'];
 
-let bkc = { pro:null, selectedIds:[], date:null, startTime:null, client:null, pendingNewCode:null };
+let bkc = { pro:null, selectedIds:[], date:null, startTime:null, client:null };
 
 function initBookingFor(pro){
   const block = document.getElementById('detail-booking-block');
@@ -545,6 +559,8 @@ function renderBkcConfirm(){
   document.getElementById('bkc-client-newname').style.display = 'none';
   document.getElementById('bkc-client-loaded').style.display = 'none';
   document.getElementById('bkc-client-status').textContent = ' ';
+  document.getElementById('bkc-client-create-status').textContent = ' ';
+  document.getElementById('bkc-client-new-code').dataset.touched = '';
   bkc.client = null;
   const policyBlock = document.getElementById('bkc-policy-block');
   if (bkc.pro.booking_policy){
@@ -570,7 +586,6 @@ async function bkcLookupClient(){
   if (!code){ statusEl.textContent = 'Enter your code first.'; return; }
   if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
   statusEl.textContent = 'Looking up…';
-  document.getElementById('bkc-client-newname').style.display = 'none';
   try{
     const { data, error } = await supabaseClient.from('clients').select('*').eq('code', code).maybeSingle();
     if (error) throw error;
@@ -578,12 +593,12 @@ async function bkcLookupClient(){
       bkc.client = { code, name: toTitleCase(data.name) || 'Client' };
       statusEl.textContent = '';
       document.getElementById('bkc-client-search').style.display = 'none';
+      document.getElementById('bkc-client-newname').style.display = 'none';
       document.getElementById('bkc-client-loaded').style.display = 'block';
       document.getElementById('bkc-client-attached-summary').textContent = `Booking as: ${bkc.client.name}`;
     } else {
-      statusEl.textContent = "No Hair Passport found for that code. Enter your name to create one.";
-      bkc.pendingNewCode = code;
-      document.getElementById('bkc-client-newname').style.display = 'flex';
+      statusEl.textContent = "No Hair Passport found for that code. Create one below.";
+      openBkcNewClientPanel(code);
     }
   }catch(e){
     console.warn('client lookup failed', e);
@@ -593,16 +608,57 @@ async function bkcLookupClient(){
 }
 document.getElementById('btn-bkc-client-lookup').addEventListener('click', bkcLookupClient);
 
+function openBkcNewClientPanel(prefillCode){
+  document.getElementById('bkc-client-search').style.display = 'none';
+  document.getElementById('bkc-client-newname').style.display = 'flex';
+  document.getElementById('bkc-client-new-name').value = '';
+  const codeEl = document.getElementById('bkc-client-new-code');
+  codeEl.value = prefillCode || '';
+  codeEl.dataset.touched = prefillCode ? '1' : '';
+  document.getElementById('bkc-client-create-status').textContent = '';
+  document.getElementById('bkc-client-new-name').focus();
+}
+
+document.getElementById('btn-bkc-client-newclient').addEventListener('click', ()=>{
+  document.getElementById('bkc-client-status').textContent = '';
+  openBkcNewClientPanel('');
+});
+
+document.getElementById('bkc-client-new-name').addEventListener('input', function(){
+  const codeEl = document.getElementById('bkc-client-new-code');
+  if (!codeEl.dataset.touched) codeEl.value = suggestClientCode(this.value);
+});
+document.getElementById('bkc-client-new-code').addEventListener('input', function(){
+  this.dataset.touched = '1';
+});
+
+document.getElementById('btn-bkc-client-newclient-back').addEventListener('click', ()=>{
+  document.getElementById('bkc-client-newname').style.display = 'none';
+  document.getElementById('bkc-client-search').style.display = 'block';
+});
+
 document.getElementById('btn-bkc-client-create').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('bkc-client-create-status');
   const name = document.getElementById('bkc-client-new-name').value.trim();
-  if (!name || !bkc.pendingNewCode) return;
-  bkc.client = { code: bkc.pendingNewCode, name: toTitleCase(name) };
-  if (dbAvailable){
-    try{
-      const { error } = await supabaseClient.from('clients').insert({ code: bkc.pendingNewCode, name: bkc.client.name, visits: [] });
-      if (error) throw error;
-    }catch(e){ console.warn('create client failed', e); }
+  const code = sanitizeCode(document.getElementById('bkc-client-new-code').value);
+  if (!name){ statusEl.textContent = 'Enter your name first.'; return; }
+  if (!code){ statusEl.textContent = 'Enter a code first.'; return; }
+  if (!dbAvailable){ statusEl.textContent = "Live save isn't connected right now."; return; }
+  statusEl.textContent = 'Checking that code…';
+  const titleName = toTitleCase(name);
+  try{
+    const { data: existing, error: checkErr } = await supabaseClient.from('clients').select('code').eq('code', code).maybeSingle();
+    if (checkErr) throw checkErr;
+    if (existing){ statusEl.textContent = 'That code is already taken. Try another.'; return; }
+    const { error } = await supabaseClient.from('clients').insert({ code, name: titleName, visits: [] });
+    if (error) throw error;
+  }catch(e){
+    console.warn('create client failed', e);
+    statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
+    return;
   }
+  bkc.client = { code, name: titleName };
+  statusEl.textContent = '';
   document.getElementById('bkc-client-newname').style.display = 'none';
   document.getElementById('bkc-client-search').style.display = 'none';
   document.getElementById('bkc-client-loaded').style.display = 'block';
