@@ -1277,6 +1277,7 @@ function toTitleCase(str){
    ========================================================= */
 function showTab(name){
   if (!isStudent() && (name === 'pace' || name === 'ledger')) name = 'coach';
+  if (isStudent() && name === 'booking') name = 'coach';
   document.querySelectorAll('.tab-pane').forEach(p=> p.classList.toggle('show', p.dataset.tab===name));
   document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tabbtn===name));
   if (name === 'ledger') enterLedgerTab();
@@ -1286,8 +1287,14 @@ function applyRoleVisibility(){
   const show = isStudent();
   const paceBtn = document.querySelector('.tab-btn[data-tabbtn="pace"]');
   const ledgerBtn = document.querySelector('.tab-btn[data-tabbtn="ledger"]');
+  const bookingBtn = document.querySelector('.tab-btn[data-tabbtn="booking"]');
   if (paceBtn) paceBtn.style.display = show ? '' : 'none';
   if (ledgerBtn) ledgerBtn.style.display = show ? '' : 'none';
+  if (bookingBtn) bookingBtn.style.display = show ? 'none' : '';
+  const clientAttachCard = document.getElementById('client-attach-card');
+  const consultClientAttachCard = document.getElementById('consult-client-attach-card');
+  if (clientAttachCard) clientAttachCard.style.display = show ? 'none' : '';
+  if (consultClientAttachCard) consultClientAttachCard.style.display = show ? 'none' : '';
 }
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', ()=> showTab(btn.dataset.tabbtn));
