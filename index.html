@@ -619,11 +619,19 @@
             <div id="client-attach-search">
               <div class="input-row"><input id="client-code-input" type="text" placeholder="Client's passport code"></div>
               <button class="btn btn-outline" id="btn-client-lookup" type="button" style="margin-top:8px; width:100%;">Look up</button>
+              <button class="btn btn-ghost" id="btn-client-newclient" type="button" style="margin-top:6px; width:100%;">First visit? Start their Hair Passport</button>
               <p class="screen-sub" id="client-lookup-status" style="margin-top:6px;">&nbsp;</p>
             </div>
-            <div id="client-attach-newname" style="display:none;">
-              <div class="input-row"><input id="client-new-name" type="text" placeholder="Client's name"></div>
-              <button class="btn btn-primary" id="btn-client-create" type="button" style="margin-top:8px; width:100%;">Start their Hair Passport</button>
+            <div id="client-attach-newname" style="display:none; flex-direction:column; gap:10px;">
+              <div class="field"><label>Client's name</label><div class="input-row"><input id="client-new-name" type="text" placeholder="e.g. Jordan Smith"></div></div>
+              <div class="field">
+                <label>Their passport code</label>
+                <div class="input-row"><input id="client-new-code" type="text" placeholder="e.g. jordan-47"></div>
+              </div>
+              <p class="screen-sub" style="margin:0;">This is what they'll use to log into their own Hair Passport later. Write it down for them or have them save it.</p>
+              <button class="btn btn-primary" id="btn-client-create" type="button" style="width:100%;">Start their Hair Passport</button>
+              <button class="btn btn-ghost" id="btn-client-newclient-back" type="button" style="width:100%;">Back</button>
+              <p class="screen-sub" id="client-create-status" style="margin:0;">&nbsp;</p>
             </div>
             <div id="client-attach-loaded" style="display:none; flex-direction:column; gap:8px;">
               <p class="screen-sub" id="client-attach-summary" style="margin:0;">&nbsp;</p>
@@ -718,11 +726,19 @@
             <div id="consult-client-attach-search">
               <div class="input-row"><input id="consult-client-code-input" type="text" placeholder="Client's passport code"></div>
               <button class="btn btn-outline" id="btn-consult-client-lookup" type="button" style="margin-top:8px; width:100%;">Look up</button>
+              <button class="btn btn-ghost" id="btn-consult-client-newclient" type="button" style="margin-top:6px; width:100%;">First visit? Start their Hair Passport</button>
               <p class="screen-sub" id="consult-client-lookup-status" style="margin-top:6px;">&nbsp;</p>
             </div>
-            <div id="consult-client-attach-newname" style="display:none;">
-              <div class="input-row"><input id="consult-client-new-name" type="text" placeholder="Client's name"></div>
-              <button class="btn btn-primary" id="btn-consult-client-create" type="button" style="margin-top:8px; width:100%;">Start their Hair Passport</button>
+            <div id="consult-client-attach-newname" style="display:none; flex-direction:column; gap:10px;">
+              <div class="field"><label>Client's name</label><div class="input-row"><input id="consult-client-new-name" type="text" placeholder="e.g. Jordan Smith"></div></div>
+              <div class="field">
+                <label>Their passport code</label>
+                <div class="input-row"><input id="consult-client-new-code" type="text" placeholder="e.g. jordan-47"></div>
+              </div>
+              <p class="screen-sub" style="margin:0;">This is what they'll use to log into their own Hair Passport later. Write it down for them or have them save it.</p>
+              <button class="btn btn-primary" id="btn-consult-client-create" type="button" style="width:100%;">Start their Hair Passport</button>
+              <button class="btn btn-ghost" id="btn-consult-client-newclient-back" type="button" style="width:100%;">Back</button>
+              <p class="screen-sub" id="consult-client-create-status" style="margin:0;">&nbsp;</p>
             </div>
             <div id="consult-client-attach-loaded" style="display:none; flex-direction:column; gap:8px;">
               <p class="screen-sub" id="consult-client-attach-summary" style="margin:0;">&nbsp;</p>
@@ -1334,6 +1350,13 @@ function sanitizeCode(raw){
   let c = (raw||'').trim().toLowerCase().replace(/[^a-z0-9_.~:@+-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
   if (c.length > 60) c = c.slice(0,60);
   return c;
+}
+
+function suggestClientCode(name){
+  const first = (name||'').trim().split(/\s+/)[0] || '';
+  const base = sanitizeCode(first) || 'client';
+  const suffix = Math.floor(10 + Math.random()*90);
+  return `${base}-${suffix}`;
 }
 
 function toTitleCase(str){
@@ -2131,7 +2154,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   });
 
   /* ---- Hair Passport client attach (Coach) ---- */
-  let pendingNewClientCode = null;
 
   const PV_SERVICE_LABELS = { cut:'Haircut', chemical:'Chemical service', other:'Other', consult:'Consultation' };
 
@@ -2339,6 +2361,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       toggleBtn.style.display = visitCount > 0 ? '' : 'none';
     } else {
       searchEl.style.display = '';
+      newNameEl.style.display = 'none';
       loadedEl.style.display = 'none';
       toggleBtn.style.display = 'none';
     }
@@ -2358,13 +2381,23 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
   });
 
+  function openNewClientPanel_coach(prefillCode){
+    root.querySelector('#client-attach-search').style.display = 'none';
+    root.querySelector('#client-attach-newname').style.display = 'flex';
+    root.querySelector('#client-new-name').value = '';
+    const codeEl = root.querySelector('#client-new-code');
+    codeEl.value = prefillCode || '';
+    codeEl.dataset.touched = prefillCode ? '1' : '';
+    root.querySelector('#client-create-status').textContent = '';
+    root.querySelector('#client-new-name').focus();
+  }
+
   root.querySelector('#btn-client-lookup').addEventListener('click', async ()=>{
     const statusEl = root.querySelector('#client-lookup-status');
     const code = sanitizeCode(root.querySelector('#client-code-input').value);
     if (!code){ statusEl.textContent = 'Enter a code first.'; return; }
     if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
     statusEl.textContent = 'Looking up…';
-    root.querySelector('#client-attach-newname').style.display = 'none';
     try{
       const { data, error } = await supabaseClient.from('clients').select('*').eq('code', code).maybeSingle();
       if (error) throw error;
@@ -2374,9 +2407,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         statusEl.textContent = '';
         renderClientAttach();
       } else {
-        statusEl.textContent = 'No passport found for that code.';
-        pendingNewClientCode = code;
-        root.querySelector('#client-attach-newname').style.display = '';
+        statusEl.textContent = 'No passport found for that code. Start one below.';
+        openNewClientPanel_coach(code);
       }
     }catch(e){
       console.warn('client lookup failed', e);
@@ -2384,20 +2416,50 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
   });
 
-  root.querySelector('#btn-client-create').addEventListener('click', async ()=>{
-    const name = root.querySelector('#client-new-name').value.trim();
-    if (!name || !pendingNewClientCode) return;
-    attachedClient = { code: pendingNewClientCode, name, visits: [] };
-    editingVisitId = null;
-    if (dbAvailable){
-      try{
-        const { error } = await supabaseClient.from('clients').insert({ code: pendingNewClientCode, name, visits: [] });
-        if (error) throw error;
-      }catch(e){ console.warn('create client failed', e); }
-    }
-    pendingNewClientCode = null;
-    root.querySelector('#client-new-name').value = '';
+  root.querySelector('#btn-client-newclient').addEventListener('click', ()=>{
     root.querySelector('#client-lookup-status').textContent = '';
+    openNewClientPanel_coach('');
+  });
+
+  root.querySelector('#client-new-name').addEventListener('input', ()=>{
+    const codeEl = root.querySelector('#client-new-code');
+    if (!codeEl.dataset.touched) codeEl.value = suggestClientCode(root.querySelector('#client-new-name').value);
+  });
+  root.querySelector('#client-new-code').addEventListener('input', ()=>{
+    root.querySelector('#client-new-code').dataset.touched = '1';
+  });
+
+  root.querySelector('#btn-client-newclient-back').addEventListener('click', ()=>{
+    root.querySelector('#client-attach-newname').style.display = 'none';
+    root.querySelector('#client-attach-search').style.display = '';
+  });
+
+  root.querySelector('#btn-client-create').addEventListener('click', async ()=>{
+    const statusEl = root.querySelector('#client-create-status');
+    const name = root.querySelector('#client-new-name').value.trim();
+    const code = sanitizeCode(root.querySelector('#client-new-code').value);
+    if (!name){ statusEl.textContent = 'Enter their name first.'; return; }
+    if (!code){ statusEl.textContent = 'Enter a code for them first.'; return; }
+    if (!dbAvailable){ statusEl.textContent = "Live save isn't connected right now."; return; }
+    statusEl.textContent = 'Checking that code…';
+    try{
+      const { data: existing, error: checkErr } = await supabaseClient.from('clients').select('code').eq('code', code).maybeSingle();
+      if (checkErr) throw checkErr;
+      if (existing){ statusEl.textContent = 'That code is already taken. Try another.'; return; }
+      const { error } = await supabaseClient.from('clients').insert({ code, name, visits: [] });
+      if (error) throw error;
+    }catch(e){
+      console.warn('create client failed', e);
+      statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
+      return;
+    }
+    attachedClient = { code, name, visits: [] };
+    editingVisitId = null;
+    root.querySelector('#client-new-name').value = '';
+    root.querySelector('#client-new-code').value = '';
+    root.querySelector('#client-new-code').dataset.touched = '';
+    root.querySelector('#client-lookup-status').textContent = '';
+    statusEl.textContent = '';
     renderClientAttach();
   });
 
@@ -2436,7 +2498,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     {id:'patchloss', label:'Hair loss in patches', severe:true}
   ];
   let attachedClient = null; // { code, name, visits, hairProfile }
-  let pendingNewClientCode = null;
 
   const qstate = { practice:false, texture:null, conditions:[], scalp:[], duration:null, severe:[], visitedTriage:false };
 
@@ -2480,13 +2541,23 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     renderProfilePreview();
   }
 
+  function openNewClientPanel_consult(prefillCode){
+    root.querySelector('#consult-client-attach-search').style.display = 'none';
+    root.querySelector('#consult-client-attach-newname').style.display = 'flex';
+    root.querySelector('#consult-client-new-name').value = '';
+    const codeEl = root.querySelector('#consult-client-new-code');
+    codeEl.value = prefillCode || '';
+    codeEl.dataset.touched = prefillCode ? '1' : '';
+    root.querySelector('#consult-client-create-status').textContent = '';
+    root.querySelector('#consult-client-new-name').focus();
+  }
+
   root.querySelector('#btn-consult-client-lookup').addEventListener('click', async ()=>{
     const statusEl = root.querySelector('#consult-client-lookup-status');
     const code = sanitizeCode(root.querySelector('#consult-client-code-input').value);
     if (!code){ statusEl.textContent = 'Enter a code first.'; return; }
     if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
     statusEl.textContent = 'Looking up…';
-    root.querySelector('#consult-client-attach-newname').style.display = 'none';
     try{
       const { data, error } = await supabaseClient.from('clients').select('*').eq('code', code).maybeSingle();
       if (error) throw error;
@@ -2495,9 +2566,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         statusEl.textContent = '';
         renderClientAttach();
       } else {
-        statusEl.textContent = 'No passport found for that code.';
-        pendingNewClientCode = code;
-        root.querySelector('#consult-client-attach-newname').style.display = '';
+        statusEl.textContent = 'No passport found for that code. Start one below.';
+        openNewClientPanel_consult(code);
       }
     }catch(e){
       console.warn('client lookup failed', e);
@@ -2505,19 +2575,49 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
   });
 
-  root.querySelector('#btn-consult-client-create').addEventListener('click', async ()=>{
-    const name = root.querySelector('#consult-client-new-name').value.trim();
-    if (!name || !pendingNewClientCode) return;
-    attachedClient = { code: pendingNewClientCode, name, visits: [], hairProfile: null };
-    if (dbAvailable){
-      try{
-        const { error } = await supabaseClient.from('clients').insert({ code: pendingNewClientCode, name, visits: [] });
-        if (error) throw error;
-      }catch(e){ console.warn('create client failed', e); }
-    }
-    pendingNewClientCode = null;
-    root.querySelector('#consult-client-new-name').value = '';
+  root.querySelector('#btn-consult-client-newclient').addEventListener('click', ()=>{
     root.querySelector('#consult-client-lookup-status').textContent = '';
+    openNewClientPanel_consult('');
+  });
+
+  root.querySelector('#consult-client-new-name').addEventListener('input', ()=>{
+    const codeEl = root.querySelector('#consult-client-new-code');
+    if (!codeEl.dataset.touched) codeEl.value = suggestClientCode(root.querySelector('#consult-client-new-name').value);
+  });
+  root.querySelector('#consult-client-new-code').addEventListener('input', ()=>{
+    root.querySelector('#consult-client-new-code').dataset.touched = '1';
+  });
+
+  root.querySelector('#btn-consult-client-newclient-back').addEventListener('click', ()=>{
+    root.querySelector('#consult-client-attach-newname').style.display = 'none';
+    root.querySelector('#consult-client-attach-search').style.display = '';
+  });
+
+  root.querySelector('#btn-consult-client-create').addEventListener('click', async ()=>{
+    const statusEl = root.querySelector('#consult-client-create-status');
+    const name = root.querySelector('#consult-client-new-name').value.trim();
+    const code = sanitizeCode(root.querySelector('#consult-client-new-code').value);
+    if (!name){ statusEl.textContent = 'Enter their name first.'; return; }
+    if (!code){ statusEl.textContent = 'Enter a code for them first.'; return; }
+    if (!dbAvailable){ statusEl.textContent = "Live save isn't connected right now."; return; }
+    statusEl.textContent = 'Checking that code…';
+    try{
+      const { data: existing, error: checkErr } = await supabaseClient.from('clients').select('code').eq('code', code).maybeSingle();
+      if (checkErr) throw checkErr;
+      if (existing){ statusEl.textContent = 'That code is already taken. Try another.'; return; }
+      const { error } = await supabaseClient.from('clients').insert({ code, name, visits: [] });
+      if (error) throw error;
+    }catch(e){
+      console.warn('create client failed', e);
+      statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
+      return;
+    }
+    attachedClient = { code, name, visits: [], hairProfile: null };
+    root.querySelector('#consult-client-new-name').value = '';
+    root.querySelector('#consult-client-new-code').value = '';
+    root.querySelector('#consult-client-new-code').dataset.touched = '';
+    root.querySelector('#consult-client-lookup-status').textContent = '';
+    statusEl.textContent = '';
     renderClientAttach();
   });
 
