@@ -1,6 +1,6 @@
 {
-  "name": "All Hair Connect: Toolkit",
-  "short_name": "AHC Toolkit",
+  "name": "All Hair Connect",
+  "short_name": "All Hair Connect",
   "start_url": "index.html",
   "scope": ".",
   "display": "standalone",
