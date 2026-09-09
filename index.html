@@ -918,6 +918,50 @@
             <p class="eyebrow-mini">Upcoming appointments</p>
             <div id="bk-appts-list" style="display:flex; flex-direction:column; gap:8px;"></div>
             <p class="screen-sub" id="bk-appts-empty" style="display:none;">Nothing booked yet.</p>
+
+            <button class="btn btn-outline" id="btn-bk-manual-open" type="button">Add an appointment</button>
+
+            <div class="card" id="bk-manual-card" style="display:none; flex-direction:column; gap:14px;">
+              <div>
+                <p class="eyebrow-mini2" style="margin:0;">Add an appointment</p>
+                <p class="screen-sub" style="margin:4px 0 0;">For a client booking in person, by phone, or whose phone's lost or broken. Saved the same as an online booking.</p>
+              </div>
+
+              <div id="bk-manual-client-search">
+                <div class="field"><label>Client's passport code</label><div class="input-row"><input id="bk-manual-client-code" type="text" placeholder="Their personal code"></div></div>
+                <button class="btn btn-outline" id="btn-bk-manual-client-lookup" type="button" style="margin-top:8px; width:100%;">Look up</button>
+                <button class="btn btn-ghost" id="btn-bk-manual-client-newclient" type="button" style="margin-top:6px; width:100%;">First visit? Start their Hair Passport</button>
+                <p class="screen-sub" id="bk-manual-client-status" style="margin-top:6px;">&nbsp;</p>
+              </div>
+              <div id="bk-manual-client-newname" style="display:none; flex-direction:column; gap:10px;">
+                <div class="field"><label>Client's name</label><div class="input-row"><input id="bk-manual-client-new-name" type="text" placeholder="e.g. Jordan Smith"></div></div>
+                <div class="field"><label>Their passport code</label><div class="input-row"><input id="bk-manual-client-new-code" type="text" placeholder="e.g. jordan-47"></div></div>
+                <p class="screen-sub" style="margin:0;">This is what they'll use to log into their own Hair Passport later.</p>
+                <button class="btn btn-primary" id="btn-bk-manual-client-create" type="button" style="width:100%;">Start their Hair Passport</button>
+                <button class="btn btn-ghost" id="btn-bk-manual-client-newclient-back" type="button" style="width:100%;">Back</button>
+                <p class="screen-sub" id="bk-manual-client-create-status" style="margin:0;">&nbsp;</p>
+              </div>
+              <div id="bk-manual-client-loaded" style="display:none; flex-direction:column; gap:8px;">
+                <p class="screen-sub" id="bk-manual-client-summary" style="margin:0;">&nbsp;</p>
+                <button class="btn btn-ghost" id="btn-bk-manual-client-clear" type="button" style="width:100%;">Remove</button>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <p class="eyebrow-mini">Services</p>
+                <div id="bk-manual-services-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+              </div>
+
+              <div style="display:flex; gap:8px;">
+                <div class="field" style="flex:1;"><label>Date</label><div class="input-row"><input id="bk-manual-date" type="date"></div></div>
+                <div class="field" style="flex:1;"><label>Start time</label><div class="input-row"><input id="bk-manual-time" type="time"></div></div>
+              </div>
+              <p class="screen-sub" id="bk-manual-conflict-note" style="margin:0; display:none; color:var(--behind);"></p>
+              <p class="screen-sub" id="bk-manual-total" style="margin:0;">&nbsp;</p>
+
+              <button class="btn btn-primary" id="btn-bk-manual-save" type="button">Save appointment</button>
+              <button class="btn btn-ghost" id="btn-bk-manual-cancel" type="button">Cancel</button>
+              <p class="screen-sub" id="bk-manual-save-status" style="margin:0;">&nbsp;</p>
+            </div>
           </div>
         </div>
       </section>
@@ -3164,9 +3208,236 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     loadAppointments();
   });
 
+  /* ---- Manually add an appointment ---- */
+  function toMinutesBk(hhmm){ const [h,m] = (hhmm||'0:0').split(':').map(Number); return h*60+m; }
+  function toHHMMBk(mins){ const h = Math.floor(mins/60), m = mins%60; return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'); }
+
+  let manualClient = null; // { code, name }
+  let manualExistingAppts = []; // cached for the currently-selected date
+
+  function resetManualCard(){
+    root.querySelector('#bk-manual-card').style.display = 'none';
+    manualClient = null;
+    manualExistingAppts = [];
+    root.querySelector('#bk-manual-client-code').value = '';
+    root.querySelector('#bk-manual-client-status').textContent = ' ';
+    root.querySelector('#bk-manual-client-search').style.display = '';
+    root.querySelector('#bk-manual-client-newname').style.display = 'none';
+    root.querySelector('#bk-manual-client-loaded').style.display = 'none';
+    root.querySelector('#bk-manual-date').value = '';
+    root.querySelector('#bk-manual-time').value = '';
+    root.querySelector('#bk-manual-conflict-note').style.display = 'none';
+    root.querySelector('#bk-manual-total').textContent = ' ';
+    root.querySelector('#bk-manual-save-status').textContent = ' ';
+    renderManualServices();
+  }
+
+  root.querySelector('#btn-bk-manual-open').addEventListener('click', async ()=>{
+    resetManualCard();
+    root.querySelector('#bk-manual-card').style.display = 'flex';
+    root.querySelector('#bk-manual-date').value = todayIso();
+    await loadManualExistingAppts();
+  });
+  root.querySelector('#btn-bk-manual-cancel').addEventListener('click', resetManualCard);
+
+  function renderManualClientAttach(){
+    const searchEl = root.querySelector('#bk-manual-client-search');
+    const newNameEl = root.querySelector('#bk-manual-client-newname');
+    const loadedEl = root.querySelector('#bk-manual-client-loaded');
+    if (manualClient){
+      searchEl.style.display = 'none';
+      newNameEl.style.display = 'none';
+      loadedEl.style.display = 'flex';
+      root.querySelector('#bk-manual-client-summary').textContent = `Booking for: ${manualClient.name}`;
+    } else {
+      searchEl.style.display = '';
+      newNameEl.style.display = 'none';
+      loadedEl.style.display = 'none';
+    }
+  }
+
+  function openManualNewClientPanel(prefillCode){
+    root.querySelector('#bk-manual-client-search').style.display = 'none';
+    root.querySelector('#bk-manual-client-newname').style.display = 'flex';
+    root.querySelector('#bk-manual-client-new-name').value = '';
+    const codeEl = root.querySelector('#bk-manual-client-new-code');
+    codeEl.value = prefillCode || '';
+    codeEl.dataset.touched = prefillCode ? '1' : '';
+    root.querySelector('#bk-manual-client-create-status').textContent = '';
+    root.querySelector('#bk-manual-client-new-name').focus();
+  }
+
+  root.querySelector('#btn-bk-manual-client-lookup').addEventListener('click', async ()=>{
+    const statusEl = root.querySelector('#bk-manual-client-status');
+    const code = sanitizeCode(root.querySelector('#bk-manual-client-code').value);
+    if (!code){ statusEl.textContent = 'Enter a code first.'; return; }
+    if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
+    statusEl.textContent = 'Looking up…';
+    try{
+      const { data, error } = await supabaseClient.from('clients').select('*').eq('code', code).maybeSingle();
+      if (error) throw error;
+      if (data){
+        manualClient = { code, name: toTitleCase(data.name) || 'Client' };
+        statusEl.textContent = '';
+        renderManualClientAttach();
+      } else {
+        statusEl.textContent = 'No passport found for that code. Start one below.';
+        openManualNewClientPanel(code);
+      }
+    }catch(e){
+      console.warn('client lookup failed', e);
+      statusEl.textContent = "Couldn't reach the client database.";
+    }
+  });
+
+  root.querySelector('#btn-bk-manual-client-newclient').addEventListener('click', ()=>{
+    root.querySelector('#bk-manual-client-status').textContent = '';
+    openManualNewClientPanel('');
+  });
+
+  root.querySelector('#bk-manual-client-new-name').addEventListener('input', function(){
+    const codeEl = root.querySelector('#bk-manual-client-new-code');
+    if (!codeEl.dataset.touched) codeEl.value = suggestClientCode(this.value);
+  });
+  root.querySelector('#bk-manual-client-new-code').addEventListener('input', function(){
+    this.dataset.touched = '1';
+  });
+
+  root.querySelector('#btn-bk-manual-client-newclient-back').addEventListener('click', ()=>{
+    root.querySelector('#bk-manual-client-newname').style.display = 'none';
+    root.querySelector('#bk-manual-client-search').style.display = '';
+  });
+
+  root.querySelector('#btn-bk-manual-client-create').addEventListener('click', async ()=>{
+    const statusEl = root.querySelector('#bk-manual-client-create-status');
+    const name = root.querySelector('#bk-manual-client-new-name').value.trim();
+    const code = sanitizeCode(root.querySelector('#bk-manual-client-new-code').value);
+    if (!name){ statusEl.textContent = 'Enter their name first.'; return; }
+    if (!code){ statusEl.textContent = 'Enter a code for them first.'; return; }
+    if (!dbAvailable){ statusEl.textContent = "Live save isn't connected right now."; return; }
+    statusEl.textContent = 'Checking that code…';
+    try{
+      const { data: existing, error: checkErr } = await supabaseClient.from('clients').select('code').eq('code', code).maybeSingle();
+      if (checkErr) throw checkErr;
+      if (existing){ statusEl.textContent = 'That code is already taken. Try another.'; return; }
+      const { error } = await supabaseClient.from('clients').insert({ code, name, visits: [] });
+      if (error) throw error;
+    }catch(e){
+      console.warn('create client failed', e);
+      statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
+      return;
+    }
+    manualClient = { code, name };
+    root.querySelector('#bk-manual-client-status').textContent = '';
+    statusEl.textContent = '';
+    renderManualClientAttach();
+  });
+
+  root.querySelector('#btn-bk-manual-client-clear').addEventListener('click', ()=>{
+    manualClient = null;
+    root.querySelector('#bk-manual-client-code').value = '';
+    root.querySelector('#bk-manual-client-status').textContent = '';
+    renderManualClientAttach();
+  });
+
+  function renderManualServices(){
+    const list = root.querySelector('#bk-manual-services-list');
+    const svcs = profile.bookingServices || [];
+    if (!svcs.length){ list.innerHTML = '<p class="screen-sub" style="margin:0;">Add at least one service above first.</p>'; return; }
+    list.innerHTML = svcs.map(s=> `<label class="check-row"><input type="checkbox" class="bk-manual-svc-check" data-svc="${s.id}"><span style="flex:1;">${s.name}: $${s.price} &middot; ${fmtDuration(s.duration)}</span></label>`).join('');
+    list.querySelectorAll('.bk-manual-svc-check').forEach(cb=> cb.addEventListener('change', updateManualTotal));
+  }
+  function selectedManualServices(){
+    const svcs = profile.bookingServices || [];
+    const checked = Array.from(root.querySelectorAll('.bk-manual-svc-check:checked')).map(cb=>cb.dataset.svc);
+    return svcs.filter(s=> checked.includes(s.id));
+  }
+
+  async function loadManualExistingAppts(){
+    const date = root.querySelector('#bk-manual-date').value;
+    manualExistingAppts = [];
+    if (!dbAvailable || !profileCode || !date) return;
+    try{
+      const { data, error } = await supabaseClient.from('appointments').select('*').eq('barber_code', profileCode).eq('status','booked');
+      if (error) throw error;
+      manualExistingAppts = (data||[]).filter(a=> a.appt_date === date);
+    }catch(e){ console.warn('load existing appts for conflict check failed', e); }
+  }
+
+  function checkManualConflict(){
+    const note = root.querySelector('#bk-manual-conflict-note');
+    const time = root.querySelector('#bk-manual-time').value;
+    const svcs = selectedManualServices();
+    const totalMins = svcs.reduce((a,s)=>a+Number(s.duration||0),0);
+    if (!time || !totalMins){ note.style.display = 'none'; return; }
+    const start = toMinutesBk(time);
+    const end = start + totalMins;
+    const overlap = manualExistingAppts.some(a=> start < toMinutesBk(a.end_time) && end > toMinutesBk(a.start_time));
+    if (overlap){
+      note.textContent = 'Heads up: this overlaps another appointment already on the books for that day. You can still save it if that works for you.';
+      note.style.display = 'block';
+    } else {
+      note.style.display = 'none';
+    }
+  }
+
+  function updateManualTotal(){
+    const svcs = selectedManualServices();
+    const totalPrice = svcs.reduce((a,s)=>a+Number(s.price||0),0);
+    const totalMins = svcs.reduce((a,s)=>a+Number(s.duration||0),0);
+    root.querySelector('#bk-manual-total').textContent = svcs.length ? `Total: $${totalPrice} · ${fmtDuration(totalMins)}` : ' ';
+    checkManualConflict();
+  }
+
+  root.querySelector('#bk-manual-date').addEventListener('change', async ()=>{
+    await loadManualExistingAppts();
+    checkManualConflict();
+  });
+  root.querySelector('#bk-manual-time').addEventListener('change', checkManualConflict);
+
+  root.querySelector('#btn-bk-manual-save').addEventListener('click', async ()=>{
+    const statusEl = root.querySelector('#bk-manual-save-status');
+    if (!manualClient){ statusEl.textContent = 'Attach a client first.'; return; }
+    const svcs = selectedManualServices();
+    if (!svcs.length){ statusEl.textContent = 'Pick at least one service.'; return; }
+    const date = root.querySelector('#bk-manual-date').value;
+    const time = root.querySelector('#bk-manual-time').value;
+    if (!date || !time){ statusEl.textContent = 'Pick a date and start time.'; return; }
+    if (!dbAvailable){ statusEl.textContent = "Live save isn't connected right now."; return; }
+    const totalPrice = svcs.reduce((a,s)=>a+Number(s.price||0),0);
+    const totalMins = svcs.reduce((a,s)=>a+Number(s.duration||0),0);
+    const endTime = toHHMMBk(toMinutesBk(time) + totalMins);
+    const appt = {
+      id: genId(),
+      barber_code: profileCode,
+      barber_name: profile.name,
+      client_code: manualClient.code,
+      client_name: manualClient.name,
+      services: svcs.map(s=>({name:s.name, price:s.price, duration:s.duration})),
+      total_price: totalPrice,
+      total_minutes: totalMins,
+      appt_date: date,
+      start_time: time,
+      end_time: endTime,
+      status: 'booked'
+    };
+    statusEl.textContent = 'Saving…';
+    try{
+      const { error } = await supabaseClient.from('appointments').insert(appt);
+      if (error) throw error;
+    }catch(e){
+      console.warn('manual appointment save failed', e);
+      statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
+      return;
+    }
+    resetManualCard();
+    loadAppointments();
+  });
+
   window.initBookingTab = function(){
     renderSetupFromProfile();
     if (profile.bookingEnabled) loadAppointments();
+    resetManualCard();
   };
 })();
 
