@@ -207,6 +207,11 @@
         <label>Personal code</label>
         <div class="input-row"><input id="auth-code" type="text" placeholder="e.g. jordan-2026" autocomplete="off" required></div>
       </div>
+      <div class="field" id="auth-phone-field">
+        <label>Mobile number <span style="text-transform:none; font-weight:600;">(optional)</span></label>
+        <div class="input-row"><input id="auth-phone" type="tel" placeholder="e.g. (910) 555-0123" autocomplete="tel"></div>
+        <p class="foot-note-small">Lets you send and receive quick texts about a booked appointment (running late, need to cancel) right in the app. Your barber never sees your actual number, and you can add or remove it later in Account.</p>
+      </div>
       <button class="btn btn-primary" type="submit" id="auth-submit-btn">Create my passport</button>
       <p class="foot-note-small" id="auth-error" style="color:var(--behind); margin:0;">&nbsp;</p>
       <p class="foot-note-small" id="auth-note">&nbsp;</p>
@@ -330,6 +335,16 @@
           <button class="back-btn" id="btn-back-home-from-account">&larr;</button>
           <div><div class="vc-date">Account</div></div>
         </div>
+        <div style="border-top:1px solid var(--line); padding-top:16px;">
+          <p class="eyebrow-mini">Text alerts</p>
+          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Your mobile number</h2>
+          <p class="screen-sub">Used only to send and receive quick texts about a booked appointment (running late, need to cancel). Your barber never sees your actual number.</p>
+          <div class="field">
+            <div class="input-row"><input id="account-phone" type="tel" placeholder="e.g. (910) 555-0123" autocomplete="tel"></div>
+          </div>
+          <button class="btn btn-primary" id="btn-save-phone" type="button">Save mobile number</button>
+          <p class="foot-note-small" id="phone-save-note">&nbsp;</p>
+        </div>
         <div class="spacer"></div>
         <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
           <p class="eyebrow-mini" style="color:var(--behind);">Danger zone</p>
@@ -400,7 +415,7 @@ function toTitleCase(str){
   return str.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
 }
 function defaultClient(name){
-  return { code:null, name: name || 'You', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'' };
+  return { code:null, name: name || 'You', phone:'', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'' };
 }
 function showToast(msg, danger){
   const t = document.getElementById('toast');
@@ -425,6 +440,7 @@ async function tryLoadClient(code){
       client.name = toTitleCase(data.name) || client.name;
       client._nameNeedsSync = !!(data.name && data.name !== client.name);
       client.visits = Array.isArray(data.visits) ? data.visits : [];
+      client.phone = data.phone || '';
       client.created_at = data.created_at || client.created_at;
       client.ndaVersion = data.nda_version || '';
       client.ndaAcceptedAt = data.nda_accepted_at || '';
@@ -435,12 +451,13 @@ async function tryLoadClient(code){
   return false;
 }
 
-async function createClientRecord(code, name){
+async function createClientRecord(code, name, phone){
   client = defaultClient(name);
+  client.phone = phone || '';
   clientCode = code;
   if (dbAvailable){
     try{
-      const { error } = await supabaseClient.from('clients').insert({ code, name: client.name, visits: [] });
+      const { error } = await supabaseClient.from('clients').insert({ code, name: client.name, visits: [], phone: client.phone });
       if (error) throw error;
     }catch(e){ console.warn('create failed', e); }
   }
@@ -460,6 +477,7 @@ async function persistClient(){
   if (!dbAvailable || !clientCode) return;
   try{
     const row = { name: client.name, visits: client.visits, updated_at: new Date().toISOString() };
+    if (client.phone !== undefined) row.phone = client.phone;
     if (client.ndaVersion !== undefined) row.nda_version = client.ndaVersion;
     if (client.ndaAcceptedAt !== undefined) row.nda_accepted_at = client.ndaAcceptedAt;
     const { error } = await supabaseClient.from('clients').update(row).eq('code', clientCode);
@@ -613,6 +631,13 @@ async function loadUpcomingAppointments(){
   }
 }
 
+const CLIENT_CANNED_MESSAGES = [
+  "I'm running a few minutes late.",
+  "I need to reschedule this appointment.",
+  "I need to cancel this appointment.",
+  "Just confirming I'll be there."
+];
+
 function renderUpcoming(list){
   const section = document.getElementById('upcoming-section');
   const holder = document.getElementById('upcoming-list-holder');
@@ -621,6 +646,7 @@ function renderUpcoming(list){
   holder.innerHTML = list.map(a=>{
     const dateLabel = new Date(a.appt_date+'T00:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
     const svcNames = (a.services||[]).map(s=>s.name).join(', ');
+    const msgButtons = CLIENT_CANNED_MESSAGES.map((m,i)=>`<button type="button" class="btn btn-outline" data-send-msg-idx="${i}" style="text-align:left;">${m}</button>`).join('');
     return `
       <div class="detail-card" style="gap:6px;">
         <strong>${dateLabel}, ${fmtTime12(a.start_time)}</strong>
@@ -629,6 +655,12 @@ function renderUpcoming(list){
         <div class="btn-row" style="margin-top:4px;">
           <button type="button" class="btn btn-outline" style="flex:1;" data-ics="${a.id}">Add to calendar</button>
           <button type="button" class="btn btn-danger" style="flex:1;" data-cancel-appt="${a.id}">Cancel</button>
+        </div>
+        <button type="button" class="link-btn" data-text-toggle="${a.id}" style="align-self:flex-start; padding:0;">Text your barber</button>
+        <div data-msg-panel="${a.id}" style="display:none; flex-direction:column; gap:6px; margin-top:2px; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--paper);">
+          <p class="screen-sub" style="margin:0;">Send a quick text to ${a.barber_name} about this appointment. They won't see your number.</p>
+          ${msgButtons}
+          <p class="screen-sub" data-msg-status="${a.id}" style="margin:0;">&nbsp;</p>
         </div>
       </div>
     `;
@@ -654,6 +686,42 @@ function renderUpcoming(list){
         btn.disabled = false;
         btn.textContent = 'Cancel';
       }
+    });
+  });
+  holder.querySelectorAll('[data-text-toggle]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const panel = holder.querySelector(`[data-msg-panel="${btn.dataset.textToggle}"]`);
+      if (panel) panel.style.display = (panel.style.display === 'none' || !panel.style.display) ? 'flex' : 'none';
+    });
+  });
+  holder.querySelectorAll('[data-msg-panel]').forEach(panel=>{
+    const apptId = panel.dataset.msgPanel;
+    panel.querySelectorAll('[data-send-msg-idx]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const message = CLIENT_CANNED_MESSAGES[Number(btn.dataset.sendMsgIdx)];
+        const statusEl = panel.querySelector(`[data-msg-status="${apptId}"]`);
+        if (!dbAvailable){
+          if (statusEl) statusEl.textContent = "Live saving isn't connected right now.";
+          return;
+        }
+        if (statusEl) statusEl.textContent = 'Sending…';
+        btn.disabled = true;
+        try{
+          const { data, error } = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: apptId, sender_role: 'client', message } });
+          if (error) throw error;
+          if (data && data.ok){
+            if (statusEl) statusEl.textContent = 'Sent.';
+          } else if (data && data.reason === 'no_phone'){
+            if (statusEl) statusEl.textContent = "Your barber hasn't added a mobile number for texting yet, so this can't be sent.";
+          } else {
+            if (statusEl) statusEl.textContent = "Couldn't send. Try again.";
+          }
+        }catch(e){
+          console.warn('send message failed', e);
+          if (statusEl) statusEl.textContent = "Couldn't send. Try again.";
+        }
+        btn.disabled = false;
+      });
     });
   });
 }
@@ -945,6 +1013,7 @@ function setAuthMode(mode){
     : 'Enter your name and the personal code you set up before.';
   document.getElementById('auth-submit-btn').textContent = isNew ? 'Create my passport' : 'Continue';
   document.getElementById('auth-error').textContent = ' ';
+  document.getElementById('auth-phone-field').style.display = isNew ? '' : 'none';
 }
 
 document.getElementById('btn-auth-mode-new').addEventListener('click', ()=> setAuthMode('new'));
@@ -971,12 +1040,13 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
   const errorEl = document.getElementById('auth-error');
   errorEl.textContent = ' ';
   const name = toTitleCase(document.getElementById('auth-name').value.trim()) || 'You';
+  const phone = document.getElementById('auth-phone').value.trim();
   const code = sanitizeCode(document.getElementById('auth-code').value);
   if (!code) return;
   const isReturning = document.getElementById('btn-auth-mode-returning').classList.contains('active');
 
   if (!dbAvailable){
-    await createClientRecord(code, name);
+    await createClientRecord(code, name, phone);
     try{ localStorage.setItem('passportClientCode', code); }catch(err){}
     enterApp();
     return;
@@ -995,7 +1065,7 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
       errorEl.textContent = 'That code is already taken. Please choose a different one.';
       return;
     }
-    await createClientRecord(code, name);
+    await createClientRecord(code, name, phone);
   }
   try{ localStorage.setItem('passportClientCode', code); }catch(err){}
   enterApp();
@@ -1006,7 +1076,20 @@ document.getElementById('btn-switch-profile').addEventListener('click', ()=>{
   window.location.href = window.location.pathname;
 });
 
-document.getElementById('btn-open-account').addEventListener('click', ()=> showScreen('account'));
+document.getElementById('btn-open-account').addEventListener('click', ()=>{
+  document.getElementById('account-phone').value = (client && client.phone) || '';
+  document.getElementById('phone-save-note').textContent = ' ';
+  showScreen('account');
+});
+
+document.getElementById('btn-save-phone').addEventListener('click', async ()=>{
+  const val = document.getElementById('account-phone').value.trim();
+  client.phone = val;
+  const note = document.getElementById('phone-save-note');
+  note.textContent = 'Saving…';
+  await persistClient();
+  note.textContent = 'Saved.';
+});
 document.getElementById('btn-back-home-from-account').addEventListener('click', ()=> showScreen('home'));
 
 let deleteAccountArmed = false;

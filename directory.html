@@ -166,6 +166,11 @@
               <div class="input-row"><input id="bkc-client-new-code" type="text" placeholder="e.g. jordan-47"></div>
             </div>
             <p class="screen-sub" style="margin:0;">Remember this or save it. It's what you'll use to log in and see your visit history next time.</p>
+            <div class="field">
+              <label>Mobile number <span style="text-transform:none; font-weight:600;">(optional)</span></label>
+              <div class="input-row"><input id="bkc-client-new-phone" type="tel" placeholder="e.g. (910) 555-0123" autocomplete="tel"></div>
+              <p class="screen-sub" style="margin:0;">Lets you send and receive quick texts about this appointment. Your barber never sees your actual number. You can add or remove it later in Account.</p>
+            </div>
             <button class="btn btn-primary" id="btn-bkc-client-create" type="button" style="width:100%;">Create my Hair Passport</button>
             <button class="btn btn-ghost" id="btn-bkc-client-newclient-back" type="button" style="width:100%;">Back</button>
             <p class="screen-sub" id="bkc-client-create-status" style="margin:0;">&nbsp;</p>
@@ -612,6 +617,7 @@ function openBkcNewClientPanel(prefillCode){
   document.getElementById('bkc-client-search').style.display = 'none';
   document.getElementById('bkc-client-newname').style.display = 'flex';
   document.getElementById('bkc-client-new-name').value = '';
+  document.getElementById('bkc-client-new-phone').value = '';
   const codeEl = document.getElementById('bkc-client-new-code');
   codeEl.value = prefillCode || '';
   codeEl.dataset.touched = prefillCode ? '1' : '';
@@ -640,6 +646,7 @@ document.getElementById('btn-bkc-client-newclient-back').addEventListener('click
 document.getElementById('btn-bkc-client-create').addEventListener('click', async ()=>{
   const statusEl = document.getElementById('bkc-client-create-status');
   const name = document.getElementById('bkc-client-new-name').value.trim();
+  const phone = document.getElementById('bkc-client-new-phone').value.trim();
   const code = sanitizeCode(document.getElementById('bkc-client-new-code').value);
   if (!name){ statusEl.textContent = 'Enter your name first.'; return; }
   if (!code){ statusEl.textContent = 'Enter a code first.'; return; }
@@ -650,7 +657,7 @@ document.getElementById('btn-bkc-client-create').addEventListener('click', async
     const { data: existing, error: checkErr } = await supabaseClient.from('clients').select('code').eq('code', code).maybeSingle();
     if (checkErr) throw checkErr;
     if (existing){ statusEl.textContent = 'That code is already taken. Try another.'; return; }
-    const { error } = await supabaseClient.from('clients').insert({ code, name: titleName, visits: [] });
+    const { error } = await supabaseClient.from('clients').insert({ code, name: titleName, visits: [], phone });
     if (error) throw error;
   }catch(e){
     console.warn('create client failed', e);
