@@ -894,6 +894,27 @@
         </div>
       </section>
 
+      <!-- ============ EARNINGS ============ -->
+      <section class="tab-pane" data-tab="earnings" id="tab-earnings">
+        <div class="tab-head">
+          <p class="eyebrow-mini">Appointment income</p>
+          <h2>Earnings</h2>
+        </div>
+
+        <div class="screen-body show" data-screen="dashboard" style="gap:16px;">
+          <div style="border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px; display:flex; flex-direction:column; gap:4px;">
+            <p class="eyebrow-mini2" id="earn-year-label" style="margin:0;">Year to date</p>
+            <p class="screen-title" id="earn-ytd-total" style="margin:0;">$0</p>
+          </div>
+          <div id="earn-month-list" style="display:flex; flex-direction:column; gap:2px;"></div>
+          <p class="screen-sub" id="earn-empty-note" style="display:none; margin:0;">No completed appointments yet this year.</p>
+          <p class="foot-note-small">Counts appointments booked through All Hair Connect once their date has passed. Cancelled appointments aren't counted, and this can't see payments made outside the app.</p>
+          <div id="earn-download-row" style="display:none; flex-direction:column; gap:8px; border-top:1px solid var(--line); padding-top:16px;">
+            <button class="btn btn-outline" id="btn-earn-download" type="button">Download <span id="earn-download-year">last year's</span> totals (CSV)</button>
+          </div>
+        </div>
+      </section>
+
       <!-- ============ LEDGER ============ -->
       <section class="tab-pane" data-tab="ledger" id="tab-ledger">
         <div class="tab-head">
@@ -964,6 +985,7 @@
       <button class="tab-btn" data-tabbtn="coach">Coach</button>
       <button class="tab-btn" data-tabbtn="consult">Consult</button>
       <button class="tab-btn" data-tabbtn="booking">Booking</button>
+      <button class="tab-btn" data-tabbtn="earnings">Earnings</button>
       <button class="tab-btn" data-tabbtn="ledger">Ledger</button>
     </nav>
   </div>
@@ -1277,20 +1299,23 @@ function toTitleCase(str){
    ========================================================= */
 function showTab(name){
   if (!isStudent() && (name === 'pace' || name === 'ledger')) name = 'coach';
-  if (isStudent() && name === 'booking') name = 'coach';
+  if (isStudent() && (name === 'booking' || name === 'earnings')) name = 'coach';
   document.querySelectorAll('.tab-pane').forEach(p=> p.classList.toggle('show', p.dataset.tab===name));
   document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tabbtn===name));
   if (name === 'ledger') enterLedgerTab();
   if (name === 'booking' && window.initBookingTab) window.initBookingTab();
+  if (name === 'earnings' && window.initEarningsTab) window.initEarningsTab();
 }
 function applyRoleVisibility(){
   const show = isStudent();
   const paceBtn = document.querySelector('.tab-btn[data-tabbtn="pace"]');
   const ledgerBtn = document.querySelector('.tab-btn[data-tabbtn="ledger"]');
   const bookingBtn = document.querySelector('.tab-btn[data-tabbtn="booking"]');
+  const earningsBtn = document.querySelector('.tab-btn[data-tabbtn="earnings"]');
   if (paceBtn) paceBtn.style.display = show ? '' : 'none';
   if (ledgerBtn) ledgerBtn.style.display = show ? '' : 'none';
   if (bookingBtn) bookingBtn.style.display = show ? 'none' : '';
+  if (earningsBtn) earningsBtn.style.display = show ? 'none' : '';
   const clientAttachCard = document.getElementById('client-attach-card');
   const consultClientAttachCard = document.getElementById('consult-client-attach-card');
   if (clientAttachCard) clientAttachCard.style.display = show ? 'none' : '';
@@ -2992,6 +3017,118 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   window.initBookingTab = function(){
     renderSetupFromProfile();
     if (profile.bookingEnabled) loadAppointments();
+  };
+})();
+
+/* =========================================================
+   EARNINGS TAB
+   ========================================================= */
+(function(){
+  const root = document.getElementById('tab-earnings');
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  function csvEscape(val){
+    const s = String(val);
+    if (/[",\r\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+    return s;
+  }
+
+  async function fetchBookedAppointments(){
+    const { data, error } = await supabaseClient.from('appointments').select('*').eq('barber_code', profileCode).eq('status','booked');
+    if (error) throw error;
+    return data || [];
+  }
+
+  async function renderEarnings(){
+    const yearLabelEl = root.querySelector('#earn-year-label');
+    const ytdEl = root.querySelector('#earn-ytd-total');
+    const listEl = root.querySelector('#earn-month-list');
+    const emptyEl = root.querySelector('#earn-empty-note');
+    const downloadRow = root.querySelector('#earn-download-row');
+    const downloadYearEl = root.querySelector('#earn-download-year');
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const currentMonthIdx = now.getMonth();
+    yearLabelEl.textContent = year + ' year to date';
+
+    if (!dbAvailable || !profileCode){
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      downloadRow.style.display = 'none';
+      ytdEl.textContent = '$0';
+      return;
+    }
+
+    try{
+      const appts = await fetchBookedAppointments();
+      const today = todayIso();
+      const monthTotals = Array(12).fill(0);
+      let prevYearHasData = false;
+
+      appts.forEach(a=>{
+        if (!a.appt_date || a.appt_date > today) return;
+        const y = parseInt(a.appt_date.slice(0,4), 10);
+        const m = parseInt(a.appt_date.slice(5,7), 10) - 1;
+        if (y === year) monthTotals[m] += Number(a.total_price) || 0;
+        else if (y === year - 1) prevYearHasData = true;
+      });
+
+      const ytd = monthTotals.reduce((s,v)=> s+v, 0);
+      ytdEl.textContent = '$' + ytd;
+
+      listEl.innerHTML = MONTH_NAMES.map((name, idx)=>{
+        const val = idx > currentMonthIdx ? '-' : ('$' + monthTotals[idx]);
+        return `<div class="summary-row"><span>${name}</span><span>${val}</span></div>`;
+      }).join('');
+      emptyEl.style.display = (ytd === 0) ? 'block' : 'none';
+
+      if (prevYearHasData){
+        downloadRow.style.display = 'flex';
+        downloadYearEl.textContent = String(year - 1);
+      } else {
+        downloadRow.style.display = 'none';
+      }
+    }catch(e){
+      console.warn('load earnings failed', e);
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      downloadRow.style.display = 'none';
+    }
+  }
+
+  async function downloadPrevYearCsv(){
+    if (!dbAvailable || !profileCode) return;
+    const targetYear = new Date().getFullYear() - 1;
+    try{
+      const appts = await fetchBookedAppointments();
+      const monthTotals = Array(12).fill(0);
+      appts.forEach(a=>{
+        if (!a.appt_date) return;
+        const y = parseInt(a.appt_date.slice(0,4), 10);
+        if (y !== targetYear) return;
+        const m = parseInt(a.appt_date.slice(5,7), 10) - 1;
+        monthTotals[m] += Number(a.total_price) || 0;
+      });
+      const yearTotal = monthTotals.reduce((s,v)=> s+v, 0);
+      const rows = [['Month','Total Earned']];
+      MONTH_NAMES.forEach((name, idx)=> rows.push([name, '$' + monthTotals[idx]]));
+      rows.push(['Year Total', '$' + yearTotal]);
+      const csv = rows.map(r=> r.map(csvEscape).join(',')).join('\r\n');
+      const blob = new Blob([csv], {type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'earnings-' + targetYear + '.csv';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }catch(e){
+      console.warn('download earnings failed', e);
+    }
+  }
+  root.querySelector('#btn-earn-download').addEventListener('click', downloadPrevYearCsv);
+
+  window.initEarningsTab = function(){
+    renderEarnings();
   };
 })();
 
