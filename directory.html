@@ -154,7 +154,7 @@
           <div class="summary-card" id="bkc-confirm-summary"></div>
 
           <div id="bkc-client-search">
-            <div class="field"><label>Your Hair Passport code</label><div class="input-row"><input id="bkc-client-code" type="text" placeholder="Your personal code"></div></div>
+            <div class="field"><label>Your Hair Passport code</label><div class="input-row"><input id="bkc-client-code" type="text" placeholder="Your personal code" data-lookup-field="1"></div></div>
             <button class="btn btn-outline" id="btn-bkc-client-lookup" type="button" style="width:100%; margin-top:8px;">Look up</button>
             <button class="btn btn-ghost" id="btn-bkc-client-newclient" type="button" style="width:100%; margin-top:6px;">First time booking here? Create my Hair Passport</button>
             <p class="screen-sub" id="bkc-client-status" style="margin-top:6px;">&nbsp;</p>
@@ -815,6 +815,16 @@ function isTextEntryField(el){
 function isFormField(el){
   return !!(el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT'));
 }
+// A lookup field (the client passport code search box) is a genuine text field, but tapping
+// its "Look up" button right after typing in it shows the result (a matched pro, or a message
+// to check the code) in the same spot on screen -- snapping the page back to the top at that
+// moment hides that result and forces a scroll back down every single time. Skip the scroll
+// reset for these, including the follow-up reset the visualViewport listener would otherwise
+// fire once the keyboard finishes closing.
+function isLookupField(el){
+  return !!(el && el.hasAttribute && el.hasAttribute('data-lookup-field'));
+}
+let suppressScrollReset = false;
 function scrollAppToTop(){
   window.scrollTo(0, 0);
   document.documentElement.scrollTop = 0;
@@ -822,6 +832,11 @@ function scrollAppToTop(){
   document.querySelectorAll('.content').forEach(el => { el.scrollTop = 0; });
 }
 document.addEventListener('focusout', (e)=>{
+  if (isLookupField(e.target)){
+    suppressScrollReset = true;
+    setTimeout(()=>{ suppressScrollReset = false; }, 900);
+    return;
+  }
   if (isTextEntryField(e.target)){
     setTimeout(scrollAppToTop, 300);
   }
@@ -830,6 +845,7 @@ if (window.visualViewport){
   window.visualViewport.addEventListener('resize', ()=>{
     // Skip while any field, including a select/time/date picker, is still in use.
     if (isFormField(document.activeElement)) return;
+    if (suppressScrollReset) return;
     scrollAppToTop();
   });
 }
