@@ -388,18 +388,22 @@
     </div>
     <p class="brand-footer" style="margin-top:10px;">A Stronger Hair Community<br>Together.</p>
   </div>
-  <div id="auth-screen" class="center-screen" hidden>
-    <button type="button" class="link-btn" id="btn-auth-back" style="align-self:flex-start; margin:-8px 0 -4px; padding:6px 0;">&larr; Back</button>
-    <div>
-      <p class="eyebrow-mini">Pace &middot; Coach &middot; Consult &middot; Ledger</p>
-      <h2 class="screen-title" id="auth-heading">Sign up</h2>
-      <p class="screen-sub" style="margin-top:6px;" id="auth-subhead">Create your account with an email and password, plus your name, role, license (if licensed), and a public booking code.</p>
-    </div>
-    <div class="mode-toggle" style="width:100%; max-width:320px;">
-      <button type="button" class="mode-btn active" id="btn-auth-mode-new">Sign up</button>
-      <button type="button" class="mode-btn" id="btn-auth-mode-returning">Log in</button>
-    </div>
-    <form class="auth-form" id="auth-form">
+  <div id="auth-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100dvh;">
+    <header class="topbar">
+      <button type="button" class="link-btn" id="btn-auth-back">&larr; Back</button>
+      <div class="tb-name" id="auth-heading">Sign up</div>
+      <div style="width:40px;"></div>
+    </header>
+    <main class="tab-content" style="display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center;">
+      <div>
+        <p class="eyebrow-mini">Pace &middot; Coach &middot; Consult &middot; Ledger</p>
+        <p class="screen-sub" style="margin-top:6px;" id="auth-subhead">Create your account with an email and password, plus your name, role, license (if licensed), and a public booking code.</p>
+      </div>
+      <div class="mode-toggle" style="width:100%; max-width:320px;">
+        <button type="button" class="mode-btn active" id="btn-auth-mode-new">Sign up</button>
+        <button type="button" class="mode-btn" id="btn-auth-mode-returning">Log in</button>
+      </div>
+      <form class="auth-form" id="auth-form">
       <div class="field">
         <label>Email</label>
         <div class="input-row"><input id="auth-email" type="email" placeholder="e.g. jordan@email.com" autocomplete="email" required></div>
@@ -439,7 +443,8 @@
       </div>
       <button class="btn btn-primary" type="submit" id="auth-submit-btn">Create my account</button>
       <p class="foot-note-small" id="auth-note">&nbsp;</p>
-    </form>
+      </form>
+    </main>
   </div>
   <div id="app-shell" hidden>
     <div id="degraded-banner" class="banner warn" hidden>Live saving isn't connected right now. Your changes here won't be kept. Everything still works to try out.</div>
