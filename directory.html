@@ -795,12 +795,26 @@ async function boot(){
 }
 
 // iOS Safari/Chrome sometimes leave the page scrolled up (hiding the header) after the
-// on-screen keyboard closes. Snap back to the top once focus leaves any text input. Reset
-// every place scroll position can live (window, the document root, and the app's own
-// .content containers, since resetting only one can silently do nothing depending on which
-// one actually scrolled), and wait long enough for the keyboard's own close animation to
-// finish first (a too-short delay gets overridden by iOS mid-animation), backed up by a
+// on-screen software keyboard closes. Snap back to the top once focus leaves a genuine text
+// field. This only applies to fields that actually bring up that software keyboard
+// (text/number/etc. inputs and textareas) -- a <select>, or a type="time"/"date" field,
+// opens its own native picker instead, and treating those the same way yanked the page to
+// the top mid-interaction, while the user was still picking a time. Reset every place
+// scroll position can live (window, the document root, and the app's own .content
+// containers, since resetting only one can silently do nothing depending on which one
+// actually scrolled), and wait long enough for the keyboard's own close animation to finish
+// first (a too-short delay gets overridden by iOS mid-animation), backed up by a
 // visualViewport listener that catches the keyboard-close moment directly where supported.
+function isTextEntryField(el){
+  if (!el) return false;
+  if (el.tagName === 'TEXTAREA') return true;
+  if (el.tagName !== 'INPUT') return false;
+  const type = (el.type || 'text').toLowerCase();
+  return ['text','tel','email','number','search','url','password'].includes(type);
+}
+function isFormField(el){
+  return !!(el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT'));
+}
 function scrollAppToTop(){
   window.scrollTo(0, 0);
   document.documentElement.scrollTop = 0;
@@ -808,15 +822,14 @@ function scrollAppToTop(){
   document.querySelectorAll('.content').forEach(el => { el.scrollTop = 0; });
 }
 document.addEventListener('focusout', (e)=>{
-  const tag = e.target && e.target.tagName;
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'){
+  if (isTextEntryField(e.target)){
     setTimeout(scrollAppToTop, 300);
   }
 });
 if (window.visualViewport){
   window.visualViewport.addEventListener('resize', ()=>{
-    const activeTag = document.activeElement && document.activeElement.tagName;
-    if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
+    // Skip while any field, including a select/time/date picker, is still in use.
+    if (isFormField(document.activeElement)) return;
     scrollAppToTop();
   });
 }
