@@ -379,6 +379,12 @@ try{
 let dbAvailable = !!supabaseClient;
 let client = null;
 let clientCode = null;
+// True when this page was opened by scanning someone's "show this to your barber" QR code
+// (or opened with a shared link carrying ?code=) rather than the client's own saved login.
+// That flow is meant to let a barber glance at visit history, not hand over the full account --
+// so in this mode the Account screen (name, and especially the phone number the app promises
+// barbers never see) stays hidden, and the session is never remembered on the scanning device.
+let viewedViaSharedCode = false;
 
 const NDA_VERSION = 'v1';
 function ndaAccepted(){
@@ -991,12 +997,16 @@ document.getElementById('btn-delete-visit').addEventListener('click', async func
    AUTH / BOOT
    ========================================================= */
 function enterApp(){
-  syncNdaToServer();
-  syncNameToServer();
+  if (!viewedViaSharedCode){
+    syncNdaToServer();
+    syncNameToServer();
+  }
   document.getElementById('loading-screen').hidden = true;
   document.getElementById('auth-screen').hidden = true;
   document.getElementById('passport-shell').hidden = false;
   document.getElementById('degraded-banner').hidden = dbAvailable;
+  document.getElementById('btn-open-account').style.display = viewedViaSharedCode ? 'none' : '';
+  document.getElementById('btn-switch-profile').textContent = viewedViaSharedCode ? 'Done' : 'Log Out';
   renderHome();
   showScreen('home');
   loadUpcomingAppointments();
@@ -1132,7 +1142,10 @@ async function continueBoot(){
   if (urlCode && dbAvailable){
     const ok = await tryLoadClient(urlCode);
     if (ok){
-      try{ localStorage.setItem('passportClientCode', urlCode); }catch(e){}
+      // Arrived via a scanned QR code or shared link, not the client's own saved login --
+      // don't remember this on whatever device just scanned it, and keep the account/phone
+      // details hidden (see viewedViaSharedCode above).
+      viewedViaSharedCode = true;
       enterApp();
       return;
     }
