@@ -387,6 +387,39 @@
       </div>
     </div>
     <p class="brand-footer" style="margin-top:10px;">A Stronger Hair Community<br>Together.</p>
+    <button type="button" class="link-btn" id="btn-share-app" style="margin-top:2px;">Share the app</button>
+  </div>
+  <div id="share-app-panel" style="display:none; position:fixed; inset:0; z-index:600; background:var(--bg); overflow-y:auto;">
+    <div style="max-width:420px; margin:0 auto; padding:max(20px, env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));">
+      <button type="button" class="link-btn" id="btn-share-app-close" style="padding:6px 0 14px;">&larr; Back</button>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center; margin-bottom:18px;">
+        <p class="eyebrow-mini" style="margin:0;">Share All Hair Connect</p>
+        <h2 style="margin:2px 0 0;">Bring someone new in</h2>
+        <p class="screen-sub" style="margin:4px 0 0;">Have them scan this code with their phone's camera, or open the link directly, then follow the steps for their phone below to add the app to their home screen.</p>
+      </div>
+      <div class="card" style="align-items:center; gap:10px; margin-bottom:18px;">
+        <canvas id="share-app-qr-canvas" width="220" height="220" style="border-radius:8px; max-width:100%; height:auto;"></canvas>
+        <div class="link-row" style="width:100%;">
+          <input type="text" class="link-input" id="share-app-link-input" readonly>
+          <button class="btn btn-outline" id="btn-share-app-copy" style="flex:none; padding:9px 14px;">Copy</button>
+        </div>
+        <p class="foot-note-small" id="share-app-copy-note">&nbsp;</p>
+        <button class="btn btn-primary" id="btn-share-app-native" style="display:none; width:100%;">Share link</button>
+      </div>
+      <div class="card" style="gap:12px;">
+        <p class="eyebrow-mini" style="margin:0;">Add to home screen</p>
+        <div class="mode-toggle">
+          <button type="button" class="mode-btn" id="btn-share-app-ios">iPhone</button>
+          <button type="button" class="mode-btn" id="btn-share-app-android">Android</button>
+        </div>
+        <div id="share-app-steps-ios" style="display:none; flex-direction:column;">
+          <p class="screen-sub" style="margin:0; text-align:left;">1. Open the link in Safari.<br>2. Tap the Share icon (the square with an arrow pointing up) in the toolbar.<br>3. Scroll down and tap "Add to Home Screen."<br>4. Tap "Add" in the top right.</p>
+        </div>
+        <div id="share-app-steps-android" style="display:none; flex-direction:column;">
+          <p class="screen-sub" style="margin:0; text-align:left;">1. Open the link in Chrome.<br>2. Tap the three-dot menu in the top right.<br>3. Tap "Add to Home screen" or "Install app."<br>4. Tap "Add" or "Install" to confirm.</p>
+        </div>
+      </div>
+    </div>
   </div>
   <div id="auth-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100dvh;">
     <header class="topbar">
@@ -4062,6 +4095,53 @@ document.getElementById('btn-role-pro').addEventListener('click', ()=>{
 });
 document.getElementById('btn-role-directory').addEventListener('click', ()=>{
   window.location.href = 'directory.html';
+});
+/* =========================================================
+   SHARE THE APP (home screen)
+   ========================================================= */
+function shareAppUrl(){
+  return window.location.origin + window.location.pathname;
+}
+function setShareAppDevice(device){
+  document.getElementById('btn-share-app-ios').classList.toggle('active', device === 'ios');
+  document.getElementById('btn-share-app-android').classList.toggle('active', device !== 'ios');
+  document.getElementById('share-app-steps-ios').style.display = device === 'ios' ? 'flex' : 'none';
+  document.getElementById('share-app-steps-android').style.display = device === 'ios' ? 'none' : 'flex';
+}
+function openSharePanel(){
+  const url = shareAppUrl();
+  document.getElementById('share-app-link-input').value = url;
+  document.getElementById('share-app-copy-note').textContent = ' ';
+  const canvas = document.getElementById('share-app-qr-canvas');
+  if (window.QRCode){
+    window.QRCode.toCanvas(canvas, url, { width:220, margin:4, color:{ dark:'#1E2530', light:'#FFFFFF' } }, function(){});
+  }
+  const ua = navigator.userAgent || '';
+  setShareAppDevice(/iPhone|iPad|iPod/i.test(ua) ? 'ios' : 'android');
+  document.getElementById('btn-share-app-native').style.display = (navigator.share ? 'block' : 'none');
+  document.getElementById('share-app-panel').style.display = 'block';
+}
+function closeSharePanel(){
+  document.getElementById('share-app-panel').style.display = 'none';
+}
+document.getElementById('btn-share-app').addEventListener('click', openSharePanel);
+document.getElementById('btn-share-app-close').addEventListener('click', closeSharePanel);
+document.getElementById('btn-share-app-ios').addEventListener('click', ()=> setShareAppDevice('ios'));
+document.getElementById('btn-share-app-android').addEventListener('click', ()=> setShareAppDevice('android'));
+document.getElementById('btn-share-app-copy').addEventListener('click', async ()=>{
+  const note = document.getElementById('share-app-copy-note');
+  try{
+    await navigator.clipboard.writeText(document.getElementById('share-app-link-input').value);
+    note.textContent = 'Copied.';
+  }catch(e){
+    document.getElementById('share-app-link-input').select();
+    note.textContent = 'Select and copy the link above.';
+  }
+});
+document.getElementById('btn-share-app-native').addEventListener('click', async ()=>{
+  try{
+    await navigator.share({ title: 'All Hair Connect', text: 'Take a look at All Hair Connect.', url: shareAppUrl() });
+  }catch(e){}
 });
 document.getElementById('btn-auth-back').addEventListener('click', ()=>{
   showRoleScreen();
