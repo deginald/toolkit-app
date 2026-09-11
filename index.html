@@ -719,10 +719,18 @@
           <div class="card" id="consult-client-attach-card" style="gap:10px;">
             <p class="eyebrow-mini2" style="margin:0;">Attach to a client's Hair Passport (optional)</p>
             <div id="consult-client-attach-search">
-              <div class="input-row"><input id="consult-client-code-input" type="text" placeholder="Client's passport code"></div>
+              <button class="btn btn-primary" id="btn-consult-client-scan" type="button" style="width:100%;">Scan their QR code</button>
+              <div class="input-row" style="margin-top:12px;"><input id="consult-client-code-input" type="text" placeholder="Client's passport code"></div>
               <button class="btn btn-outline" id="btn-consult-client-lookup" type="button" style="margin-top:8px; width:100%;">Look up</button>
               <button class="btn btn-ghost" id="btn-consult-client-newclient" type="button" style="margin-top:6px; width:100%;">First visit? Start their Hair Passport</button>
               <p class="screen-sub" id="consult-client-lookup-status" style="margin-top:6px;">&nbsp;</p>
+            </div>
+            <div id="consult-client-scanpanel" style="display:none; flex-direction:column; gap:10px;">
+              <div style="position:relative; border-radius:12px; overflow:hidden; background:#000; aspect-ratio:1/1; max-width:280px; margin:0 auto; width:100%;">
+                <video id="consult-client-scan-video" playsinline autoplay muted style="width:100%; height:100%; object-fit:cover; display:block;"></video>
+              </div>
+              <p class="screen-sub" id="consult-client-scan-status" style="margin:0; text-align:center;">Point the camera at their Hair Passport QR code.</p>
+              <button class="btn btn-ghost" id="btn-consult-client-scan-cancel" type="button" style="width:100%;">Enter their code manually instead</button>
             </div>
             <div id="consult-client-attach-newname" style="display:none; flex-direction:column; gap:10px;">
               <div class="field"><label>Client's name</label><div class="input-row"><input id="consult-client-new-name" type="text" placeholder="e.g. Jordan Smith"></div></div>
@@ -2587,9 +2595,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#consult-client-create-status').textContent = '';
     root.querySelector('#consult-client-new-name').focus();
   }
-  root.querySelector('#btn-consult-client-lookup').addEventListener('click', async ()=>{
+  async function performClientLookup_consult(codeOverride){
     const statusEl = root.querySelector('#consult-client-lookup-status');
-    const code = sanitizeCode(root.querySelector('#consult-client-code-input').value);
+    const code = sanitizeCode(codeOverride !== undefined ? codeOverride : root.querySelector('#consult-client-code-input').value);
     if (!code){ statusEl.textContent = 'Enter a code first.'; return; }
     if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
     statusEl.textContent = 'Looking up…';
@@ -2608,10 +2616,115 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       console.warn('client lookup failed', e);
       statusEl.textContent = "Couldn't reach the client database.";
     }
-  });
+  }
+  root.querySelector('#btn-consult-client-lookup').addEventListener('click', ()=> performClientLookup_consult());
   root.querySelector('#btn-consult-client-newclient').addEventListener('click', ()=>{
     root.querySelector('#consult-client-lookup-status').textContent = '';
     openNewClientPanel_consult('');
+  });
+
+  // -- QR scanning: lets the professional scan a client's "show this to your barber" code
+  // instead of typing it. Falls back to clear instructions to type the code manually whenever
+  // the camera can't be used (no permission, no camera, unsupported browser) or nothing scans
+  // after a while, so this is never a dead end.
+  let consultScanStream = null;
+  let consultScanRAF = null;
+  let consultScanCanvas = null;
+  let consultScanTimeoutId = null;
+
+  function extractCodeFromScan_consult(text){
+    if (!text) return '';
+    try{
+      const u = new URL(text);
+      const fromQuery = u.searchParams.get('code');
+      if (fromQuery) return sanitizeCode(fromQuery);
+    }catch(e){ /* not a full URL -- fall through */ }
+    const m = /[?&]code=([^&]+)/.exec(text);
+    if (m) return sanitizeCode(decodeURIComponent(m[1]));
+    return '';
+  }
+
+  function stopScan_consult(){
+    if (consultScanRAF){ cancelAnimationFrame(consultScanRAF); consultScanRAF = null; }
+    if (consultScanTimeoutId){ clearTimeout(consultScanTimeoutId); consultScanTimeoutId = null; }
+    if (consultScanStream){ consultScanStream.getTracks().forEach(t => t.stop()); consultScanStream = null; }
+  }
+
+  function closeScanPanel_consult(){
+    stopScan_consult();
+    root.querySelector('#consult-client-scanpanel').style.display = 'none';
+    root.querySelector('#consult-client-attach-search').style.display = '';
+  }
+  window.__activeScanStoppers.push(()=>{ if (consultScanStream) closeScanPanel_consult(); });
+
+  function scanFrame_consult(video){
+    const statusEl = root.querySelector('#consult-client-scan-status');
+    if (video.readyState === video.HAVE_ENOUGH_DATA && window.jsQR){
+      if (!consultScanCanvas) consultScanCanvas = document.createElement('canvas');
+      consultScanCanvas.width = video.videoWidth;
+      consultScanCanvas.height = video.videoHeight;
+      const ctx = consultScanCanvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, consultScanCanvas.width, consultScanCanvas.height);
+      const imageData = ctx.getImageData(0, 0, consultScanCanvas.width, consultScanCanvas.height);
+      const result = window.jsQR(imageData.data, imageData.width, imageData.height);
+      if (result && result.data){
+        const code = extractCodeFromScan_consult(result.data);
+        if (code){
+          closeScanPanel_consult();
+          root.querySelector('#consult-client-code-input').value = code;
+          performClientLookup_consult(code);
+          return;
+        } else if (statusEl){
+          statusEl.textContent = "That doesn't look like a Hair Passport code. Try again, or enter it manually.";
+        }
+      }
+    }
+    consultScanRAF = requestAnimationFrame(()=> scanFrame_consult(video));
+  }
+
+  async function startScan_consult(){
+    const statusEl = root.querySelector('#consult-client-scan-status');
+    const video = root.querySelector('#consult-client-scan-video');
+    root.querySelector('#consult-client-attach-search').style.display = 'none';
+    root.querySelector('#consult-client-scanpanel').style.display = 'flex';
+    statusEl.textContent = 'Point the camera at their Hair Passport QR code.';
+
+    if (!window.jsQR){
+      statusEl.textContent = "The QR scanner didn't load. Enter their code manually instead.";
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      statusEl.textContent = "This browser can't use the camera here. Enter their code manually instead.";
+      return;
+    }
+    try{
+      consultScanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    }catch(e){
+      console.warn('camera access failed', e);
+      if (e && e.name === 'NotAllowedError'){
+        statusEl.textContent = "Camera access was blocked. Enter their code manually instead, or allow camera access in your browser settings and try again.";
+      } else if (e && e.name === 'NotFoundError'){
+        statusEl.textContent = "No camera was found on this device. Enter their code manually instead.";
+      } else {
+        statusEl.textContent = "Couldn't open the camera. Enter their code manually instead.";
+      }
+      return;
+    }
+    video.srcObject = consultScanStream;
+    try{ await video.play(); }catch(e){ /* autoplay quirks -- scanFrame still starts once ready */ }
+    consultScanRAF = requestAnimationFrame(()=> scanFrame_consult(video));
+    consultScanTimeoutId = setTimeout(()=>{
+      if (statusEl) statusEl.textContent = "Still looking... having trouble? Enter their code manually instead.";
+    }, 12000);
+  }
+
+  root.querySelector('#btn-consult-client-scan').addEventListener('click', ()=>{
+    root.querySelector('#consult-client-lookup-status').textContent = '';
+    startScan_consult();
+  });
+  root.querySelector('#btn-consult-client-scan-cancel').addEventListener('click', ()=>{
+    closeScanPanel_consult();
+    root.querySelector('#consult-client-code-input').focus();
   });
   root.querySelector('#consult-client-new-name').addEventListener('input', ()=>{
     const codeEl = root.querySelector('#consult-client-new-code');
