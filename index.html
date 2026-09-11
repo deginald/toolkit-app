@@ -281,11 +281,19 @@
     <button id="ahc-gate-submit" style="width:100%;background:linear-gradient(180deg,#E8C87E,#D4AF6A);color:#1a1206;border:none;padding:12px;border-radius:999px;font-weight:600;cursor:pointer;font-size:0.95rem;">Enter</button>
     <p id="ahc-gate-error" style="color:#e08383;font-size:0.82rem;margin:12px 0 0;display:none;">That code doesn't match. Try again.</p>
     <p style="color:#7C879C;font-size:0.78rem;margin:16px 0 0;">Don't have a code? <a href="https://allhairconnect.com/#access" style="color:#D4AF6A;">Request access</a></p>
+    <p style="color:#7C879C;font-size:0.78rem;margin:10px 0 0;">Already invited and have an account? <a href="#" id="ahc-gate-login-link" style="color:#D4AF6A;">Log in</a></p>
   </div>
 </div>
 <script>
 (function(){
   var CODE = "0108";
+  // Exposed so a returning professional who logs in successfully (see the main app
+  // script's auth-form handler) can be re-granted access even if this gate's own
+  // "remembered code" flag didn't carry over -- e.g. opening the app from its
+  // Home Screen icon on an iPhone can start it in storage separate from Safari's,
+  // so someone who already entered the code in Safari can land back on this gate
+  // even though they were already invited and already have an account.
+  window.AHC_BETA_CODE = CODE;
   var gate = document.getElementById('ahc-gate');
   if(!gate) return;
   try{
@@ -308,6 +316,29 @@
   }
   document.getElementById('ahc-gate-submit').addEventListener('click', tryEnter);
   input.addEventListener('keydown', function(e){ if(e.key === 'Enter') tryEnter(); });
+  // "Already invited and have an account? Log in" -- for someone who has already
+  // been through the code + NDA + account setup before, but landed on this gate
+  // again because this particular copy of the app (for example, the Home Screen
+  // icon version) doesn't remember that locally. By the time someone can actually
+  // click this, the rest of the app has already loaded and run its own startup
+  // (it runs underneath this gate the whole time), so jump straight to the login
+  // form directly here rather than trying to flag it for that startup to notice --
+  // it already decided on some other screen before this click ever happened.
+  // A successful login re-grants this copy of the app so it won't happen again here.
+  document.getElementById('ahc-gate-login-link').addEventListener('click', function(e){
+    e.preventDefault();
+    gate.remove();
+    document.body.style.overflow = '';
+    try{
+      var ndaScreen = document.getElementById('nda-screen');
+      if (ndaScreen) ndaScreen.hidden = true;
+      if (typeof window.showAuthScreen === 'function'){
+        window.showAuthScreen('returning');
+        var toggle = document.getElementById('auth-mode-toggle');
+        if (toggle) toggle.style.display = 'none';
+      }
+    }catch(err){}
+  });
 })();
 </script>
 <!-- End Access Gate -->
@@ -432,7 +463,7 @@
         <p class="eyebrow-mini">Pace &middot; Coach &middot; Consult &middot; Ledger</p>
         <p class="screen-sub" style="margin-top:6px;" id="auth-subhead">Create your account with an email and password, plus your name, role, license (if licensed), and a public booking code.</p>
       </div>
-      <div class="mode-toggle" style="width:100%; max-width:320px;">
+      <div class="mode-toggle" id="auth-mode-toggle" style="width:100%; max-width:320px;">
         <button type="button" class="mode-btn active" id="btn-auth-mode-new">Sign up</button>
         <button type="button" class="mode-btn" id="btn-auth-mode-returning">Log in</button>
       </div>
@@ -4066,10 +4097,11 @@ function setAuthMode(mode){
 document.getElementById('btn-auth-mode-new').addEventListener('click', ()=> setAuthMode('new'));
 document.getElementById('btn-auth-mode-returning').addEventListener('click', ()=> setAuthMode('returning'));
 document.getElementById('auth-title').addEventListener('change', updateAuthFieldVisibility);
-function showAuthScreen(){
+function showAuthScreen(forceMode){
   document.getElementById('loading-screen').hidden = true;
   document.getElementById('role-screen').hidden = true;
   document.getElementById('auth-screen').hidden = false;
+  document.getElementById('auth-mode-toggle').style.display = '';
   let hasAccount = false, lastEmail = '';
   try{
     hasAccount = localStorage.getItem('ahcProAccountExists') === '1';
@@ -4082,7 +4114,7 @@ function showAuthScreen(){
   document.getElementById('auth-license').value = '';
   document.getElementById('auth-code').value = '';
   document.getElementById('auth-phone').value = '';
-  setAuthMode(hasAccount ? 'returning' : 'new');
+  setAuthMode(forceMode || (hasAccount ? 'returning' : 'new'));
   if (!dbAvailable){
     document.getElementById('auth-note').textContent = "Live saving isn't connected right now. You can still try everything out, but it won't be kept.";
   }
@@ -4161,6 +4193,19 @@ document.getElementById('auth-forgot-link').addEventListener('click', async (e)=
     note.textContent = (err && err.message) ? err.message : "Couldn't send that. Try again.";
   }
 });
+// A successful signup or login is solid proof this device/browser copy of the app
+// belongs to someone already invited and already NDA-bound (only the gate+NDA+signup
+// flow ever creates an account in the first place), so re-stamp both local flags here
+// every time. This is what makes this copy of the app stop asking for the access code
+// again -- important for the "Log in" shortcut off the gate above, and cheap insurance
+// generally against this one copy's storage having lost those flags some other way
+// (e.g. it was opened from a Home Screen icon that started with separate storage).
+function markAhcGateAndNdaPassed(){
+  try{
+    if (window.AHC_BETA_CODE) localStorage.setItem('ahc_access_granted', window.AHC_BETA_CODE);
+  }catch(e){}
+  markNdaAccepted();
+}
 document.getElementById('auth-form').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const isNew = document.getElementById('btn-auth-mode-new').classList.contains('active');
@@ -4197,6 +4242,7 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
         localStorage.setItem('ahcProAccountExists', '1');
         localStorage.setItem('ahcLastProEmail', email);
       }catch(err){}
+      markAhcGateAndNdaPassed();
       enterApp();
     } else {
       note.textContent = 'Logging in…';
@@ -4213,6 +4259,7 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
         localStorage.setItem('ahcProAccountExists', '1');
         localStorage.setItem('ahcLastProEmail', email);
       }catch(err){}
+      markAhcGateAndNdaPassed();
       enterApp();
     }
   }catch(err){
