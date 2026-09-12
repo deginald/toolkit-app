@@ -500,11 +500,6 @@
         <div class="input-row"><input id="auth-code" type="text" placeholder="e.g. jordan-fall26" autocomplete="off" required></div>
         <p class="foot-note-small">This is what shows up in your booking link, QR code, and shared Ledger link. It's not something you log in with.</p>
       </div>
-      <div class="field" id="auth-phone-field">
-        <label>Mobile number <span style="text-transform:none; font-weight:600;">(optional)</span></label>
-        <div class="input-row"><input id="auth-phone" type="tel" placeholder="e.g. (910) 555-0123" autocomplete="tel"></div>
-        <p class="foot-note-small">Lets clients send you quick texts about a booked appointment (running late, need to cancel) through the app. Your number is never shown to them, and you can add or remove it later in Account.</p>
-      </div>
       <button class="btn btn-primary" type="submit" id="auth-submit-btn">Create my account</button>
       <p class="foot-note-small" id="auth-note">&nbsp;</p>
       </form>
@@ -1162,14 +1157,11 @@
         <p class="foot-note-small" id="license-save-note">&nbsp;</p>
       </div>
       <div style="border-top:1px solid var(--line); padding-top:16px;">
-        <p class="eyebrow-mini">Text alerts</p>
-        <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Your mobile number</h2>
-        <p class="screen-sub">Used only to send and receive quick texts about booked appointments (running late, need to cancel). It's never shown to clients, and this is separate from the shop phone number on your public listing.</p>
-        <div class="field">
-          <div class="input-row"><input id="account-phone" type="tel" placeholder="e.g. (910) 555-0123" autocomplete="tel"></div>
-        </div>
-        <button class="btn btn-primary" id="btn-save-phone" type="button">Save mobile number</button>
-        <p class="foot-note-small" id="phone-save-note">&nbsp;</p>
+        <p class="eyebrow-mini">Notifications</p>
+        <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Quick message alerts</h2>
+        <p class="screen-sub">Turn this on to get notified when a client sends you a quick message about an appointment, and to send them one yourself. No phone number needed.</p>
+        <button class="btn btn-primary" id="btn-enable-notifications" type="button">Turn on notifications</button>
+        <p class="foot-note-small" id="notifications-status-note">&nbsp;</p>
       </div>
       <div id="listing-ineligible" style="display:none; border-top:1px solid var(--line); padding-top:16px;">
         <p class="eyebrow-mini">Public directory</p>
@@ -1276,6 +1268,75 @@ try{
   }
 }catch(e){ supabaseClient = null; }
 /* =========================================================
+   WEB PUSH NOTIFICATIONS
+   Replaces phone-number based text alerts. No phone number is
+   collected; a person opts in per browser/device instead.
+   ========================================================= */
+const VAPID_PUBLIC_KEY = "BBpNjXEh0iCB34vvNfq85WFrM_wcRIMbrsvFaTWpM-dtlqCBir1mNenvIa5KgPURJsXGOUVfap6EIWGKVBQrFrY";
+function urlBase64ToUint8Array(base64String){
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; i++){
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+function pushSupported(){
+  return !!(window.isSecureContext && 'serviceWorker' in navigator && 'PushManager' in window);
+}
+let swRegistrationPromise = null;
+function registerServiceWorker(){
+  if (!pushSupported()) return Promise.resolve(null);
+  if (!swRegistrationPromise){
+    swRegistrationPromise = navigator.serviceWorker.register('sw.js').catch((e)=>{ console.warn('sw register failed', e); return null; });
+  }
+  return swRegistrationPromise;
+}
+async function getExistingPushSubscription(){
+  if (!pushSupported()) return null;
+  try{
+    const reg = await registerServiceWorker();
+    if (!reg) return null;
+    return await reg.pushManager.getSubscription();
+  }catch(e){ return null; }
+}
+async function subscribeToPush(ownerCode, ownerRole){
+  if (!pushSupported()) return { ok:false, message: "Notifications aren't supported on this device or browser." };
+  if (!ownerCode) return { ok:false, message: 'Not ready yet. Try again in a moment.' };
+  try{
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted'){
+      return { ok:false, message: 'Permission was not granted.' };
+    }
+    const reg = await registerServiceWorker();
+    if (!reg) return { ok:false, message: "Couldn't set up notifications on this device." };
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub){
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+    const json = sub.toJSON();
+    if (dbAvailable){
+      const { error } = await supabaseClient.from('push_subscriptions').upsert({
+        owner_code: ownerCode,
+        owner_role: ownerRole,
+        endpoint: json.endpoint,
+        p256dh: json.keys && json.keys.p256dh,
+        auth: json.keys && json.keys.auth
+      }, { onConflict: 'endpoint' });
+      if (error) throw error;
+    }
+    return { ok:true };
+  }catch(e){
+    console.warn('subscribeToPush failed', e);
+    return { ok:false, message: "Couldn't turn on notifications. Try again." };
+  }
+}
+/* =========================================================
    SHARED STATE, HELPERS, PERSISTENCE
    ========================================================= */
 const NDA_VERSION = 'v1';
@@ -1325,7 +1386,6 @@ function defaultProfile(name){
     name: name || 'You',
     title: 'Student',
     license: '',
-    phone: '',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     pace: {
@@ -1387,7 +1447,6 @@ async function persistProfile(fields){
   if (fields.title) row.title = fields.title;
   if (fields.name) row.name = fields.name;
   if (fields.license !== undefined) row.license = fields.license;
-  if (fields.phone !== undefined) row.phone = fields.phone;
   if (fields.publicListing !== undefined) row.public_listing = fields.publicListing;
   if (fields.shopName !== undefined) row.shop_name = fields.shopName;
   if (fields.shopCity !== undefined) row.shop_city = fields.shopCity;
@@ -3335,10 +3394,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
           <span class="screen-sub" style="margin:0;">${a.client_name}: ${svcNames}, $${a.total_price}</span>
           <div class="btn-row" style="gap:14px; margin-top:2px;">
             <button type="button" class="link-btn" data-cancel-appt="${a.id}" style="color:var(--behind); padding:0;">Cancel appointment</button>
-            <button type="button" class="link-btn" data-text-toggle="${a.id}" style="padding:0;">Text client</button>
+            <button type="button" class="link-btn" data-text-toggle="${a.id}" style="padding:0;">Notify client</button>
           </div>
           <div data-msg-panel="${a.id}" style="display:none; flex-direction:column; gap:6px; margin-top:6px; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--paper);">
-            <p class="screen-sub" style="margin:0;">Send a quick text to ${a.client_name} about this appointment. They won't see your number.</p>
+            <p class="screen-sub" style="margin:0;">Send a quick notification to ${a.client_name} about this appointment.</p>
             ${msgButtons}
             <p class="screen-sub" data-msg-status="${a.id}" style="margin:0;">&nbsp;</p>
           </div>
@@ -3381,8 +3440,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         if (error) throw error;
         if (data && data.ok){
           if (statusEl) statusEl.textContent = 'Sent.';
-        } else if (data && data.reason === 'no_phone'){
-          if (statusEl) statusEl.textContent = "This client hasn't added a mobile number yet, so texting isn't available for this appointment.";
+        } else if (data && data.reason === 'not_subscribed'){
+          if (statusEl) statusEl.textContent = "This client hasn't turned on notifications yet, so this can't be sent.";
         } else {
           if (statusEl) statusEl.textContent = "Couldn't send. Try again.";
         }
@@ -3966,7 +4025,6 @@ function applyProfileRow(data){
   profile._nameNeedsSync = !!(data.name && data.name !== profile.name);
   profile.title = data.title || profile.title;
   profile.license = data.license || '';
-  profile.phone = data.phone || '';
   profile.createdAt = data.created_at || profile.createdAt;
   profile.updatedAt = data.updated_at || profile.updatedAt;
   profile.pace = Object.assign(defaultProfile().pace, data.pace||{});
@@ -4003,17 +4061,16 @@ async function tryLoadProfileByUserId(userId){
   }catch(e){ console.warn('load by user id failed', e); }
   return false;
 }
-async function createProfile(code, name, license, title, phone, userId){
+async function createProfile(code, name, license, title, userId){
   profile = defaultProfile(name);
   profile.license = license || '';
   profile.title = title && TITLE_OPTIONS.includes(title) ? title : 'Student';
-  profile.phone = phone || '';
   profileCode = code;
   if (dbAvailable){
     try{
       const { error } = await supabaseClient.from('profiles').insert({
         code, name: profile.name, title: profile.title, license: profile.license,
-        pace: profile.pace, techniques: profile.techniques, phone: profile.phone,
+        pace: profile.pace, techniques: profile.techniques,
         user_id: userId || null
       });
       if (error) throw error;
@@ -4076,7 +4133,6 @@ function updateAuthFieldVisibility(){
   document.getElementById('auth-title-field').style.display = isNew ? '' : 'none';
   document.getElementById('auth-license-field').style.display = (isNew && title !== 'Student') ? '' : 'none';
   document.getElementById('auth-code-field').style.display = isNew ? '' : 'none';
-  document.getElementById('auth-phone-field').style.display = isNew ? '' : 'none';
   document.getElementById('auth-forgot-row').style.display = isNew ? 'none' : 'block';
   document.getElementById('auth-name').required = isNew;
   document.getElementById('auth-code').required = isNew;
@@ -4113,7 +4169,6 @@ function showAuthScreen(forceMode){
   document.getElementById('auth-title').value = 'Student';
   document.getElementById('auth-license').value = '';
   document.getElementById('auth-code').value = '';
-  document.getElementById('auth-phone').value = '';
   setAuthMode(forceMode || (hasAccount ? 'returning' : 'new'));
   if (!dbAvailable){
     document.getElementById('auth-note').textContent = "Live saving isn't connected right now. You can still try everything out, but it won't be kept.";
@@ -4131,8 +4186,14 @@ document.getElementById('btn-role-directory').addEventListener('click', ()=>{
 /* =========================================================
    SHARE THE APP (home screen)
    ========================================================= */
+// Always point at the real, public address, regardless of where this particular
+// copy happens to be running from (a Vercel preview link, a plain GitHub Pages
+// URL, etc.). Otherwise "Share the app" would hand out whatever address happens
+// to be in the bar at the time, which is fine for testing but not something to
+// text to someone outside the team.
+const AHC_CANONICAL_APP_URL = 'https://app.allhairconnect.com/';
 function shareAppUrl(){
-  return window.location.origin + window.location.pathname;
+  return AHC_CANONICAL_APP_URL;
 }
 function setShareAppDevice(device){
   document.getElementById('btn-share-app-ios').classList.toggle('active', device === 'ios');
@@ -4221,7 +4282,6 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
       const name = toTitleCase(document.getElementById('auth-name').value.trim()) || 'You';
       const title = document.getElementById('auth-title').value;
       const license = document.getElementById('auth-license').value.trim();
-      const phone = document.getElementById('auth-phone').value.trim();
       const code = sanitizeCode(document.getElementById('auth-code').value);
       if (!code){ note.textContent = 'Pick a public booking code first.'; submitBtn.disabled = false; return; }
       note.textContent = 'Checking that code…';
@@ -4237,7 +4297,7 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
         submitBtn.disabled = false;
         return;
       }
-      await createProfile(code, name, license, title, phone, userId);
+      await createProfile(code, name, license, title, userId);
       try{
         localStorage.setItem('ahcProAccountExists', '1');
         localStorage.setItem('ahcLastProEmail', email);
@@ -4316,17 +4376,40 @@ document.getElementById('btn-save-license').addEventListener('click', async ()=>
   note.textContent = (result && result.ok) ? 'Saved.' : ("Couldn't save: " + ((result && result.message) || 'try again.'));
   populateAccountListing();
 });
-function populateAccountPhone(){
-  document.getElementById('account-phone').value = profile.phone || '';
-  document.getElementById('phone-save-note').textContent = ' ';
+async function populateNotificationsStatus(){
+  const btn = document.getElementById('btn-enable-notifications');
+  const note = document.getElementById('notifications-status-note');
+  if (!pushSupported()){
+    btn.disabled = true;
+    btn.textContent = 'Not supported on this device';
+    note.textContent = 'Try this from your phone or computer\'s browser instead.';
+    return;
+  }
+  const existing = await getExistingPushSubscription();
+  if (existing){
+    btn.disabled = true;
+    btn.textContent = 'Notifications are on';
+    note.textContent = ' ';
+  } else {
+    btn.disabled = false;
+    btn.textContent = 'Turn on notifications';
+    note.textContent = ' ';
+  }
 }
-document.getElementById('btn-save-phone').addEventListener('click', async ()=>{
-  const val = document.getElementById('account-phone').value.trim();
-  profile.phone = val;
-  const note = document.getElementById('phone-save-note');
-  note.textContent = 'Saving…';
-  const result = await persistProfile({ phone: profile.phone });
-  note.textContent = (result && result.ok) ? 'Saved.' : ("Couldn't save: " + ((result && result.message) || 'try again.'));
+document.getElementById('btn-enable-notifications').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btn-enable-notifications');
+  const note = document.getElementById('notifications-status-note');
+  btn.disabled = true;
+  note.textContent = 'Turning on…';
+  const result = await subscribeToPush(profileCode, 'professional');
+  if (result.ok){
+    btn.textContent = 'Notifications are on';
+    note.textContent = ' ';
+  } else {
+    btn.disabled = false;
+    btn.textContent = 'Turn on notifications';
+    note.textContent = result.message || "Couldn't turn on notifications. Try again.";
+  }
 });
 function updateListingViewLink(){
   const link = document.getElementById('btn-view-listing');
@@ -4390,7 +4473,7 @@ function showAccountScreen(){
   populateAccountTitleSelect();
   resetRoleChangePrompt();
   populateAccountLicense();
-  populateAccountPhone();
+  populateNotificationsStatus();
   populateAccountListing();
   document.getElementById('app-shell').hidden = true;
   document.getElementById('account-screen').hidden = false;
@@ -4616,6 +4699,7 @@ if (window.visualViewport){
   });
 }
 boot();
+registerServiceWorker();
 </script>
 </body>
 </html>

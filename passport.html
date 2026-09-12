@@ -207,11 +207,6 @@
         <label>Personal code</label>
         <div class="input-row"><input id="auth-code" type="text" placeholder="e.g. jordan-2026" autocomplete="off" required></div>
       </div>
-      <div class="field" id="auth-phone-field">
-        <label>Mobile number <span style="text-transform:none; font-weight:600;">(optional)</span></label>
-        <div class="input-row"><input id="auth-phone" type="tel" placeholder="e.g. (910) 555-0123" autocomplete="tel"></div>
-        <p class="foot-note-small">Lets you send and receive quick texts about a booked appointment (running late, need to cancel) right in the app. Your barber never sees your actual number, and you can add or remove it later in Account.</p>
-      </div>
       <button class="btn btn-primary" type="submit" id="auth-submit-btn">Create my passport</button>
       <p class="foot-note-small" id="auth-error" style="color:var(--behind); margin:0;">&nbsp;</p>
       <p class="foot-note-small" id="auth-note">&nbsp;</p>
@@ -336,14 +331,11 @@
           <div><div class="vc-date">Account</div></div>
         </div>
         <div style="border-top:1px solid var(--line); padding-top:16px;">
-          <p class="eyebrow-mini">Text alerts</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Your mobile number</h2>
-          <p class="screen-sub">Used only to send and receive quick texts about a booked appointment (running late, need to cancel). Your barber never sees your actual number.</p>
-          <div class="field">
-            <div class="input-row"><input id="account-phone" type="tel" placeholder="e.g. (910) 555-0123" autocomplete="tel"></div>
-          </div>
-          <button class="btn btn-primary" id="btn-save-phone" type="button">Save mobile number</button>
-          <p class="foot-note-small" id="phone-save-note">&nbsp;</p>
+          <p class="eyebrow-mini">Notifications</p>
+          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Quick message alerts</h2>
+          <p class="screen-sub">Turn this on to get notified when your barber sends you a quick message about an appointment, and to send them one yourself. No phone number needed.</p>
+          <button class="btn btn-primary" id="btn-enable-notifications" type="button">Turn on notifications</button>
+          <p class="foot-note-small" id="notifications-status-note">&nbsp;</p>
         </div>
         <div class="spacer"></div>
         <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
@@ -376,14 +368,84 @@ try{
   }
 }catch(e){ supabaseClient = null; }
 
+/* =========================================================
+   WEB PUSH NOTIFICATIONS
+   Replaces phone-number based text alerts. No phone number is
+   collected; a person opts in per browser/device instead.
+   ========================================================= */
+const VAPID_PUBLIC_KEY = "BBpNjXEh0iCB34vvNfq85WFrM_wcRIMbrsvFaTWpM-dtlqCBir1mNenvIa5KgPURJsXGOUVfap6EIWGKVBQrFrY";
+function urlBase64ToUint8Array(base64String){
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; i++){
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+function pushSupported(){
+  return !!(window.isSecureContext && 'serviceWorker' in navigator && 'PushManager' in window);
+}
+let swRegistrationPromise = null;
+function registerServiceWorker(){
+  if (!pushSupported()) return Promise.resolve(null);
+  if (!swRegistrationPromise){
+    swRegistrationPromise = navigator.serviceWorker.register('sw.js').catch((e)=>{ console.warn('sw register failed', e); return null; });
+  }
+  return swRegistrationPromise;
+}
+async function getExistingPushSubscription(){
+  if (!pushSupported()) return null;
+  try{
+    const reg = await registerServiceWorker();
+    if (!reg) return null;
+    return await reg.pushManager.getSubscription();
+  }catch(e){ return null; }
+}
+async function subscribeToPush(ownerCode, ownerRole){
+  if (!pushSupported()) return { ok:false, message: "Notifications aren't supported on this device or browser." };
+  if (!ownerCode) return { ok:false, message: 'Not ready yet. Try again in a moment.' };
+  try{
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted'){
+      return { ok:false, message: 'Permission was not granted.' };
+    }
+    const reg = await registerServiceWorker();
+    if (!reg) return { ok:false, message: "Couldn't set up notifications on this device." };
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub){
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+    const json = sub.toJSON();
+    if (dbAvailable){
+      const { error } = await supabaseClient.from('push_subscriptions').upsert({
+        owner_code: ownerCode,
+        owner_role: ownerRole,
+        endpoint: json.endpoint,
+        p256dh: json.keys && json.keys.p256dh,
+        auth: json.keys && json.keys.auth
+      }, { onConflict: 'endpoint' });
+      if (error) throw error;
+    }
+    return { ok:true };
+  }catch(e){
+    console.warn('subscribeToPush failed', e);
+    return { ok:false, message: "Couldn't turn on notifications. Try again." };
+  }
+}
+
 let dbAvailable = !!supabaseClient;
 let client = null;
 let clientCode = null;
 // True when this page was opened by scanning someone's "show this to your barber" QR code
 // (or opened with a shared link carrying ?code=) rather than the client's own saved login.
 // That flow is meant to let a barber glance at visit history, not hand over the full account --
-// so in this mode the Account screen (name, and especially the phone number the app promises
-// barbers never see) stays hidden, and the session is never remembered on the scanning device.
+// so in this mode the Account screen stays hidden, and the session is never remembered on the
+// scanning device.
 let viewedViaSharedCode = false;
 
 const NDA_VERSION = 'v1';
@@ -421,7 +483,7 @@ function toTitleCase(str){
   return str.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
 }
 function defaultClient(name){
-  return { code:null, name: name || 'You', phone:'', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'' };
+  return { code:null, name: name || 'You', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'' };
 }
 function showToast(msg, danger){
   const t = document.getElementById('toast');
@@ -446,7 +508,6 @@ async function tryLoadClient(code){
       client.name = toTitleCase(data.name) || client.name;
       client._nameNeedsSync = !!(data.name && data.name !== client.name);
       client.visits = Array.isArray(data.visits) ? data.visits : [];
-      client.phone = data.phone || '';
       client.created_at = data.created_at || client.created_at;
       client.ndaVersion = data.nda_version || '';
       client.ndaAcceptedAt = data.nda_accepted_at || '';
@@ -457,13 +518,12 @@ async function tryLoadClient(code){
   return false;
 }
 
-async function createClientRecord(code, name, phone){
+async function createClientRecord(code, name){
   client = defaultClient(name);
-  client.phone = phone || '';
   clientCode = code;
   if (dbAvailable){
     try{
-      const { error } = await supabaseClient.from('clients').insert({ code, name: client.name, visits: [], phone: client.phone });
+      const { error } = await supabaseClient.from('clients').insert({ code, name: client.name, visits: [] });
       if (error) throw error;
     }catch(e){ console.warn('create failed', e); }
   }
@@ -483,7 +543,6 @@ async function persistClient(){
   if (!dbAvailable || !clientCode) return;
   try{
     const row = { name: client.name, visits: client.visits, updated_at: new Date().toISOString() };
-    if (client.phone !== undefined) row.phone = client.phone;
     if (client.ndaVersion !== undefined) row.nda_version = client.ndaVersion;
     if (client.ndaAcceptedAt !== undefined) row.nda_accepted_at = client.ndaAcceptedAt;
     const { error } = await supabaseClient.from('clients').update(row).eq('code', clientCode);
@@ -662,9 +721,9 @@ function renderUpcoming(list){
           <button type="button" class="btn btn-outline" style="flex:1;" data-ics="${a.id}">Add to calendar</button>
           <button type="button" class="btn btn-danger" style="flex:1;" data-cancel-appt="${a.id}">Cancel</button>
         </div>
-        <button type="button" class="link-btn" data-text-toggle="${a.id}" style="align-self:flex-start; padding:0;">Text your barber</button>
+        <button type="button" class="link-btn" data-text-toggle="${a.id}" style="align-self:flex-start; padding:0;">Notify your barber</button>
         <div data-msg-panel="${a.id}" style="display:none; flex-direction:column; gap:6px; margin-top:2px; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--paper);">
-          <p class="screen-sub" style="margin:0;">Send a quick text to ${a.barber_name} about this appointment. They won't see your number.</p>
+          <p class="screen-sub" style="margin:0;">Send a quick notification to ${a.barber_name} about this appointment.</p>
           ${msgButtons}
           <p class="screen-sub" data-msg-status="${a.id}" style="margin:0;">&nbsp;</p>
         </div>
@@ -717,8 +776,8 @@ function renderUpcoming(list){
           if (error) throw error;
           if (data && data.ok){
             if (statusEl) statusEl.textContent = 'Sent.';
-          } else if (data && data.reason === 'no_phone'){
-            if (statusEl) statusEl.textContent = "Your barber hasn't added a mobile number for texting yet, so this can't be sent.";
+          } else if (data && data.reason === 'not_subscribed'){
+            if (statusEl) statusEl.textContent = "Your barber hasn't turned on notifications yet, so this can't be sent.";
           } else {
             if (statusEl) statusEl.textContent = "Couldn't send. Try again.";
           }
@@ -1023,7 +1082,6 @@ function setAuthMode(mode){
     : 'Enter your name and the personal code you set up before.';
   document.getElementById('auth-submit-btn').textContent = isNew ? 'Create my passport' : 'Continue';
   document.getElementById('auth-error').textContent = ' ';
-  document.getElementById('auth-phone-field').style.display = isNew ? '' : 'none';
 }
 
 document.getElementById('btn-auth-mode-new').addEventListener('click', ()=> setAuthMode('new'));
@@ -1050,13 +1108,12 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
   const errorEl = document.getElementById('auth-error');
   errorEl.textContent = ' ';
   const name = toTitleCase(document.getElementById('auth-name').value.trim()) || 'You';
-  const phone = document.getElementById('auth-phone').value.trim();
   const code = sanitizeCode(document.getElementById('auth-code').value);
   if (!code) return;
   const isReturning = document.getElementById('btn-auth-mode-returning').classList.contains('active');
 
   if (!dbAvailable){
-    await createClientRecord(code, name, phone);
+    await createClientRecord(code, name);
     try{ localStorage.setItem('passportClientCode', code); }catch(err){}
     enterApp();
     return;
@@ -1075,7 +1132,7 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
       errorEl.textContent = 'That code is already taken. Please choose a different one.';
       return;
     }
-    await createClientRecord(code, name, phone);
+    await createClientRecord(code, name);
   }
   try{ localStorage.setItem('passportClientCode', code); }catch(err){}
   enterApp();
@@ -1087,18 +1144,44 @@ document.getElementById('btn-switch-profile').addEventListener('click', ()=>{
 });
 
 document.getElementById('btn-open-account').addEventListener('click', ()=>{
-  document.getElementById('account-phone').value = (client && client.phone) || '';
-  document.getElementById('phone-save-note').textContent = ' ';
+  populateNotificationsStatus();
   showScreen('account');
 });
 
-document.getElementById('btn-save-phone').addEventListener('click', async ()=>{
-  const val = document.getElementById('account-phone').value.trim();
-  client.phone = val;
-  const note = document.getElementById('phone-save-note');
-  note.textContent = 'Saving…';
-  await persistClient();
-  note.textContent = 'Saved.';
+async function populateNotificationsStatus(){
+  const btn = document.getElementById('btn-enable-notifications');
+  const note = document.getElementById('notifications-status-note');
+  if (!pushSupported()){
+    btn.disabled = true;
+    btn.textContent = 'Not supported on this device';
+    note.textContent = 'Try this from your phone or computer\'s browser instead.';
+    return;
+  }
+  const existing = await getExistingPushSubscription();
+  if (existing){
+    btn.disabled = true;
+    btn.textContent = 'Notifications are on';
+    note.textContent = ' ';
+  } else {
+    btn.disabled = false;
+    btn.textContent = 'Turn on notifications';
+    note.textContent = ' ';
+  }
+}
+document.getElementById('btn-enable-notifications').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btn-enable-notifications');
+  const note = document.getElementById('notifications-status-note');
+  btn.disabled = true;
+  note.textContent = 'Turning on…';
+  const result = await subscribeToPush(clientCode, 'client');
+  if (result.ok){
+    btn.textContent = 'Notifications are on';
+    note.textContent = ' ';
+  } else {
+    btn.disabled = false;
+    btn.textContent = 'Turn on notifications';
+    note.textContent = result.message || "Couldn't turn on notifications. Try again.";
+  }
 });
 document.getElementById('btn-back-home-from-account').addEventListener('click', ()=> showScreen('home'));
 
@@ -1143,7 +1226,7 @@ async function continueBoot(){
     const ok = await tryLoadClient(urlCode);
     if (ok){
       // Arrived via a scanned QR code or shared link, not the client's own saved login --
-      // don't remember this on whatever device just scanned it, and keep the account/phone
+      // don't remember this on whatever device just scanned it, and keep the account
       // details hidden (see viewedViaSharedCode above).
       viewedViaSharedCode = true;
       enterApp();
@@ -1205,6 +1288,7 @@ if (window.visualViewport){
 }
 
 boot();
+registerServiceWorker();
 </script>
 </body>
 </html>
