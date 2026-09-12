@@ -57,6 +57,8 @@
   .tab-btn svg{ width:20px; height:20px; flex:none; }
   .biz-pane{ display:none; flex-direction:column; gap:16px; }
   .biz-pane.show{ display:flex; }
+  .bk-pane{ display:none; flex-direction:column; gap:16px; }
+  .bk-pane.show{ display:flex; }
   [data-screen]{ display:none; }
   [data-screen].show{ display:flex; flex-direction:column; gap:16px; }
   .steps{ display:flex; gap:6px; flex-wrap:wrap; }
@@ -76,7 +78,8 @@
   .day.active .dname{ color:var(--brass); }
   .day input{ width:100%; min-width:0; max-width:34px; text-align:center; border:none; background:transparent; font-family:'Public Sans',sans-serif; font-weight:700; font-size:16px; padding:0; color:var(--ink); font-variant-numeric:tabular-nums; }
   .mode-toggle{ display:flex; border:1px solid var(--line); border-radius:10px; padding:3px; gap:3px; background:var(--paper); }
-  .mode-btn{ flex:1; border:none; background:transparent; color:var(--muted); font-family:'Public Sans',sans-serif; font-size:12.5px; font-weight:700; padding:9px 6px; border-radius:7px; cursor:pointer; }
+  .mode-btn{ flex:1; display:flex; align-items:center; justify-content:center; gap:5px; border:none; background:transparent; color:var(--muted); font-family:'Public Sans',sans-serif; font-size:12.5px; font-weight:700; padding:9px 6px; border-radius:7px; cursor:pointer; }
+  .mode-btn svg{ width:15px; height:15px; flex:none; }
   .mode-btn.active{ background:var(--surface); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,0.08); }
   .pv-card{ border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:12px; display:flex; flex-direction:column; gap:8px; }
   .pv-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
@@ -893,79 +896,43 @@
             <span>Turn on appointment booking</span>
           </label>
           <p class="screen-sub" id="bk-enable-hint">Off. Clients can't book with you yet. Turn this on to set up your services, hours, and get your booking link.</p>
-          <div id="bk-setup-body" style="display:none; flex-direction:column; gap:20px;">
-            <div style="display:flex; flex-direction:column; gap:8px; align-items:center; border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--surface);">
-              <p class="eyebrow-mini2" style="margin:0;">Your booking link</p>
-              <canvas id="bk-qr-canvas" width="220" height="220" style="border-radius:8px; max-width:100%; height:auto;"></canvas>
-              <div class="link-row" style="width:100%;">
-                <input type="text" class="link-input" id="bk-link-input" readonly>
-                <button class="btn btn-outline" id="btn-bk-copy-link" style="flex:none; padding:9px 14px;">Copy</button>
-              </div>
-              <p class="foot-note-small" id="bk-copy-note">&nbsp;</p>
+          <div id="bk-setup-body" style="display:none; flex-direction:column; gap:16px;">
+            <div class="mode-toggle" id="booking-mode-toggle">
+              <button type="button" class="mode-btn active" data-bk-mode="upcoming">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5.5" width="16" height="14" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M4 9.5h16M8 3.5v3.5M16 3.5v3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M9 14.2l2 2 4-4.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Upcoming</span>
+              </button>
+              <button type="button" class="mode-btn" data-bk-mode="services">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="6.5" cy="6" r="2.2" stroke="currentColor" stroke-width="1.6"/><circle cx="6.5" cy="18" r="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M8.2 7.5 19 17M8.2 16.5 19 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                <span>Services</span>
+              </button>
+              <button type="button" class="mode-btn" data-bk-mode="hours">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Hours</span>
+              </button>
+              <button type="button" class="mode-btn" data-bk-mode="payment">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="6" width="17" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 10h17" stroke="currentColor" stroke-width="1.6"/></svg>
+                <span>Payment</span>
+              </button>
             </div>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-              <p class="eyebrow-mini">Your services</p>
-              <div id="bk-services-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-              <div class="card" style="gap:10px;">
-                <div class="field"><label>Service name</label><div class="input-row"><input id="bk-svc-name" type="text" placeholder="e.g. Haircut"></div></div>
-                <div class="field"><label>Price ($)</label><div class="input-row"><input id="bk-svc-price" type="number" min="0" step="1" placeholder="e.g. 35"></div></div>
-                <div class="field">
-                  <label>Length</label>
-                  <select class="title-select" id="bk-svc-duration">
-                    <option value="15">15 min</option>
-                    <option value="30" selected>30 min</option>
-                    <option value="45">45 min</option>
-                    <option value="60">1 hr</option>
-                    <option value="75">1 hr 15 min</option>
-                    <option value="90">1 hr 30 min</option>
-                    <option value="105">1 hr 45 min</option>
-                    <option value="120">2 hr</option>
-                    <option value="150">2 hr 30 min</option>
-                    <option value="180">3 hr</option>
-                  </select>
+
+            <div class="bk-pane show" data-bk="upcoming" id="bk-appts-section" style="gap:16px;">
+              <div style="display:flex; flex-direction:column; gap:8px; align-items:center; border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--surface);">
+                <p class="eyebrow-mini2" style="margin:0;">Your booking link</p>
+                <canvas id="bk-qr-canvas" width="220" height="220" style="border-radius:8px; max-width:100%; height:auto;"></canvas>
+                <div class="link-row" style="width:100%;">
+                  <input type="text" class="link-input" id="bk-link-input" readonly>
+                  <button class="btn btn-outline" id="btn-bk-copy-link" style="flex:none; padding:9px 14px;">Copy</button>
                 </div>
-                <button class="btn btn-outline" id="btn-bk-add-service" type="button">Add service</button>
+                <p class="foot-note-small" id="bk-copy-note">&nbsp;</p>
               </div>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-              <p class="eyebrow-mini">Weekly hours</p>
-              <div id="bk-hours-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-              <p class="eyebrow-mini">Date overrides</p>
-              <p class="screen-sub" style="margin:0;">Close a specific date, or set different hours just for that day.</p>
-              <div id="bk-overrides-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-              <div class="card" style="gap:10px;">
-                <div class="field"><label>Date</label><div class="input-row"><input id="bk-ov-date" type="date"></div></div>
-                <label class="check-row"><input type="checkbox" id="bk-ov-closed"><span>Closed all day</span></label>
-                <div id="bk-ov-hours-row" style="display:flex; gap:8px;">
-                  <div class="field" style="flex:1;"><label>Open</label><div class="input-row"><input id="bk-ov-open" type="time" value="09:00"></div></div>
-                  <div class="field" style="flex:1;"><label>Close</label><div class="input-row"><input id="bk-ov-close" type="time" value="18:00"></div></div>
-                </div>
-                <button class="btn btn-outline" id="btn-bk-add-override" type="button">Add date override</button>
+              <button class="btn btn-outline" id="btn-bk-manual-open" type="button">Add an appointment</button>
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                <p class="eyebrow-mini">Upcoming appointments</p>
+                <div id="bk-appts-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+                <p class="screen-sub" id="bk-appts-empty" style="display:none;">Nothing booked yet.</p>
               </div>
-            </div>
-            <div class="field">
-              <label>Cancellation / no-show policy <span style="text-transform:none; font-weight:600;">(optional, shown to clients before they book)</span></label>
-              <div class="input-row"><textarea id="bk-policy" placeholder="e.g. Please give 24 hours notice to cancel or reschedule. No-shows may be charged a fee." style="min-height:70px;"></textarea></div>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-              <p class="eyebrow-mini">Payment links <span style="text-transform:none; font-weight:600;">(optional)</span></p>
-              <div class="field"><label>Venmo username</label><div class="input-row"><input id="bk-pay-venmo" type="text" placeholder="e.g. your-venmo-username"></div></div>
-              <div class="field"><label>Cash App $cashtag</label><div class="input-row"><input id="bk-pay-cashapp" type="text" placeholder="e.g. $yourcashtag"></div></div>
-              <div class="field"><label>Zelle <span style="text-transform:none; font-weight:600;">(phone or email, no direct link, shown as text)</span></label><div class="input-row"><input id="bk-pay-zelle" type="text" placeholder="e.g. (910) 555-0123"></div></div>
-              <div class="field"><label>Apple Pay / Apple Cash <span style="text-transform:none; font-weight:600;">(phone or email, no direct link, shown as text)</span></label><div class="input-row"><input id="bk-pay-applepay" type="text" placeholder="e.g. (910) 555-0123"></div></div>
-            </div>
-            <button class="btn btn-primary" id="btn-bk-save" type="button">Save booking setup</button>
-            <p class="foot-note-small" id="bk-save-note">&nbsp;</p>
-          </div>
-          <div class="spacer"></div>
-          <div id="bk-appts-section" style="display:none; flex-direction:column; gap:10px; border-top:1px solid var(--line); padding-top:16px;">
-            <p class="eyebrow-mini">Upcoming appointments</p>
-            <div id="bk-appts-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-            <p class="screen-sub" id="bk-appts-empty" style="display:none;">Nothing booked yet.</p>
-            <button class="btn btn-outline" id="btn-bk-manual-open" type="button">Add an appointment</button>
-            <div class="card" id="bk-manual-card" style="display:none; flex-direction:column; gap:14px;">
+              <div class="card" id="bk-manual-card" style="display:none; flex-direction:column; gap:14px;">
               <div>
                 <p class="eyebrow-mini2" style="margin:0;">Add an appointment</p>
                 <p class="screen-sub" style="margin:4px 0 0;">For a client booking in person, by phone, or whose phone's lost or broken. Saved the same as an online booking.</p>
@@ -1009,6 +976,70 @@
               <button class="btn btn-primary" id="btn-bk-manual-save" type="button">Save appointment</button>
               <button class="btn btn-ghost" id="btn-bk-manual-cancel" type="button">Cancel</button>
               <p class="screen-sub" id="bk-manual-save-status" style="margin:0;">&nbsp;</p>
+            </div>
+            </div>
+
+            <div class="bk-pane" data-bk="services" id="bk-services-section" style="gap:10px;">
+              <p class="eyebrow-mini">Your services</p>
+              <div id="bk-services-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+              <div class="card" style="gap:10px;">
+                <div class="field"><label>Service name</label><div class="input-row"><input id="bk-svc-name" type="text" placeholder="e.g. Haircut"></div></div>
+                <div class="field"><label>Price ($)</label><div class="input-row"><input id="bk-svc-price" type="number" min="0" step="1" placeholder="e.g. 35"></div></div>
+                <div class="field">
+                  <label>Length</label>
+                  <select class="title-select" id="bk-svc-duration">
+                    <option value="15">15 min</option>
+                    <option value="30" selected>30 min</option>
+                    <option value="45">45 min</option>
+                    <option value="60">1 hr</option>
+                    <option value="75">1 hr 15 min</option>
+                    <option value="90">1 hr 30 min</option>
+                    <option value="105">1 hr 45 min</option>
+                    <option value="120">2 hr</option>
+                    <option value="150">2 hr 30 min</option>
+                    <option value="180">3 hr</option>
+                  </select>
+                </div>
+                <button class="btn btn-outline" id="btn-bk-add-service" type="button">Add service</button>
+              </div>
+            </div>
+
+            <div class="bk-pane" data-bk="hours" id="bk-hours-section" style="gap:20px;">
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                <p class="eyebrow-mini">Weekly hours</p>
+                <div id="bk-hours-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                <p class="eyebrow-mini">Date overrides</p>
+                <p class="screen-sub" style="margin:0;">Close a specific date, or set different hours just for that day.</p>
+                <div id="bk-overrides-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+                <div class="card" style="gap:10px;">
+                  <div class="field"><label>Date</label><div class="input-row"><input id="bk-ov-date" type="date"></div></div>
+                  <label class="check-row"><input type="checkbox" id="bk-ov-closed"><span>Closed all day</span></label>
+                  <div id="bk-ov-hours-row" style="display:flex; gap:8px;">
+                    <div class="field" style="flex:1;"><label>Open</label><div class="input-row"><input id="bk-ov-open" type="time" value="09:00"></div></div>
+                    <div class="field" style="flex:1;"><label>Close</label><div class="input-row"><input id="bk-ov-close" type="time" value="18:00"></div></div>
+                  </div>
+                  <button class="btn btn-outline" id="btn-bk-add-override" type="button">Add date override</button>
+                </div>
+              </div>
+              <div class="field">
+                <label>Cancellation / no-show policy <span style="text-transform:none; font-weight:600;">(optional, shown to clients before they book)</span></label>
+                <div class="input-row"><textarea id="bk-policy" placeholder="e.g. Please give 24 hours notice to cancel or reschedule. No-shows may be charged a fee." style="min-height:70px;"></textarea></div>
+              </div>
+            </div>
+
+            <div class="bk-pane" data-bk="payment" id="bk-payment-section" style="gap:10px;">
+              <p class="eyebrow-mini">Payment links <span style="text-transform:none; font-weight:600;">(optional)</span></p>
+              <div class="field"><label>Venmo username</label><div class="input-row"><input id="bk-pay-venmo" type="text" placeholder="e.g. your-venmo-username"></div></div>
+              <div class="field"><label>Cash App $cashtag</label><div class="input-row"><input id="bk-pay-cashapp" type="text" placeholder="e.g. $yourcashtag"></div></div>
+              <div class="field"><label>Zelle <span style="text-transform:none; font-weight:600;">(phone or email, no direct link, shown as text)</span></label><div class="input-row"><input id="bk-pay-zelle" type="text" placeholder="e.g. (910) 555-0123"></div></div>
+              <div class="field"><label>Apple Pay / Apple Cash <span style="text-transform:none; font-weight:600;">(phone or email, no direct link, shown as text)</span></label><div class="input-row"><input id="bk-pay-applepay" type="text" placeholder="e.g. (910) 555-0123"></div></div>
+            </div>
+
+            <div id="bk-save-row" style="display:flex; flex-direction:column; gap:6px;">
+              <button class="btn btn-primary" id="btn-bk-save" type="button">Save booking setup</button>
+              <p class="foot-note-small" id="bk-save-note">&nbsp;</p>
             </div>
           </div>
         </div>
@@ -1555,6 +1586,19 @@ function showBusinessSubtab(mode){
 }
 document.querySelectorAll('#business-mode-toggle .mode-btn').forEach(btn=>{
   btn.addEventListener('click', ()=> showBusinessSubtab(btn.dataset.bizMode));
+});
+function getActiveBookingMode(){
+  const active = document.querySelector('#booking-mode-toggle .mode-btn.active');
+  return (active && active.dataset.bkMode) || 'upcoming';
+}
+function showBookingSubtab(mode){
+  document.querySelectorAll('.bk-pane').forEach(p=> p.classList.toggle('show', p.dataset.bk===mode));
+  document.querySelectorAll('#booking-mode-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.bkMode===mode));
+  const saveRow = document.getElementById('bk-save-row');
+  if (saveRow) saveRow.style.display = mode === 'upcoming' ? 'none' : 'flex';
+}
+document.querySelectorAll('#booking-mode-toggle .mode-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> showBookingSubtab(btn.dataset.bkMode));
 });
 function showTab(name){
   window.__activeScanStoppers.forEach(fn => { try{ fn(); }catch(e){} });
@@ -3403,7 +3447,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const on = root.querySelector('#bk-enable-toggle').checked;
     root.querySelector('#bk-setup-body').style.display = on ? 'flex' : 'none';
     root.querySelector('#bk-enable-hint').style.display = on ? 'none' : 'block';
-    root.querySelector('#bk-appts-section').style.display = (on && profile.bookingEnabled) ? 'flex' : 'none';
+    if (on) showBookingSubtab(getActiveBookingMode());
   }
   root.querySelector('#bk-enable-toggle').addEventListener('change', updateEnabledVisibility);
   root.querySelector('#btn-bk-save').addEventListener('click', async ()=>{
