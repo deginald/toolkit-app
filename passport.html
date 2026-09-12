@@ -192,7 +192,7 @@
     <div>
       <p class="eyebrow-mini">Hair Passport</p>
       <h2 class="screen-title" id="auth-heading">First time here</h2>
-      <p class="screen-sub" style="margin-top:6px;" id="auth-subhead">Pick a name and a personal code of your own. Give that code to any barber or stylist and they can pull up your visits. There's no password reset, so keep it somewhere you'll remember.</p>
+      <p class="screen-sub" style="margin-top:6px;" id="auth-subhead">Pick a name and a personal code of your own. Give that code to any barber or stylist and they can pull up your visits. Add an email below so you can always get your code back if you lose it.</p>
     </div>
     <div class="mode-toggle" style="width:100%; max-width:320px;">
       <button type="button" class="mode-btn active" id="btn-auth-mode-new">First time</button>
@@ -207,10 +207,22 @@
         <label>Personal code</label>
         <div class="input-row"><input id="auth-code" type="text" placeholder="e.g. jordan-2026" autocomplete="off" required></div>
       </div>
+      <div class="field" id="auth-email-field">
+        <label>Email <span style="text-transform:none; font-weight:600;">(optional)</span></label>
+        <div class="input-row"><input id="auth-email" type="email" placeholder="e.g. jordan@email.com" autocomplete="email"></div>
+        <p class="foot-note-small">Lets you recover your code later if you lose it. Never shown to your barber.</p>
+      </div>
       <button class="btn btn-primary" type="submit" id="auth-submit-btn">Create my passport</button>
       <p class="foot-note-small" id="auth-error" style="color:var(--behind); margin:0;">&nbsp;</p>
       <p class="foot-note-small" id="auth-note">&nbsp;</p>
     </form>
+    <button type="button" class="link-btn" id="btn-forgot-code" style="display:none; margin-top:-6px;">Forgot your code?</button>
+    <div id="forgot-code-panel" style="display:none; flex-direction:column; gap:10px; width:100%; max-width:320px; text-align:left;">
+      <p class="screen-sub" style="margin:0;">If you saved a recovery email before, we'll send your code there.</p>
+      <div class="input-row"><input id="forgot-code-email" type="email" placeholder="Your email" autocomplete="email"></div>
+      <button class="btn btn-outline" id="btn-forgot-code-send" type="button">Email me my code</button>
+      <p class="foot-note-small" id="forgot-code-status">&nbsp;</p>
+    </div>
   </div>
 
   <div id="passport-shell" hidden>
@@ -336,6 +348,14 @@
           <p class="screen-sub">Turn this on to get notified when your barber sends you a quick message about an appointment, and to send them one yourself. No phone number needed.</p>
           <button class="btn btn-primary" id="btn-enable-notifications" type="button">Turn on notifications</button>
           <p class="foot-note-small" id="notifications-status-note">&nbsp;</p>
+        </div>
+        <div style="border-top:1px solid var(--line); padding-top:16px; margin-top:16px;">
+          <p class="eyebrow-mini">Account recovery</p>
+          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Recovery email</h2>
+          <p class="screen-sub">Add an email so you can always get your code back if you lose it. Never shown to your barber.</p>
+          <div class="input-row" style="margin-top:10px;"><input id="account-email" type="email" placeholder="e.g. jordan@email.com" autocomplete="email"></div>
+          <button class="btn btn-primary" id="btn-save-account-email" type="button" style="margin-top:10px;">Save</button>
+          <p class="foot-note-small" id="account-email-status">&nbsp;</p>
         </div>
         <div class="spacer"></div>
         <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
@@ -506,7 +526,7 @@ function toTitleCase(str){
   return str.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
 }
 function defaultClient(name){
-  return { code:null, name: name || 'You', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'' };
+  return { code:null, name: name || 'You', email:'', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'' };
 }
 function showToast(msg, danger){
   const t = document.getElementById('toast');
@@ -531,6 +551,7 @@ async function tryLoadClient(code){
       client.name = toTitleCase(data.name) || client.name;
       client._nameNeedsSync = !!(data.name && data.name !== client.name);
       client.visits = Array.isArray(data.visits) ? data.visits : [];
+      client.email = data.email || '';
       client.created_at = data.created_at || client.created_at;
       client.ndaVersion = data.nda_version || '';
       client.ndaAcceptedAt = data.nda_accepted_at || '';
@@ -541,12 +562,13 @@ async function tryLoadClient(code){
   return false;
 }
 
-async function createClientRecord(code, name){
+async function createClientRecord(code, name, email){
   client = defaultClient(name);
+  client.email = (email || '').trim();
   clientCode = code;
   if (dbAvailable){
     try{
-      const { error } = await supabaseClient.from('clients').insert({ code, name: client.name, visits: [] });
+      const { error } = await supabaseClient.from('clients').insert({ code, name: client.name, email: client.email || null, visits: [] });
       if (error) throw error;
     }catch(e){ console.warn('create failed', e); }
   }
@@ -1101,10 +1123,14 @@ function setAuthMode(mode){
   document.getElementById('btn-auth-mode-returning').classList.toggle('active', !isNew);
   document.getElementById('auth-heading').textContent = isNew ? 'First time here' : 'Welcome back';
   document.getElementById('auth-subhead').textContent = isNew
-    ? "Pick a name and a personal code of your own. Give that code to any barber or stylist and they can pull up your visits. There's no password reset, so keep it somewhere you'll remember."
+    ? "Pick a name and a personal code of your own. Give that code to any barber or stylist and they can pull up your visits. Add an email below so you can always get your code back if you lose it."
     : 'Enter your name and the personal code you set up before.';
   document.getElementById('auth-submit-btn').textContent = isNew ? 'Create my passport' : 'Continue';
-  document.getElementById('auth-error').textContent = ' ';
+  document.getElementById('auth-error').textContent = '\u00a0';
+  document.getElementById('auth-email-field').style.display = isNew ? '' : 'none';
+  document.getElementById('btn-forgot-code').style.display = isNew ? 'none' : '';
+  document.getElementById('forgot-code-panel').style.display = 'none';
+  document.getElementById('forgot-code-status').textContent = '\u00a0';
 }
 
 document.getElementById('btn-auth-mode-new').addEventListener('click', ()=> setAuthMode('new'));
@@ -1133,10 +1159,11 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
   const name = toTitleCase(document.getElementById('auth-name').value.trim()) || 'You';
   const code = sanitizeCode(document.getElementById('auth-code').value);
   if (!code) return;
+  const email = (document.getElementById('auth-email').value || '').trim();
   const isReturning = document.getElementById('btn-auth-mode-returning').classList.contains('active');
 
   if (!dbAvailable){
-    await createClientRecord(code, name);
+    await createClientRecord(code, name, email);
     try{ localStorage.setItem('passportClientCode', code); }catch(err){}
     enterApp();
     return;
@@ -1155,10 +1182,38 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
       errorEl.textContent = 'That code is already taken. Please choose a different one.';
       return;
     }
-    await createClientRecord(code, name);
+    await createClientRecord(code, name, email);
   }
   try{ localStorage.setItem('passportClientCode', code); }catch(err){}
   enterApp();
+});
+
+document.getElementById('btn-forgot-code').addEventListener('click', ()=>{
+  const panel = document.getElementById('forgot-code-panel');
+  panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+});
+
+document.getElementById('btn-forgot-code-send').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btn-forgot-code-send');
+  const status = document.getElementById('forgot-code-status');
+  const email = (document.getElementById('forgot-code-email').value || '').trim();
+  if (!email || !email.includes('@')){
+    status.textContent = 'Enter a valid email first.';
+    return;
+  }
+  if (!dbAvailable){
+    status.textContent = "Live saving isn't connected right now, so recovery can't be sent.";
+    return;
+  }
+  btn.disabled = true;
+  status.textContent = 'Sending…';
+  try{
+    await supabaseClient.functions.invoke('recover-client-code', { body: { email } });
+  }catch(e){
+    console.warn('recovery send failed', e);
+  }
+  status.textContent = "If we have an account with that email, we've sent your code to it.";
+  btn.disabled = false;
 });
 
 document.getElementById('btn-switch-profile').addEventListener('click', ()=>{
@@ -1168,7 +1223,35 @@ document.getElementById('btn-switch-profile').addEventListener('click', ()=>{
 
 document.getElementById('btn-open-account').addEventListener('click', ()=>{
   populateNotificationsStatus();
+  document.getElementById('account-email').value = (client && client.email) || '';
+  document.getElementById('account-email-status').textContent = ' ';
   showScreen('account');
+});
+
+document.getElementById('btn-save-account-email').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btn-save-account-email');
+  const status = document.getElementById('account-email-status');
+  const email = (document.getElementById('account-email').value || '').trim();
+  if (email && !email.includes('@')){
+    status.textContent = 'That doesn’t look like a valid email.';
+    return;
+  }
+  if (!dbAvailable){
+    status.textContent = "Live saving isn't connected right now. This won't be kept.";
+    return;
+  }
+  btn.disabled = true;
+  status.textContent = 'Saving…';
+  try{
+    const { error } = await supabaseClient.from('clients').update({ email: email || null }).eq('code', clientCode);
+    if (error) throw error;
+    if (client) client.email = email;
+    status.textContent = email ? 'Saved.' : 'Recovery email removed.';
+  }catch(e){
+    console.warn('save recovery email failed', e);
+    status.textContent = "Couldn't save that right now. Try again in a moment.";
+  }
+  btn.disabled = false;
 });
 
 async function populateNotificationsStatus(){
