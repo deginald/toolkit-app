@@ -1247,6 +1247,13 @@
     <button class="lightbox-nav lightbox-next" id="btn-lightbox-next" type="button" aria-label="Next photo" hidden>&rarr;</button>
     <div class="lightbox-counter" id="lightbox-counter" hidden></div>
   </div>
+  <div id="quick-message-popup" class="lightbox-overlay" style="background:rgba(0,0,0,0.6);" hidden>
+    <div style="background:var(--paper); border-radius:16px; padding:24px; max-width:360px; width:100%; display:flex; flex-direction:column; gap:10px;">
+      <p class="eyebrow-mini" id="qm-popup-from">&nbsp;</p>
+      <p style="font-family:'Libre Franklin',sans-serif; font-weight:600; font-size:16px; line-height:1.45; margin:0;" id="qm-popup-body">&nbsp;</p>
+      <button class="btn btn-primary" id="qm-popup-clear" type="button" style="margin-top:8px;">Clear</button>
+    </div>
+  </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
@@ -4718,8 +4725,57 @@ if (window.visualViewport){
     scrollAppToTop();
   });
 }
+/* ---- Quick message popup: opened either by tapping a notification (a fresh
+   window reads ?message= from the URL; an already-open tab is told via the
+   service worker's postMessage instead, since focusing a tab doesn't
+   navigate it) or by returning to a page where one was never dismissed. */
+async function showQuickMessagePopup(id){
+  if (!id || !supabaseClient) return;
+  try{
+    const { data, error } = await supabaseClient.from('quick_messages').select('id, message, sender_name').eq('id', id).maybeSingle();
+    if (error || !data) return;
+    const overlay = document.getElementById('quick-message-popup');
+    const fromEl = document.getElementById('qm-popup-from');
+    const bodyEl = document.getElementById('qm-popup-body');
+    if (fromEl) fromEl.textContent = data.sender_name ? ('From ' + data.sender_name) : 'New message';
+    if (bodyEl) bodyEl.textContent = data.message;
+    if (overlay){
+      overlay.dataset.messageId = id;
+      overlay.hidden = false;
+    }
+  }catch(e){ console.warn('load quick message failed', e); }
+}
+async function clearQuickMessage(){
+  const overlay = document.getElementById('quick-message-popup');
+  const id = overlay && overlay.dataset.messageId;
+  if (overlay) overlay.hidden = true;
+  if (id && supabaseClient){
+    try{ await supabaseClient.from('quick_messages').delete().eq('id', id); }catch(e){ console.warn('clear quick message failed', e); }
+  }
+  try{
+    const url = new URL(window.location.href);
+    url.searchParams.delete('message');
+    window.history.replaceState({}, '', url.toString());
+  }catch(e){}
+}
+document.getElementById('qm-popup-clear').addEventListener('click', clearQuickMessage);
+function checkQuickMessageDeepLink(){
+  let id = null;
+  try{ id = new URLSearchParams(window.location.search).get('message'); }catch(e){}
+  if (id) showQuickMessagePopup(id);
+}
+try{
+  if ('serviceWorker' in navigator && navigator.serviceWorker.addEventListener){
+    navigator.serviceWorker.addEventListener('message', (event)=>{
+      if (event.data && event.data.type === 'show-quick-message' && event.data.id){
+        showQuickMessagePopup(event.data.id);
+      }
+    });
+  }
+}catch(e){ console.warn('service worker message listener failed', e); }
 boot();
 registerServiceWorker();
+checkQuickMessageDeepLink();
 </script>
 </body>
 </html>
