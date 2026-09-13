@@ -47,6 +47,9 @@
   .topbar .tb-name{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; }
   .topbar .tb-sub{ font-size:12px; color:var(--muted); font-weight:600; }
   .link-btn{ border:none; background:transparent; color:var(--brass); font-family:'Public Sans',sans-serif; font-weight:700; font-size:12.5px; cursor:pointer; padding:6px 0; }
+  .banner{ font-size:12.5px; padding:10px 16px; text-align:center; background:var(--brass-tint); color:var(--ink); border-bottom:1px solid var(--line); }
+  .banner.action{ display:flex; align-items:center; justify-content:space-between; gap:12px; text-align:left; }
+  .banner.action .link-btn{ flex:none; white-space:nowrap; }
 
   #passport-shell{ display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100dvh; }
   .content{ flex:1; overflow-y:auto; padding:20px 20px 32px; display:flex; flex-direction:column; gap:18px; }
@@ -239,6 +242,13 @@
         <button class="link-btn" id="btn-switch-profile">Log Out</button>
       </div>
     </header>
+    <div id="notif-nudge-banner" class="banner action" hidden>
+      <span>Turn on notifications so you don't miss a message from your barber.</span>
+      <span style="display:flex; gap:14px; flex:none;">
+        <button type="button" class="link-btn" id="btn-notif-nudge-open">Turn on</button>
+        <button type="button" class="link-btn" id="btn-notif-nudge-dismiss">Dismiss</button>
+      </span>
+    </div>
 
     <main class="content">
 
@@ -350,6 +360,7 @@
           <p class="screen-sub">Turn this on to get notified when your barber sends you a quick message about an appointment, and to send them one yourself. No phone number needed.</p>
           <button class="btn btn-primary" id="btn-enable-notifications" type="button">Turn on notifications</button>
           <p class="foot-note-small" id="notifications-status-note">&nbsp;</p>
+          <p class="foot-note-small">Not seeing the message text in a notification? On iPhone, check Settings &rarr; Notifications &rarr; All Hair Connect &rarr; Show Previews, and set it to Always.</p>
         </div>
         <div style="border-top:1px solid var(--line); padding-top:16px; margin-top:16px;">
           <p class="eyebrow-mini">Account recovery</p>
@@ -1117,6 +1128,7 @@ function enterApp(){
   showScreen('home');
   loadUpcomingAppointments();
   loadLoyalty();
+  updateNotifNudgeBanner();
 }
 
 function setAuthMode(mode){
@@ -1289,6 +1301,7 @@ document.getElementById('btn-enable-notifications').addEventListener('click', as
   if (result.ok){
     btn.textContent = 'Notifications are on';
     note.textContent = ' ';
+    updateNotifNudgeBanner();
   } else {
     btn.disabled = false;
     btn.textContent = 'Turn on notifications';
@@ -1296,6 +1309,27 @@ document.getElementById('btn-enable-notifications').addEventListener('click', as
   }
 });
 document.getElementById('btn-back-home-from-account').addEventListener('click', ()=> showScreen('home'));
+// A brief, dismissible nudge shown on the home screen (not buried in Account) so new clients
+// notice notifications exist at all. Hides itself once notifications are on, or once dismissed
+// (remembered per device so it doesn't keep reappearing).
+function notifNudgeDismissKey(){ return 'ahcNotifNudgeDismissed_' + (clientCode || ''); }
+async function updateNotifNudgeBanner(){
+  const el = document.getElementById('notif-nudge-banner');
+  if (!el) return;
+  if (!pushSupported() || !clientCode || viewedViaSharedCode){ el.hidden = true; return; }
+  let dismissed = false;
+  try{ dismissed = localStorage.getItem(notifNudgeDismissKey()) === '1'; }catch(e){}
+  if (dismissed){ el.hidden = true; return; }
+  const existing = await getExistingPushSubscription();
+  el.hidden = !!existing;
+}
+document.getElementById('btn-notif-nudge-open').addEventListener('click', ()=>{
+  document.getElementById('btn-open-account').click();
+});
+document.getElementById('btn-notif-nudge-dismiss').addEventListener('click', ()=>{
+  try{ localStorage.setItem(notifNudgeDismissKey(), '1'); }catch(e){}
+  document.getElementById('notif-nudge-banner').hidden = true;
+});
 
 let deleteAccountArmed = false;
 document.getElementById('btn-delete-account').addEventListener('click', async function(){

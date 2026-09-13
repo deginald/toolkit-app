@@ -42,6 +42,9 @@
   .center-screen{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; gap:14px; text-align:center; }
   .banner{ font-size:12.5px; padding:10px 16px; text-align:center; background:var(--brass-tint); color:var(--ink); border-bottom:1px solid var(--line); }
   .banner.warn{ background:var(--behind-tint); }
+  .banner.action{ display:flex; align-items:center; justify-content:space-between; gap:12px; text-align:left; }
+  .banner.action .link-btn{ flex:none; white-space:nowrap; }
+  .card.tip{ border-color:var(--brass); background:var(--brass-tint); }
   .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:16px 20px; padding-top:max(16px, calc(env(safe-area-inset-top) + 12px)); border-bottom:1px solid var(--line); }
   .topbar .tb-name{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; }
   .topbar .tb-title{ font-size:12px; color:var(--muted); font-weight:600; }
@@ -536,6 +539,13 @@
         <button class="link-btn" id="btn-switch-profile">Log Out</button>
       </div>
     </header>
+    <div id="notif-nudge-banner" class="banner action" hidden>
+      <span>Turn on notifications so you don't miss a client's quick message.</span>
+      <span style="display:flex; gap:14px; flex:none;">
+        <button type="button" class="link-btn" id="btn-notif-nudge-open">Turn on</button>
+        <button type="button" class="link-btn" id="btn-notif-nudge-dismiss">Dismiss</button>
+      </span>
+    </div>
     <main class="tab-content">
       <!-- ============ PACE ============ -->
       <section class="tab-pane" data-tab="pace" id="tab-pace">
@@ -850,6 +860,10 @@
           <p class="eyebrow-mini">Appointments</p>
           <h2>Booking</h2>
         </div>
+        <div class="card tip" id="bk-landing-note" hidden>
+          <p class="screen-sub" style="margin:0; color:var(--ink);">This is now where you land when you log in, since it's what you'll use most day to day.</p>
+          <button type="button" class="link-btn" id="btn-bk-landing-dismiss" style="align-self:flex-end; padding:0;">Got it</button>
+        </div>
         <div class="screen-body show" data-screen="setup" style="gap:16px;">
           <label class="check-row">
             <input type="checkbox" id="bk-enable-toggle">
@@ -1058,6 +1072,7 @@
           <h2>Ledger</h2>
         </div>
         <div class="screen-body show" data-screen="dashboard">
+          <p class="screen-sub" style="margin:0;">Tap a technique below and rate your own confidence on it, 1 (just starting) to 10 (expert). It's self-rated, not instructor-verified, and builds into a portfolio you can share.</p>
           <div>
             <p class="eyebrow-mini2">Your Skill Graph</p>
             <h2 class="screen-title" id="ledger-name">&nbsp;</h2>
@@ -1174,6 +1189,7 @@
         <p class="screen-sub">Turn this on to get notified when a client sends you a quick message about an appointment, and to send them one yourself. No phone number needed.</p>
         <button class="btn btn-primary" id="btn-enable-notifications" type="button">Turn on notifications</button>
         <p class="foot-note-small" id="notifications-status-note">&nbsp;</p>
+        <p class="foot-note-small">Not seeing the message text in a notification? On iPhone, check Settings &rarr; Notifications &rarr; All Hair Connect &rarr; Show Previews, and set it to Always.</p>
       </div>
       <div id="listing-ineligible" style="display:none; border-top:1px solid var(--line); padding-top:16px;">
         <p class="eyebrow-mini">Public directory</p>
@@ -1568,8 +1584,25 @@ function showTab(name){
   document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tabbtn===name));
   if (name === 'ledger') enterLedgerTab();
   if (name === 'booking' && window.initBookingTab) window.initBookingTab();
+  if (name === 'booking') updateBookingLandingNote();
   if (name === 'business') showBusinessSubtab(getActiveBizMode());
 }
+// One-time note on the Booking tab explaining it's the new landing tab, since a pro who's
+// used to Coach opening first otherwise gets no explanation of why they ended up here.
+// Dismissed permanently (per device) once they close it -- doesn't gate on ever saving setup,
+// since some pros may look around before turning booking on.
+function bookingLandingNoteDismissKey(){ return 'ahcBookingLandingSeen_' + (profileCode || ''); }
+function updateBookingLandingNote(){
+  const el = document.getElementById('bk-landing-note');
+  if (!el || isStudent()) return;
+  let dismissed = false;
+  try{ dismissed = localStorage.getItem(bookingLandingNoteDismissKey()) === '1'; }catch(e){}
+  el.hidden = dismissed;
+}
+document.getElementById('btn-bk-landing-dismiss').addEventListener('click', ()=>{
+  try{ localStorage.setItem(bookingLandingNoteDismissKey(), '1'); }catch(e){}
+  document.getElementById('bk-landing-note').hidden = true;
+});
 function applyRoleVisibility(){
   const show = isStudent();
   const paceBtn = document.querySelector('.tab-btn[data-tabbtn="pace"]');
@@ -3768,6 +3801,7 @@ function enterApp(){
   window.initConsultTab();
   window.initLedgerTab();
   showTab(isStudent() ? 'pace' : 'booking');
+  updateNotifNudgeBanner();
 }
 function showRoleScreen(){
   document.getElementById('loading-screen').hidden = true;
@@ -4057,11 +4091,33 @@ document.getElementById('btn-enable-notifications').addEventListener('click', as
   if (result.ok){
     btn.textContent = 'Notifications are on';
     note.textContent = ' ';
+    updateNotifNudgeBanner();
   } else {
     btn.disabled = false;
     btn.textContent = 'Turn on notifications';
     note.textContent = result.message || "Couldn't turn on notifications. Try again.";
   }
+});
+// A brief, dismissible nudge shown app-wide (not buried in Account) so new users notice
+// notifications exist at all. Hides itself once notifications are on, or once dismissed
+// (remembered per device so it doesn't keep reappearing).
+function notifNudgeDismissKey(){ return 'ahcNotifNudgeDismissed_' + (profileCode || ''); }
+async function updateNotifNudgeBanner(){
+  const el = document.getElementById('notif-nudge-banner');
+  if (!el) return;
+  if (!pushSupported() || !profileCode){ el.hidden = true; return; }
+  let dismissed = false;
+  try{ dismissed = localStorage.getItem(notifNudgeDismissKey()) === '1'; }catch(e){}
+  if (dismissed){ el.hidden = true; return; }
+  const existing = await getExistingPushSubscription();
+  el.hidden = !!existing;
+}
+document.getElementById('btn-notif-nudge-open').addEventListener('click', ()=>{
+  showAccountScreen();
+});
+document.getElementById('btn-notif-nudge-dismiss').addEventListener('click', ()=>{
+  try{ localStorage.setItem(notifNudgeDismissKey(), '1'); }catch(e){}
+  document.getElementById('notif-nudge-banner').hidden = true;
 });
 function updateListingViewLink(){
   const link = document.getElementById('btn-view-listing');
