@@ -466,7 +466,7 @@
     </header>
     <main class="tab-content" style="display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center;">
       <div>
-        <p class="eyebrow-mini">Pace &middot; Coach &middot; Consult &middot; Ledger</p>
+        <p class="eyebrow-mini">Pace &middot; Refresher &middot; Consult &middot; Ledger</p>
         <p class="screen-sub" style="margin-top:6px;" id="auth-subhead">Create your account with an email and password, plus your name, role, license (if licensed), and a public booking code.</p>
       </div>
       <div class="mode-toggle" id="auth-mode-toggle" style="width:100%; max-width:320px;">
@@ -667,7 +667,7 @@
       <section class="tab-pane" data-tab="coach" id="tab-coach">
         <div class="tab-head">
           <p class="eyebrow-mini">Guided technique coaching</p>
-          <h2>Coach</h2>
+          <h2>Refresher</h2>
         </div>
         <div class="screen-body show" data-screen="picker">
           <p class="screen-sub">Pick a technique and Coach walks you through it step by step.</p>
@@ -1156,17 +1156,17 @@
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Pace</span>
       </button>
-      <button class="tab-btn" data-tabbtn="coach">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M4 6.5c2-1 5-1.3 8 0v11c-3-1.3-6-1-8 0v-11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 6.5c-2-1-5-1.3-8 0v11c3-1.3 6-1 8 0v-11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-        <span>Coach</span>
+      <button class="tab-btn" data-tabbtn="booking">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5.5" width="16" height="14" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M4 9.5h16M8 3.5v3.5M16 3.5v3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span>Booking</span>
       </button>
       <button class="tab-btn" data-tabbtn="consult">
         <svg viewBox="0 0 24 24" fill="none"><path d="M4.5 6.5A2.5 2.5 0 0 1 7 4h10a2.5 2.5 0 0 1 2.5 2.5v6A2.5 2.5 0 0 1 17 15H10l-4 3.5V15H7A2.5 2.5 0 0 1 4.5 12.5v-6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
         <span>Consult</span>
       </button>
-      <button class="tab-btn" data-tabbtn="booking">
-        <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5.5" width="16" height="14" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M4 9.5h16M8 3.5v3.5M16 3.5v3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-        <span>Booking</span>
+      <button class="tab-btn" data-tabbtn="coach">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 6.5c2-1 5-1.3 8 0v11c-3-1.3-6-1-8 0v-11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 6.5c-2-1-5-1.3-8 0v11c3-1.3 6-1 8 0v-11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span>Refresher</span>
       </button>
       <button class="tab-btn" data-tabbtn="business">
         <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="8" width="17" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 8V6.5A2 2 0 0 1 10.5 4.5h3A2 2 0 0 1 15.5 6.5V8" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 13h17" stroke="currentColor" stroke-width="1.6"/></svg>
@@ -4217,7 +4217,7 @@ function enterApp(){
   window.initCoachTab();
   window.initConsultTab();
   window.initLedgerTab();
-  showTab(isStudent() ? 'pace' : 'coach');
+  showTab(isStudent() ? 'pace' : 'booking');
 }
 function showRoleScreen(){
   document.getElementById('loading-screen').hidden = true;
@@ -4618,8 +4618,8 @@ document.getElementById('btn-role-change-confirm').addEventListener('click', asy
   populateAccountLicense();
   populateAccountListing();
   applyRoleVisibility();
-  const currentTab = (document.querySelector('.tab-btn.active') || {}).dataset ? document.querySelector('.tab-btn.active').dataset.tabbtn : 'coach';
-  showTab(currentTab || 'coach');
+  const currentTab = (document.querySelector('.tab-btn.active') || {}).dataset ? document.querySelector('.tab-btn.active').dataset.tabbtn : 'booking';
+  showTab(currentTab || 'booking');
   showToast('Role updated. Pace and Ledger are no longer available');
 });
 let deleteAccountArmed = false;
