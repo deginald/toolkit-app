@@ -55,6 +55,19 @@
   .tab-btn{ flex:1; border:none; background:transparent; padding:12px 4px 14px; display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--muted); font-family:'Public Sans',sans-serif; font-weight:700; font-size:11.5px; cursor:pointer; border-top:2px solid transparent; }
   .tab-btn.active{ color:var(--brass); border-top-color:var(--brass); }
   .tab-btn svg{ width:20px; height:20px; flex:none; }
+  /* Tab order is independent per role: default order below is for professionals
+     (Pace/Ledger hidden via display:none so their order doesn't matter),
+     .tabbar.role-student overrides it to the student-only order. */
+  .tab-btn[data-tabbtn="pace"]{ order:1; }
+  .tab-btn[data-tabbtn="booking"]{ order:2; }
+  .tab-btn[data-tabbtn="consult"]{ order:3; }
+  .tab-btn[data-tabbtn="coach"]{ order:4; }
+  .tab-btn[data-tabbtn="business"]{ order:5; }
+  .tab-btn[data-tabbtn="ledger"]{ order:6; }
+  .tabbar.role-student .tab-btn[data-tabbtn="pace"]{ order:1; }
+  .tabbar.role-student .tab-btn[data-tabbtn="coach"]{ order:2; }
+  .tabbar.role-student .tab-btn[data-tabbtn="consult"]{ order:3; }
+  .tabbar.role-student .tab-btn[data-tabbtn="ledger"]{ order:4; }
   .biz-pane{ display:none; flex-direction:column; gap:16px; }
   .biz-pane.show{ display:flex; }
   .bk-pane{ display:none; flex-direction:column; gap:16px; }
@@ -1567,6 +1580,8 @@ function applyRoleVisibility(){
   if (ledgerBtn) ledgerBtn.style.display = show ? '' : 'none';
   if (bookingBtn) bookingBtn.style.display = show ? 'none' : '';
   if (businessBtn) businessBtn.style.display = show ? 'none' : '';
+  const tabbarEl = document.querySelector('.tabbar');
+  if (tabbarEl) tabbarEl.classList.toggle('role-student', show);
   const clientAttachCard = document.getElementById('client-attach-card');
   const consultClientAttachCard = document.getElementById('consult-client-attach-card');
   if (clientAttachCard) clientAttachCard.style.display = show ? 'none' : '';
