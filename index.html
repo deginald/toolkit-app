@@ -704,7 +704,7 @@
         </div>
         <div class="screen-body" data-screen="walk">
           <div class="walk-header">
-            <button class="back-btn" id="btn-back-picker">&larr;</button>
+            <button class="back-btn" id="btn-back-picker" aria-label="Back">&larr;</button>
             <div class="walk-titles">
               <div class="walk-tech-name" id="walk-tech-name">&nbsp;</div>
               <div class="progress-label" id="walk-progress-label">Step 1 of 7</div>
@@ -790,7 +790,7 @@
           <button class="btn btn-primary" id="btn-start">Begin consultation</button>
         </div>
         <div class="screen-body" data-screen="texture">
-          <div class="walk-header"><button class="back-btn" data-back="start">&larr;</button><div class="walk-titles"><div class="walk-name">Hair texture</div></div></div>
+          <div class="walk-header"><button class="back-btn" data-back="start" aria-label="Back">&larr;</button><div class="walk-titles"><div class="walk-name">Hair texture</div></div></div>
           <div class="progress-track"><div class="progress-fill" style="width:17%"></div></div>
           <p class="screen-sub" id="texture-sub">What's the hair texture?</p>
           <div class="option-grid" id="texture-grid"></div>
@@ -798,7 +798,7 @@
           <button class="btn btn-primary" id="btn-texture-next" disabled>Next</button>
         </div>
         <div class="screen-body" data-screen="condition">
-          <div class="walk-header"><button class="back-btn" data-back="texture">&larr;</button><div class="walk-titles"><div class="walk-name">Hair condition</div></div></div>
+          <div class="walk-header"><button class="back-btn" data-back="texture" aria-label="Back">&larr;</button><div class="walk-titles"><div class="walk-name">Hair condition</div></div></div>
           <div class="progress-track"><div class="progress-fill" style="width:33%"></div></div>
           <p class="screen-sub">Select everything that applies today.</p>
           <div class="chip-grid" id="condition-grid"></div>
@@ -806,7 +806,7 @@
           <button class="btn btn-primary" id="btn-condition-next" disabled>Next</button>
         </div>
         <div class="screen-body" data-screen="scalp">
-          <div class="walk-header"><button class="back-btn" data-back="condition">&larr;</button><div class="walk-titles"><div class="walk-name">Scalp check</div></div></div>
+          <div class="walk-header"><button class="back-btn" data-back="condition" aria-label="Back">&larr;</button><div class="walk-titles"><div class="walk-name">Scalp check</div></div></div>
           <div class="progress-track"><div class="progress-fill" style="width:50%"></div></div>
           <p class="screen-sub">Any scalp symptoms today?</p>
           <div class="chip-grid" id="scalp-grid"></div>
@@ -814,7 +814,7 @@
           <button class="btn btn-primary" id="btn-scalp-next" disabled>Next</button>
         </div>
         <div class="screen-body" data-screen="triage">
-          <div class="walk-header"><button class="back-btn" data-back="scalp">&larr;</button><div class="walk-titles"><div class="walk-name">A couple more questions</div></div></div>
+          <div class="walk-header"><button class="back-btn" data-back="scalp" aria-label="Back">&larr;</button><div class="walk-titles"><div class="walk-name">A couple more questions</div></div></div>
           <div class="progress-track"><div class="progress-fill" style="width:67%"></div></div>
           <p class="screen-sub">How long has this been going on?</p>
           <div class="chip-grid" id="duration-grid"></div>
@@ -824,7 +824,7 @@
           <button class="btn btn-primary" id="btn-triage-next" disabled>Next</button>
         </div>
         <div class="screen-body" data-screen="recommend">
-          <div class="walk-header"><button class="back-btn" id="btn-back-recommend">&larr;</button><div class="walk-titles"><div class="walk-name">Recommendations</div></div></div>
+          <div class="walk-header"><button class="back-btn" id="btn-back-recommend" aria-label="Back">&larr;</button><div class="walk-titles"><div class="walk-name">Recommendations</div></div></div>
           <div class="progress-track"><div class="progress-fill" style="width:88%"></div></div>
           <div class="summary-card" id="rec-summary"></div>
           <div id="rec-list" style="display:flex; flex-direction:column; gap:8px;"></div>
@@ -834,7 +834,7 @@
           </div>
         </div>
         <div class="screen-body" data-screen="refer">
-          <div class="walk-header"><button class="back-btn" data-back="triage">&larr;</button><div class="walk-titles"><div class="walk-name">Outside cosmetic scope</div></div></div>
+          <div class="walk-header"><button class="back-btn" data-back="triage" aria-label="Back">&larr;</button><div class="walk-titles"><div class="walk-name">Outside cosmetic scope</div></div></div>
           <div class="progress-track"><div class="progress-fill" style="width:88%; background:var(--behind);"></div></div>
           <div class="refer-box">
             <h3>Recommend a dermatologist visit</h3>
@@ -1028,6 +1028,7 @@
         <div class="mode-toggle" id="business-mode-toggle">
           <button type="button" class="mode-btn active" data-biz-mode="loyalty">Loyalty</button>
           <button type="button" class="mode-btn" data-biz-mode="earnings">Earnings</button>
+          <button type="button" class="mode-btn" data-biz-mode="clients">My Clients</button>
         </div>
         <div class="biz-pane show" data-biz="loyalty" id="tab-loyalty">
           <div class="screen-body show" data-screen="dashboard" style="gap:20px;">
@@ -1065,6 +1066,14 @@
             </div>
           </div>
         </div>
+        <div class="biz-pane" data-biz="clients" id="tab-my-clients">
+          <div class="screen-body show" data-screen="dashboard" style="gap:14px;">
+            <p class="screen-sub" style="margin:0;">Clients you've saved a visit for through Consult, in one searchable list. Tap one to look them up again in Consult.</p>
+            <div class="input-row"><input id="myclients-search" type="text" placeholder="Search by name or code"></div>
+            <div id="myclients-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+            <p class="screen-sub" id="myclients-empty" style="display:none; margin:0;">No clients yet. They'll show up here once you save a visit for them through Consult.</p>
+          </div>
+        </div>
       </section>
       <!-- ============ LEDGER ============ -->
       <section class="tab-pane" data-tab="ledger" id="tab-ledger">
@@ -1090,7 +1099,7 @@
         </div>
         <div class="screen-body" data-screen="technique">
           <div class="walk-header">
-            <button class="back-btn" data-back="dashboard">&larr;</button>
+            <button class="back-btn" data-back="dashboard" aria-label="Back">&larr;</button>
             <div class="walk-titles"><div class="walk-name" id="tech-cat-label">Category</div></div>
           </div>
           <h2 class="screen-title" id="tech-name">Technique</h2>
@@ -1105,7 +1114,7 @@
           <button class="btn btn-primary" data-back="dashboard">Back to Skill Graph</button>
         </div>
         <div class="screen-body" data-screen="portfolio">
-          <div class="walk-header"><button class="back-btn" data-back="dashboard">&larr;</button><div class="walk-titles"><div class="walk-name">Shareable portfolio</div></div></div>
+          <div class="walk-header"><button class="back-btn" data-back="dashboard" aria-label="Back">&larr;</button><div class="walk-titles"><div class="walk-name">Shareable portfolio</div></div></div>
           <div>
             <h2 class="screen-title" id="portfolio-name">&nbsp;</h2>
             <p class="screen-sub" id="portfolio-title-line">Self-rated Skill Graph</p>
@@ -1193,9 +1202,21 @@
         <p class="eyebrow-mini">Notifications</p>
         <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Quick message alerts</h2>
         <p class="screen-sub">Turn this on to get notified when a client sends you a quick message about an appointment, and to send them one yourself. No phone number needed.</p>
+        <div id="ios-homescreen-tip" class="card tip" style="display:none; gap:6px;">
+          <p class="screen-sub" style="margin:0;"><strong>On an iPhone, notifications only work once this is added to your Home Screen.</strong> Safari can't turn them on from inside a regular browser tab.</p>
+          <button type="button" class="link-btn" id="btn-ios-homescreen-steps" style="padding:0; align-self:flex-start;">See how</button>
+          <div id="ios-homescreen-steps" style="display:none; flex-direction:column;">
+            <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the Share icon (the square with an arrow pointing up) in Safari's toolbar.<br>2. Scroll down and tap "Add to Home Screen."<br>3. Tap "Add" in the top right.<br>4. Open All Hair Connect from that new icon from now on, then come back here to turn notifications on.</p>
+          </div>
+        </div>
         <button class="btn btn-primary" id="btn-enable-notifications" type="button">Turn on notifications</button>
         <p class="foot-note-small" id="notifications-status-note">&nbsp;</p>
         <p class="foot-note-small">Not seeing the message text in a notification? On iPhone, check Settings &rarr; Notifications &rarr; All Hair Connect &rarr; Show Previews, and set it to Always.</p>
+        <label class="check-row" style="margin-top:10px;">
+          <input type="checkbox" id="notify-appt-events-toggle">
+          <span>Notify me when a client books or cancels an appointment</span>
+        </label>
+        <p class="foot-note-small">Turn this off if you'd rather not be pinged for these, like after hours &mdash; your other notifications (quick messages) aren't affected.</p>
       </div>
       <div id="listing-ineligible" style="display:none; border-top:1px solid var(--line); padding-top:16px;">
         <p class="eyebrow-mini">Public directory</p>
@@ -1326,6 +1347,15 @@ function urlBase64ToUint8Array(base64String){
 }
 function pushSupported(){
   return !!(window.isSecureContext && 'serviceWorker' in navigator && 'PushManager' in window);
+}
+// iOS Safari only allows push notifications for a site that's been added to the Home
+// Screen -- a regular Safari tab can't turn them on at all. Used to show a heads-up
+// before someone taps "Turn on notifications" and it quietly doesn't work.
+function isIosNotStandalone(){
+  const ua = navigator.userAgent || '';
+  const isIos = /iPhone|iPad|iPod/i.test(ua);
+  const isStandalone = window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  return isIos && !isStandalone;
 }
 let swRegistrationPromise = null;
 function registerServiceWorker(){
@@ -1466,7 +1496,8 @@ function defaultProfile(name){
     bookingOverrides: [],
     bookingPolicy: '',
     paymentLinks: { venmo:'', cashapp:'', zelle:'', applepay:'' },
-    loyaltyTiers: []
+    loyaltyTiers: [],
+    notifyApptEvents: true
   };
 }
 function defaultBookingHours(){
@@ -1520,6 +1551,7 @@ async function persistProfile(fields){
   if (fields.bookingPolicy !== undefined) row.booking_policy = fields.bookingPolicy;
   if (fields.paymentLinks !== undefined) row.payment_links = fields.paymentLinks;
   if (fields.loyaltyTiers !== undefined) row.loyalty_tiers = fields.loyaltyTiers;
+  if (fields.notifyApptEvents !== undefined) row.notify_appt_events = fields.notifyApptEvents;
   try{
     const { data, error } = await supabaseClient.from('profiles').update(row).eq('code', profileCode).select();
     if (error) throw error;
@@ -1550,6 +1582,55 @@ function toTitleCase(str){
   return str.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
 }
 /* =========================================================
+   PHOTO COMPRESSION (before upload)
+   ========================================================= */
+// Phone cameras routinely produce 3-8MB photos. Shrinking them client-side, before they
+// ever hit Supabase Storage, keeps client portfolios loading fast on a client's phone and
+// keeps storage costs down. Best-effort: any failure here just falls back to the original
+// file, so a compression bug never blocks someone from saving a visit.
+function loadImageForCompression(file){
+  return new Promise((resolve)=>{
+    if (window.createImageBitmap){
+      createImageBitmap(file).then(resolve).catch(()=> resolve(null));
+      return;
+    }
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = ()=>{ URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = ()=>{ URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+async function compressPhotoForUpload(file, maxDim, quality){
+  maxDim = maxDim || 1600;
+  quality = quality || 0.82;
+  try{
+    if (!file || !file.type || !file.type.startsWith('image/')) return file;
+    if (file.size < 300 * 1024) return file; // already small -- not worth the work
+    const img = await loadImageForCompression(file);
+    if (!img) return file;
+    const srcW = img.naturalWidth || img.width;
+    const srcH = img.naturalHeight || img.height;
+    if (!srcW || !srcH) return file;
+    const scale = Math.min(1, maxDim / Math.max(srcW, srcH));
+    const outW = Math.max(1, Math.round(srcW * scale));
+    const outH = Math.max(1, Math.round(srcH * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = outW;
+    canvas.height = outH;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, outW, outH);
+    if (img.close) img.close(); // release ImageBitmap memory
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+    if (!blob || blob.size >= file.size) return file; // keep the original if compression didn't help
+    const newName = (file.name || 'photo.jpg').replace(/\.\w+$/, '') + '.jpg';
+    return new File([blob], newName, { type: 'image/jpeg' });
+  }catch(e){
+    console.warn('photo compression failed, uploading original', e);
+    return file;
+  }
+}
+/* =========================================================
    TOP-LEVEL TAB SWITCHING
    ========================================================= */
 // Any tab that opens a QR camera scan registers a "stop and reset" callback here, so
@@ -1565,6 +1646,7 @@ function showBusinessSubtab(mode){
   document.querySelectorAll('#business-mode-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.bizMode===mode));
   if (mode === 'earnings' && window.initEarningsTab) window.initEarningsTab();
   if (mode === 'loyalty' && window.initLoyaltyTab) window.initLoyaltyTab();
+  if (mode === 'clients' && window.initMyClientsTab) window.initMyClientsTab();
 }
 document.querySelectorAll('#business-mode-toggle .mode-btn').forEach(btn=>{
   btn.addEventListener('click', ()=> showBusinessSubtab(btn.dataset.bizMode));
@@ -1705,7 +1787,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     P().breaks.forEach((b, i)=>{
       const el = document.createElement('div');
       el.className = 'break-item';
-      el.innerHTML = `<div class="bi-text"><span class="bi-label">${b.label}</span><span class="bi-range">${fmtRange(b.start, b.end)}</span></div><button class="bi-remove" data-idx="${i}">&times;</button>`;
+      el.innerHTML = `<div class="bi-text"><span class="bi-label">${b.label}</span><span class="bi-range">${fmtRange(b.start, b.end)}</span></div><button class="bi-remove" type="button" data-idx="${i}" aria-label="Remove this break">&times;</button>`;
       list.appendChild(el);
     });
     list.querySelectorAll('.bi-remove').forEach(btn=>{
@@ -1726,7 +1808,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         const rangeLabel = a.type === 'full' ? `${fmtRange(a.start, a.end)} · ${fmtHours(a.amount)}` : `${fmtSingleDate(a.date)} · ${fmtHours(a.amount)}`;
         const el = document.createElement('div');
         el.className = 'break-item';
-        el.innerHTML = `<div class="bi-text"><span class="bi-label">${a.reason}${a.type==='partial' ? ' (partial)' : ''}</span><span class="bi-range">${rangeLabel}</span></div><button class="bi-remove" data-idx="${i}">&times;</button>`;
+        el.innerHTML = `<div class="bi-text"><span class="bi-label">${a.reason}${a.type==='partial' ? ' (partial)' : ''}</span><span class="bi-range">${rangeLabel}</span></div><button class="bi-remove" type="button" data-idx="${i}" aria-label="Remove this absence">&times;</button>`;
         list.appendChild(el);
       });
     }
@@ -2221,7 +2303,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         const photos = [];
         const files = cstate.checkpointPhotos;
         for (let i=0; i<files.length; i++){
-          const file = files[i];
+          const rawFile = files[i];
+          const file = await compressPhotoForUpload(rawFile);
           const safeName = (file.name || 'photo.jpg').replace(/[^a-zA-Z0-9_.-]/g,'_');
           const path = `${attachedClient.code}/${Date.now()}-${i}-${safeName}`;
           const { error: upErr } = await supabaseClient.storage.from('client-photos').upload(path, file);
@@ -2415,7 +2498,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const { data, error } = await supabaseClient.from('clients').select('*').eq('code', code).maybeSingle();
       if (error) throw error;
       if (data){
-        attachedClient = { code, name: data.name || 'Client', visits: Array.isArray(data.visits) ? data.visits : [], hairProfile: data.hair_profile || null };
+        attachedClient = { code, name: data.name || 'Client', visits: Array.isArray(data.visits) ? data.visits : [], hairProfile: data.hair_profile || null, barberCodes: Array.isArray(data.barber_codes) ? data.barber_codes : [] };
         statusEl.textContent = '';
         renderClientAttach();
       } else {
@@ -2566,7 +2649,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
       return;
     }
-    attachedClient = { code, name, visits: [], hairProfile: null };
+    attachedClient = { code, name, visits: [], hairProfile: null, barberCodes: [] };
     root.querySelector('#consult-client-new-name').value = '';
     root.querySelector('#consult-client-new-code').value = '';
     root.querySelector('#consult-client-new-code').dataset.touched = '';
@@ -2722,10 +2805,16 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       };
       const updatedVisits = (attachedClient.visits || []).concat([visit]);
       const hairProfile = { texture: qstate.texture, conditions: qstate.conditions.slice(), scalp: qstate.scalp.slice(), updatedAt: new Date().toISOString() };
-      const { error } = await supabaseClient.from('clients').update({ visits: updatedVisits, hair_profile: hairProfile, updated_at: new Date().toISOString() }).eq('code', attachedClient.code);
+      // Track that this professional has seen this client, so they show up in that
+      // professional's "My Clients" list (Business tab) without scanning every client row.
+      const barberCodes = (attachedClient.barberCodes || []).includes(profileCode)
+        ? attachedClient.barberCodes
+        : (attachedClient.barberCodes || []).concat([profileCode]);
+      const { error } = await supabaseClient.from('clients').update({ visits: updatedVisits, hair_profile: hairProfile, barber_codes: barberCodes, updated_at: new Date().toISOString() }).eq('code', attachedClient.code);
       if (error) throw error;
       attachedClient.visits = updatedVisits;
       attachedClient.hairProfile = hairProfile;
+      attachedClient.barberCodes = barberCodes;
       return true;
     }catch(e){ console.warn('consult save failed', e); return false; }
   }
@@ -3699,6 +3788,93 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   };
 })();
 /* =========================================================
+   MY CLIENTS TAB (Business > My Clients)
+   ========================================================= */
+(function(){
+  const root = document.getElementById('tab-my-clients');
+  let myClients = [];
+  let myClientsLoaded = false;
+  function fmtVisitDate(iso){
+    if (!iso) return '';
+    try{ return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }catch(e){ return iso; }
+  }
+  function summarizeClient(row){
+    const visits = (Array.isArray(row.visits) ? row.visits : []).filter(v => v.barberCode === profileCode);
+    const lastDate = visits.reduce((latest, v) => (!latest || (v.date && v.date > latest)) ? v.date : latest, '');
+    return { code: row.code, name: row.name || 'Client', visitCount: visits.length, lastDate };
+  }
+  function renderMyClients(filterText){
+    const listEl = root.querySelector('#myclients-list');
+    const emptyEl = root.querySelector('#myclients-empty');
+    const q = (filterText || '').trim().toLowerCase();
+    const filtered = myClients.filter(c => !q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q));
+    if (!myClients.length){
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      emptyEl.textContent = "No clients yet. They'll show up here once you save a visit for them through Consult.";
+      return;
+    }
+    if (!filtered.length){
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      emptyEl.textContent = 'No clients match that search.';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    listEl.innerHTML = filtered.map(c => `
+      <button type="button" class="detail-card" data-open-client="${c.code}" style="text-align:left; cursor:pointer;">
+        <div class="detail-row" style="align-items:center;">
+          <strong>${c.name}</strong>
+          <span class="screen-sub" style="margin:0;">${c.visitCount} visit${c.visitCount===1?'':'s'}</span>
+        </div>
+        <span class="screen-sub" style="margin:0;">${c.code}${c.lastDate ? ' &middot; last visit ' + fmtVisitDate(c.lastDate) : ''}</span>
+      </button>`).join('');
+  }
+  async function loadMyClients(){
+    const listEl = root.querySelector('#myclients-list');
+    const emptyEl = root.querySelector('#myclients-empty');
+    if (!dbAvailable || !profileCode){
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      emptyEl.textContent = "Live lookup isn't connected right now.";
+      return;
+    }
+    try{
+      const { data, error } = await supabaseClient.from('clients').select('*').contains('barber_codes', [profileCode]);
+      if (error) throw error;
+      myClients = (data || []).map(summarizeClient).sort((a,b)=> (b.lastDate||'').localeCompare(a.lastDate||''));
+      myClientsLoaded = true;
+      renderMyClients(root.querySelector('#myclients-search').value);
+    }catch(e){
+      console.warn('load my clients failed', e);
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      emptyEl.textContent = "Couldn't load your clients right now.";
+    }
+  }
+  root.querySelector('#myclients-search').addEventListener('input', function(){
+    renderMyClients(this.value);
+  });
+  root.querySelector('#myclients-list').addEventListener('click', (e)=>{
+    const btn = e.target.closest('[data-open-client]');
+    if (!btn) return;
+    const code = btn.dataset.openClient;
+    showTab('consult');
+    setTimeout(()=>{
+      const input = document.getElementById('consult-client-code-input');
+      const lookupBtn = document.getElementById('btn-consult-client-lookup');
+      if (input) input.value = code;
+      if (lookupBtn) lookupBtn.click();
+    }, 50);
+  });
+  window.initMyClientsTab = function(){
+    // Cheap to call every time the tab is opened -- keeps the list current without
+    // needing a manual refresh button, and the query is scoped to this professional
+    // only, not a scan of every client in the database.
+    loadMyClients();
+  };
+})();
+/* =========================================================
    AUTH / PROFILE LOAD / SHARED READ-ONLY VIEW / BOOT
    ========================================================= */
 async function fetchProfileRowByUserId(userId){
@@ -3732,6 +3908,7 @@ function applyProfileRow(data){
   profile.bookingPolicy = data.booking_policy || '';
   profile.paymentLinks = Object.assign({ venmo:'', cashapp:'', zelle:'', applepay:'' }, data.payment_links || {});
   profile.loyaltyTiers = Array.isArray(data.loyalty_tiers) ? data.loyalty_tiers : [];
+  profile.notifyApptEvents = data.notify_appt_events !== false;
   profileCode = data.code;
 }
 async function tryLoadProfile(code){
@@ -4067,6 +4244,7 @@ document.getElementById('btn-save-license').addEventListener('click', async ()=>
 async function populateNotificationsStatus(){
   const btn = document.getElementById('btn-enable-notifications');
   const note = document.getElementById('notifications-status-note');
+  document.getElementById('ios-homescreen-tip').style.display = isIosNotStandalone() ? 'flex' : 'none';
   if (!pushSupported()){
     btn.disabled = true;
     btn.textContent = 'Not supported on this device';
@@ -4087,7 +4265,18 @@ async function populateNotificationsStatus(){
     btn.textContent = 'Turn on notifications';
     note.textContent = ' ';
   }
+  document.getElementById('notify-appt-events-toggle').checked = profile.notifyApptEvents !== false;
 }
+document.getElementById('btn-ios-homescreen-steps').addEventListener('click', function(){
+  const steps = document.getElementById('ios-homescreen-steps');
+  const showing = steps.style.display === 'flex';
+  steps.style.display = showing ? 'none' : 'flex';
+  this.textContent = showing ? 'See how' : 'Hide steps';
+});
+document.getElementById('notify-appt-events-toggle').addEventListener('change', function(){
+  profile.notifyApptEvents = this.checked;
+  persistProfile({ notifyApptEvents: this.checked });
+});
 document.getElementById('btn-enable-notifications').addEventListener('click', async ()=>{
   const btn = document.getElementById('btn-enable-notifications');
   const note = document.getElementById('notifications-status-note');

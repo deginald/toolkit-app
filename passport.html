@@ -306,7 +306,7 @@
 
       <div class="screen-body" data-screen="detail">
         <div class="walk-header">
-          <button class="back-btn" id="btn-back-home">&larr;</button>
+          <button class="back-btn" id="btn-back-home" aria-label="Back">&larr;</button>
           <div><div class="vc-date" id="detail-date">&nbsp;</div></div>
         </div>
         <div class="detail-photos" id="detail-photos"></div>
@@ -366,7 +366,7 @@
 
       <div class="screen-body" data-screen="account">
         <div class="walk-header">
-          <button class="back-btn" id="btn-back-home-from-account">&larr;</button>
+          <button class="back-btn" id="btn-back-home-from-account" aria-label="Back">&larr;</button>
           <div><div class="vc-date">Account</div></div>
         </div>
         <div>
@@ -378,6 +378,13 @@
           <p class="eyebrow-mini">Notifications</p>
           <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Quick message alerts</h2>
           <p class="screen-sub">Turn this on to get notified when your barber sends you a quick message about an appointment, and to send them one yourself. No phone number needed.</p>
+          <div id="ios-homescreen-tip" style="display:none; flex-direction:column; gap:6px; padding:12px 14px; border-radius:10px; background:var(--brass-tint); border:1px solid var(--brass);">
+            <p class="screen-sub" style="margin:0;"><strong>On an iPhone, notifications only work once this is added to your Home Screen.</strong> Safari can't turn them on from inside a regular browser tab.</p>
+            <button type="button" class="link-btn" id="btn-ios-homescreen-steps" style="padding:0; align-self:flex-start;">See how</button>
+            <div id="ios-homescreen-steps" style="display:none; flex-direction:column;">
+              <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the Share icon (the square with an arrow pointing up) in Safari's toolbar.<br>2. Scroll down and tap "Add to Home Screen."<br>3. Tap "Add" in the top right.<br>4. Open All Hair Connect from that new icon from now on, then come back here to turn notifications on.</p>
+            </div>
+          </div>
           <button class="btn btn-primary" id="btn-enable-notifications" type="button">Turn on notifications</button>
           <p class="foot-note-small" id="notifications-status-note">&nbsp;</p>
           <p class="foot-note-small">Not seeing the message text in a notification? On iPhone, check Settings &rarr; Notifications &rarr; All Hair Connect &rarr; Show Previews, and set it to Always.</p>
@@ -446,6 +453,15 @@ function urlBase64ToUint8Array(base64String){
 }
 function pushSupported(){
   return !!(window.isSecureContext && 'serviceWorker' in navigator && 'PushManager' in window);
+}
+// iOS Safari only allows push notifications for a site that's been added to the Home
+// Screen -- a regular Safari tab can't turn them on at all. Used to show a heads-up
+// before someone taps "Turn on notifications" and it quietly doesn't work.
+function isIosNotStandalone(){
+  const ua = navigator.userAgent || '';
+  const isIos = /iPhone|iPad|iPod/i.test(ua);
+  const isStandalone = window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  return isIos && !isStandalone;
 }
 let swRegistrationPromise = null;
 function registerServiceWorker(){
@@ -696,7 +712,7 @@ function renderHome(){
           <div class="vc-date">${dateLabel}</div>
           <div class="vc-meta">${v.barberName ? v.barberName : 'Provider not noted'}</div>
         </div>
-        <button type="button" class="vc-star ${v.favorite?'on':''}" data-star="${v.id}">&#9733;</button>
+        <button type="button" class="vc-star ${v.favorite?'on':''}" data-star="${v.id}" aria-label="${v.favorite ? 'Remove from favorites' : 'Mark as favorite'}">&#9733;</button>
       </div>
       <span class="service-tag">${SERVICE_LABELS[v.serviceType] || 'Visit'}</span>
       ${photosHtml}
@@ -856,6 +872,8 @@ function renderUpcoming(list){
       try{
         const { error } = await supabaseClient.from('appointments').update({status:'cancelled'}).eq('id', a.id);
         if (error) throw error;
+        // Best-effort: let the barber know. Never blocks the cancellation itself.
+        try{ await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: a.id, event: 'cancelled' } }); }catch(e){ console.warn('cancel notification failed', e); }
         await loadUpcomingAppointments();
       }catch(e){
         console.warn('cancel failed', e);
@@ -1324,6 +1342,7 @@ document.getElementById('btn-save-account-email').addEventListener('click', asyn
 async function populateNotificationsStatus(){
   const btn = document.getElementById('btn-enable-notifications');
   const note = document.getElementById('notifications-status-note');
+  document.getElementById('ios-homescreen-tip').style.display = isIosNotStandalone() ? 'flex' : 'none';
   if (!pushSupported()){
     btn.disabled = true;
     btn.textContent = 'Not supported on this device';
@@ -1345,6 +1364,12 @@ async function populateNotificationsStatus(){
     note.textContent = ' ';
   }
 }
+document.getElementById('btn-ios-homescreen-steps').addEventListener('click', function(){
+  const steps = document.getElementById('ios-homescreen-steps');
+  const showing = steps.style.display === 'flex';
+  steps.style.display = showing ? 'none' : 'flex';
+  this.textContent = showing ? 'See how' : 'Hide steps';
+});
 document.getElementById('btn-enable-notifications').addEventListener('click', async ()=>{
   const btn = document.getElementById('btn-enable-notifications');
   const note = document.getElementById('notifications-status-note');
