@@ -105,6 +105,13 @@
   .vc-notes-preview{ font-size:12px; color:var(--muted); line-height:1.4; }
   .service-tag{ display:inline-flex; width:fit-content; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; padding:3px 8px; border-radius:999px; background:var(--brass-tint); color:var(--brass); }
 
+  .progress-scroll{ display:flex; gap:10px; overflow-x:auto; padding:2px 2px 6px; -webkit-overflow-scrolling:touch; }
+  .progress-thumb{ flex:none; display:flex; flex-direction:column; align-items:center; gap:4px; width:82px; background:none; border:none; padding:0; cursor:pointer; font-family:inherit; }
+  .progress-thumb img{ width:82px; height:82px; border-radius:11px; object-fit:cover; background:var(--line); border:1px solid var(--line); }
+  .progress-thumb:hover img{ border-color:var(--brass); }
+  .progress-thumb .pt-date{ font-size:10.5px; font-weight:700; color:var(--ink); text-align:center; line-height:1.3; }
+  .progress-thumb .pt-barber{ font-size:10px; color:var(--muted); text-align:center; line-height:1.2; }
+
   .walk-header{ display:flex; align-items:center; gap:10px; }
   .back-btn{ background:var(--paper); border:1px solid var(--line); width:32px; height:32px; border-radius:9px; font-size:16px; color:var(--ink); cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
 
@@ -282,6 +289,13 @@
             <h2>Book again</h2>
           </div>
           <div id="bookagain-list-holder"></div>
+        </div>
+
+        <div id="progress-section" style="display:none; flex-direction:column; gap:10px;">
+          <div class="section-head">
+            <h2>Your progress</h2>
+          </div>
+          <div class="progress-scroll" id="progress-scroll"></div>
         </div>
 
         <div class="section-head">
@@ -706,6 +720,39 @@ function renderHome(){
   });
 
   renderBookAgain();
+  renderProgress();
+}
+
+// A chronological (oldest-first) scroll of every checkpoint photo across all visits, so a
+// client can look back at their own hair journey. Includes the barber's name under each photo
+// only if they've seen more than one provider, so it doesn't add noise for the common case of
+// a single regular barber. Tapping a photo opens that visit's own detail screen (date, service,
+// notes, full photos) rather than a separate lightbox, since that's already built and gives
+// more context than a bare image viewer would.
+function renderProgress(){
+  const section = document.getElementById('progress-section');
+  const holder = document.getElementById('progress-scroll');
+  const visits = sortedVisits().slice().reverse(); // oldest first, for a "journey" feel
+  const showBarberLabel = uniqueBarbers().length > 1;
+  const shots = [];
+  visits.forEach(v=>{
+    (Array.isArray(v.photos) ? v.photos : []).forEach(p=>{
+      shots.push({ url: p.url, visitId: v.id, date: v.date, barberName: v.barberName });
+    });
+  });
+  if (shots.length < 2){ section.style.display = 'none'; holder.innerHTML = ''; return; }
+  section.style.display = 'flex';
+  holder.innerHTML = shots.map(s=>{
+    const dateLabel = s.date ? new Date(s.date+'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric'}) : '';
+    return `<button type="button" class="progress-thumb" data-open-visit="${s.visitId}">
+      <img src="${s.url}" alt="">
+      <span class="pt-date">${dateLabel}</span>
+      ${showBarberLabel && s.barberName ? `<span class="pt-barber">${s.barberName}</span>` : ''}
+    </button>`;
+  }).join('');
+  holder.querySelectorAll('[data-open-visit]').forEach(btn=>{
+    btn.addEventListener('click', ()=> openDetail(btn.dataset.openVisit));
+  });
 }
 
 function todayIso(){ return new Date().toISOString().slice(0,10); }
