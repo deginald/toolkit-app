@@ -624,9 +624,30 @@ async function createClientRecord(code, name, email){
   return true;
 }
 
+// Checkpoint photos live in the client-photos storage bucket under a folder
+// named by the client's code. When the client deletes their account, that
+// folder no longer belongs to anyone -- clean it out so it doesn't sit
+// around forever counting against storage. Best-effort: if this fails for
+// any reason, we still go ahead and delete the account itself below.
+async function deleteClientPhotos(code){
+  if (!dbAvailable || !code) return;
+  try{
+    const limit = 1000;
+    let offset = 0;
+    while (true){
+      const { data: files, error } = await supabaseClient.storage.from('client-photos').list(code, { limit, offset });
+      if (error || !files || !files.length) break;
+      const paths = files.map(f => `${code}/${f.name}`);
+      await supabaseClient.storage.from('client-photos').remove(paths);
+      if (files.length < limit) break;
+      offset += limit;
+    }
+  }catch(e){ console.warn('delete client photos failed', e); }
+}
 async function deleteClientRow(code){
   if (!dbAvailable || !code) return true;
   try{
+    await deleteClientPhotos(code);
     const { error } = await supabaseClient.from('clients').delete().eq('code', code);
     if (error) throw error;
     return true;
