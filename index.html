@@ -1198,7 +1198,7 @@
         <button class="btn btn-primary" id="btn-save-license" type="button">Save license number</button>
         <p class="foot-note-small" id="license-save-note">&nbsp;</p>
       </div>
-      <div style="border-top:1px solid var(--line); padding-top:16px;">
+      <div id="account-notifications-section" style="border-top:1px solid var(--line); padding-top:16px;">
         <p class="eyebrow-mini">Notifications</p>
         <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Quick message alerts</h2>
         <p class="screen-sub">Turn this on to get notified when a client sends you a quick message about an appointment, and to send them one yourself. No phone number needed.</p>
@@ -4242,6 +4242,12 @@ document.getElementById('btn-save-license').addEventListener('click', async ()=>
   populateAccountListing();
 });
 async function populateNotificationsStatus(){
+  const section = document.getElementById('account-notifications-section');
+  if (isStudent()){
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
   const btn = document.getElementById('btn-enable-notifications');
   const note = document.getElementById('notifications-status-note');
   document.getElementById('ios-homescreen-tip').style.display = isIosNotStandalone() ? 'flex' : 'none';
@@ -4300,7 +4306,7 @@ function notifNudgeDismissKey(){ return 'ahcNotifNudgeDismissed_' + (profileCode
 async function updateNotifNudgeBanner(){
   const el = document.getElementById('notif-nudge-banner');
   if (!el) return;
-  if (!pushSupported() || !profileCode){ el.hidden = true; return; }
+  if (isStudent() || !pushSupported() || !profileCode){ el.hidden = true; return; }
   let dismissed = false;
   try{ dismissed = localStorage.getItem(notifNudgeDismissKey()) === '1'; }catch(e){}
   if (dismissed){ el.hidden = true; return; }
@@ -4417,6 +4423,7 @@ document.getElementById('btn-role-change-confirm').addEventListener('click', asy
   await persistProfile({title: profile.title});
   populateAccountTitleSelect();
   populateAccountLicense();
+  populateNotificationsStatus();
   populateAccountListing();
   applyRoleVisibility();
   const currentTab = (document.querySelector('.tab-btn.active') || {}).dataset ? document.querySelector('.tab-btn.active').dataset.tabbtn : 'booking';
