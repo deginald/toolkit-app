@@ -901,6 +901,30 @@
                 </div>
                 <p class="foot-note-small" id="bk-copy-note">&nbsp;</p>
               </div>
+              <div class="card" id="bk-lookup-card" style="display:flex; flex-direction:column; gap:12px;">
+                <div>
+                  <p class="eyebrow-mini2" style="margin:0;">Look up a client</p>
+                  <p class="screen-sub" style="margin:4px 0 0;">Pull up their photo history before booking, or snap a new one right now.</p>
+                </div>
+                <div class="field"><div class="input-row"><input id="bk-lookup-code" type="text" placeholder="Their passport code" data-lookup-field="1"></div></div>
+                <button class="btn btn-outline" id="btn-bk-lookup" type="button">Look up</button>
+                <p class="screen-sub" id="bk-lookup-status">&nbsp;</p>
+                <div id="bk-lookup-result" style="display:none; flex-direction:column; gap:10px;">
+                  <p class="eyebrow-mini2" id="bk-lookup-name" style="margin:0;"></p>
+                  <div class="checkpoint-photo-grid" id="bk-lookup-photos"></div>
+                  <p class="screen-sub" id="bk-lookup-photos-empty" style="display:none; margin:0;">No photos saved for this client yet.</p>
+                  <div class="field">
+                    <label>Notes about this visit <span style="text-transform:none; font-weight:600;">(optional)</span></label>
+                    <div class="input-row"><textarea id="bk-lookup-notes" placeholder="e.g. Wants it a little shorter on the sides next time" style="min-height:60px;"></textarea></div>
+                  </div>
+                  <input type="file" accept="image/*" capture="environment" multiple id="bk-lookup-file-input" style="display:none;">
+                  <div class="btn-row" style="gap:10px;">
+                    <button class="btn btn-primary" id="btn-bk-lookup-addphoto" type="button" style="flex:1;">Add photos</button>
+                    <button class="btn btn-outline" id="btn-bk-lookup-savenote" type="button" style="flex:1;">Save note only</button>
+                  </div>
+                  <p class="screen-sub" id="bk-lookup-upload-status">&nbsp;</p>
+                </div>
+              </div>
               <button class="btn btn-outline" id="btn-bk-manual-open" type="button">Add an appointment</button>
               <div style="display:flex; flex-direction:column; gap:10px;">
                 <p class="eyebrow-mini">Upcoming appointments</p>
@@ -3227,6 +3251,121 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       }
       e.target.disabled = false;
     }
+  });
+  /* ---- Quick client photo lookup (see their history, or snap a new one, before booking) ---- */
+  let bkLookupClient = null; // { code, name, visits, barberCodes }
+  function renderBkLookupPhotos(){
+    const grid = root.querySelector('#bk-lookup-photos');
+    const emptyEl = root.querySelector('#bk-lookup-photos-empty');
+    const allPhotos = [];
+    (bkLookupClient.visits || []).forEach(v=>{
+      (v.photos || []).forEach(p=>{ if (p && p.url) allPhotos.push({ url: p.url, date: v.date }); });
+    });
+    allPhotos.reverse(); // newest first
+    emptyEl.style.display = allPhotos.length ? 'none' : 'block';
+    grid.innerHTML = allPhotos.map(p => `
+      <a class="checkpoint-photo-wrap" href="${p.url}" target="_blank" rel="noopener">
+        <img class="checkpoint-photo" src="${p.url}" alt="Photo from ${p.date || 'a past visit'}">
+      </a>`).join('');
+  }
+  async function performBkLookup(){
+    const code = sanitizeCode(root.querySelector('#bk-lookup-code').value);
+    const statusEl = root.querySelector('#bk-lookup-status');
+    const resultEl = root.querySelector('#bk-lookup-result');
+    resultEl.style.display = 'none';
+    bkLookupClient = null;
+    if (!code){ statusEl.textContent = 'Enter a passport code.'; return; }
+    if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
+    statusEl.textContent = 'Looking up…';
+    try{
+      const { data, error } = await supabaseClient.from('clients').select('*').eq('code', code).maybeSingle();
+      if (error) throw error;
+      if (!data){ statusEl.textContent = 'No client found with that code.'; return; }
+      bkLookupClient = {
+        code,
+        name: data.name || 'Client',
+        visits: Array.isArray(data.visits) ? data.visits : [],
+        barberCodes: Array.isArray(data.barber_codes) ? data.barber_codes : []
+      };
+      statusEl.textContent = ' ';
+      root.querySelector('#bk-lookup-name').textContent = bkLookupClient.name;
+      root.querySelector('#bk-lookup-upload-status').textContent = ' ';
+      root.querySelector('#bk-lookup-notes').value = '';
+      renderBkLookupPhotos();
+      resultEl.style.display = 'flex';
+    }catch(e){
+      console.warn('booking client lookup failed', e);
+      statusEl.textContent = "Couldn't look that up. Try again.";
+    }
+  }
+  root.querySelector('#btn-bk-lookup').addEventListener('click', performBkLookup);
+  // Shared by both "Add photos" and "Save note only" -- saves a new visit for the
+  // currently looked-up client with whatever notes/photos were given, updates the
+  // in-memory client so the gallery reflects it immediately, and reports back
+  // through statusEl. Returns true on success.
+  async function saveBkQuickVisit(files, notes, statusEl){
+    try{
+      const photos = [];
+      for (let i=0; i<files.length; i++){
+        const rawFile = files[i];
+        const file = await compressPhotoForUpload(rawFile);
+        const safeName = (file.name || 'photo.jpg').replace(/[^a-zA-Z0-9_.-]/g,'_');
+        const path = `${bkLookupClient.code}/${Date.now()}-${i}-${safeName}`;
+        const { error: upErr } = await supabaseClient.storage.from('client-photos').upload(path, file);
+        if (upErr) throw upErr;
+        const { data: urlData } = supabaseClient.storage.from('client-photos').getPublicUrl(path);
+        photos.push({ url: urlData.publicUrl, path });
+      }
+      const barberCodes = (bkLookupClient.barberCodes || []).includes(profileCode)
+        ? bkLookupClient.barberCodes
+        : (bkLookupClient.barberCodes || []).concat([profileCode]);
+      const visit = {
+        id: genId(),
+        date: todayIso(),
+        barberName: profile.name,
+        barberCode: profileCode,
+        serviceType: 'other',
+        notes: notes || '',
+        photos,
+        favorite: false
+      };
+      const updatedVisits = (bkLookupClient.visits || []).concat([visit]);
+      const { error } = await supabaseClient.from('clients')
+        .update({ visits: updatedVisits, barber_codes: barberCodes, updated_at: new Date().toISOString() })
+        .eq('code', bkLookupClient.code);
+      if (error) throw error;
+      bkLookupClient.visits = updatedVisits;
+      bkLookupClient.barberCodes = barberCodes;
+      renderBkLookupPhotos();
+      root.querySelector('#bk-lookup-notes').value = '';
+      const parts = [];
+      if (photos.length) parts.push(photos.length + (photos.length===1?' photo':' photos'));
+      if (notes) parts.push('a note');
+      statusEl.textContent = (parts.length ? 'Saved ' + parts.join(' and ') : 'Saved') + '.';
+      return true;
+    }catch(err){
+      console.warn('booking quick visit save failed', err);
+      statusEl.textContent = "Couldn't save. Try again.";
+      return false;
+    }
+  }
+  root.querySelector('#btn-bk-lookup-addphoto').addEventListener('click', ()=> root.querySelector('#bk-lookup-file-input').click());
+  root.querySelector('#bk-lookup-file-input').addEventListener('change', async (e)=>{
+    const files = Array.from(e.target.files || []);
+    e.target.value = ''; // lets the same photo be picked again later if needed
+    if (!bkLookupClient || !files.length) return;
+    const statusEl = root.querySelector('#bk-lookup-upload-status');
+    const notes = root.querySelector('#bk-lookup-notes').value.trim();
+    statusEl.textContent = 'Uploading…';
+    await saveBkQuickVisit(files, notes, statusEl);
+  });
+  root.querySelector('#btn-bk-lookup-savenote').addEventListener('click', async ()=>{
+    if (!bkLookupClient) return;
+    const statusEl = root.querySelector('#bk-lookup-upload-status');
+    const notes = root.querySelector('#bk-lookup-notes').value.trim();
+    if (!notes){ statusEl.textContent = 'Type a note first.'; return; }
+    statusEl.textContent = 'Saving…';
+    await saveBkQuickVisit([], notes, statusEl);
   });
   /* ---- Manually add an appointment ---- */
   function toMinutesBk(hhmm){ const [h,m] = (hhmm||'0:0').split(':').map(Number); return h*60+m; }
