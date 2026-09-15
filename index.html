@@ -2449,6 +2449,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (Math.abs(dx) < 40) return;
     if (dx < 0) lightboxShowNext(); else lightboxShowPrev();
   }, { passive: true });
+  // The lightbox modal itself lives outside any single tab's DOM (it's shared, full-screen
+  // markup), so expose it globally -- other tabs' modules (Booking's client photo lookup, etc.)
+  // reuse this exact same swipeable viewer instead of opening a raw image in a new tab.
+  window.openLightbox = openLightbox;
   window.initCoachTab = function(){ renderTechList(); showScreen('picker'); };
 })();
 /* =========================================================
@@ -3274,10 +3278,21 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     });
     allPhotos.reverse(); // newest first
     emptyEl.style.display = allPhotos.length ? 'none' : 'block';
-    grid.innerHTML = allPhotos.map(p => `
-      <a class="checkpoint-photo-wrap" href="${p.url}" target="_blank" rel="noopener">
+    // Tapping a photo opens the same swipeable, full-screen viewer used elsewhere in the app
+    // (Consult/Refresher checkpoints) instead of a raw image in a new browser tab -- no address
+    // bar, no storage path on screen, and swipe (or the arrow buttons) moves between every
+    // photo this client has, newest first.
+    grid.innerHTML = allPhotos.map((p, idx) => `
+      <button type="button" class="checkpoint-photo-wrap" data-lightbox-idx="${idx}" style="border:none; padding:0; background:none; cursor:pointer;">
         <img class="checkpoint-photo" src="${p.url}" alt="Photo from ${p.date || 'a past visit'}">
-      </a>`).join('');
+      </button>`).join('');
+    grid.querySelectorAll('[data-lightbox-idx]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        if (!window.openLightbox) return;
+        const idx = parseInt(btn.dataset.lightboxIdx, 10);
+        window.openLightbox(allPhotos.map(p=>({ url: p.url, alt: 'Photo from ' + (p.date || 'a past visit') })), idx);
+      });
+    });
   }
   async function performBkLookup(codeOverride){
     const code = sanitizeCode(codeOverride !== undefined ? codeOverride : root.querySelector('#bk-lookup-code').value);
