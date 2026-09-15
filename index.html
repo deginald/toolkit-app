@@ -906,9 +906,19 @@
                   <p class="eyebrow-mini2" style="margin:0;">Look up a client</p>
                   <p class="screen-sub" style="margin:4px 0 0;">Pull up their photo history before booking, or snap a new one right now.</p>
                 </div>
-                <div class="field"><div class="input-row"><input id="bk-lookup-code" type="text" placeholder="Their passport code" data-lookup-field="1"></div></div>
-                <button class="btn btn-outline" id="btn-bk-lookup" type="button">Look up</button>
-                <p class="screen-sub" id="bk-lookup-status">&nbsp;</p>
+                <div id="bk-lookup-search">
+                  <button class="btn btn-primary" id="btn-bk-lookup-scan" type="button" style="width:100%;">Scan their QR code</button>
+                  <div class="field" style="margin-top:12px;"><div class="input-row"><input id="bk-lookup-code" type="text" placeholder="Their passport code" data-lookup-field="1"></div></div>
+                  <button class="btn btn-outline" id="btn-bk-lookup" type="button" style="margin-top:8px; width:100%;">Look up</button>
+                  <p class="screen-sub" id="bk-lookup-status" style="margin-top:6px;">&nbsp;</p>
+                </div>
+                <div id="bk-lookup-scanpanel" style="display:none; flex-direction:column; gap:10px;">
+                  <div style="position:relative; border-radius:12px; overflow:hidden; background:#000; aspect-ratio:1/1; max-width:280px; margin:0 auto; width:100%;">
+                    <video id="bk-lookup-scan-video" playsinline autoplay muted style="width:100%; height:100%; object-fit:cover; display:block;"></video>
+                  </div>
+                  <p class="screen-sub" id="bk-lookup-scan-status" style="margin:0; text-align:center;">Point the camera at their Hair Passport QR code.</p>
+                  <button class="btn btn-ghost" id="btn-bk-lookup-scan-cancel" type="button" style="width:100%;">Enter their code manually instead</button>
+                </div>
                 <div id="bk-lookup-result" style="display:none; flex-direction:column; gap:10px;">
                   <p class="eyebrow-mini2" id="bk-lookup-name" style="margin:0;"></p>
                   <div class="checkpoint-photo-grid" id="bk-lookup-photos"></div>
@@ -923,6 +933,7 @@
                     <button class="btn btn-outline" id="btn-bk-lookup-savenote" type="button" style="flex:1;">Save note only</button>
                   </div>
                   <p class="screen-sub" id="bk-lookup-upload-status">&nbsp;</p>
+                  <button class="btn btn-ghost" id="btn-bk-lookup-clear" type="button" style="width:100%;">Remove</button>
                 </div>
               </div>
               <button class="btn btn-outline" id="btn-bk-manual-open" type="button">Add an appointment</button>
@@ -3268,8 +3279,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         <img class="checkpoint-photo" src="${p.url}" alt="Photo from ${p.date || 'a past visit'}">
       </a>`).join('');
   }
-  async function performBkLookup(){
-    const code = sanitizeCode(root.querySelector('#bk-lookup-code').value);
+  async function performBkLookup(codeOverride){
+    const code = sanitizeCode(codeOverride !== undefined ? codeOverride : root.querySelector('#bk-lookup-code').value);
     const statusEl = root.querySelector('#bk-lookup-status');
     const resultEl = root.querySelector('#bk-lookup-result');
     resultEl.style.display = 'none';
@@ -3288,6 +3299,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         barberCodes: Array.isArray(data.barber_codes) ? data.barber_codes : []
       };
       statusEl.textContent = ' ';
+      root.querySelector('#bk-lookup-search').style.display = 'none';
       root.querySelector('#bk-lookup-name').textContent = bkLookupClient.name;
       root.querySelector('#bk-lookup-upload-status').textContent = ' ';
       root.querySelector('#bk-lookup-notes').value = '';
@@ -3298,7 +3310,101 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       statusEl.textContent = "Couldn't look that up. Try again.";
     }
   }
-  root.querySelector('#btn-bk-lookup').addEventListener('click', performBkLookup);
+  root.querySelector('#btn-bk-lookup').addEventListener('click', ()=> performBkLookup());
+  root.querySelector('#btn-bk-lookup-clear').addEventListener('click', ()=>{
+    bkLookupClient = null;
+    root.querySelector('#bk-lookup-code').value = '';
+    root.querySelector('#bk-lookup-status').textContent = '';
+    root.querySelector('#bk-lookup-result').style.display = 'none';
+    root.querySelector('#bk-lookup-search').style.display = '';
+  });
+
+  // -- QR scanning for the client lookup card, mirroring the same scan pattern used for
+  // manually adding an appointment below: falls back to clear instructions to type the code
+  // manually whenever the camera can't be used, so this is never a dead end. Kept as its own
+  // separate scanner (rather than sharing state with the manual-appointment one) since either
+  // could in principle be mid-scan independently.
+  let bkLookupScanStream = null;
+  let bkLookupScanRAF = null;
+  let bkLookupScanCanvas = null;
+  let bkLookupScanTimeoutId = null;
+  function stopBkLookupScan(){
+    if (bkLookupScanRAF){ cancelAnimationFrame(bkLookupScanRAF); bkLookupScanRAF = null; }
+    if (bkLookupScanTimeoutId){ clearTimeout(bkLookupScanTimeoutId); bkLookupScanTimeoutId = null; }
+    if (bkLookupScanStream){ bkLookupScanStream.getTracks().forEach(t => t.stop()); bkLookupScanStream = null; }
+  }
+  function closeBkLookupScanPanel(){
+    stopBkLookupScan();
+    root.querySelector('#bk-lookup-scanpanel').style.display = 'none';
+    root.querySelector('#bk-lookup-search').style.display = '';
+  }
+  window.__activeScanStoppers.push(()=>{ if (bkLookupScanStream) closeBkLookupScanPanel(); });
+  function scanBkLookupFrame(video){
+    const statusEl = root.querySelector('#bk-lookup-scan-status');
+    if (video.readyState === video.HAVE_ENOUGH_DATA && window.jsQR){
+      if (!bkLookupScanCanvas) bkLookupScanCanvas = document.createElement('canvas');
+      bkLookupScanCanvas.width = video.videoWidth;
+      bkLookupScanCanvas.height = video.videoHeight;
+      const ctx = bkLookupScanCanvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, bkLookupScanCanvas.width, bkLookupScanCanvas.height);
+      const imageData = ctx.getImageData(0, 0, bkLookupScanCanvas.width, bkLookupScanCanvas.height);
+      const result = window.jsQR(imageData.data, imageData.width, imageData.height);
+      if (result && result.data){
+        const code = extractCodeFromScan(result.data);
+        if (code){
+          closeBkLookupScanPanel();
+          root.querySelector('#bk-lookup-code').value = code;
+          performBkLookup(code);
+          return;
+        } else if (statusEl){
+          statusEl.textContent = "That doesn't look like a Hair Passport code. Try again, or enter it manually.";
+        }
+      }
+    }
+    bkLookupScanRAF = requestAnimationFrame(()=> scanBkLookupFrame(video));
+  }
+  async function startBkLookupScan(){
+    const statusEl = root.querySelector('#bk-lookup-scan-status');
+    const video = root.querySelector('#bk-lookup-scan-video');
+    root.querySelector('#bk-lookup-search').style.display = 'none';
+    root.querySelector('#bk-lookup-scanpanel').style.display = 'flex';
+    statusEl.textContent = 'Point the camera at their Hair Passport QR code.';
+    if (!window.jsQR){
+      statusEl.textContent = "The QR scanner didn't load. Enter their code manually instead.";
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      statusEl.textContent = "This browser can't use the camera here. Enter their code manually instead.";
+      return;
+    }
+    try{
+      bkLookupScanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    }catch(e){
+      console.warn('camera access failed', e);
+      if (e && e.name === 'NotAllowedError'){
+        statusEl.textContent = "Camera access was blocked. Enter their code manually instead, or allow camera access in your browser settings and try again.";
+      } else if (e && e.name === 'NotFoundError'){
+        statusEl.textContent = "No camera was found on this device. Enter their code manually instead.";
+      } else {
+        statusEl.textContent = "Couldn't open the camera. Enter their code manually instead.";
+      }
+      return;
+    }
+    video.srcObject = bkLookupScanStream;
+    try{ await video.play(); }catch(e){ /* autoplay quirks -- scanBkLookupFrame still starts once ready */ }
+    bkLookupScanRAF = requestAnimationFrame(()=> scanBkLookupFrame(video));
+    bkLookupScanTimeoutId = setTimeout(()=>{
+      if (statusEl) statusEl.textContent = "Still looking... having trouble? Enter their code manually instead.";
+    }, 12000);
+  }
+  root.querySelector('#btn-bk-lookup-scan').addEventListener('click', ()=>{
+    root.querySelector('#bk-lookup-status').textContent = '';
+    startBkLookupScan();
+  });
+  root.querySelector('#btn-bk-lookup-scan-cancel').addEventListener('click', ()=>{
+    closeBkLookupScanPanel();
+    root.querySelector('#bk-lookup-code').focus();
+  });
   // Shared by both "Add photos" and "Save note only" -- saves a new visit for the
   // currently looked-up client with whatever notes/photos were given, updates the
   // in-memory client so the gallery reflects it immediately, and reports back
