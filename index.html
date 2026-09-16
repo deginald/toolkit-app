@@ -5021,7 +5021,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       <div class="inv-item-row" data-inv-id="${it.id}">
         <div style="min-width:0; flex:1;">
           <div class="inv-item-name">${escapeHtmlInv(it.name)}</div>
-          <div class="inv-item-sub">${it.barcode ? 'Barcode saved' : 'No barcode'}</div>
+          <div class="inv-item-sub">${it.barcode ? 'Barcode saved' : 'No barcode'}${it.quantity<=0 ? ' · Out of stock' : ''}</div>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
           <button type="button" class="inv-qty-btn" data-inv-minus="${it.id}" aria-label="Decrease quantity" ${it.quantity<=0 ? 'disabled' : ''}>&minus;</button>
@@ -5048,13 +5048,29 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   async function adjustInventoryQty(id, delta){
     const item = inventoryItems.find(it => it.id === id);
     if (!item) return;
-    const next = Math.max(0, (item.quantity||0) + delta);
-    if (next === item.quantity) return;
+    const prevQty = item.quantity || 0;
+    const next = Math.max(0, prevQty + delta);
+    if (next === prevQty) return;
+    const nowIso = new Date().toISOString();
+    // Track when a product first hits 0 (so the low-stock reminder can tell
+    // it's been 2+ days), and reset that tracking the moment it's restocked,
+    // so a later stock-out starts a fresh countdown and can flag again.
+    let zeroSince = item.zero_since || null;
+    let lowStockNotified = !!item.low_stock_notified;
+    if (next === 0 && prevQty > 0){
+      zeroSince = nowIso;
+      lowStockNotified = false;
+    } else if (next > 0 && prevQty === 0){
+      zeroSince = null;
+      lowStockNotified = false;
+    }
     item.quantity = next;
+    item.zero_since = zeroSince;
+    item.low_stock_notified = lowStockNotified;
     renderInventoryList(root.querySelector('#inv-search').value);
     if (!dbAvailable) return;
     try{
-      const { error } = await supabaseClient.from('inventory_items').update({ quantity: next, updated_at: new Date().toISOString() }).eq('id', id);
+      const { error } = await supabaseClient.from('inventory_items').update({ quantity: next, zero_since: zeroSince, low_stock_notified: lowStockNotified, updated_at: nowIso }).eq('id', id);
       if (error) throw error;
     }catch(e){ console.warn('inventory quantity save failed', e); }
   }
@@ -5118,7 +5134,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       return;
     }
     statusEl.textContent = 'Saving…';
-    const row = { id: genIdInv(), profile_code: profileCode, barcode: pendingInvBarcode || null, name, quantity: qty };
+    const row = { id: genIdInv(), profile_code: profileCode, barcode: pendingInvBarcode || null, name, quantity: qty, zero_since: qty === 0 ? new Date().toISOString() : null, low_stock_notified: false };
     try{
       if (dbAvailable){
         const { error } = await supabaseClient.from('inventory_items').insert(row);
