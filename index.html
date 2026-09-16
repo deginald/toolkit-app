@@ -143,6 +143,16 @@
   .cal-week-day-head{ display:flex; align-items:baseline; gap:8px; }
   .cal-appt-row{ display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--paper); }
   .cal-appt-time{ font-size:12.5px; font-weight:700; color:var(--brass); flex:none; min-width:64px; font-variant-numeric:tabular-nums; }
+  .inv-item-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--paper); }
+  .inv-item-row.flash{ border-color:var(--brass); background:var(--brass-tint); }
+  .inv-item-name{ font-size:13.5px; font-weight:700; }
+  .inv-item-sub{ font-size:12px; color:var(--muted); }
+  .inv-qty-btn{ width:30px; height:30px; border-radius:50%; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:17px; font-weight:700; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; flex:none; }
+  .inv-qty-btn:hover{ border-color:var(--brass); color:var(--brass); }
+  .inv-qty-btn:disabled{ opacity:0.35; cursor:not-allowed; }
+  .inv-qty-num{ min-width:24px; text-align:center; font-weight:700; font-size:14.5px; font-variant-numeric:tabular-nums; }
+  .inv-remove-btn{ border:none; background:transparent; color:var(--muted); font-size:15px; font-weight:700; cursor:pointer; line-height:1; padding:4px 2px 4px 8px; flex:none; }
+  .inv-remove-btn:hover{ color:var(--behind); }
   .btn{ border:none; border-radius:11px; padding:13px 18px; font-family:'Public Sans',sans-serif; font-weight:700; font-size:14px; cursor:pointer; text-align:center; }
   .btn-primary{ background:var(--brass); color:#241A0C; flex:1; }
   .btn-primary:hover{ filter:brightness(1.05); }
@@ -1141,6 +1151,7 @@
           <button type="button" class="mode-btn active" data-biz-mode="loyalty">Loyalty</button>
           <button type="button" class="mode-btn" data-biz-mode="earnings">Earnings</button>
           <button type="button" class="mode-btn" data-biz-mode="clients">My Clients</button>
+          <button type="button" class="mode-btn" data-biz-mode="inventory">Inventory</button>
         </div>
         <div class="biz-pane show" data-biz="loyalty" id="tab-loyalty">
           <div class="screen-body show" data-screen="dashboard" style="gap:20px;">
@@ -1184,6 +1195,39 @@
             <div class="input-row"><input id="myclients-search" type="text" placeholder="Search by name or code"></div>
             <div id="myclients-list" style="display:flex; flex-direction:column; gap:8px;"></div>
             <p class="screen-sub" id="myclients-empty" style="display:none; margin:0;">No clients yet. They'll show up here once you save a visit for them through Consult.</p>
+          </div>
+        </div>
+        <div class="biz-pane" data-biz="inventory" id="tab-inventory">
+          <div class="screen-body show" data-screen="dashboard" style="gap:14px;">
+            <div class="card tip" id="inv-tip-note" hidden>
+              <p class="screen-sub" style="margin:0; color:var(--ink);">Scan a product's barcode to add it to your inventory. Scan that same barcode again any time and it finds the product instantly — no retyping. Use the &minus; and + buttons to keep its count up to date.</p>
+              <button type="button" class="link-btn" id="btn-inv-tip-dismiss" style="align-self:flex-end; padding:0;">Got it</button>
+            </div>
+            <button class="btn btn-primary" id="btn-inv-scan" type="button" style="width:100%;">Scan a barcode</button>
+            <div id="inv-scanpanel" style="display:none; flex-direction:column; gap:10px;">
+              <div style="position:relative; border-radius:12px; overflow:hidden; background:#000; aspect-ratio:1/1; max-width:280px; margin:0 auto; width:100%;">
+                <video id="inv-scan-video" playsinline autoplay muted style="width:100%; height:100%; object-fit:cover; display:block;"></video>
+              </div>
+              <p class="screen-sub" id="inv-scan-status" style="margin:0; text-align:center;">Point the camera at the product's barcode.</p>
+              <button class="btn btn-ghost" id="btn-inv-scan-cancel" type="button" style="width:100%;">Cancel</button>
+            </div>
+            <button class="btn btn-outline" id="btn-inv-add-manual" type="button">Add a product without scanning</button>
+            <div class="card" id="inv-new-card" style="display:none; flex-direction:column; gap:12px;">
+              <div>
+                <p class="eyebrow-mini2" id="inv-new-heading" style="margin:0;">New product</p>
+                <p class="screen-sub" id="inv-new-barcode-note" style="margin:4px 0 0;">&nbsp;</p>
+              </div>
+              <div class="field"><label>Product name</label><div class="input-row"><input id="inv-new-name" type="text" placeholder="e.g. Purple Toning Shampoo"></div></div>
+              <div class="field"><label>Starting quantity</label><div class="input-row"><input id="inv-new-qty" type="number" min="0" step="1" value="1"></div></div>
+              <div class="btn-row" style="gap:10px;">
+                <button class="btn btn-primary" id="btn-inv-new-save" type="button" style="flex:1;">Save product</button>
+                <button class="btn btn-ghost" id="btn-inv-new-cancel" type="button" style="flex:1;">Cancel</button>
+              </div>
+              <p class="screen-sub" id="inv-new-status">&nbsp;</p>
+            </div>
+            <div class="field" style="margin-top:4px;"><div class="input-row"><input id="inv-search" type="text" placeholder="Search your products"></div></div>
+            <div id="inv-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+            <p class="screen-sub" id="inv-empty" style="display:none; margin:0;">No products yet. Scan a barcode or add one manually to get started.</p>
           </div>
         </div>
       </section>
@@ -1601,6 +1645,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js"></script>
 <script>
 /* =========================================================
    SUPABASE SETUP
@@ -1951,6 +1996,7 @@ function showBusinessSubtab(mode){
   if (mode === 'earnings' && window.initEarningsTab) window.initEarningsTab();
   if (mode === 'loyalty' && window.initLoyaltyTab) window.initLoyaltyTab();
   if (mode === 'clients' && window.initMyClientsTab) window.initMyClientsTab();
+  if (mode === 'inventory' && window.initInventoryTab) window.initInventoryTab();
 }
 document.querySelectorAll('#business-mode-toggle .mode-btn').forEach(btn=>{
   btn.addEventListener('click', ()=> showBusinessSubtab(btn.dataset.bizMode));
@@ -4932,6 +4978,234 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     // needing a manual refresh button, and the query is scoped to this professional
     // only, not a scan of every client in the database.
     loadMyClients();
+  };
+})();
+/* =========================================================
+   INVENTORY (Business > Inventory) -- barcode-scanned product
+   stock with a quantity count and +/- buttons. Scanning a barcode
+   that's already saved highlights that product so its count can be
+   adjusted; scanning an unknown barcode opens the "new product"
+   form with the barcode already attached, so it's a one-time typing
+   of the name -- every later scan of that same barcode finds it
+   instantly. Products can also be added without a barcode at all.
+   ========================================================= */
+(function(){
+  const root = document.getElementById('tab-inventory');
+  function genIdInv(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function escapeHtmlInv(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  let inventoryItems = [];
+  let inventoryLoaded = false;
+  let pendingInvBarcode = null;
+  let invArmedRemoveId = null;
+  function invTipDismissKey(){ return 'ahcInventoryTipSeen_' + (profileCode || ''); }
+  function updateInvTipNote(){
+    const el = root.querySelector('#inv-tip-note');
+    if (!el) return;
+    let dismissed = false;
+    try{ dismissed = localStorage.getItem(invTipDismissKey()) === '1'; }catch(e){}
+    el.hidden = dismissed;
+  }
+  root.querySelector('#btn-inv-tip-dismiss').addEventListener('click', ()=>{
+    try{ localStorage.setItem(invTipDismissKey(), '1'); }catch(e){}
+    root.querySelector('#inv-tip-note').hidden = true;
+  });
+  function renderInventoryList(filterText){
+    const listEl = root.querySelector('#inv-list');
+    const emptyEl = root.querySelector('#inv-empty');
+    const q = (filterText || '').trim().toLowerCase();
+    const rows = q ? inventoryItems.filter(it => (it.name||'').toLowerCase().includes(q)) : inventoryItems;
+    emptyEl.style.display = inventoryItems.length ? 'none' : 'block';
+    emptyEl.textContent = inventoryItems.length && !rows.length ? 'No products match that search.' : "No products yet. Scan a barcode or add one manually to get started.";
+    if (inventoryItems.length && !rows.length) emptyEl.style.display = 'block';
+    listEl.innerHTML = rows.map(it => `
+      <div class="inv-item-row" data-inv-id="${it.id}">
+        <div style="min-width:0; flex:1;">
+          <div class="inv-item-name">${escapeHtmlInv(it.name)}</div>
+          <div class="inv-item-sub">${it.barcode ? 'Barcode saved' : 'No barcode'}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button type="button" class="inv-qty-btn" data-inv-minus="${it.id}" aria-label="Decrease quantity" ${it.quantity<=0 ? 'disabled' : ''}>&minus;</button>
+          <span class="inv-qty-num">${it.quantity}</span>
+          <button type="button" class="inv-qty-btn" data-inv-plus="${it.id}" aria-label="Increase quantity">&plus;</button>
+          <button type="button" class="inv-remove-btn" data-inv-remove="${it.id}">Remove</button>
+        </div>
+      </div>
+    `).join('');
+  }
+  async function loadInventory(){
+    if (!dbAvailable || !profileCode){ inventoryItems = []; renderInventoryList(root.querySelector('#inv-search').value); return; }
+    try{
+      const { data, error } = await supabaseClient.from('inventory_items').select('*').eq('profile_code', profileCode);
+      if (error) throw error;
+      inventoryItems = (data || []).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+      inventoryLoaded = true;
+    }catch(e){
+      console.warn('load inventory failed', e);
+      inventoryItems = [];
+    }
+    renderInventoryList(root.querySelector('#inv-search').value);
+  }
+  async function adjustInventoryQty(id, delta){
+    const item = inventoryItems.find(it => it.id === id);
+    if (!item) return;
+    const next = Math.max(0, (item.quantity||0) + delta);
+    if (next === item.quantity) return;
+    item.quantity = next;
+    renderInventoryList(root.querySelector('#inv-search').value);
+    if (!dbAvailable) return;
+    try{
+      const { error } = await supabaseClient.from('inventory_items').update({ quantity: next, updated_at: new Date().toISOString() }).eq('id', id);
+      if (error) throw error;
+    }catch(e){ console.warn('inventory quantity save failed', e); }
+  }
+  async function removeInventoryItem(id){
+    inventoryItems = inventoryItems.filter(it => it.id !== id);
+    renderInventoryList(root.querySelector('#inv-search').value);
+    if (!dbAvailable) return;
+    try{
+      const { error } = await supabaseClient.from('inventory_items').delete().eq('id', id);
+      if (error) throw error;
+    }catch(e){ console.warn('inventory remove failed', e); }
+  }
+  function flashInventoryRow(id){
+    const row = root.querySelector(`.inv-item-row[data-inv-id="${id}"]`);
+    if (!row) return;
+    row.scrollIntoView({ behavior:'smooth', block:'center' });
+    row.classList.add('flash');
+    setTimeout(()=> row.classList.remove('flash'), 1600);
+  }
+  root.querySelector('#inv-search').addEventListener('input', function(){ renderInventoryList(this.value); });
+  root.querySelector('#inv-list').addEventListener('click', (e)=>{
+    const minusId = e.target.dataset.invMinus;
+    const plusId = e.target.dataset.invPlus;
+    const removeId = e.target.dataset.invRemove;
+    if (minusId){ adjustInventoryQty(minusId, -1); return; }
+    if (plusId){ adjustInventoryQty(plusId, 1); return; }
+    if (removeId){
+      if (invArmedRemoveId !== removeId){
+        invArmedRemoveId = removeId;
+        e.target.textContent = 'Tap again to remove';
+        setTimeout(()=>{ if (invArmedRemoveId === removeId){ invArmedRemoveId = null; renderInventoryList(root.querySelector('#inv-search').value); } }, 4000);
+        return;
+      }
+      invArmedRemoveId = null;
+      removeInventoryItem(removeId);
+    }
+  });
+  function openNewInventoryForm(barcode){
+    root.querySelector('#inv-new-card').style.display = 'flex';
+    root.querySelector('#inv-new-heading').textContent = barcode ? 'New product' : 'Add a product';
+    root.querySelector('#inv-new-barcode-note').textContent = barcode ? ('Barcode: ' + barcode) : "No barcode saved — you can still track it by name.";
+    root.querySelector('#inv-new-name').value = '';
+    root.querySelector('#inv-new-qty').value = '1';
+    root.querySelector('#inv-new-status').textContent = ' ';
+    pendingInvBarcode = barcode || null;
+    root.querySelector('#inv-new-name').focus();
+  }
+  function closeNewInventoryForm(){
+    root.querySelector('#inv-new-card').style.display = 'none';
+    pendingInvBarcode = null;
+  }
+  root.querySelector('#btn-inv-add-manual').addEventListener('click', ()=> openNewInventoryForm(null));
+  root.querySelector('#btn-inv-new-cancel').addEventListener('click', closeNewInventoryForm);
+  root.querySelector('#btn-inv-new-save').addEventListener('click', async ()=>{
+    const name = root.querySelector('#inv-new-name').value.trim();
+    const qty = Math.max(0, parseInt(root.querySelector('#inv-new-qty').value, 10) || 0);
+    const statusEl = root.querySelector('#inv-new-status');
+    if (!name){ statusEl.textContent = 'Enter a product name.'; return; }
+    if (pendingInvBarcode && inventoryItems.some(it => it.barcode === pendingInvBarcode)){
+      statusEl.textContent = 'That barcode is already saved to another product.';
+      return;
+    }
+    statusEl.textContent = 'Saving…';
+    const row = { id: genIdInv(), profile_code: profileCode, barcode: pendingInvBarcode || null, name, quantity: qty };
+    try{
+      if (dbAvailable){
+        const { error } = await supabaseClient.from('inventory_items').insert(row);
+        if (error) throw error;
+      }
+      inventoryItems.push(row);
+      inventoryItems.sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+      closeNewInventoryForm();
+      renderInventoryList(root.querySelector('#inv-search').value);
+      showToast('Product added');
+    }catch(e){
+      console.warn('inventory save failed', e);
+      statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
+    }
+  });
+  async function handleScannedBarcode(code){
+    if (!inventoryLoaded) await loadInventory();
+    const existing = inventoryItems.find(it => it.barcode === code);
+    if (existing){
+      showToast('Found: ' + existing.name);
+      renderInventoryList(root.querySelector('#inv-search').value);
+      flashInventoryRow(existing.id);
+    } else {
+      openNewInventoryForm(code);
+    }
+  }
+  /* ---- Camera scan (barcode formats via ZXing, not the QR-only jsQR used elsewhere) ---- */
+  let invScanControls = null;
+  let invZxingReader = null;
+  function getInvZxingReader(){
+    if (!invZxingReader && window.ZXing && window.ZXing.BrowserMultiFormatReader){
+      invZxingReader = new window.ZXing.BrowserMultiFormatReader();
+    }
+    return invZxingReader;
+  }
+  function stopInventoryScan(){
+    if (invScanControls){ try{ invScanControls.stop(); }catch(e){} invScanControls = null; }
+  }
+  function closeInventoryScanPanel(){
+    stopInventoryScan();
+    root.querySelector('#inv-scanpanel').style.display = 'none';
+  }
+  window.__activeScanStoppers.push(()=>{ if (invScanControls) closeInventoryScanPanel(); });
+  async function startInventoryScan(){
+    const statusEl = root.querySelector('#inv-scan-status');
+    root.querySelector('#inv-scanpanel').style.display = 'flex';
+    statusEl.textContent = "Point the camera at the product's barcode.";
+    const reader = getInvZxingReader();
+    if (!reader){
+      statusEl.textContent = "The barcode scanner didn't load. Add the product manually instead.";
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      statusEl.textContent = "This browser can't use the camera here. Add the product manually instead.";
+      return;
+    }
+    try{
+      invScanControls = await reader.decodeFromConstraints(
+        { video: { facingMode: 'environment' } },
+        root.querySelector('#inv-scan-video'),
+        (result)=>{
+          if (result && result.getText && result.getText()){
+            const code = result.getText();
+            closeInventoryScanPanel();
+            handleScannedBarcode(code);
+          }
+        }
+      );
+    }catch(e){
+      console.warn('barcode camera access failed', e);
+      if (e && e.name === 'NotAllowedError'){
+        statusEl.textContent = "Camera access was blocked. Add the product manually instead, or allow camera access in your browser settings and try again.";
+      } else if (e && e.name === 'NotFoundError'){
+        statusEl.textContent = "No camera was found on this device. Add the product manually instead.";
+      } else {
+        statusEl.textContent = "Couldn't open the camera. Add the product manually instead.";
+      }
+    }
+  }
+  root.querySelector('#btn-inv-scan').addEventListener('click', ()=>{
+    closeNewInventoryForm();
+    startInventoryScan();
+  });
+  root.querySelector('#btn-inv-scan-cancel').addEventListener('click', closeInventoryScanPanel);
+  window.initInventoryTab = function(){
+    updateInvTipNote();
+    loadInventory();
   };
 })();
 /* =========================================================
