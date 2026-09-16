@@ -520,6 +520,7 @@
         <select class="title-select" id="auth-title" style="width:100%;">
           <option value="Student">Student</option>
           <option value="Barber">Barber</option>
+          <option value="Apprentice Barber">Apprentice Barber</option>
           <option value="Cosmetologist">Cosmetologist</option>
           <option value="Nail Tech">Nail Tech</option>
           <option value="Braider">Braider</option>
@@ -1670,12 +1671,14 @@ function showNdaScreen(onContinue){
   };
 }
 const CRAFTS = ['Barber','Cosmetologist','Nail Tech','Braider','Massage Therapist','Esthetician','MUA'];
-const TITLE_OPTIONS = ['Student', ...CRAFTS];
-const NON_STUDENT_TITLES = CRAFTS;
+const TITLE_OPTIONS = ['Student','Barber','Apprentice Barber','Cosmetologist','Nail Tech','Braider','Massage Therapist','Esthetician','MUA'];
+const NON_STUDENT_TITLES = TITLE_OPTIONS.filter(t => t !== 'Student');
 function currentCraft(){
   if (!profile) return '';
   if (isStudent()) return profile.studentField || '';
-  return profile.title || '';
+  if (CRAFTS.includes(profile.title)) return profile.title;
+  if (profile.title === 'Apprentice Barber') return 'Barber';
+  return '';
 }
 function isStudent(){ return !!profile && profile.title === 'Student'; }
 const CATEGORY_NAMES = { cuts:'Haircuts', chemical:'Chemical Services', safety:'Safety' };
