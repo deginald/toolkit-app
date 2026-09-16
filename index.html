@@ -129,6 +129,20 @@
   .lightbox-prev{ left:10px; }
   .lightbox-next{ right:10px; }
   .lightbox-counter{ position:fixed; bottom:max(18px, calc(env(safe-area-inset-bottom) + 10px)); left:50%; transform:translateX(-50%); color:#fff; font-size:12.5px; font-weight:700; background:rgba(255,255,255,0.15); padding:5px 12px; border-radius:999px; }
+  .calendar-overlay{ position:fixed; inset:0; background:var(--bg); z-index:450; display:flex; flex-direction:column; }
+  .calendar-modal-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:16px 20px; padding-top:max(16px, calc(env(safe-area-inset-top) + 12px)); border-bottom:1px solid var(--line); flex:none; }
+  .cal-month-grid{ display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; }
+  .cal-month-dow{ font-size:10.5px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); text-align:center; padding-bottom:4px; }
+  .cal-month-cell{ position:relative; aspect-ratio:1/1; border:1px solid var(--line); border-radius:9px; background:var(--paper); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; font-variant-numeric:tabular-nums; }
+  .cal-month-cell:hover{ border-color:var(--brass); }
+  .cal-month-cell.outside{ opacity:0.35; }
+  .cal-month-cell.today{ border-color:var(--brass); box-shadow:inset 0 0 0 1px var(--brass); }
+  .cal-month-cell .cal-daynum{ font-size:13px; font-weight:700; color:var(--ink); }
+  .cal-month-cell .cal-count{ font-size:9.5px; font-weight:700; color:var(--brass); }
+  .cal-week-day{ display:flex; flex-direction:column; gap:8px; }
+  .cal-week-day-head{ display:flex; align-items:baseline; gap:8px; }
+  .cal-appt-row{ display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--paper); }
+  .cal-appt-time{ font-size:12.5px; font-weight:700; color:var(--brass); flex:none; min-width:64px; font-variant-numeric:tabular-nums; }
   .btn{ border:none; border-radius:11px; padding:13px 18px; font-family:'Public Sans',sans-serif; font-weight:700; font-size:14px; cursor:pointer; text-align:center; }
   .btn-primary{ background:var(--brass); color:#241A0C; flex:1; }
   .btn-primary:hover{ filter:brightness(1.05); }
@@ -973,7 +987,10 @@
               </div>
               <button class="btn btn-outline" id="btn-bk-manual-open" type="button">Add an appointment</button>
               <div style="display:flex; flex-direction:column; gap:10px;">
-                <p class="eyebrow-mini">Upcoming appointments</p>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                  <p class="eyebrow-mini" style="margin:0;">Upcoming appointments</p>
+                  <button type="button" class="link-btn" id="btn-bk-view-calendar" style="padding:0;">View calendar</button>
+                </div>
                 <div id="bk-appts-list" style="display:flex; flex-direction:column; gap:8px;"></div>
                 <p class="screen-sub" id="bk-appts-empty" style="display:none;">Nothing booked yet.</p>
               </div>
@@ -1087,6 +1104,27 @@
               <p class="foot-note-small" id="bk-save-note">&nbsp;</p>
             </div>
           </div>
+        </div>
+        <div id="bk-calendar-modal" class="calendar-overlay" hidden>
+          <div class="calendar-modal-head">
+            <button type="button" class="back-btn" id="btn-calendar-close" aria-label="Close">&times;</button>
+            <h2 class="screen-title" style="margin:0; font-size:17px;">Calendar</h2>
+            <span style="width:32px;"></span>
+          </div>
+          <div class="mode-toggle" id="calendar-view-toggle" style="margin:14px 20px 0;">
+            <button type="button" class="mode-btn" data-cal-view="day"><span>Day</span></button>
+            <button type="button" class="mode-btn active" data-cal-view="week"><span>Week</span></button>
+            <button type="button" class="mode-btn" data-cal-view="month"><span>Month</span></button>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:16px 20px 0;">
+            <button type="button" class="back-btn" id="btn-calendar-prev" aria-label="Previous">&larr;</button>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+              <p class="eyebrow-mini2" id="calendar-period-label" style="margin:0; text-align:center;">&nbsp;</p>
+              <button type="button" class="link-btn" id="btn-calendar-today" style="padding:0;">Today</button>
+            </div>
+            <button type="button" class="back-btn" id="btn-calendar-next" aria-label="Next">&rarr;</button>
+          </div>
+          <div id="calendar-body" style="flex:1; overflow-y:auto; padding:16px 20px 28px; display:flex; flex-direction:column; gap:10px;"></div>
         </div>
       </section>
       <!-- ============ LOYALTY ============ -->
@@ -3858,6 +3896,137 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         if (statusEl) statusEl.textContent = "Couldn't send. Try again.";
       }
       e.target.disabled = false;
+    }
+  });
+  /* ---- View calendar: day/week/month forecast of booked appointments ---- */
+  let calendarAppts = [];
+  let calendarView = 'week';
+  let calendarAnchor = new Date();
+  function calParseDate(iso){ return new Date(iso+'T00:00:00'); }
+  function calIso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function calStartOfWeek(d){ const x = new Date(d); x.setDate(x.getDate() - x.getDay()); x.setHours(0,0,0,0); return x; }
+  function fmtTimeBk(hhmm){
+    if (!hhmm) return '';
+    const parts = hhmm.split(':').map(Number);
+    const h = parts[0]||0, m = parts[1]||0;
+    const period = h >= 12 ? 'PM' : 'AM';
+    const h12 = ((h+11)%12)+1;
+    return h12 + ':' + String(m).padStart(2,'0') + ' ' + period;
+  }
+  async function loadCalendarAppointments(){
+    if (!dbAvailable || !profileCode){ calendarAppts = []; return; }
+    try{
+      const { data, error } = await supabaseClient.from('appointments').select('*').eq('barber_code', profileCode).eq('status','booked');
+      if (error) throw error;
+      calendarAppts = data || [];
+    }catch(e){
+      console.warn('load calendar appointments failed', e);
+      calendarAppts = [];
+    }
+  }
+  function calApptsOnDate(iso){
+    return calendarAppts.filter(a=> a.appt_date === iso).sort((a,b)=> (a.start_time||'') < (b.start_time||'') ? -1 : 1);
+  }
+  function renderCalApptRow(a){
+    const svcNames = (a.services||[]).map(s=>s.name).join(', ');
+    return `<div class="cal-appt-row">
+      <span class="cal-appt-time">${fmtTimeBk(a.start_time)}</span>
+      <div style="display:flex; flex-direction:column; gap:1px; min-width:0;">
+        <strong style="font-size:13.5px;">${escapeHtmlBk(a.client_name||'Client')}</strong>
+        <span class="screen-sub" style="margin:0;">${escapeHtmlBk(svcNames)}${a.total_price ? ' · $'+a.total_price : ''}</span>
+      </div>
+    </div>`;
+  }
+  function escapeHtmlBk(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function renderCalendarDay(){
+    const iso = calIso(calendarAnchor);
+    root.querySelector('#calendar-period-label').textContent = calendarAnchor.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+    const appts = calApptsOnDate(iso);
+    const body = root.querySelector('#calendar-body');
+    body.innerHTML = appts.length ? appts.map(renderCalApptRow).join('') : `<p class="screen-sub" style="text-align:center; margin-top:20px;">Nothing booked this day.</p>`;
+  }
+  function renderCalendarWeek(){
+    const start = calStartOfWeek(calendarAnchor);
+    const end = new Date(start); end.setDate(end.getDate()+6);
+    root.querySelector('#calendar-period-label').textContent = start.toLocaleDateString('en-US', {month:'short', day:'numeric'}) + ' – ' + end.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+    const today = todayIso();
+    let html = '';
+    for (let i=0;i<7;i++){
+      const d = new Date(start); d.setDate(d.getDate()+i);
+      const iso = calIso(d);
+      const appts = calApptsOnDate(iso);
+      html += `<div class="cal-week-day">
+        <div class="cal-week-day-head">
+          <strong style="font-size:13px;${iso===today?' color:var(--brass);':''}">${d.toLocaleDateString('en-US',{weekday:'short', month:'short', day:'numeric'})}</strong>
+          ${!appts.length ? '<span class="screen-sub" style="margin:0;">Nothing booked</span>' : ''}
+        </div>
+        ${appts.map(renderCalApptRow).join('')}
+      </div>`;
+    }
+    root.querySelector('#calendar-body').innerHTML = html;
+  }
+  function renderCalendarMonth(){
+    const year = calendarAnchor.getFullYear(), month = calendarAnchor.getMonth();
+    root.querySelector('#calendar-period-label').textContent = calendarAnchor.toLocaleDateString('en-US', {month:'long', year:'numeric'});
+    const firstOfMonth = new Date(year, month, 1);
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    const gridStart = calStartOfWeek(firstOfMonth);
+    const totalCells = Math.ceil((firstOfMonth.getDay() + daysInMonth) / 7) * 7;
+    const today = todayIso();
+    const dow = ['S','M','T','W','T','F','S'];
+    let html = '<div class="cal-month-grid">';
+    dow.forEach(d=> html += `<div class="cal-month-dow">${d}</div>`);
+    for (let i=0;i<totalCells;i++){
+      const d = new Date(gridStart); d.setDate(d.getDate()+i);
+      const iso = calIso(d);
+      const appts = calApptsOnDate(iso);
+      const outside = d.getMonth() !== month;
+      const isToday = iso === today;
+      html += `<div class="cal-month-cell${outside?' outside':''}${isToday?' today':''}" data-cal-day="${iso}">
+        <span class="cal-daynum">${d.getDate()}</span>
+        ${appts.length ? `<span class="cal-count">${appts.length}</span>` : ''}
+      </div>`;
+    }
+    html += '</div>';
+    root.querySelector('#calendar-body').innerHTML = html;
+  }
+  function renderCalendar(){
+    root.querySelectorAll('#calendar-view-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.calView===calendarView));
+    if (calendarView==='day') renderCalendarDay();
+    else if (calendarView==='month') renderCalendarMonth();
+    else renderCalendarWeek();
+  }
+  function calendarStep(dir){
+    const d = new Date(calendarAnchor);
+    if (calendarView==='day') d.setDate(d.getDate()+dir);
+    else if (calendarView==='week') d.setDate(d.getDate()+dir*7);
+    else d.setMonth(d.getMonth()+dir);
+    calendarAnchor = d;
+    renderCalendar();
+  }
+  async function openCalendarModal(){
+    calendarAnchor = new Date();
+    root.querySelector('#calendar-period-label').textContent = 'Loading…';
+    root.querySelector('#calendar-body').innerHTML = '';
+    root.querySelector('#bk-calendar-modal').hidden = false;
+    await loadCalendarAppointments();
+    renderCalendar();
+  }
+  function closeCalendarModal(){ root.querySelector('#bk-calendar-modal').hidden = true; }
+  root.querySelector('#btn-bk-view-calendar').addEventListener('click', openCalendarModal);
+  root.querySelector('#btn-calendar-close').addEventListener('click', closeCalendarModal);
+  root.querySelector('#btn-calendar-prev').addEventListener('click', ()=> calendarStep(-1));
+  root.querySelector('#btn-calendar-next').addEventListener('click', ()=> calendarStep(1));
+  root.querySelector('#btn-calendar-today').addEventListener('click', ()=>{ calendarAnchor = new Date(); renderCalendar(); });
+  root.querySelectorAll('#calendar-view-toggle .mode-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ calendarView = btn.dataset.calView; renderCalendar(); });
+  });
+  root.querySelector('#calendar-body').addEventListener('click', (e)=>{
+    const dayCell = e.target.closest('[data-cal-day]');
+    if (dayCell){
+      calendarAnchor = calParseDate(dayCell.dataset.calDay);
+      calendarView = 'day';
+      renderCalendar();
     }
   });
   /* ---- Quick client photo lookup (see their history, or snap a new one, before booking) ---- */
