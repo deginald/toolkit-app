@@ -1396,6 +1396,7 @@
                   <button type="button" class="link-btn" id="btn-jobs-specialty-tip-dismiss" style="align-self:flex-end; padding:0;">Got it</button>
                 </div>
                 <div class="field" id="jobs-looking-graddate-field" style="display:none;"><label>Expected graduation date</label><div class="input-row"><input id="jobs-looking-graddate" type="date"></div><p class="foot-note-small" style="margin-top:4px;">Filled in from your Pace overview — change it here if needed.</p></div>
+                <div class="field" id="jobs-looking-social-field" style="display:none;"><label>Social media or portfolio link</label><div class="input-row"><input id="jobs-looking-social" type="text" placeholder="e.g. instagram.com/yourhandle"></div><p class="foot-note-small" style="margin-top:4px;">Shown on your public listing so shops can see your work.</p></div>
 
                 <p class="foot-note-small">Your professional status (<span id="jobs-looking-status-note">Student</span>) is pulled from your account automatically.</p>
               </div>
@@ -3477,6 +3478,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         <p class="screen-sub" style="margin:0; text-align:center;">${escapeHtml(statusLine)}${listing.grad_date ? (' · Graduating ' + escapeHtml(listing.grad_date)) : ''}</p>
         ${locLine ? `<p class="screen-sub" style="margin:0; text-align:center;">${locLine}</p>` : ''}
         ${listing.bio ? `<p style="margin:8px 0 0;">${escapeHtml(listing.bio)}</p>` : ''}
+        ${listing.social_link && sanitizeSocialUrl(listing.social_link) ? `<p style="margin:8px 0 0; text-align:center;"><a href="${escapeHtml(sanitizeSocialUrl(listing.social_link))}" target="_blank" rel="noopener noreferrer">View portfolio / social</a></p>` : ''}
       `;
     } else {
       const fullAddress = [listing.address, listing.city, listing.state].map(s => s ? escapeHtml(s) : '').filter(Boolean).join(', ');
@@ -3570,9 +3572,17 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     try{ localStorage.setItem(jobsSpecialtyTipDismissKey(), '1'); }catch(e){}
     root.querySelector('#jobs-specialty-tip-note').hidden = true;
   });
+  function sanitizeSocialUrl(raw){
+    let v = (raw || '').trim();
+    if (!v) return null;
+    if (/^(javascript|data|vbscript):/i.test(v)) return null;
+    if (!/^https?:\/\//i.test(v)) v = 'https://' + v;
+    return v;
+  }
   function updateLookingStatusFields(){
     root.querySelector('#jobs-looking-status-note').textContent = displayTitle();
     root.querySelector('#jobs-looking-graddate-field').style.display = isStudent() ? 'flex' : 'none';
+    root.querySelector('#jobs-looking-social-field').style.display = isStudent() ? 'flex' : 'none';
     const specSel = root.querySelector('#jobs-looking-specialty');
     const auto = currentCraft();
     if (auto) specSel.value = auto;
@@ -3592,6 +3602,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         root.querySelector('#jobs-looking-city').value = looking.city || '';
         root.querySelector('#jobs-looking-state').value = looking.state || '';
         root.querySelector('#jobs-looking-graddate').value = looking.grad_date || '';
+        root.querySelector('#jobs-looking-social').value = looking.social_link || '';
         if (looking.photo_url){
           lookingPhotoUrl = looking.photo_url;
           lookingPhotoPath = looking.photo_path || '';
@@ -3637,6 +3648,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       state: root.querySelector('#jobs-looking-state').value.trim().toUpperCase(),
       status: displayTitle(),
       grad_date: isStudent() ? (root.querySelector('#jobs-looking-graddate').value || null) : null,
+      social_link: isStudent() ? sanitizeSocialUrl(root.querySelector('#jobs-looking-social').value) : null,
       specialty: currentCraft() || null,
       photo_url: lookingPhotoUrl || null,
       photo_path: lookingPhotoPath || null
