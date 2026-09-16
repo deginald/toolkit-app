@@ -5141,7 +5141,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const qty = Math.max(0, parseInt(root.querySelector('#inv-new-qty').value, 10) || 0);
     const statusEl = root.querySelector('#inv-new-status');
     if (!name){ statusEl.textContent = 'Enter a product name.'; return; }
-    if (pendingInvBarcode && inventoryItems.some(it => it.barcode === pendingInvBarcode)){
+    if (pendingInvBarcode && inventoryItems.some(it => normalizeBarcode(it.barcode) === normalizeBarcode(pendingInvBarcode))){
       statusEl.textContent = 'That barcode is already saved to another product.';
       return;
     }
@@ -5162,9 +5162,20 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
     }
   });
-  async function handleScannedBarcode(code){
+  function normalizeBarcode(raw){
+    // The same physical barcode can come back from the scanner as either a
+    // 12-digit UPC-A code or the equivalent 13-digit EAN-13 code (UPC-A with
+    // a leading zero) depending on the scan -- without this, the same
+    // product can fail to match itself on a later scan. Always compare and
+    // store the 13-digit form.
+    let c = (raw || '').trim();
+    if (/^\d{12}$/.test(c)) c = '0' + c;
+    return c;
+  }
+  async function handleScannedBarcode(rawCode){
+    const code = normalizeBarcode(rawCode);
     if (!inventoryLoaded) await loadInventory();
-    const existing = inventoryItems.find(it => it.barcode === code);
+    const existing = inventoryItems.find(it => normalizeBarcode(it.barcode) === code);
     if (existing){
       showToast('Found: ' + existing.name);
       renderInventoryList(root.querySelector('#inv-search').value);
@@ -5184,6 +5195,20 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
   function stopInventoryScan(){
     if (invScanControls){ try{ invScanControls.stop(); }catch(e){} invScanControls = null; }
+    // Belt-and-suspenders: ZXing's own controls.stop() doesn't always release
+    // the camera hardware in every browser (a known ZXing quirk), so also grab
+    // whatever stream it attached to the video element and stop those tracks
+    // directly -- this is what actually turns off the camera indicator.
+    const video = root.querySelector('#inv-scan-video');
+    if (video){
+      try{
+        if (video.srcObject && video.srcObject.getTracks){
+          video.srcObject.getTracks().forEach(t => t.stop());
+        }
+      }catch(e){}
+      try{ video.pause(); }catch(e){}
+      video.srcObject = null;
+    }
   }
   function closeInventoryScanPanel(){
     stopInventoryScan();
@@ -5191,6 +5216,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
   window.__activeScanStoppers.push(()=>{ if (invScanControls) closeInventoryScanPanel(); });
   async function startInventoryScan(){
+    stopInventoryScan(); // in case a scan was already running -- avoid stacking a second camera stream
     const statusEl = root.querySelector('#inv-scan-status');
     root.querySelector('#inv-scanpanel').style.display = 'flex';
     statusEl.textContent = "Point the camera at the product's barcode.";
