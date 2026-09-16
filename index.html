@@ -3271,16 +3271,24 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (!text){ statusEl.textContent = 'Type a message first.'; return; }
     if (!dbAvailable || !detailListing){ statusEl.textContent = "Not connected right now. This wasn't saved."; return; }
     try{
-      const { error } = await supabaseClient.from('job_messages').insert({
+      const { data, error } = await supabaseClient.from('job_messages').insert({
         listing_id: detailListing.id,
         to_profile_code: detailListing.profile_code,
         from_profile_code: profileCode,
         from_name: profile.name,
         message: text
-      });
+      }).select();
       if (error) throw error;
       statusEl.textContent = 'Message sent.';
       root.querySelector('#jobs-message-text').value = '';
+      // Best-effort push notification to the recipient -- the message itself is
+      // already saved above, so a push failure (not configured, not subscribed,
+      // etc.) never undoes the "Message sent" confirmation the sender just saw.
+      const savedRow = data && data[0];
+      if (savedRow && savedRow.id){
+        try{ await supabaseClient.functions.invoke('send-job-message', { body: { message_id: savedRow.id } }); }
+        catch(pushErr){ console.warn('job message push notify failed', pushErr); }
+      }
     }catch(e){
       console.warn('job message send failed', e);
       statusEl.textContent = "Couldn't send. Try again.";
@@ -3464,6 +3472,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   window.initJobsTab = function(){
     showJobsMode('browse');
     refreshMessageBadge();
+  };
+  window.__ahcShowJobsMessages = function(){
+    showTab('jobs');
+    showJobsMode('messages');
   };
 })();
 /* =========================================================
@@ -4686,7 +4698,17 @@ function enterApp(){
   window.initLedgerTab();
   const landingIntent = window.__ahcLandingIntent;
   window.__ahcLandingIntent = null;
-  showTab(landingIntent === 'jobs' ? 'jobs' : (isStudent() ? 'pace' : 'booking'));
+  let jumpToJobMessages = false;
+  try{ jumpToJobMessages = !!new URLSearchParams(window.location.search).get('jobmessage'); }catch(e){}
+  showTab((landingIntent === 'jobs' || jumpToJobMessages) ? 'jobs' : (isStudent() ? 'pace' : 'booking'));
+  if (jumpToJobMessages){
+    if (window.__ahcShowJobsMessages) window.__ahcShowJobsMessages();
+    try{
+      const url = new URL(window.location.href);
+      url.searchParams.delete('jobmessage');
+      window.history.replaceState({}, '', url.toString());
+    }catch(e){}
+  }
   updateNotifNudgeBanner();
 }
 function showRoleScreen(){
@@ -5359,6 +5381,9 @@ try{
     navigator.serviceWorker.addEventListener('message', (event)=>{
       if (event.data && event.data.type === 'show-quick-message' && event.data.id){
         showQuickMessagePopup(event.data.id);
+      }
+      if (event.data && event.data.type === 'show-job-message'){
+        if (window.__ahcShowJobsMessages) window.__ahcShowJobsMessages();
       }
     });
   }
