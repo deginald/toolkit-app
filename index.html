@@ -519,14 +519,26 @@
         <label>Your role</label>
         <select class="title-select" id="auth-title" style="width:100%;">
           <option value="Student">Student</option>
-          <option value="Apprentice Barber">Apprentice Barber</option>
-          <option value="Registered Barber">Registered Barber</option>
-          <option value="Apprentice Cosmetologist">Apprentice Cosmetologist</option>
-          <option value="Licensed Cosmetologist">Licensed Cosmetologist</option>
-          <option value="Apprentice Massage Therapist">Apprentice Massage Therapist</option>
-          <option value="Licensed Massage Therapist">Licensed Massage Therapist</option>
-          <option value="Apprentice Nail Technician">Apprentice Nail Technician</option>
-          <option value="Licensed Nail Technician">Licensed Nail Technician</option>
+          <option value="Barber">Barber</option>
+          <option value="Cosmetologist">Cosmetologist</option>
+          <option value="Nail Tech">Nail Tech</option>
+          <option value="Braider">Braider</option>
+          <option value="Massage Therapist">Massage Therapist</option>
+          <option value="Esthetician">Esthetician</option>
+          <option value="MUA">MUA</option>
+        </select>
+      </div>
+      <div class="field" id="auth-student-field-field" style="display:none;">
+        <label>What are you studying?</label>
+        <select class="title-select" id="auth-student-field">
+          <option value="" disabled selected>Select your field</option>
+          <option value="Barber">Barber</option>
+          <option value="Cosmetologist">Cosmetologist</option>
+          <option value="Nail Tech">Nail Tech</option>
+          <option value="Braider">Braider</option>
+          <option value="Massage Therapist">Massage Therapist</option>
+          <option value="Esthetician">Esthetician</option>
+          <option value="MUA">MUA</option>
         </select>
       </div>
       <div class="field" id="auth-license-field">
@@ -1211,10 +1223,13 @@
             <div class="input-row" id="jobs-search-specialty-row">
               <select id="jobs-search-specialty">
                 <option value="">All fields</option>
-                <option value="barber">Barber</option>
-                <option value="cosmetology">Cosmetology</option>
-                <option value="massage">Massage</option>
-                <option value="nailtech">Nail Tech</option>
+                <option value="Barber">Barber</option>
+                <option value="Cosmetologist">Cosmetologist</option>
+                <option value="Nail Tech">Nail Tech</option>
+                <option value="Braider">Braider</option>
+                <option value="Massage Therapist">Massage Therapist</option>
+                <option value="Esthetician">Esthetician</option>
+                <option value="MUA">MUA</option>
               </select>
             </div>
             <button class="btn btn-outline" id="btn-jobs-search" type="button">Search</button>
@@ -1269,15 +1284,18 @@
                 <div class="field" id="jobs-looking-specialty-field">
                   <label>Field</label>
                   <div class="input-row">
-                    <select id="jobs-looking-specialty">
+                    <select id="jobs-looking-specialty" disabled>
                       <option value="" disabled selected>Select your field</option>
-                      <option value="barber">Barber</option>
-                      <option value="cosmetology">Cosmetology</option>
-                      <option value="massage">Massage</option>
-                      <option value="nailtech">Nail Tech</option>
+                      <option value="Barber">Barber</option>
+                      <option value="Cosmetologist">Cosmetologist</option>
+                      <option value="Nail Tech">Nail Tech</option>
+                      <option value="Braider">Braider</option>
+                      <option value="Massage Therapist">Massage Therapist</option>
+                      <option value="Esthetician">Esthetician</option>
+                      <option value="MUA">MUA</option>
                     </select>
                   </div>
-                  <p class="foot-note-small" style="margin-top:4px; display:none;" id="jobs-looking-specialty-note">Pulled from your account automatically.</p>
+                  <p class="foot-note-small" style="margin-top:4px;">Pulled from your account automatically.</p>
                 </div>
                 <div class="field" id="jobs-looking-graddate-field" style="display:none;"><label>Expected graduation date</label><div class="input-row"><input id="jobs-looking-graddate" type="date"></div><p class="foot-note-small" style="margin-top:4px;">Filled in from your Pace overview — change it here if needed.</p></div>
 
@@ -1371,6 +1389,20 @@
       </div>
       <div class="field">
         <select class="title-select" id="account-title-select" style="width:100%;"></select>
+      </div>
+      <div class="field" id="account-student-field-field" style="display:none;">
+        <label>What are you studying?</label>
+        <select class="title-select" id="account-student-field" style="width:100%;">
+          <option value="" disabled>Select your field</option>
+          <option value="Barber">Barber</option>
+          <option value="Cosmetologist">Cosmetologist</option>
+          <option value="Nail Tech">Nail Tech</option>
+          <option value="Braider">Braider</option>
+          <option value="Massage Therapist">Massage Therapist</option>
+          <option value="Esthetician">Esthetician</option>
+          <option value="MUA">MUA</option>
+        </select>
+        <p class="foot-note-small" id="student-field-save-note" style="margin-top:4px;">&nbsp;</p>
       </div>
       <div id="account-role-warning" class="foot-note-small" style="display:none; border:1px solid var(--behind); background:var(--behind-tint); border-radius:10px; padding:12px; color:var(--ink);"></div>
       <div id="account-role-confirm-row" class="btn-row" style="display:none;">
@@ -1637,8 +1669,14 @@ function showNdaScreen(onContinue){
     await onContinue();
   };
 }
-const TITLE_OPTIONS = ['Student','Apprentice Barber','Registered Barber','Apprentice Cosmetologist','Licensed Cosmetologist','Apprentice Massage Therapist','Licensed Massage Therapist','Apprentice Nail Technician','Licensed Nail Technician'];
-const NON_STUDENT_TITLES = TITLE_OPTIONS.filter(t => t !== 'Student');
+const CRAFTS = ['Barber','Cosmetologist','Nail Tech','Braider','Massage Therapist','Esthetician','MUA'];
+const TITLE_OPTIONS = ['Student', ...CRAFTS];
+const NON_STUDENT_TITLES = CRAFTS;
+function currentCraft(){
+  if (!profile) return '';
+  if (isStudent()) return profile.studentField || '';
+  return profile.title || '';
+}
 function isStudent(){ return !!profile && profile.title === 'Student'; }
 const CATEGORY_NAMES = { cuts:'Haircuts', chemical:'Chemical Services', safety:'Safety' };
 const CATEGORY_ORDER = ['cuts','chemical','safety'];
@@ -1661,6 +1699,7 @@ function defaultProfile(name){
   return {
     name: name || 'You',
     title: 'Student',
+    studentField: '',
     license: '',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -1722,6 +1761,7 @@ async function persistProfile(fields){
   if (fields.pace) row.pace = fields.pace;
   if (fields.techniques) row.techniques = fields.techniques;
   if (fields.title) row.title = fields.title;
+  if (fields.studentField !== undefined) row.student_field = fields.studentField;
   if (fields.name) row.name = fields.name;
   if (fields.license !== undefined) row.license = fields.license;
   if (fields.publicListing !== undefined) row.public_listing = fields.publicListing;
@@ -3201,17 +3241,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
   function jobsListingId(type){ return profileCode + '::' + type; }
   function escapeHtml(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-  const SPECIALTY_LABELS = { barber:'Barber', cosmetology:'Cosmetology', massage:'Massage', nailtech:'Nail Tech' };
-  function titleToSpecialty(title){
-    const t = (title||'').toLowerCase();
-    if (t.includes('barber')) return 'barber';
-    if (t.includes('cosmet')) return 'cosmetology';
-    if (t.includes('massage')) return 'massage';
-    if (t.includes('nail')) return 'nailtech';
-    return '';
-  }
   function specialtyChip(r){
-    const label = SPECIALTY_LABELS[r.specialty] || '';
+    const label = r.specialty || '';
     if (!label) return '';
     if (r.status && r.status.toLowerCase().includes(label.toLowerCase())) return '';
     return label;
@@ -3405,16 +3436,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#jobs-looking-status-note').textContent = (profile && profile.title) || 'Student';
     root.querySelector('#jobs-looking-graddate-field').style.display = isStudent() ? 'flex' : 'none';
     const specSel = root.querySelector('#jobs-looking-specialty');
-    const specNote = root.querySelector('#jobs-looking-specialty-note');
-    if (isStudent()){
-      specSel.disabled = false;
-      specNote.style.display = 'none';
-    } else {
-      const auto = titleToSpecialty(profile && profile.title);
-      if (auto) specSel.value = auto;
-      specSel.disabled = true;
-      specNote.style.display = 'block';
-    }
+    const auto = currentCraft();
+    if (auto) specSel.value = auto;
   }
   async function loadMyListings(){
     updateLookingStatusFields();
@@ -3430,7 +3453,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         root.querySelector('#jobs-looking-city').value = looking.city || '';
         root.querySelector('#jobs-looking-state').value = looking.state || '';
         root.querySelector('#jobs-looking-graddate').value = looking.grad_date || '';
-        if (isStudent() && looking.specialty) root.querySelector('#jobs-looking-specialty').value = looking.specialty;
         if (looking.photo_url){
           lookingPhotoUrl = looking.photo_url;
           lookingPhotoPath = looking.photo_path || '';
@@ -3476,7 +3498,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       state: root.querySelector('#jobs-looking-state').value.trim().toUpperCase(),
       status: (profile && profile.title) || 'Student',
       grad_date: isStudent() ? (root.querySelector('#jobs-looking-graddate').value || null) : null,
-      specialty: root.querySelector('#jobs-looking-specialty').value || null,
+      specialty: currentCraft() || null,
       photo_url: lookingPhotoUrl || null,
       photo_path: lookingPhotoPath || null
     };
@@ -4688,6 +4710,7 @@ function applyProfileRow(data){
   profile.name = toTitleCase(data.name) || profile.name;
   profile._nameNeedsSync = !!(data.name && data.name !== profile.name);
   profile.title = data.title || profile.title;
+  profile.studentField = data.student_field || '';
   profile.license = data.license || '';
   profile.createdAt = data.created_at || profile.createdAt;
   profile.updatedAt = data.updated_at || profile.updatedAt;
@@ -4726,15 +4749,17 @@ async function tryLoadProfileByUserId(userId){
   }catch(e){ console.warn('load by user id failed', e); }
   return false;
 }
-async function createProfile(code, name, license, title, userId){
+async function createProfile(code, name, license, title, userId, studentField){
   profile = defaultProfile(name);
   profile.license = license || '';
   profile.title = title && TITLE_OPTIONS.includes(title) ? title : 'Student';
+  profile.studentField = (profile.title === 'Student' && CRAFTS.includes(studentField)) ? studentField : '';
   profileCode = code;
   if (dbAvailable){
     try{
       const { error } = await supabaseClient.from('profiles').insert({
         code, name: profile.name, title: profile.title, license: profile.license,
+        student_field: profile.studentField,
         pace: profile.pace, techniques: profile.techniques,
         user_id: userId || null
       });
@@ -4809,6 +4834,7 @@ function updateAuthFieldVisibility(){
   const title = document.getElementById('auth-title').value;
   document.getElementById('auth-name-field').style.display = isNew ? '' : 'none';
   document.getElementById('auth-title-field').style.display = isNew ? '' : 'none';
+  document.getElementById('auth-student-field-field').style.display = (isNew && title === 'Student') ? '' : 'none';
   document.getElementById('auth-license-field').style.display = (isNew && title !== 'Student') ? '' : 'none';
   document.getElementById('auth-code-field').style.display = isNew ? '' : 'none';
   document.getElementById('auth-forgot-row').style.display = isNew ? 'none' : 'block';
@@ -4845,6 +4871,7 @@ function showAuthScreen(forceMode){
   document.getElementById('auth-password').value = '';
   document.getElementById('auth-name').value = '';
   document.getElementById('auth-title').value = 'Student';
+  document.getElementById('auth-student-field').value = '';
   document.getElementById('auth-license').value = '';
   document.getElementById('auth-code').value = '';
   setAuthMode(forceMode || (hasAccount ? 'returning' : 'new'));
@@ -4963,6 +4990,7 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
     if (isNew){
       const name = toTitleCase(document.getElementById('auth-name').value.trim()) || 'You';
       const title = document.getElementById('auth-title').value;
+      const studentField = document.getElementById('auth-student-field').value;
       const license = document.getElementById('auth-license').value.trim();
       const code = sanitizeCode(document.getElementById('auth-code').value);
       if (!code){ note.textContent = 'Pick a public booking code first.'; submitBtn.disabled = false; return; }
@@ -4979,7 +5007,7 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
         submitBtn.disabled = false;
         return;
       }
-      await createProfile(code, name, license, title, userId);
+      await createProfile(code, name, license, title, userId, studentField);
       try{
         localStorage.setItem('ahcProAccountExists', '1');
         localStorage.setItem('ahcLastProEmail', email);
@@ -5042,12 +5070,23 @@ function updateAccountLicenseVisibility(){
   const sel = document.getElementById('account-title-select');
   const title = sel && sel.value ? sel.value : profile.title;
   document.getElementById('account-license-field').style.display = (title !== 'Student') ? 'block' : 'none';
+  document.getElementById('account-student-field-field').style.display = (title === 'Student') ? '' : 'none';
 }
 function populateAccountLicense(){
   document.getElementById('account-license').value = profile.license || '';
   document.getElementById('license-save-note').textContent = ' ';
+  document.getElementById('account-student-field').value = profile.studentField || '';
+  document.getElementById('student-field-save-note').textContent = ' ';
   updateAccountLicenseVisibility();
 }
+document.getElementById('account-student-field').addEventListener('change', async function(){
+  const val = this.value;
+  profile.studentField = val;
+  const note = document.getElementById('student-field-save-note');
+  note.textContent = 'Saving…';
+  const result = await persistProfile({ studentField: val });
+  note.textContent = result.ok ? 'Saved.' : ("Couldn't save: " + (result.message || 'unknown error'));
+});
 document.getElementById('btn-save-license').addEventListener('click', async ()=>{
   const val = document.getElementById('account-license').value.trim();
   profile.license = val;
