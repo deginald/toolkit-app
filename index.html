@@ -1111,6 +1111,10 @@
             <h2 class="screen-title" style="margin:0; font-size:17px;">Calendar</h2>
             <span style="width:32px;"></span>
           </div>
+          <div class="card tip" id="cal-tip-note" hidden style="margin:14px 20px 0;">
+            <p class="screen-sub" style="margin:0; color:var(--ink);">Switch between Day, Week, and Month. In Month view, tap any day to jump straight to its appointments. Use the arrows to move between periods, or tap Today to jump back to now.</p>
+            <button type="button" class="link-btn" id="btn-cal-tip-dismiss" style="align-self:flex-end; padding:0;">Got it</button>
+          </div>
           <div class="mode-toggle" id="calendar-view-toggle" style="margin:14px 20px 0;">
             <button type="button" class="mode-btn" data-cal-view="day"><span>Day</span></button>
             <button type="button" class="mode-btn active" data-cal-view="week"><span>Week</span></button>
@@ -1343,6 +1347,10 @@
                   </div>
                   <p class="foot-note-small" style="margin-top:4px;">Pulled from your account automatically.</p>
                 </div>
+                <div class="card tip" id="jobs-specialty-tip-note" hidden>
+                  <p class="screen-sub" style="margin:0; color:var(--ink);">This is set automatically from your account (your profession, or what you're studying if you're a student). To change it, update it in Account settings.</p>
+                  <button type="button" class="link-btn" id="btn-jobs-specialty-tip-dismiss" style="align-self:flex-end; padding:0;">Got it</button>
+                </div>
                 <div class="field" id="jobs-looking-graddate-field" style="display:none;"><label>Expected graduation date</label><div class="input-row"><input id="jobs-looking-graddate" type="date"></div><p class="foot-note-small" style="margin-top:4px;">Filled in from your Pace overview — change it here if needed.</p></div>
 
                 <p class="foot-note-small">Your professional status (<span id="jobs-looking-status-note">Student</span>) is pulled from your account automatically.</p>
@@ -1458,6 +1466,10 @@
           <option value="Apprentice Barber">Apprentice Barber</option>
         </select>
         <p class="foot-note-small" id="barber-level-save-note" style="margin-top:4px;">&nbsp;</p>
+      </div>
+      <div class="card tip" id="account-subfield-tip-note" hidden>
+        <p class="screen-sub" style="margin:0; color:var(--ink);">This is what shows on your Jobs Board listing under your name — for example "Student- Barber" or "Barber-Apprentice." Pick the one that matches you best.</p>
+        <button type="button" class="link-btn" id="btn-account-subfield-tip-dismiss" style="align-self:flex-end; padding:0;">Got it</button>
       </div>
       <div id="account-role-warning" class="foot-note-small" style="display:none; border:1px solid var(--behind); background:var(--behind-tint); border-radius:10px; padding:12px; color:var(--ink);"></div>
       <div id="account-role-confirm-row" class="btn-row" style="display:none;">
@@ -3500,12 +3512,25 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       noteEl.textContent = "Couldn't upload that photo: " + ((err && err.message) || 'unknown error') + ". Try again.";
     }
   });
+  function jobsSpecialtyTipDismissKey(){ return 'ahcJobsSpecialtyTipSeen_' + (profileCode || ''); }
+  function updateJobsSpecialtyTipNote(){
+    const el = root.querySelector('#jobs-specialty-tip-note');
+    if (!el) return;
+    let dismissed = false;
+    try{ dismissed = localStorage.getItem(jobsSpecialtyTipDismissKey()) === '1'; }catch(e){}
+    el.hidden = dismissed;
+  }
+  root.querySelector('#btn-jobs-specialty-tip-dismiss').addEventListener('click', ()=>{
+    try{ localStorage.setItem(jobsSpecialtyTipDismissKey(), '1'); }catch(e){}
+    root.querySelector('#jobs-specialty-tip-note').hidden = true;
+  });
   function updateLookingStatusFields(){
     root.querySelector('#jobs-looking-status-note').textContent = displayTitle();
     root.querySelector('#jobs-looking-graddate-field').style.display = isStudent() ? 'flex' : 'none';
     const specSel = root.querySelector('#jobs-looking-specialty');
     const auto = currentCraft();
     if (auto) specSel.value = auto;
+    updateJobsSpecialtyTipNote();
   }
   async function loadMyListings(){
     updateLookingStatusFields();
@@ -4004,11 +4029,24 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     calendarAnchor = d;
     renderCalendar();
   }
+  function calendarTipDismissKey(){ return 'ahcCalendarTipSeen_' + (profileCode || ''); }
+  function updateCalendarTipNote(){
+    const el = root.querySelector('#cal-tip-note');
+    if (!el) return;
+    let dismissed = false;
+    try{ dismissed = localStorage.getItem(calendarTipDismissKey()) === '1'; }catch(e){}
+    el.hidden = dismissed;
+  }
+  root.querySelector('#btn-cal-tip-dismiss').addEventListener('click', ()=>{
+    try{ localStorage.setItem(calendarTipDismissKey(), '1'); }catch(e){}
+    root.querySelector('#cal-tip-note').hidden = true;
+  });
   async function openCalendarModal(){
     calendarAnchor = new Date();
     root.querySelector('#calendar-period-label').textContent = 'Loading…';
     root.querySelector('#calendar-body').innerHTML = '';
     root.querySelector('#bk-calendar-modal').hidden = false;
+    updateCalendarTipNote();
     await loadCalendarAppointments();
     renderCalendar();
   }
@@ -5270,12 +5308,28 @@ function resetRoleChangePrompt(){
 function listingEligible(){
   return !isStudent() && !!profile.license;
 }
+function accountSubfieldTipDismissKey(){ return 'ahcAccountSubfieldTipSeen_' + (profileCode || ''); }
+function updateAccountSubfieldTipNote(showSubfield){
+  const el = document.getElementById('account-subfield-tip-note');
+  if (!el) return;
+  if (!showSubfield){ el.hidden = true; return; }
+  let dismissed = false;
+  try{ dismissed = localStorage.getItem(accountSubfieldTipDismissKey()) === '1'; }catch(e){}
+  el.hidden = dismissed;
+}
+document.getElementById('btn-account-subfield-tip-dismiss').addEventListener('click', ()=>{
+  try{ localStorage.setItem(accountSubfieldTipDismissKey(), '1'); }catch(e){}
+  document.getElementById('account-subfield-tip-note').hidden = true;
+});
 function updateAccountLicenseVisibility(){
   const sel = document.getElementById('account-title-select');
   const title = sel && sel.value ? sel.value : profile.title;
   document.getElementById('account-license-field').style.display = (title !== 'Student') ? 'block' : 'none';
-  document.getElementById('account-student-field-field').style.display = (title === 'Student') ? '' : 'none';
-  document.getElementById('account-barber-level-field').style.display = (title === 'Barber') ? '' : 'none';
+  const showStudentField = (title === 'Student');
+  const showBarberLevel = (title === 'Barber');
+  document.getElementById('account-student-field-field').style.display = showStudentField ? '' : 'none';
+  document.getElementById('account-barber-level-field').style.display = showBarberLevel ? '' : 'none';
+  updateAccountSubfieldTipNote(showStudentField || showBarberLevel);
 }
 function populateAccountLicense(){
   document.getElementById('account-license').value = profile.license || '';
