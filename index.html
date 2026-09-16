@@ -4114,6 +4114,13 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   });
   /* ---- Quick client photo lookup (see their history, or snap a new one, before booking) ---- */
   let bkLookupClient = null; // { code, name, visits, barberCodes }
+  // On a phone, tapping "Add photos" opens the camera directly (the file
+  // input's capture attribute), and a camera capture only ever returns one
+  // photo at a time -- so taking several photos in a row means several
+  // separate change events. Without this, each one saved as its own new
+  // visit; now they all fold into ONE visit for this same look-up, and
+  // start a fresh visit only once a different client is looked up.
+  let bkLookupActiveVisitId = null;
   function renderBkLookupPhotos(){
     const grid = root.querySelector('#bk-lookup-photos');
     const emptyEl = root.querySelector('#bk-lookup-photos-empty');
@@ -4145,6 +4152,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const resultEl = root.querySelector('#bk-lookup-result');
     resultEl.style.display = 'none';
     bkLookupClient = null;
+    bkLookupActiveVisitId = null;
     if (!code){ statusEl.textContent = 'Enter a passport code.'; return; }
     if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
     statusEl.textContent = 'Looking up…';
@@ -4173,6 +4181,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   root.querySelector('#btn-bk-lookup').addEventListener('click', ()=> performBkLookup());
   root.querySelector('#btn-bk-lookup-clear').addEventListener('click', ()=>{
     bkLookupClient = null;
+    bkLookupActiveVisitId = null;
     root.querySelector('#bk-lookup-code').value = '';
     root.querySelector('#bk-lookup-status').textContent = '';
     root.querySelector('#bk-lookup-result').style.display = 'none';
@@ -4285,17 +4294,36 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const barberCodes = (bkLookupClient.barberCodes || []).includes(profileCode)
         ? bkLookupClient.barberCodes
         : (bkLookupClient.barberCodes || []).concat([profileCode]);
-      const visit = {
-        id: genId(),
-        date: todayIso(),
-        barberName: profile.name,
-        barberCode: profileCode,
-        serviceType: 'other',
-        notes: notes || '',
-        photos,
-        favorite: false
-      };
-      const updatedVisits = (bkLookupClient.visits || []).concat([visit]);
+      const existingVisits = bkLookupClient.visits || [];
+      const activeVisit = bkLookupActiveVisitId
+        ? existingVisits.find(v => v.id === bkLookupActiveVisitId)
+        : null;
+      let updatedVisits;
+      if (activeVisit){
+        // Same look-up session as a previous save (e.g. another photo taken
+        // right after the last one) -- fold into that same visit instead of
+        // starting a new one.
+        const mergedPhotos = (activeVisit.photos || []).concat(photos);
+        const mergedNotes = notes
+          ? (activeVisit.notes ? activeVisit.notes + '\n' + notes : notes)
+          : activeVisit.notes;
+        updatedVisits = existingVisits.map(v => v.id === bkLookupActiveVisitId
+          ? { ...v, photos: mergedPhotos, notes: mergedNotes }
+          : v);
+      } else {
+        const visit = {
+          id: genId(),
+          date: todayIso(),
+          barberName: profile.name,
+          barberCode: profileCode,
+          serviceType: 'other',
+          notes: notes || '',
+          photos,
+          favorite: false
+        };
+        updatedVisits = existingVisits.concat([visit]);
+        bkLookupActiveVisitId = visit.id;
+      }
       const { error } = await supabaseClient.from('clients')
         .update({ visits: updatedVisits, barber_codes: barberCodes, updated_at: new Date().toISOString() })
         .eq('code', bkLookupClient.code);
