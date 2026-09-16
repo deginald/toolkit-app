@@ -1200,23 +1200,12 @@
         <div class="biz-pane" data-biz="inventory" id="tab-inventory">
           <div class="screen-body show" data-screen="dashboard" style="gap:14px;">
             <div class="card tip" id="inv-tip-note" hidden>
-              <p class="screen-sub" style="margin:0; color:var(--ink);">Scan a product's barcode to add it to your inventory. Scan that same barcode again any time and it finds the product instantly — no retyping. Use the &minus; and + buttons to keep its count up to date.</p>
+              <p class="screen-sub" style="margin:0; color:var(--ink);">Add a product and track how many you have on hand. Use the &minus; and + buttons to keep its count up to date.</p>
               <button type="button" class="link-btn" id="btn-inv-tip-dismiss" style="align-self:flex-end; padding:0;">Got it</button>
             </div>
-            <button class="btn btn-primary" id="btn-inv-scan" type="button" style="width:100%;">Scan a barcode</button>
-            <div id="inv-scanpanel" style="display:none; flex-direction:column; gap:10px;">
-              <div style="position:relative; border-radius:12px; overflow:hidden; background:#000; aspect-ratio:1/1; max-width:280px; margin:0 auto; width:100%;">
-                <video id="inv-scan-video" playsinline autoplay muted style="width:100%; height:100%; object-fit:cover; display:block;"></video>
-              </div>
-              <p class="screen-sub" id="inv-scan-status" style="margin:0; text-align:center;">Point the camera at the product's barcode.</p>
-              <button class="btn btn-ghost" id="btn-inv-scan-cancel" type="button" style="width:100%;">Cancel</button>
-            </div>
-            <button class="btn btn-outline" id="btn-inv-add-manual" type="button">Add a product without scanning</button>
+            <button class="btn btn-primary" id="btn-inv-add-manual" type="button" style="width:100%;">Add a product</button>
             <div class="card" id="inv-new-card" style="display:none; flex-direction:column; gap:12px;">
-              <div>
-                <p class="eyebrow-mini2" id="inv-new-heading" style="margin:0;">New product</p>
-                <p class="screen-sub" id="inv-new-barcode-note" style="margin:4px 0 0;">&nbsp;</p>
-              </div>
+              <p class="eyebrow-mini2" id="inv-new-heading" style="margin:0;">Add a product</p>
               <div class="field"><label>Product name</label><div class="input-row"><input id="inv-new-name" type="text" placeholder="e.g. Purple Toning Shampoo"></div></div>
               <div class="field"><label>Starting quantity</label><div class="input-row"><input id="inv-new-qty" type="number" min="0" step="1" value="1"></div></div>
               <div class="btn-row" style="gap:10px;">
@@ -1227,7 +1216,7 @@
             </div>
             <div class="field" style="margin-top:4px;"><div class="input-row"><input id="inv-search" type="text" placeholder="Search your products"></div></div>
             <div id="inv-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-            <p class="screen-sub" id="inv-empty" style="display:none; margin:0;">No products yet. Scan a barcode or add one manually to get started.</p>
+            <p class="screen-sub" id="inv-empty" style="display:none; margin:0;">No products yet. Add one to get started.</p>
           </div>
         </div>
       </section>
@@ -1645,9 +1634,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js"></script>
-<script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script><script>
 /* =========================================================
    SUPABASE SETUP
    Fill these in once the Supabase project exists: Project URL
@@ -4993,21 +4980,15 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   };
 })();
 /* =========================================================
-   INVENTORY (Business > Inventory) -- barcode-scanned product
-   stock with a quantity count and +/- buttons. Scanning a barcode
-   that's already saved highlights that product so its count can be
-   adjusted; scanning an unknown barcode opens the "new product"
-   form with the barcode already attached, so it's a one-time typing
-   of the name -- every later scan of that same barcode finds it
-   instantly. Products can also be added without a barcode at all.
+   INVENTORY (Business > Inventory) -- product stock tracked by
+   name with a quantity count and +/- buttons. Products are added
+   by hand; no camera/barcode scanning.
    ========================================================= */
 (function(){
   const root = document.getElementById('tab-inventory');
   function genIdInv(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
   function escapeHtmlInv(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   let inventoryItems = [];
-  let inventoryLoaded = false;
-  let pendingInvBarcode = null;
   let invArmedRemoveId = null;
   function invTipDismissKey(){ return 'ahcInventoryTipSeen_' + (profileCode || ''); }
   function updateInvTipNote(){
@@ -5027,13 +5008,13 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const q = (filterText || '').trim().toLowerCase();
     const rows = q ? inventoryItems.filter(it => (it.name||'').toLowerCase().includes(q)) : inventoryItems;
     emptyEl.style.display = inventoryItems.length ? 'none' : 'block';
-    emptyEl.textContent = inventoryItems.length && !rows.length ? 'No products match that search.' : "No products yet. Scan a barcode or add one manually to get started.";
+    emptyEl.textContent = inventoryItems.length && !rows.length ? 'No products match that search.' : "No products yet. Add one to get started.";
     if (inventoryItems.length && !rows.length) emptyEl.style.display = 'block';
     listEl.innerHTML = rows.map(it => `
       <div class="inv-item-row" data-inv-id="${it.id}">
         <div style="min-width:0; flex:1;">
           <div class="inv-item-name">${escapeHtmlInv(it.name)}</div>
-          <div class="inv-item-sub">${it.barcode ? 'Barcode saved' : 'No barcode'}${it.quantity<=0 ? ' · Out of stock' : ''}</div>
+          <div class="inv-item-sub">${it.quantity<=0 ? 'Out of stock' : ''}</div>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
           <button type="button" class="inv-qty-btn" data-inv-minus="${it.id}" aria-label="Decrease quantity" ${it.quantity<=0 ? 'disabled' : ''}>&minus;</button>
@@ -5050,7 +5031,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const { data, error } = await supabaseClient.from('inventory_items').select('*').eq('profile_code', profileCode);
       if (error) throw error;
       inventoryItems = (data || []).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
-      inventoryLoaded = true;
     }catch(e){
       console.warn('load inventory failed', e);
       inventoryItems = [];
@@ -5120,38 +5100,25 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       removeInventoryItem(removeId);
     }
   });
-  function openNewInventoryForm(barcode){
-    const card = root.querySelector('#inv-new-card');
-    // Extra safety: if this form is already open for this exact barcode,
-    // don't wipe out whatever the person has already typed -- just leave it
-    // alone instead of re-opening from scratch.
-    if (card.style.display !== 'none' && barcode && pendingInvBarcode === barcode) return;
-    card.style.display = 'flex';
-    root.querySelector('#inv-new-heading').textContent = barcode ? 'New product' : 'Add a product';
-    root.querySelector('#inv-new-barcode-note').textContent = barcode ? ('Barcode: ' + barcode) : "No barcode saved — you can still track it by name.";
+  function openNewInventoryForm(){
+    root.querySelector('#inv-new-card').style.display = 'flex';
     root.querySelector('#inv-new-name').value = '';
     root.querySelector('#inv-new-qty').value = '1';
-    root.querySelector('#inv-new-status').textContent = ' ';
-    pendingInvBarcode = barcode || null;
+    root.querySelector('#inv-new-status').textContent = ' ';
     root.querySelector('#inv-new-name').focus();
   }
   function closeNewInventoryForm(){
     root.querySelector('#inv-new-card').style.display = 'none';
-    pendingInvBarcode = null;
   }
-  root.querySelector('#btn-inv-add-manual').addEventListener('click', ()=> openNewInventoryForm(null));
+  root.querySelector('#btn-inv-add-manual').addEventListener('click', openNewInventoryForm);
   root.querySelector('#btn-inv-new-cancel').addEventListener('click', closeNewInventoryForm);
   root.querySelector('#btn-inv-new-save').addEventListener('click', async ()=>{
     const name = root.querySelector('#inv-new-name').value.trim();
     const qty = Math.max(0, parseInt(root.querySelector('#inv-new-qty').value, 10) || 0);
     const statusEl = root.querySelector('#inv-new-status');
     if (!name){ statusEl.textContent = 'Enter a product name.'; return; }
-    if (pendingInvBarcode && inventoryItems.some(it => normalizeBarcode(it.barcode) === normalizeBarcode(pendingInvBarcode))){
-      statusEl.textContent = 'That barcode is already saved to another product.';
-      return;
-    }
-    statusEl.textContent = 'Saving…';
-    const row = { id: genIdInv(), profile_code: profileCode, barcode: pendingInvBarcode || null, name, quantity: qty, zero_since: qty === 0 ? new Date().toISOString() : null, low_stock_notified: false };
+    statusEl.textContent = 'Saving\u2026';
+    const row = { id: genIdInv(), profile_code: profileCode, barcode: null, name, quantity: qty, zero_since: qty === 0 ? new Date().toISOString() : null, low_stock_notified: false };
     try{
       if (dbAvailable){
         const { error } = await supabaseClient.from('inventory_items').insert(row);
@@ -5167,109 +5134,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
     }
   });
-  function normalizeBarcode(raw){
-    // The same physical barcode can come back from the scanner as either a
-    // 12-digit UPC-A code or the equivalent 13-digit EAN-13 code (UPC-A with
-    // a leading zero) depending on the scan -- without this, the same
-    // product can fail to match itself on a later scan. Always compare and
-    // store the 13-digit form.
-    let c = (raw || '').trim();
-    if (/^\d{12}$/.test(c)) c = '0' + c;
-    return c;
-  }
-  async function handleScannedBarcode(rawCode){
-    const code = normalizeBarcode(rawCode);
-    if (!inventoryLoaded) await loadInventory();
-    const existing = inventoryItems.find(it => normalizeBarcode(it.barcode) === code);
-    if (existing){
-      showToast('Found: ' + existing.name);
-      renderInventoryList(root.querySelector('#inv-search').value);
-      flashInventoryRow(existing.id);
-    } else {
-      openNewInventoryForm(code);
-    }
-  }
-  /* ---- Camera scan (barcode formats via ZXing, not the QR-only jsQR used elsewhere) ---- */
-  let invScanControls = null;
-  let invZxingReader = null;
-  function getInvZxingReader(){
-    if (!invZxingReader && window.ZXing && window.ZXing.BrowserMultiFormatReader){
-      invZxingReader = new window.ZXing.BrowserMultiFormatReader();
-    }
-    return invZxingReader;
-  }
-  function stopInventoryScan(){
-    if (invScanControls){ try{ invScanControls.stop(); }catch(e){} invScanControls = null; }
-    // Belt-and-suspenders: ZXing's own controls.stop() doesn't always release
-    // the camera hardware in every browser (a known ZXing quirk), so also grab
-    // whatever stream it attached to the video element and stop those tracks
-    // directly -- this is what actually turns off the camera indicator.
-    const video = root.querySelector('#inv-scan-video');
-    if (video){
-      try{
-        if (video.srcObject && video.srcObject.getTracks){
-          video.srcObject.getTracks().forEach(t => t.stop());
-        }
-      }catch(e){}
-      try{ video.pause(); }catch(e){}
-      video.srcObject = null;
-    }
-  }
-  function closeInventoryScanPanel(){
-    stopInventoryScan();
-    root.querySelector('#inv-scanpanel').style.display = 'none';
-  }
-  window.__activeScanStoppers.push(()=>{ if (invScanControls) closeInventoryScanPanel(); });
-  let invScanResultHandled = false;
-  async function startInventoryScan(){
-    stopInventoryScan(); // in case a scan was already running -- avoid stacking a second camera stream
-    invScanResultHandled = false;
-    const statusEl = root.querySelector('#inv-scan-status');
-    root.querySelector('#inv-scanpanel').style.display = 'flex';
-    statusEl.textContent = "Point the camera at the product's barcode.";
-    const reader = getInvZxingReader();
-    if (!reader){
-      statusEl.textContent = "The barcode scanner didn't load. Add the product manually instead.";
-      return;
-    }
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-      statusEl.textContent = "This browser can't use the camera here. Add the product manually instead.";
-      return;
-    }
-    try{
-      invScanControls = await reader.decodeFromConstraints(
-        { video: { facingMode: 'environment' } },
-        root.querySelector('#inv-scan-video'),
-        (result)=>{
-          // The camera keeps decoding every frame, so a held-steady barcode
-          // fires this callback many times a second. Only act on the first
-          // one -- otherwise each repeat re-opens the new-product form and
-          // wipes out whatever name you've already started typing.
-          if (invScanResultHandled) return;
-          if (result && result.getText && result.getText()){
-            invScanResultHandled = true;
-            const code = result.getText();
-            closeInventoryScanPanel();
-            handleScannedBarcode(code);
-          }
-        }
-      );
-    }catch(e){
-      console.warn('barcode camera access failed', e);
-      if (e && e.name === 'NotAllowedError'){
-        statusEl.textContent = "Camera access was blocked. Add the product manually instead, or allow camera access in your browser settings and try again.";
-      } else if (e && e.name === 'NotFoundError'){
-        statusEl.textContent = "No camera was found on this device. Add the product manually instead.";
-      } else {
-        statusEl.textContent = "Couldn't open the camera. Add the product manually instead.";
-      }
-    }
-  }
-  root.querySelector('#btn-inv-scan').addEventListener('click', ()=>{
-    closeNewInventoryForm();
-    startInventoryScan();
-  });
-  root.querySelector('#btn-inv-scan-cancel').addEventListener('click', closeInventoryScanPanel);
   window.initInventoryTab = function(){
     updateInvTipNote();
     loadInventory();
