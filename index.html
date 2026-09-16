@@ -3228,9 +3228,15 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     listEl.innerHTML = rows.map((r,idx)=>{
       if (r.type === 'looking'){
         const locBits = [r.city ? escapeHtml(r.city) : '', r.state ? escapeHtml(r.state) : ''].filter(Boolean).join(', ');
-        return `<div class="jobs-listing-card" data-jobs-idx="${idx}">
-          <strong>${escapeHtml(r.name || 'Looking for work')}</strong>
-          <span class="screen-sub" style="margin:0;">${escapeHtml(r.status || '')}${locBits ? (' · ' + locBits) : ''}</span>
+        const thumb = r.photo_url
+          ? `<img src="${escapeHtml(r.photo_url)}" alt="" style="width:44px; height:44px; border-radius:50%; object-fit:cover; flex:none;">`
+          : `<div style="width:44px; height:44px; border-radius:50%; background:var(--paper); border:1px solid var(--line); flex:none;"></div>`;
+        return `<div class="jobs-listing-card" data-jobs-idx="${idx}" style="flex-direction:row; align-items:center; gap:12px;">
+          ${thumb}
+          <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
+            <strong>${escapeHtml(r.name || 'Looking for work')}</strong>
+            <span class="screen-sub" style="margin:0;">${escapeHtml(r.status || '')}${locBits ? (' · ' + locBits) : ''}</span>
+          </div>
         </div>`;
       }
       const locBits = [r.city ? escapeHtml(r.city) : '', r.state ? escapeHtml(r.state) : ''].filter(Boolean).join(', ');
