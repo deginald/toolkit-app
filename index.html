@@ -5121,7 +5121,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
   });
   function openNewInventoryForm(barcode){
-    root.querySelector('#inv-new-card').style.display = 'flex';
+    const card = root.querySelector('#inv-new-card');
+    // Extra safety: if this form is already open for this exact barcode,
+    // don't wipe out whatever the person has already typed -- just leave it
+    // alone instead of re-opening from scratch.
+    if (card.style.display !== 'none' && barcode && pendingInvBarcode === barcode) return;
+    card.style.display = 'flex';
     root.querySelector('#inv-new-heading').textContent = barcode ? 'New product' : 'Add a product';
     root.querySelector('#inv-new-barcode-note').textContent = barcode ? ('Barcode: ' + barcode) : "No barcode saved — you can still track it by name.";
     root.querySelector('#inv-new-name').value = '';
@@ -5215,8 +5220,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#inv-scanpanel').style.display = 'none';
   }
   window.__activeScanStoppers.push(()=>{ if (invScanControls) closeInventoryScanPanel(); });
+  let invScanResultHandled = false;
   async function startInventoryScan(){
     stopInventoryScan(); // in case a scan was already running -- avoid stacking a second camera stream
+    invScanResultHandled = false;
     const statusEl = root.querySelector('#inv-scan-status');
     root.querySelector('#inv-scanpanel').style.display = 'flex';
     statusEl.textContent = "Point the camera at the product's barcode.";
@@ -5234,7 +5241,13 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         { video: { facingMode: 'environment' } },
         root.querySelector('#inv-scan-video'),
         (result)=>{
+          // The camera keeps decoding every frame, so a held-steady barcode
+          // fires this callback many times a second. Only act on the first
+          // one -- otherwise each repeat re-opens the new-product form and
+          // wipes out whatever name you've already started typing.
+          if (invScanResultHandled) return;
           if (result && result.getText && result.getText()){
+            invScanResultHandled = true;
             const code = result.getText();
             closeInventoryScanPanel();
             handleScannedBarcode(code);
