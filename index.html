@@ -3251,11 +3251,11 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         ${listing.bio ? `<p style="margin:8px 0 0;">${escapeHtml(listing.bio)}</p>` : ''}
       `;
     } else {
+      const fullAddress = [listing.address, listing.city, listing.state].map(s => s ? escapeHtml(s) : '').filter(Boolean).join(', ');
       body.innerHTML = `
         <h2 class="screen-title" style="margin:0; text-align:center;">${escapeHtml(listing.business_name || 'Hiring')}</h2>
-        ${locLine ? `<p class="screen-sub" style="margin:0; text-align:center;">${locLine}</p>` : ''}
         <p style="margin:8px 0 0;"><strong>Hiring for:</strong> ${escapeHtml(listing.hiring_role || '—')}${listing.hiring_count ? (' (' + escapeHtml(String(listing.hiring_count)) + ' position' + (Number(listing.hiring_count) === 1 ? '' : 's') + ')') : ''}</p>
-        ${listing.address ? `<p style="margin:0;"><strong>Address:</strong> ${escapeHtml(listing.address)}</p>` : ''}
+        ${fullAddress ? `<p style="margin:0;"><strong>Address:</strong> ${fullAddress}</p>` : ''}
         ${listing.website ? `<p style="margin:0;"><strong>Website/social:</strong> ${escapeHtml(listing.website)}</p>` : ''}
       `;
     }
