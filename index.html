@@ -67,12 +67,18 @@
   .tab-btn[data-tabbtn="coach"]{ order:4; }
   .tab-btn[data-tabbtn="business"]{ order:5; }
   .tab-btn[data-tabbtn="ledger"]{ order:6; }
+  .tab-btn[data-tabbtn="jobs"]{ order:7; }
   .tabbar.role-student .tab-btn[data-tabbtn="pace"]{ order:1; }
   .tabbar.role-student .tab-btn[data-tabbtn="coach"]{ order:2; }
   .tabbar.role-student .tab-btn[data-tabbtn="consult"]{ order:3; }
   .tabbar.role-student .tab-btn[data-tabbtn="ledger"]{ order:4; }
+  .tabbar.role-student .tab-btn[data-tabbtn="jobs"]{ order:5; }
   .biz-pane{ display:none; flex-direction:column; gap:16px; }
   .biz-pane.show{ display:flex; }
+  .jobs-pane{ display:none; flex-direction:column; gap:16px; }
+  .jobs-pane.show{ display:flex; }
+  .jobs-listing-card{ display:flex; flex-direction:column; gap:6px; border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:12px 14px; cursor:pointer; }
+  .jobs-listing-card:hover{ border-color:var(--brass); }
   .bk-pane{ display:none; flex-direction:column; gap:16px; }
   .bk-pane.show{ display:flex; }
   [data-screen]{ display:none; }
@@ -438,6 +444,11 @@
         <span class="oc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.7"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
         <span class="oc-label">Find a Pro</span>
         <span class="oc-sub">Browse barbers and stylists near you, and see their ratings and reviews.</span>
+      </div>
+      <div class="option-card" id="btn-role-jobs" style="grid-column:1 / -1;">
+        <span class="oc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="8" width="17" height="11" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 8V6.5A2 2 0 0 1 10.5 4.5h3A2 2 0 0 1 15.5 6.5V8" stroke="currentColor" stroke-width="1.7"/></svg></span>
+        <span class="oc-label">Jobs Board</span>
+        <span class="oc-sub">See who's looking for work and who's hiring. Sign in or create a free account to view profiles and message.</span>
       </div>
     </div>
     <p class="brand-footer" style="margin-top:10px;">A Stronger Hair Community<br>Together.</p>
@@ -1170,6 +1181,112 @@
           </div>
         </div>
       </section>
+      <!-- ============ JOBS BOARD ============ -->
+      <section class="tab-pane" data-tab="jobs" id="tab-jobs">
+        <div class="tab-head">
+          <p class="eyebrow-mini">Looking &amp; hiring</p>
+          <h2>Jobs Board</h2>
+        </div>
+        <div class="mode-toggle" id="jobs-mode-toggle">
+          <button type="button" class="mode-btn active" data-jobs-mode="browse">Browse</button>
+          <button type="button" class="mode-btn" data-jobs-mode="mine">My Listings</button>
+          <button type="button" class="mode-btn" data-jobs-mode="messages">Messages<span id="jobs-msg-badge" style="display:none; width:7px; height:7px; border-radius:50%; background:var(--brass); margin-left:5px; vertical-align:middle;"></span></button>
+        </div>
+
+        <!-- ---- BROWSE ---- -->
+        <div class="jobs-pane show" data-jobs="browse" id="jobs-browse-pane">
+          <div class="screen-body show" data-screen="dashboard" style="gap:14px;">
+            <div class="mode-toggle" id="jobs-browse-type-toggle">
+              <button type="button" class="mode-btn active" data-jobs-type="looking">Looking</button>
+              <button type="button" class="mode-btn" data-jobs-type="hiring">Hiring</button>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <div class="input-row" style="flex:1;"><input id="jobs-search-city" type="text" placeholder="City"></div>
+              <div class="input-row" style="width:76px;"><input id="jobs-search-state" type="text" maxlength="2" style="text-transform:uppercase;" placeholder="State"></div>
+            </div>
+            <button class="btn btn-outline" id="btn-jobs-search" type="button">Search</button>
+            <div id="jobs-browse-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+            <p class="screen-sub" id="jobs-browse-empty" style="display:none; margin:0;">No listings match yet. Try a different city or state, or check back soon.</p>
+          </div>
+          <div class="screen-body" data-screen="detail" id="jobs-detail-screen">
+            <div class="walk-header">
+              <button class="back-btn" data-back="dashboard" aria-label="Back">&larr;</button>
+              <div class="walk-titles"><div class="walk-name">Listing</div></div>
+            </div>
+            <div id="jobs-detail-body" style="display:flex; flex-direction:column; gap:12px;"></div>
+            <div id="jobs-message-box" style="display:none; flex-direction:column; gap:10px; border-top:1px solid var(--line); padding-top:16px;">
+              <p class="eyebrow-mini">Send a message</p>
+              <div class="field"><div class="input-row"><textarea id="jobs-message-text" rows="3" placeholder="Introduce yourself..."></textarea></div></div>
+              <button class="btn btn-primary" id="btn-jobs-send-message" type="button">Send message</button>
+              <p class="foot-note-small" id="jobs-message-status">&nbsp;</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---- MY LISTINGS ---- -->
+        <div class="jobs-pane" data-jobs="mine" id="jobs-mine-pane">
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <p class="eyebrow-mini">For professionals &amp; students</p>
+                <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">I'm Looking for work</h2>
+                <p class="screen-sub">Turn this on to appear in Jobs Board searches so shops can find you. Turning it off hides your profile again without losing what you filled in.</p>
+              </div>
+              <label class="check-row">
+                <input type="checkbox" id="jobs-looking-toggle">
+                <span>Looking is <span id="jobs-looking-toggle-label">off</span></span>
+              </label>
+              <div id="jobs-looking-fields" style="display:none; flex-direction:column; gap:14px;">
+                <div style="display:flex; align-items:center; gap:14px;">
+                  <img id="jobs-looking-photo-preview" src="" alt="" style="width:64px; height:64px; border-radius:50%; object-fit:cover; background:var(--surface); border:1px solid var(--line); display:none; flex:none;">
+                  <div id="jobs-looking-photo-placeholder" style="width:64px; height:64px; border-radius:50%; background:var(--surface); border:1px solid var(--line); flex:none;"></div>
+                  <button class="btn btn-outline" id="btn-jobs-looking-photo" type="button" style="flex:none;">Add photo</button>
+                  <input type="file" id="jobs-looking-photo-input" accept="image/*" style="display:none;">
+                </div>
+                <div class="field"><label>Name</label><div class="input-row"><input id="jobs-looking-name" type="text" placeholder="How you want your name shown"></div></div>
+                <div class="field"><label>Short bio</label><div class="input-row"><textarea id="jobs-looking-bio" rows="3" placeholder="A couple sentences about you"></textarea></div></div>
+                <div class="field"><label>City</label><div class="input-row"><input id="jobs-looking-city" type="text"></div></div>
+                <div class="field"><label>State</label><div class="input-row"><input id="jobs-looking-state" type="text" maxlength="2" style="text-transform:uppercase;"></div></div>
+                <div class="field" id="jobs-looking-graddate-field" style="display:none;"><label>Expected graduation date</label><div class="input-row"><input id="jobs-looking-graddate" type="date"></div></div>
+                <p class="foot-note-small">Your professional status (<span id="jobs-looking-status-note">Student</span>) is pulled from your account automatically.</p>
+              </div>
+              <button class="btn btn-primary" id="btn-jobs-save-looking" type="button">Save Looking listing</button>
+              <p class="foot-note-small" id="jobs-looking-save-note">&nbsp;</p>
+            </div>
+            <div id="jobs-hiring-card" style="display:flex; flex-direction:column; gap:12px; border-top:1px solid var(--line); padding-top:20px;">
+              <div>
+                <p class="eyebrow-mini">For shop owners</p>
+                <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">I'm Hiring</h2>
+                <p class="screen-sub">Turn this on to let job-seekers find your shop's listing and message you.</p>
+              </div>
+              <label class="check-row">
+                <input type="checkbox" id="jobs-hiring-toggle">
+                <span>Hiring is <span id="jobs-hiring-toggle-label">off</span></span>
+              </label>
+              <div id="jobs-hiring-fields" style="display:none; flex-direction:column; gap:14px;">
+                <div class="field"><label>Business / shop name</label><div class="input-row"><input id="jobs-hiring-name" type="text"></div></div>
+                <div class="field"><label>Address</label><div class="input-row"><input id="jobs-hiring-address" type="text"></div></div>
+                <div class="field"><label>City</label><div class="input-row"><input id="jobs-hiring-city" type="text"></div></div>
+                <div class="field"><label>State</label><div class="input-row"><input id="jobs-hiring-state" type="text" maxlength="2" style="text-transform:uppercase;"></div></div>
+                <div class="field"><label>Website or social link <span style="text-transform:none; font-weight:600;">(optional)</span></label><div class="input-row"><input id="jobs-hiring-website" type="text" placeholder="e.g. instagram.com/yourshop"></div></div>
+                <div class="field"><label>Who are you hiring for?</label><div class="input-row"><input id="jobs-hiring-role" type="text" placeholder="e.g. Licensed barber"></div></div>
+                <div class="field"><label>How many positions?</label><div class="input-row"><input id="jobs-hiring-count" type="number" min="1" step="1"></div></div>
+              </div>
+              <button class="btn btn-primary" id="btn-jobs-save-hiring" type="button">Save Hiring listing</button>
+              <p class="foot-note-small" id="jobs-hiring-save-note">&nbsp;</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---- MESSAGES ---- -->
+        <div class="jobs-pane" data-jobs="messages" id="jobs-messages-pane">
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <p class="screen-sub" style="margin:0;">Intro messages people have sent to your Jobs Board listings.</p>
+            <div id="jobs-messages-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+            <p class="screen-sub" id="jobs-messages-empty" style="display:none; margin:0;">No messages yet.</p>
+          </div>
+        </div>
+      </section>
     </main>
     <nav class="tabbar">
       <button class="tab-btn active" data-tabbtn="pace">
@@ -1195,6 +1312,10 @@
       <button class="tab-btn" data-tabbtn="ledger">
         <svg viewBox="0 0 24 24" fill="none"><path d="M5 19V10M12 19V5M19 19v-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         <span>Ledger</span>
+      </button>
+      <button class="tab-btn" data-tabbtn="jobs">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="8" width="17" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 8V6.5A2 2 0 0 1 10.5 4.5h3A2 2 0 0 1 15.5 6.5V8" stroke="currentColor" stroke-width="1.6"/></svg>
+        <span>Jobs</span>
       </button>
     </nav>
   </div>
@@ -1709,6 +1830,7 @@ function showTab(name){
   if (name === 'booking' && window.initBookingTab) window.initBookingTab();
   if (name === 'booking') updateBookingLandingNote();
   if (name === 'business') showBusinessSubtab(getActiveBizMode());
+  if (name === 'jobs' && window.initJobsTab) window.initJobsTab();
 }
 // One-time note on the Booking tab explaining it's the new landing tab, since a pro who's
 // used to Coach opening first otherwise gets no explanation of why they ended up here.
@@ -3026,6 +3148,325 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   window.initLedgerTab = function(){ renderDashboard(); showScreen('dashboard'); };
 })();
 /* =========================================================
+   JOBS BOARD (Looking / Hiring)
+   ========================================================= */
+(function(){
+  const root = document.getElementById('tab-jobs');
+  if (!root) return;
+  function showScreen(name){ root.querySelectorAll('#jobs-browse-pane [data-screen]').forEach(el=> el.classList.toggle('show', el.dataset.screen===name)); }
+  root.querySelectorAll('[data-back]').forEach(btn=> btn.addEventListener('click', ()=> showScreen(btn.dataset.back)));
+
+  function jobsListingId(type){ return profileCode + '::' + type; }
+  function escapeHtml(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // ---- sub-mode (Browse / My Listings / Messages) ----
+  function showJobsMode(mode){
+    root.querySelectorAll('.jobs-pane').forEach(p=> p.classList.toggle('show', p.dataset.jobs===mode));
+    root.querySelectorAll('#jobs-mode-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.jobsMode===mode));
+    if (mode === 'browse'){ showScreen('dashboard'); searchListings(); }
+    if (mode === 'mine') loadMyListings();
+    if (mode === 'messages') loadMessages();
+  }
+  root.querySelectorAll('#jobs-mode-toggle .mode-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> showJobsMode(btn.dataset.jobsMode));
+  });
+
+  // ---- Browse ----
+  let browseType = 'looking';
+  let browseResults = [];
+  root.querySelectorAll('#jobs-browse-type-toggle .mode-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      browseType = btn.dataset.jobsType;
+      root.querySelectorAll('#jobs-browse-type-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b===btn));
+      searchListings();
+    });
+  });
+  async function searchListings(){
+    const listEl = root.querySelector('#jobs-browse-list');
+    const emptyEl = root.querySelector('#jobs-browse-empty');
+    if (!dbAvailable){
+      listEl.innerHTML = '';
+      emptyEl.textContent = "Live search isn't connected right now.";
+      emptyEl.style.display = 'block';
+      return;
+    }
+    const city = root.querySelector('#jobs-search-city').value.trim().toLowerCase();
+    const state = root.querySelector('#jobs-search-state').value.trim().toLowerCase();
+    let rows = [];
+    try{
+      const { data, error } = await supabaseClient.from('job_listings').select('*').eq('type', browseType).eq('active', true);
+      if (error) throw error;
+      rows = data || [];
+    }catch(e){ console.warn('jobs search failed', e); }
+    rows = rows.filter(r => r.profile_code !== profileCode);
+    if (city) rows = rows.filter(r => (r.city||'').toLowerCase().includes(city));
+    if (state) rows = rows.filter(r => (r.state||'').toLowerCase() === state);
+    browseResults = rows;
+    renderBrowseList(rows);
+  }
+  function renderBrowseList(rows){
+    const listEl = root.querySelector('#jobs-browse-list');
+    const emptyEl = root.querySelector('#jobs-browse-empty');
+    if (!rows.length){
+      listEl.innerHTML = '';
+      emptyEl.textContent = "No listings match yet. Try a different city or state, or check back soon.";
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    listEl.innerHTML = rows.map((r,idx)=>{
+      if (r.type === 'looking'){
+        const locBits = [r.city ? escapeHtml(r.city) : '', r.state ? escapeHtml(r.state) : ''].filter(Boolean).join(', ');
+        return `<div class="jobs-listing-card" data-jobs-idx="${idx}">
+          <strong>${escapeHtml(r.name || 'Looking for work')}</strong>
+          <span class="screen-sub" style="margin:0;">${escapeHtml(r.status || '')}${locBits ? (' · ' + locBits) : ''}</span>
+        </div>`;
+      }
+      const locBits = [r.city ? escapeHtml(r.city) : '', r.state ? escapeHtml(r.state) : ''].filter(Boolean).join(', ');
+      return `<div class="jobs-listing-card" data-jobs-idx="${idx}">
+        <strong>${escapeHtml(r.business_name || 'Hiring')}</strong>
+        <span class="screen-sub" style="margin:0;">${escapeHtml(r.hiring_role || '')}${locBits ? (' · ' + locBits) : ''}</span>
+      </div>`;
+    }).join('');
+  }
+  root.querySelector('#jobs-browse-list').addEventListener('click', e=>{
+    const card = e.target.closest('[data-jobs-idx]');
+    if (!card) return;
+    const listing = browseResults[Number(card.dataset.jobsIdx)];
+    if (listing) openListingDetail(listing);
+  });
+  root.querySelector('#btn-jobs-search').addEventListener('click', searchListings);
+
+  let detailListing = null;
+  function openListingDetail(listing){
+    detailListing = listing;
+    const body = root.querySelector('#jobs-detail-body');
+    const locLine = [listing.city ? escapeHtml(listing.city) : '', listing.state ? escapeHtml(listing.state) : ''].filter(Boolean).join(', ');
+    if (listing.type === 'looking'){
+      body.innerHTML = `
+        ${listing.photo_url ? `<img src="${escapeHtml(listing.photo_url)}" alt="" style="width:88px; height:88px; border-radius:50%; object-fit:cover; align-self:center;">` : ''}
+        <h2 class="screen-title" style="margin:0; text-align:center;">${escapeHtml(listing.name || 'Looking for work')}</h2>
+        <p class="screen-sub" style="margin:0; text-align:center;">${escapeHtml(listing.status || '')}${listing.grad_date ? (' · Graduating ' + escapeHtml(listing.grad_date)) : ''}</p>
+        ${locLine ? `<p class="screen-sub" style="margin:0; text-align:center;">${locLine}</p>` : ''}
+        ${listing.bio ? `<p style="margin:8px 0 0;">${escapeHtml(listing.bio)}</p>` : ''}
+      `;
+    } else {
+      body.innerHTML = `
+        <h2 class="screen-title" style="margin:0; text-align:center;">${escapeHtml(listing.business_name || 'Hiring')}</h2>
+        ${locLine ? `<p class="screen-sub" style="margin:0; text-align:center;">${locLine}</p>` : ''}
+        <p style="margin:8px 0 0;"><strong>Hiring for:</strong> ${escapeHtml(listing.hiring_role || '—')}${listing.hiring_count ? (' (' + escapeHtml(String(listing.hiring_count)) + ' position' + (Number(listing.hiring_count) === 1 ? '' : 's') + ')') : ''}</p>
+        ${listing.address ? `<p style="margin:0;"><strong>Address:</strong> ${escapeHtml(listing.address)}</p>` : ''}
+        ${listing.website ? `<p style="margin:0;"><strong>Website/social:</strong> ${escapeHtml(listing.website)}</p>` : ''}
+      `;
+    }
+    const msgBox = root.querySelector('#jobs-message-box');
+    msgBox.style.display = (listing.profile_code !== profileCode) ? 'flex' : 'none';
+    root.querySelector('#jobs-message-text').value = '';
+    root.querySelector('#jobs-message-status').textContent = ' ';
+    showScreen('detail');
+  }
+  root.querySelector('#btn-jobs-send-message').addEventListener('click', async ()=>{
+    const statusEl = root.querySelector('#jobs-message-status');
+    const text = root.querySelector('#jobs-message-text').value.trim();
+    if (!text){ statusEl.textContent = 'Type a message first.'; return; }
+    if (!dbAvailable || !detailListing){ statusEl.textContent = "Not connected right now. This wasn't saved."; return; }
+    try{
+      const { error } = await supabaseClient.from('job_messages').insert({
+        listing_id: detailListing.id,
+        to_profile_code: detailListing.profile_code,
+        from_profile_code: profileCode,
+        from_name: profile.name,
+        message: text
+      });
+      if (error) throw error;
+      statusEl.textContent = 'Message sent.';
+      root.querySelector('#jobs-message-text').value = '';
+    }catch(e){
+      console.warn('job message send failed', e);
+      statusEl.textContent = "Couldn't send. Try again.";
+    }
+  });
+
+  // ---- My Listings ----
+  root.querySelector('#jobs-looking-toggle').addEventListener('change', function(){
+    root.querySelector('#jobs-looking-fields').style.display = this.checked ? 'flex' : 'none';
+    root.querySelector('#jobs-looking-toggle-label').textContent = this.checked ? 'on' : 'off';
+  });
+  root.querySelector('#jobs-hiring-toggle').addEventListener('change', function(){
+    root.querySelector('#jobs-hiring-fields').style.display = this.checked ? 'flex' : 'none';
+    root.querySelector('#jobs-hiring-toggle-label').textContent = this.checked ? 'on' : 'off';
+  });
+  let lookingPhotoUrl = '', lookingPhotoPath = '';
+  root.querySelector('#btn-jobs-looking-photo').addEventListener('click', ()=> root.querySelector('#jobs-looking-photo-input').click());
+  root.querySelector('#jobs-looking-photo-input').addEventListener('change', async (e)=>{
+    const rawFile = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!rawFile || !profileCode) return;
+    const noteEl = root.querySelector('#jobs-looking-save-note');
+    noteEl.textContent = 'Uploading photo...';
+    try{
+      const file = await compressPhotoForUpload(rawFile);
+      const path = `${profileCode}/looking.jpg`;
+      const { error: upErr } = await supabaseClient.storage.from('job-photos').upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabaseClient.storage.from('job-photos').getPublicUrl(path);
+      lookingPhotoUrl = urlData.publicUrl + '?v=' + Date.now();
+      lookingPhotoPath = path;
+      const img = root.querySelector('#jobs-looking-photo-preview');
+      img.src = lookingPhotoUrl;
+      img.style.display = 'block';
+      root.querySelector('#jobs-looking-photo-placeholder').style.display = 'none';
+      noteEl.textContent = 'Photo added. Tap "Save Looking listing" to keep it.';
+    }catch(err){
+      console.warn('jobs looking photo upload failed', err);
+      noteEl.textContent = "Couldn't upload that photo. Try again.";
+    }
+  });
+  function updateLookingStatusFields(){
+    root.querySelector('#jobs-looking-status-note').textContent = (profile && profile.title) || 'Student';
+    root.querySelector('#jobs-looking-graddate-field').style.display = isStudent() ? 'flex' : 'none';
+  }
+  async function loadMyListings(){
+    updateLookingStatusFields();
+    if (!dbAvailable || !profileCode) return;
+    try{
+      const { data: looking } = await supabaseClient.from('job_listings').select('*').eq('id', jobsListingId('looking')).maybeSingle();
+      if (looking){
+        root.querySelector('#jobs-looking-toggle').checked = !!looking.active;
+        root.querySelector('#jobs-looking-fields').style.display = looking.active ? 'flex' : 'none';
+        root.querySelector('#jobs-looking-toggle-label').textContent = looking.active ? 'on' : 'off';
+        root.querySelector('#jobs-looking-name').value = looking.name || profile.name || '';
+        root.querySelector('#jobs-looking-bio').value = looking.bio || '';
+        root.querySelector('#jobs-looking-city').value = looking.city || '';
+        root.querySelector('#jobs-looking-state').value = looking.state || '';
+        root.querySelector('#jobs-looking-graddate').value = looking.grad_date || '';
+        if (looking.photo_url){
+          lookingPhotoUrl = looking.photo_url;
+          lookingPhotoPath = looking.photo_path || '';
+          const img = root.querySelector('#jobs-looking-photo-preview');
+          img.src = lookingPhotoUrl;
+          img.style.display = 'block';
+          root.querySelector('#jobs-looking-photo-placeholder').style.display = 'none';
+        }
+      } else {
+        root.querySelector('#jobs-looking-name').value = (profile && profile.name) || '';
+      }
+      const { data: hiring } = await supabaseClient.from('job_listings').select('*').eq('id', jobsListingId('hiring')).maybeSingle();
+      if (hiring){
+        root.querySelector('#jobs-hiring-toggle').checked = !!hiring.active;
+        root.querySelector('#jobs-hiring-fields').style.display = hiring.active ? 'flex' : 'none';
+        root.querySelector('#jobs-hiring-toggle-label').textContent = hiring.active ? 'on' : 'off';
+        root.querySelector('#jobs-hiring-name').value = hiring.business_name || '';
+        root.querySelector('#jobs-hiring-address').value = hiring.address || '';
+        root.querySelector('#jobs-hiring-city').value = hiring.city || '';
+        root.querySelector('#jobs-hiring-state').value = hiring.state || '';
+        root.querySelector('#jobs-hiring-website').value = hiring.website || '';
+        root.querySelector('#jobs-hiring-role').value = hiring.hiring_role || '';
+        root.querySelector('#jobs-hiring-count').value = hiring.hiring_count || '';
+      }
+    }catch(e){ console.warn('load jobs listings failed', e); }
+  }
+  root.querySelector('#btn-jobs-save-looking').addEventListener('click', async ()=>{
+    const noteEl = root.querySelector('#jobs-looking-save-note');
+    if (!dbAvailable || !profileCode){ noteEl.textContent = "Not connected right now. This wasn't saved."; return; }
+    const active = root.querySelector('#jobs-looking-toggle').checked;
+    const row = {
+      id: jobsListingId('looking'),
+      profile_code: profileCode,
+      type: 'looking',
+      active,
+      name: root.querySelector('#jobs-looking-name').value.trim() || profile.name,
+      bio: root.querySelector('#jobs-looking-bio').value.trim(),
+      city: root.querySelector('#jobs-looking-city').value.trim(),
+      state: root.querySelector('#jobs-looking-state').value.trim().toUpperCase(),
+      status: (profile && profile.title) || 'Student',
+      grad_date: isStudent() ? (root.querySelector('#jobs-looking-graddate').value || null) : null,
+      photo_url: lookingPhotoUrl || null,
+      photo_path: lookingPhotoPath || null
+    };
+    try{
+      const { error } = await supabaseClient.from('job_listings').upsert(row, { onConflict: 'id' });
+      if (error) throw error;
+      noteEl.textContent = active ? "Saved. You're visible in Jobs Board searches." : 'Saved. Your listing is hidden.';
+    }catch(e){
+      console.warn('save looking listing failed', e);
+      noteEl.textContent = "Couldn't save. Try again.";
+    }
+  });
+  root.querySelector('#btn-jobs-save-hiring').addEventListener('click', async ()=>{
+    const noteEl = root.querySelector('#jobs-hiring-save-note');
+    if (!dbAvailable || !profileCode){ noteEl.textContent = "Not connected right now. This wasn't saved."; return; }
+    const active = root.querySelector('#jobs-hiring-toggle').checked;
+    const countVal = root.querySelector('#jobs-hiring-count').value;
+    const row = {
+      id: jobsListingId('hiring'),
+      profile_code: profileCode,
+      type: 'hiring',
+      active,
+      business_name: root.querySelector('#jobs-hiring-name').value.trim(),
+      address: root.querySelector('#jobs-hiring-address').value.trim(),
+      city: root.querySelector('#jobs-hiring-city').value.trim(),
+      state: root.querySelector('#jobs-hiring-state').value.trim().toUpperCase(),
+      website: root.querySelector('#jobs-hiring-website').value.trim(),
+      hiring_role: root.querySelector('#jobs-hiring-role').value.trim(),
+      hiring_count: countVal ? Number(countVal) : null
+    };
+    try{
+      const { error } = await supabaseClient.from('job_listings').upsert(row, { onConflict: 'id' });
+      if (error) throw error;
+      noteEl.textContent = active ? 'Saved. Your listing is visible in Jobs Board searches.' : 'Saved. Your listing is hidden.';
+    }catch(e){
+      console.warn('save hiring listing failed', e);
+      noteEl.textContent = "Couldn't save. Try again.";
+    }
+  });
+
+  // ---- Messages ----
+  async function loadMessages(){
+    const listEl = root.querySelector('#jobs-messages-list');
+    const emptyEl = root.querySelector('#jobs-messages-empty');
+    if (!dbAvailable || !profileCode){ listEl.innerHTML = ''; emptyEl.style.display = 'block'; return; }
+    try{
+      const { data, error } = await supabaseClient.from('job_messages').select('*').eq('to_profile_code', profileCode);
+      if (error) throw error;
+      const rows = (data || []).slice().sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+      if (!rows.length){
+        listEl.innerHTML = '';
+        emptyEl.style.display = 'block';
+      } else {
+        emptyEl.style.display = 'none';
+        listEl.innerHTML = rows.map(m=> `<div class="jobs-listing-card" style="cursor:default;">
+          <strong>${escapeHtml(m.from_name || 'Someone')}</strong>
+          <span style="margin:0;">${escapeHtml(m.message)}</span>
+          <span class="foot-note-small" style="margin:0;">${escapeHtml(new Date(m.created_at).toLocaleDateString())}</span>
+        </div>`).join('');
+      }
+      const unread = rows.filter(m=> !m.read);
+      if (unread.length){
+        await Promise.all(unread.map(m=> supabaseClient.from('job_messages').update({ read: true }).eq('id', m.id)));
+      }
+      // Viewing this list is what marks everything read, so the badge always clears once opened.
+      updateMsgBadge(0);
+    }catch(e){ console.warn('load job messages failed', e); }
+  }
+  function updateMsgBadge(count){
+    const badge = document.getElementById('jobs-msg-badge');
+    if (badge) badge.style.display = count ? 'inline-block' : 'none';
+  }
+  async function refreshMessageBadge(){
+    if (!dbAvailable || !profileCode) return;
+    try{
+      const { data } = await supabaseClient.from('job_messages').select('*').eq('to_profile_code', profileCode);
+      updateMsgBadge((data || []).filter(m=> !m.read).length);
+    }catch(e){}
+  }
+
+  window.initJobsTab = function(){
+    showJobsMode('browse');
+    refreshMessageBadge();
+  };
+})();
+/* =========================================================
    BOOKING
    ========================================================= */
 (function(){
@@ -4243,7 +4684,9 @@ function enterApp(){
   window.initCoachTab();
   window.initConsultTab();
   window.initLedgerTab();
-  showTab(isStudent() ? 'pace' : 'booking');
+  const landingIntent = window.__ahcLandingIntent;
+  window.__ahcLandingIntent = null;
+  showTab(landingIntent === 'jobs' ? 'jobs' : (isStudent() ? 'pace' : 'booking'));
   updateNotifNudgeBanner();
 }
 function showRoleScreen(){
@@ -4307,6 +4750,10 @@ document.getElementById('btn-role-pro').addEventListener('click', ()=>{
 });
 document.getElementById('btn-role-directory').addEventListener('click', ()=>{
   window.location.href = 'directory.html';
+});
+document.getElementById('btn-role-jobs').addEventListener('click', ()=>{
+  window.__ahcLandingIntent = 'jobs';
+  showAuthScreen();
 });
 /* =========================================================
    SHARE THE APP (home screen)
