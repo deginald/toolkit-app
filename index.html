@@ -523,6 +523,10 @@
           <option value="Registered Barber">Registered Barber</option>
           <option value="Apprentice Cosmetologist">Apprentice Cosmetologist</option>
           <option value="Licensed Cosmetologist">Licensed Cosmetologist</option>
+          <option value="Apprentice Massage Therapist">Apprentice Massage Therapist</option>
+          <option value="Licensed Massage Therapist">Licensed Massage Therapist</option>
+          <option value="Apprentice Nail Technician">Apprentice Nail Technician</option>
+          <option value="Licensed Nail Technician">Licensed Nail Technician</option>
         </select>
       </div>
       <div class="field" id="auth-license-field">
@@ -1204,6 +1208,15 @@
               <div class="input-row" style="flex:1;"><input id="jobs-search-city" type="text" placeholder="City"></div>
               <div class="input-row" style="width:76px;"><input id="jobs-search-state" type="text" maxlength="2" style="text-transform:uppercase;" placeholder="State"></div>
             </div>
+            <div class="input-row" id="jobs-search-specialty-row">
+              <select id="jobs-search-specialty">
+                <option value="">All fields</option>
+                <option value="barber">Barber</option>
+                <option value="cosmetology">Cosmetology</option>
+                <option value="massage">Massage</option>
+                <option value="nailtech">Nail Tech</option>
+              </select>
+            </div>
             <button class="btn btn-outline" id="btn-jobs-search" type="button">Search</button>
             <div id="jobs-browse-list" style="display:flex; flex-direction:column; gap:10px;"></div>
             <p class="screen-sub" id="jobs-browse-empty" style="display:none; margin:0;">No listings match yet. Try a different city or state, or check back soon.</p>
@@ -1245,8 +1258,27 @@
                 </div>
                 <div class="field"><label>Name</label><div class="input-row"><input id="jobs-looking-name" type="text" placeholder="How you want your name shown"></div></div>
                 <div class="field"><label>Short bio</label><div class="input-row"><textarea id="jobs-looking-bio" rows="3" placeholder="A couple sentences about you"></textarea></div></div>
-                <div class="field"><label>City</label><div class="input-row"><input id="jobs-looking-city" type="text"></div></div>
-                <div class="field"><label>State</label><div class="input-row"><input id="jobs-looking-state" type="text" maxlength="2" style="text-transform:uppercase;"></div></div>
+                <div class="field">
+                  <label>City and state you're looking for work in</label>
+                  <div style="display:flex; gap:8px;">
+                    <div class="input-row" style="flex:1;"><input id="jobs-looking-city" type="text" placeholder="City"></div>
+                    <div class="input-row" style="width:76px;"><input id="jobs-looking-state" type="text" maxlength="2" style="text-transform:uppercase;" placeholder="State"></div>
+                  </div>
+                  <p class="foot-note-small" style="margin-top:4px;">This is what people searching Jobs Board match against.</p>
+                </div>
+                <div class="field" id="jobs-looking-specialty-field">
+                  <label>Field</label>
+                  <div class="input-row">
+                    <select id="jobs-looking-specialty">
+                      <option value="" disabled selected>Select your field</option>
+                      <option value="barber">Barber</option>
+                      <option value="cosmetology">Cosmetology</option>
+                      <option value="massage">Massage</option>
+                      <option value="nailtech">Nail Tech</option>
+                    </select>
+                  </div>
+                  <p class="foot-note-small" style="margin-top:4px; display:none;" id="jobs-looking-specialty-note">Pulled from your account automatically.</p>
+                </div>
                 <div class="field" id="jobs-looking-graddate-field" style="display:none;"><label>Expected graduation date</label><div class="input-row"><input id="jobs-looking-graddate" type="date"></div><p class="foot-note-small" style="margin-top:4px;">Filled in from your Pace overview — change it here if needed.</p></div>
 
                 <p class="foot-note-small">Your professional status (<span id="jobs-looking-status-note">Student</span>) is pulled from your account automatically.</p>
@@ -1605,7 +1637,7 @@ function showNdaScreen(onContinue){
     await onContinue();
   };
 }
-const TITLE_OPTIONS = ['Student','Apprentice Barber','Registered Barber','Apprentice Cosmetologist','Licensed Cosmetologist'];
+const TITLE_OPTIONS = ['Student','Apprentice Barber','Registered Barber','Apprentice Cosmetologist','Licensed Cosmetologist','Apprentice Massage Therapist','Licensed Massage Therapist','Apprentice Nail Technician','Licensed Nail Technician'];
 const NON_STUDENT_TITLES = TITLE_OPTIONS.filter(t => t !== 'Student');
 function isStudent(){ return !!profile && profile.title === 'Student'; }
 const CATEGORY_NAMES = { cuts:'Haircuts', chemical:'Chemical Services', safety:'Safety' };
@@ -3169,6 +3201,21 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
   function jobsListingId(type){ return profileCode + '::' + type; }
   function escapeHtml(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  const SPECIALTY_LABELS = { barber:'Barber', cosmetology:'Cosmetology', massage:'Massage', nailtech:'Nail Tech' };
+  function titleToSpecialty(title){
+    const t = (title||'').toLowerCase();
+    if (t.includes('barber')) return 'barber';
+    if (t.includes('cosmet')) return 'cosmetology';
+    if (t.includes('massage')) return 'massage';
+    if (t.includes('nail')) return 'nailtech';
+    return '';
+  }
+  function specialtyChip(r){
+    const label = SPECIALTY_LABELS[r.specialty] || '';
+    if (!label) return '';
+    if (r.status && r.status.toLowerCase().includes(label.toLowerCase())) return '';
+    return label;
+  }
 
   // ---- sub-mode (Browse / My Listings / Messages) ----
   function showJobsMode(mode){
@@ -3189,6 +3236,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       browseType = btn.dataset.jobsType;
       root.querySelectorAll('#jobs-browse-type-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b===btn));
+      root.querySelector('#jobs-search-specialty-row').style.display = browseType === 'looking' ? 'flex' : 'none';
       searchListings();
     });
   });
@@ -3203,6 +3251,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
     const city = root.querySelector('#jobs-search-city').value.trim().toLowerCase();
     const state = root.querySelector('#jobs-search-state').value.trim().toLowerCase();
+    const specialty = root.querySelector('#jobs-search-specialty').value;
     let rows = [];
     try{
       const { data, error } = await supabaseClient.from('job_listings').select('*').eq('type', browseType).eq('active', true);
@@ -3212,6 +3261,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     rows = rows.filter(r => r.profile_code !== profileCode);
     if (city) rows = rows.filter(r => (r.city||'').toLowerCase().includes(city));
     if (state) rows = rows.filter(r => (r.state||'').toLowerCase() === state);
+    if (specialty && browseType === 'looking') rows = rows.filter(r => r.specialty === specialty);
     browseResults = rows;
     renderBrowseList(rows);
   }
@@ -3227,7 +3277,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     emptyEl.style.display = 'none';
     listEl.innerHTML = rows.map((r,idx)=>{
       if (r.type === 'looking'){
-        const locBits = [r.city ? escapeHtml(r.city) : '', r.state ? escapeHtml(r.state) : ''].filter(Boolean).join(', ');
+        const locBits = [r.city || '', r.state || ''].filter(Boolean).join(', ');
+        const chip = specialtyChip(r);
+        const subLine = [chip, r.status, locBits].filter(Boolean).join(' · ');
         const thumb = r.photo_url
           ? `<img src="${escapeHtml(r.photo_url)}" alt="" style="width:44px; height:44px; border-radius:50%; object-fit:cover; flex:none;">`
           : `<div style="width:44px; height:44px; border-radius:50%; background:var(--paper); border:1px solid var(--line); flex:none;"></div>`;
@@ -3235,7 +3287,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
           ${thumb}
           <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
             <strong>${escapeHtml(r.name || 'Looking for work')}</strong>
-            <span class="screen-sub" style="margin:0;">${escapeHtml(r.status || '')}${locBits ? (' · ' + locBits) : ''}</span>
+            <span class="screen-sub" style="margin:0;">${escapeHtml(subLine)}</span>
           </div>
         </div>`;
       }
@@ -3260,10 +3312,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const body = root.querySelector('#jobs-detail-body');
     const locLine = [listing.city ? escapeHtml(listing.city) : '', listing.state ? escapeHtml(listing.state) : ''].filter(Boolean).join(', ');
     if (listing.type === 'looking'){
+      const chip = specialtyChip(listing);
+      const statusLine = [chip, listing.status].filter(Boolean).join(' · ');
       body.innerHTML = `
         ${listing.photo_url ? `<img src="${escapeHtml(listing.photo_url)}" alt="" style="width:88px; height:88px; border-radius:50%; object-fit:cover; align-self:center;">` : ''}
         <h2 class="screen-title" style="margin:0; text-align:center;">${escapeHtml(listing.name || 'Looking for work')}</h2>
-        <p class="screen-sub" style="margin:0; text-align:center;">${escapeHtml(listing.status || '')}${listing.grad_date ? (' · Graduating ' + escapeHtml(listing.grad_date)) : ''}</p>
+        <p class="screen-sub" style="margin:0; text-align:center;">${escapeHtml(statusLine)}${listing.grad_date ? (' · Graduating ' + escapeHtml(listing.grad_date)) : ''}</p>
         ${locLine ? `<p class="screen-sub" style="margin:0; text-align:center;">${locLine}</p>` : ''}
         ${listing.bio ? `<p style="margin:8px 0 0;">${escapeHtml(listing.bio)}</p>` : ''}
       `;
@@ -3350,6 +3404,17 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   function updateLookingStatusFields(){
     root.querySelector('#jobs-looking-status-note').textContent = (profile && profile.title) || 'Student';
     root.querySelector('#jobs-looking-graddate-field').style.display = isStudent() ? 'flex' : 'none';
+    const specSel = root.querySelector('#jobs-looking-specialty');
+    const specNote = root.querySelector('#jobs-looking-specialty-note');
+    if (isStudent()){
+      specSel.disabled = false;
+      specNote.style.display = 'none';
+    } else {
+      const auto = titleToSpecialty(profile && profile.title);
+      if (auto) specSel.value = auto;
+      specSel.disabled = true;
+      specNote.style.display = 'block';
+    }
   }
   async function loadMyListings(){
     updateLookingStatusFields();
@@ -3365,6 +3430,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         root.querySelector('#jobs-looking-city').value = looking.city || '';
         root.querySelector('#jobs-looking-state').value = looking.state || '';
         root.querySelector('#jobs-looking-graddate').value = looking.grad_date || '';
+        if (isStudent() && looking.specialty) root.querySelector('#jobs-looking-specialty').value = looking.specialty;
         if (looking.photo_url){
           lookingPhotoUrl = looking.photo_url;
           lookingPhotoPath = looking.photo_path || '';
@@ -3410,6 +3476,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       state: root.querySelector('#jobs-looking-state').value.trim().toUpperCase(),
       status: (profile && profile.title) || 'Student',
       grad_date: isStudent() ? (root.querySelector('#jobs-looking-graddate').value || null) : null,
+      specialty: root.querySelector('#jobs-looking-specialty').value || null,
       photo_url: lookingPhotoUrl || null,
       photo_path: lookingPhotoPath || null
     };
