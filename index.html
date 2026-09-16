@@ -3266,11 +3266,18 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
   function jobsListingId(type){ return profileCode + '::' + type; }
   function escapeHtml(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-  function specialtyChip(r){
-    const label = r.specialty || '';
-    if (!label) return '';
-    if (r.status && r.status.toLowerCase().includes(label.toLowerCase())) return '';
-    return label;
+  const CRAFT_SHORT_LABELS = { 'Barber':'Barber', 'Cosmetologist':'Cosmetology', 'Nail Tech':'Nail', 'Braider':'Braider', 'Massage Therapist':'Massage', 'Esthetician':'Esthetician', 'MUA':'MUA' };
+  function craftStatusLine(r){
+    const rawCraft = r.specialty || '';
+    const status = r.status || '';
+    if (!rawCraft) return status;
+    const shortCraft = CRAFT_SHORT_LABELS[rawCraft] || rawCraft;
+    if (status.toLowerCase() === 'student') return 'Student- ' + shortCraft;
+    if (status && status !== rawCraft && status.toLowerCase().endsWith(rawCraft.toLowerCase())){
+      const levelWord = status.slice(0, status.length - rawCraft.length).trim();
+      if (levelWord) return shortCraft + '-' + levelWord;
+    }
+    return shortCraft;
   }
 
   // ---- sub-mode (Browse / My Listings / Messages) ----
@@ -3334,8 +3341,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     listEl.innerHTML = rows.map((r,idx)=>{
       if (r.type === 'looking'){
         const locBits = [r.city || '', r.state || ''].filter(Boolean).join(', ');
-        const chip = specialtyChip(r);
-        const subLine = [chip, r.status, locBits].filter(Boolean).join(' · ');
+        const subLine = [craftStatusLine(r), locBits].filter(Boolean).join(' · ');
         const thumb = r.photo_url
           ? `<img src="${escapeHtml(r.photo_url)}" alt="" style="width:44px; height:44px; border-radius:50%; object-fit:cover; flex:none;">`
           : `<div style="width:44px; height:44px; border-radius:50%; background:var(--paper); border:1px solid var(--line); flex:none;"></div>`;
@@ -3368,8 +3374,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const body = root.querySelector('#jobs-detail-body');
     const locLine = [listing.city ? escapeHtml(listing.city) : '', listing.state ? escapeHtml(listing.state) : ''].filter(Boolean).join(', ');
     if (listing.type === 'looking'){
-      const chip = specialtyChip(listing);
-      const statusLine = [chip, listing.status].filter(Boolean).join(' · ');
+      const statusLine = craftStatusLine(listing);
       body.innerHTML = `
         ${listing.photo_url ? `<img src="${escapeHtml(listing.photo_url)}" alt="" style="width:88px; height:88px; border-radius:50%; object-fit:cover; align-self:center;">` : ''}
         <h2 class="screen-title" style="margin:0; text-align:center;">${escapeHtml(listing.name || 'Looking for work')}</h2>
