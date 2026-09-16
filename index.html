@@ -1247,7 +1247,8 @@
                 <div class="field"><label>Short bio</label><div class="input-row"><textarea id="jobs-looking-bio" rows="3" placeholder="A couple sentences about you"></textarea></div></div>
                 <div class="field"><label>City</label><div class="input-row"><input id="jobs-looking-city" type="text"></div></div>
                 <div class="field"><label>State</label><div class="input-row"><input id="jobs-looking-state" type="text" maxlength="2" style="text-transform:uppercase;"></div></div>
-                <div class="field" id="jobs-looking-graddate-field" style="display:none;"><label>Expected graduation date</label><div class="input-row"><input id="jobs-looking-graddate" type="date"></div></div>
+                <div class="field" id="jobs-looking-graddate-field" style="display:none;"><label>Expected graduation date</label><div class="input-row"><input id="jobs-looking-graddate" type="date"></div><p class="foot-note-small" style="margin-top:4px;">Filled in from your Pace overview — change it here if needed.</p></div>
+
                 <p class="foot-note-small">Your professional status (<span id="jobs-looking-status-note">Student</span>) is pulled from your account automatically.</p>
               </div>
               <button class="btn btn-primary" id="btn-jobs-save-looking" type="button">Save Looking listing</button>
@@ -2103,6 +2104,16 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   root.querySelector('#in-total').addEventListener('change', ()=> persistProfile({pace:P()}));
   root.querySelector('#in-earned').addEventListener('change', ()=> persistProfile({pace:P()}));
   root.querySelector('#in-asof').addEventListener('change', ()=> persistProfile({pace:P()}));
+  window.__ahcProjectedGradDate = function(){
+    const total = parseFloat(root.querySelector('#in-total').value)||0;
+    if (!total) return null;
+    const asOf = root.querySelector('#in-asof').value || todayIso();
+    const earned = parseFloat(root.querySelector('#in-earned').value)||0;
+    const blocked = P().breaks.concat(P().absences.filter(a=>a.type==='full').map(a=>({start:a.start, end:a.end})));
+    const partials = P().absences.filter(a=>a.type==='partial').map(a=>({date:a.date, amount:a.amount}));
+    const currentDate = simulate(asOf, earned, total, P().schedule, blocked, partials, null, 0);
+    return isoDate(currentDate);
+  };
   window.initPaceTab = function(){
     root.querySelector('#in-total').value = P().total || '';
     root.querySelector('#in-earned').value = P().earned || '';
@@ -3358,6 +3369,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         }
       } else {
         root.querySelector('#jobs-looking-name').value = (profile && profile.name) || '';
+      }
+      if (isStudent() && !root.querySelector('#jobs-looking-graddate').value && window.__ahcProjectedGradDate){
+        const projected = window.__ahcProjectedGradDate();
+        if (projected) root.querySelector('#jobs-looking-graddate').value = projected;
       }
       const { data: hiring } = await supabaseClient.from('job_listings').select('*').eq('id', jobsListingId('hiring')).maybeSingle();
       if (hiring){
