@@ -520,13 +520,20 @@
         <select class="title-select" id="auth-title" style="width:100%;">
           <option value="Student">Student</option>
           <option value="Barber">Barber</option>
-          <option value="Apprentice Barber">Apprentice Barber</option>
           <option value="Cosmetologist">Cosmetologist</option>
           <option value="Nail Tech">Nail Tech</option>
           <option value="Braider">Braider</option>
           <option value="Massage Therapist">Massage Therapist</option>
           <option value="Esthetician">Esthetician</option>
           <option value="MUA">MUA</option>
+        </select>
+      </div>
+      <div class="field" id="auth-barber-level-field" style="display:none;">
+        <label>Level</label>
+        <select class="title-select" id="auth-barber-level">
+          <option value="" disabled selected>Select your level</option>
+          <option value="Master Barber">Master Barber</option>
+          <option value="Apprentice Barber">Apprentice Barber</option>
         </select>
       </div>
       <div class="field" id="auth-student-field-field" style="display:none;">
@@ -1405,6 +1412,15 @@
         </select>
         <p class="foot-note-small" id="student-field-save-note" style="margin-top:4px;">&nbsp;</p>
       </div>
+      <div class="field" id="account-barber-level-field" style="display:none;">
+        <label>Level</label>
+        <select class="title-select" id="account-barber-level" style="width:100%;">
+          <option value="" disabled>Select your level</option>
+          <option value="Master Barber">Master Barber</option>
+          <option value="Apprentice Barber">Apprentice Barber</option>
+        </select>
+        <p class="foot-note-small" id="barber-level-save-note" style="margin-top:4px;">&nbsp;</p>
+      </div>
       <div id="account-role-warning" class="foot-note-small" style="display:none; border:1px solid var(--behind); background:var(--behind-tint); border-radius:10px; padding:12px; color:var(--ink);"></div>
       <div id="account-role-confirm-row" class="btn-row" style="display:none;">
         <button class="btn btn-ghost" id="btn-role-change-cancel" style="flex:1;">Cancel</button>
@@ -1671,16 +1687,20 @@ function showNdaScreen(onContinue){
   };
 }
 const CRAFTS = ['Barber','Cosmetologist','Nail Tech','Braider','Massage Therapist','Esthetician','MUA'];
-const TITLE_OPTIONS = ['Student','Barber','Apprentice Barber','Cosmetologist','Nail Tech','Braider','Massage Therapist','Esthetician','MUA'];
-const NON_STUDENT_TITLES = TITLE_OPTIONS.filter(t => t !== 'Student');
+const TITLE_OPTIONS = ['Student', ...CRAFTS];
+const NON_STUDENT_TITLES = CRAFTS;
+const BARBER_LEVELS = ['Master Barber','Apprentice Barber'];
 function currentCraft(){
   if (!profile) return '';
   if (isStudent()) return profile.studentField || '';
-  if (CRAFTS.includes(profile.title)) return profile.title;
-  if (profile.title === 'Apprentice Barber') return 'Barber';
-  return '';
+  return CRAFTS.includes(profile.title) ? profile.title : '';
 }
 function isStudent(){ return !!profile && profile.title === 'Student'; }
+function displayTitle(){
+  if (!profile) return 'Student';
+  if (profile.title === 'Barber' && profile.barberLevel) return profile.barberLevel;
+  return profile.title || 'Student';
+}
 const CATEGORY_NAMES = { cuts:'Haircuts', chemical:'Chemical Services', safety:'Safety' };
 const CATEGORY_ORDER = ['cuts','chemical','safety'];
 function defaultTechniques(){
@@ -1703,6 +1723,7 @@ function defaultProfile(name){
     name: name || 'You',
     title: 'Student',
     studentField: '',
+    barberLevel: '',
     license: '',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -1765,6 +1786,7 @@ async function persistProfile(fields){
   if (fields.techniques) row.techniques = fields.techniques;
   if (fields.title) row.title = fields.title;
   if (fields.studentField !== undefined) row.student_field = fields.studentField;
+  if (fields.barberLevel !== undefined) row.barber_level = fields.barberLevel;
   if (fields.name) row.name = fields.name;
   if (fields.license !== undefined) row.license = fields.license;
   if (fields.publicListing !== undefined) row.public_listing = fields.publicListing;
@@ -3211,7 +3233,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
   function renderPortfolio(){
     root.querySelector('#portfolio-name').textContent = profile.name;
-    root.querySelector('#portfolio-title-line').textContent = profile.title + ' · Self-rated Skill Graph';
+    root.querySelector('#portfolio-title-line').textContent = displayTitle() + ' · Self-rated Skill Graph';
     renderCredentialSummary('portfolio-summary', 'portfolio-list');
     const url = shareUrl();
     root.querySelector('#share-link-input').value = url;
@@ -3436,7 +3458,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
   });
   function updateLookingStatusFields(){
-    root.querySelector('#jobs-looking-status-note').textContent = (profile && profile.title) || 'Student';
+    root.querySelector('#jobs-looking-status-note').textContent = displayTitle();
     root.querySelector('#jobs-looking-graddate-field').style.display = isStudent() ? 'flex' : 'none';
     const specSel = root.querySelector('#jobs-looking-specialty');
     const auto = currentCraft();
@@ -3499,7 +3521,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       bio: root.querySelector('#jobs-looking-bio').value.trim(),
       city: root.querySelector('#jobs-looking-city').value.trim(),
       state: root.querySelector('#jobs-looking-state').value.trim().toUpperCase(),
-      status: (profile && profile.title) || 'Student',
+      status: displayTitle(),
       grad_date: isStudent() ? (root.querySelector('#jobs-looking-graddate').value || null) : null,
       specialty: currentCraft() || null,
       photo_url: lookingPhotoUrl || null,
@@ -4714,6 +4736,7 @@ function applyProfileRow(data){
   profile._nameNeedsSync = !!(data.name && data.name !== profile.name);
   profile.title = data.title || profile.title;
   profile.studentField = data.student_field || '';
+  profile.barberLevel = data.barber_level || '';
   profile.license = data.license || '';
   profile.createdAt = data.created_at || profile.createdAt;
   profile.updatedAt = data.updated_at || profile.updatedAt;
@@ -4752,17 +4775,18 @@ async function tryLoadProfileByUserId(userId){
   }catch(e){ console.warn('load by user id failed', e); }
   return false;
 }
-async function createProfile(code, name, license, title, userId, studentField){
+async function createProfile(code, name, license, title, userId, studentField, barberLevel){
   profile = defaultProfile(name);
   profile.license = license || '';
   profile.title = title && TITLE_OPTIONS.includes(title) ? title : 'Student';
   profile.studentField = (profile.title === 'Student' && CRAFTS.includes(studentField)) ? studentField : '';
+  profile.barberLevel = (profile.title === 'Barber' && BARBER_LEVELS.includes(barberLevel)) ? barberLevel : '';
   profileCode = code;
   if (dbAvailable){
     try{
       const { error } = await supabaseClient.from('profiles').insert({
         code, name: profile.name, title: profile.title, license: profile.license,
-        student_field: profile.studentField,
+        student_field: profile.studentField, barber_level: profile.barberLevel,
         pace: profile.pace, techniques: profile.techniques,
         user_id: userId || null
       });
@@ -4773,7 +4797,7 @@ async function createProfile(code, name, license, title, userId, studentField){
   return true;
 }
 function tbTitleText(){
-  return profile.title + (profile.license ? ' · Lic. ' + profile.license : '');
+  return displayTitle() + (profile.license ? ' · Lic. ' + profile.license : '');
 }
 async function deleteProfileRow(code){
   if (!dbAvailable || !code) return true;
@@ -4838,6 +4862,7 @@ function updateAuthFieldVisibility(){
   document.getElementById('auth-name-field').style.display = isNew ? '' : 'none';
   document.getElementById('auth-title-field').style.display = isNew ? '' : 'none';
   document.getElementById('auth-student-field-field').style.display = (isNew && title === 'Student') ? '' : 'none';
+  document.getElementById('auth-barber-level-field').style.display = (isNew && title === 'Barber') ? '' : 'none';
   document.getElementById('auth-license-field').style.display = (isNew && title !== 'Student') ? '' : 'none';
   document.getElementById('auth-code-field').style.display = isNew ? '' : 'none';
   document.getElementById('auth-forgot-row').style.display = isNew ? 'none' : 'block';
@@ -4875,6 +4900,7 @@ function showAuthScreen(forceMode){
   document.getElementById('auth-name').value = '';
   document.getElementById('auth-title').value = 'Student';
   document.getElementById('auth-student-field').value = '';
+  document.getElementById('auth-barber-level').value = '';
   document.getElementById('auth-license').value = '';
   document.getElementById('auth-code').value = '';
   setAuthMode(forceMode || (hasAccount ? 'returning' : 'new'));
@@ -4994,6 +5020,7 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
       const name = toTitleCase(document.getElementById('auth-name').value.trim()) || 'You';
       const title = document.getElementById('auth-title').value;
       const studentField = document.getElementById('auth-student-field').value;
+      const barberLevel = document.getElementById('auth-barber-level').value;
       const license = document.getElementById('auth-license').value.trim();
       const code = sanitizeCode(document.getElementById('auth-code').value);
       if (!code){ note.textContent = 'Pick a public booking code first.'; submitBtn.disabled = false; return; }
@@ -5010,7 +5037,7 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
         submitBtn.disabled = false;
         return;
       }
-      await createProfile(code, name, license, title, userId, studentField);
+      await createProfile(code, name, license, title, userId, studentField, barberLevel);
       try{
         localStorage.setItem('ahcProAccountExists', '1');
         localStorage.setItem('ahcLastProEmail', email);
@@ -5074,12 +5101,15 @@ function updateAccountLicenseVisibility(){
   const title = sel && sel.value ? sel.value : profile.title;
   document.getElementById('account-license-field').style.display = (title !== 'Student') ? 'block' : 'none';
   document.getElementById('account-student-field-field').style.display = (title === 'Student') ? '' : 'none';
+  document.getElementById('account-barber-level-field').style.display = (title === 'Barber') ? '' : 'none';
 }
 function populateAccountLicense(){
   document.getElementById('account-license').value = profile.license || '';
   document.getElementById('license-save-note').textContent = ' ';
   document.getElementById('account-student-field').value = profile.studentField || '';
   document.getElementById('student-field-save-note').textContent = ' ';
+  document.getElementById('account-barber-level').value = profile.barberLevel || '';
+  document.getElementById('barber-level-save-note').textContent = ' ';
   updateAccountLicenseVisibility();
 }
 document.getElementById('account-student-field').addEventListener('change', async function(){
@@ -5089,6 +5119,15 @@ document.getElementById('account-student-field').addEventListener('change', asyn
   note.textContent = 'Saving…';
   const result = await persistProfile({ studentField: val });
   note.textContent = result.ok ? 'Saved.' : ("Couldn't save: " + (result.message || 'unknown error'));
+});
+document.getElementById('account-barber-level').addEventListener('change', async function(){
+  const val = this.value;
+  profile.barberLevel = val;
+  const note = document.getElementById('barber-level-save-note');
+  note.textContent = 'Saving…';
+  const result = await persistProfile({ barberLevel: val });
+  note.textContent = result.ok ? 'Saved.' : ("Couldn't save: " + (result.message || 'unknown error'));
+  document.getElementById('tb-title').textContent = tbTitleText();
 });
 document.getElementById('btn-save-license').addEventListener('click', async ()=>{
   const val = document.getElementById('account-license').value.trim();
