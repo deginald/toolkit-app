@@ -3291,7 +3291,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       }
     }catch(e){
       console.warn('job message send failed', e);
-      statusEl.textContent = "Couldn't send. Try again.";
+      statusEl.textContent = "Couldn't send: " + ((e && e.message) || 'unknown error') + ". Try again.";
     }
   });
 
@@ -3327,7 +3327,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       noteEl.textContent = 'Photo added. Tap "Save Looking listing" to keep it.';
     }catch(err){
       console.warn('jobs looking photo upload failed', err);
-      noteEl.textContent = "Couldn't upload that photo. Try again.";
+      noteEl.textContent = "Couldn't upload that photo: " + ((err && err.message) || 'unknown error') + ". Try again.";
     }
   });
   function updateLookingStatusFields(){
@@ -3398,7 +3398,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       noteEl.textContent = active ? "Saved. You're visible in Jobs Board searches." : 'Saved. Your listing is hidden.';
     }catch(e){
       console.warn('save looking listing failed', e);
-      noteEl.textContent = "Couldn't save. Try again.";
+      noteEl.textContent = "Couldn't save: " + ((e && e.message) || 'unknown error') + ". Try again.";
     }
   });
   root.querySelector('#btn-jobs-save-hiring').addEventListener('click', async ()=>{
@@ -3425,7 +3425,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       noteEl.textContent = active ? 'Saved. Your listing is visible in Jobs Board searches.' : 'Saved. Your listing is hidden.';
     }catch(e){
       console.warn('save hiring listing failed', e);
-      noteEl.textContent = "Couldn't save. Try again.";
+      noteEl.textContent = "Couldn't save: " + ((e && e.message) || 'unknown error') + ". Try again.";
     }
   });
 
