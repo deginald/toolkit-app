@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
+<meta name="app-build" content="2026-09-17T16-15-19Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -399,6 +400,10 @@
 </script>
 <!-- End Access Gate -->
 <div id="app-root">
+  <div id="update-available-banner" class="banner action" hidden>
+    <span>A new version of the app is available.</span>
+    <button type="button" class="link-btn" id="btn-update-refresh">Refresh</button>
+  </div>
   <div id="loading-screen" class="center-screen">
     <p class="eyebrow-mini">Loading&hellip;</p>
   </div>
@@ -6719,6 +6724,60 @@ try{
 boot();
 registerServiceWorker();
 checkQuickMessageDeepLink();
+
+/* =========================================================
+   UPDATE CHECK -- a Home Screen icon (especially on iOS) can keep
+   showing an old cached copy of this file indefinitely, with nothing
+   telling the person a newer version exists. This periodically
+   fetches this same page fresh (bypassing cache) and compares its
+   build id against the one this loaded copy has; if they differ, it
+   shows a "new version available" banner rather than reloading on its
+   own, since a silent reload could land mid-consult or mid-booking.
+   ========================================================= */
+(function(){
+  // Meaningless (and, on file:// origins as used by local dev/testing, blocked by CORS in a
+  // way that spams the console) unless this is actually being served over http(s), so skip
+  // the whole feature outside of that.
+  if (window.location.protocol !== 'http:' && window.location.protocol !== 'https:') return;
+  const CURRENT_BUILD = (document.querySelector('meta[name="app-build"]') || {}).content || '';
+  let lastCheck = 0;
+  let notified = false;
+  async function checkForUpdate(){
+    if (!CURRENT_BUILD || notified) return;
+    const now = Date.now();
+    if (now - lastCheck < 60000) return; // don't check more than once a minute
+    lastCheck = now;
+    try{
+      const url = window.location.pathname + '?_v=' + now;
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) return;
+      const html = await res.text();
+      const match = html.match(/<meta\s+name=["']app-build["']\s+content=["']([^"']+)["']/i);
+      const latestBuild = match ? match[1] : '';
+      if (latestBuild && latestBuild !== CURRENT_BUILD){
+        notified = true;
+        const banner = document.getElementById('update-available-banner');
+        if (banner) banner.hidden = false;
+      }
+    }catch(e){ /* offline, or the fetch was blocked -- just try again later */ }
+  }
+  const refreshBtn = document.getElementById('btn-update-refresh');
+  if (refreshBtn){
+    refreshBtn.addEventListener('click', ()=>{
+      window.location.href = window.location.pathname + '?_r=' + Date.now();
+    });
+  }
+  // pageshow covers the initial load itself (it fires there too, not just on a
+  // bfcache restore), so no separate delayed check is needed on top of it.
+  setInterval(checkForUpdate, 10 * 60 * 1000);
+  document.addEventListener('visibilitychange', ()=>{
+    if (document.visibilityState === 'visible') checkForUpdate();
+  });
+  // iOS often restores a Home Screen app from its bfcache snapshot on reopen
+  // rather than doing a real navigation, so this is the moment most likely
+  // to be showing someone a stale copy without them knowing it.
+  window.addEventListener('pageshow', checkForUpdate);
+})();
 </script>
 </body>
 </html>

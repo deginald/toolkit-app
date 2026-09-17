@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect: Find a Pro</title>
+<meta name="app-build" content="2026-09-17T16-16-41Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -41,6 +42,9 @@
   .center-screen{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; gap:14px; text-align:center; }
 
   .link-btn{ border:none; background:transparent; color:var(--brass); font-family:'Public Sans',sans-serif; font-weight:700; font-size:12.5px; cursor:pointer; padding:6px 0; }
+  .banner{ font-size:12.5px; padding:10px 16px; text-align:center; background:var(--brass-tint); color:var(--ink); border-bottom:1px solid var(--line); flex:none; }
+  .banner.action{ display:flex; align-items:center; justify-content:space-between; gap:12px; text-align:left; }
+  .banner.action .link-btn{ flex:none; white-space:nowrap; }
   .btn{ border:none; border-radius:11px; padding:13px 18px; font-family:'Public Sans',sans-serif; font-weight:700; font-size:14px; cursor:pointer; text-align:center; }
   .btn-primary{ background:var(--brass); color:#241A0C; }
   .btn-outline{ background:transparent; color:var(--brass); border:1px solid var(--brass); }
@@ -146,6 +150,11 @@
 <body>
 
 <div id="app-root">
+
+  <div id="update-available-banner" class="banner action" hidden>
+    <span>A new version of the app is available.</span>
+    <button type="button" class="link-btn" id="btn-update-refresh">Refresh</button>
+  </div>
 
   <div id="loading-screen" class="center-screen">
     <p class="eyebrow-mini">Loading&hellip;</p>
@@ -1163,6 +1172,60 @@ if (window.visualViewport){
 }
 
 boot();
+
+/* =========================================================
+   UPDATE CHECK -- a Home Screen icon (especially on iOS) can keep
+   showing an old cached copy of this file indefinitely, with nothing
+   telling the person a newer version exists. This periodically
+   fetches this same page fresh (bypassing cache) and compares its
+   build id against the one this loaded copy has; if they differ, it
+   shows a "new version available" banner rather than reloading on its
+   own, since a silent reload could interrupt someone mid-booking.
+   ========================================================= */
+(function(){
+  // Meaningless (and, on file:// origins as used by local dev/testing, blocked by CORS in a
+  // way that spams the console) unless this is actually being served over http(s), so skip
+  // the whole feature outside of that.
+  if (window.location.protocol !== 'http:' && window.location.protocol !== 'https:') return;
+  const CURRENT_BUILD = (document.querySelector('meta[name="app-build"]') || {}).content || '';
+  let lastCheck = 0;
+  let notified = false;
+  async function checkForUpdate(){
+    if (!CURRENT_BUILD || notified) return;
+    const now = Date.now();
+    if (now - lastCheck < 60000) return; // don't check more than once a minute
+    lastCheck = now;
+    try{
+      const url = window.location.pathname + '?_v=' + now;
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) return;
+      const html = await res.text();
+      const match = html.match(/<meta\s+name=["']app-build["']\s+content=["']([^"']+)["']/i);
+      const latestBuild = match ? match[1] : '';
+      if (latestBuild && latestBuild !== CURRENT_BUILD){
+        notified = true;
+        const banner = document.getElementById('update-available-banner');
+        if (banner) banner.hidden = false;
+      }
+    }catch(e){ /* offline, or the fetch was blocked -- just try again later */ }
+  }
+  const refreshBtn = document.getElementById('btn-update-refresh');
+  if (refreshBtn){
+    refreshBtn.addEventListener('click', ()=>{
+      window.location.href = window.location.pathname + '?_r=' + Date.now();
+    });
+  }
+  // pageshow covers the initial load itself (it fires there too, not just on a
+  // bfcache restore), so no separate delayed check is needed on top of it.
+  setInterval(checkForUpdate, 10 * 60 * 1000);
+  document.addEventListener('visibilitychange', ()=>{
+    if (document.visibilityState === 'visible') checkForUpdate();
+  });
+  // iOS often restores a Home Screen app from its bfcache snapshot on reopen
+  // rather than doing a real navigation, so this is the moment most likely
+  // to be showing someone a stale copy without them knowing it.
+  window.addEventListener('pageshow', checkForUpdate);
+})();
 </script>
 </body>
 </html>
