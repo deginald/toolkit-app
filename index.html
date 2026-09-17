@@ -1156,6 +1156,7 @@
           <button type="button" class="mode-btn" data-biz-mode="earnings">Earnings</button>
           <button type="button" class="mode-btn" data-biz-mode="clients">My Clients</button>
           <button type="button" class="mode-btn" data-biz-mode="inventory">Inventory</button>
+          <button type="button" class="mode-btn" data-biz-mode="shop">Shop</button>
         </div>
         <div class="biz-pane show" data-biz="loyalty" id="tab-loyalty">
           <div class="screen-body show" data-screen="dashboard" style="gap:20px;">
@@ -1237,6 +1238,76 @@
             <div class="field" style="margin-top:4px;"><div class="input-row"><input id="inv-search" type="text" placeholder="Search your products"></div></div>
             <div id="inv-list" style="display:flex; flex-direction:column; gap:8px;"></div>
             <p class="screen-sub" id="inv-empty" style="display:none; margin:0;">No products yet. Add one to get started.</p>
+          </div>
+        </div>
+        <div class="biz-pane" data-biz="shop" id="tab-shop">
+          <div class="screen-body show" data-screen="dashboard" style="gap:16px;">
+
+            <!-- Not part of a shop: create one, or respond to an invite -->
+            <div id="shop-none-section" style="display:none; flex-direction:column; gap:16px;">
+              <p class="screen-sub" style="margin:0;">You're not part of a shop yet. Create one to manage multiple barbers under one account, or accept an invite below if a shop owner has sent you one.</p>
+
+              <div id="shop-invites-section" style="display:none; flex-direction:column; gap:8px;">
+                <p class="eyebrow-mini">Pending invites for you</p>
+                <div id="shop-invites-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+              </div>
+
+              <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
+                <p class="eyebrow-mini">Create a shop</p>
+                <div class="field"><label>Shop name</label><div class="input-row"><input id="shop-create-name" type="text" placeholder="e.g. Fresh Cuts Barbershop"></div></div>
+                <div class="field"><label>Address</label><div class="input-row"><input id="shop-create-address" type="text" placeholder="Street address"></div></div>
+                <div style="display:flex; gap:10px;">
+                  <div class="field" style="flex:1;"><label>City</label><div class="input-row"><input id="shop-create-city" type="text"></div></div>
+                  <div class="field" style="flex:1;"><label>State</label><div class="input-row"><input id="shop-create-state" type="text" maxlength="2" style="text-transform:uppercase;"></div></div>
+                </div>
+                <div class="field"><label>Phone</label><div class="input-row"><input id="shop-create-phone" type="text" placeholder="(555) 555-5555"></div></div>
+                <div class="field">
+                  <label>Shop code</label>
+                  <div class="input-row"><input id="shop-create-code" type="text" placeholder="e.g. fresh-cuts"></div>
+                  <p class="foot-note-small">A short, unique code for your shop -- it's just how the app tells shops apart, barbers won't see it.</p>
+                </div>
+                <button class="btn btn-primary" id="btn-shop-create" type="button">Create shop</button>
+                <p class="screen-sub" id="shop-create-status" style="margin:0;">&nbsp;</p>
+              </div>
+            </div>
+
+            <!-- Part of a shop, as its owner -->
+            <div id="shop-owner-section" style="display:none; flex-direction:column; gap:16px;">
+              <div class="detail-card">
+                <strong id="shop-owner-name">&nbsp;</strong>
+                <span class="screen-sub" id="shop-owner-address" style="margin:0;">&nbsp;</span>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <p class="eyebrow-mini">Team</p>
+                <div id="shop-team-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+              </div>
+
+              <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
+                <p class="eyebrow-mini">Invite a barber</p>
+                <p class="screen-sub" style="margin:0;">Enter the public booking code they already use to sign in -- they'll see your invite next time they open the Shop tab, and nothing changes for them until they accept it.</p>
+                <div class="input-row"><input id="shop-invite-code" type="text" placeholder="Their public booking code"></div>
+                <button class="btn btn-outline" id="btn-shop-invite-send" type="button">Send invite</button>
+                <p class="screen-sub" id="shop-invite-status" style="margin:0;">&nbsp;</p>
+              </div>
+
+              <div id="shop-pending-invites-section" style="display:none; flex-direction:column; gap:8px;">
+                <p class="eyebrow-mini">Invites sent, not yet answered</p>
+                <div id="shop-pending-invites-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+              </div>
+            </div>
+
+            <!-- Part of a shop, as staff -->
+            <div id="shop-staff-section" style="display:none; flex-direction:column; gap:16px;">
+              <div class="detail-card">
+                <strong id="shop-staff-shop-name">&nbsp;</strong>
+                <span class="screen-sub" id="shop-staff-shop-address" style="margin:0;">&nbsp;</span>
+                <span class="screen-sub" style="margin:0;">You're part of this shop's team. Your own clients, bookings, and consults stay yours -- the shop owner can't see them.</span>
+              </div>
+              <button class="link-btn" id="btn-shop-leave" type="button" style="padding:0; align-self:flex-start; color:var(--behind);">Leave this shop</button>
+              <p class="screen-sub" id="shop-leave-status" style="margin:0;">&nbsp;</p>
+            </div>
+
           </div>
         </div>
       </section>
@@ -1863,6 +1934,8 @@ function defaultProfile(name){
     },
     techniques: defaultTechniques(),
     publicListing: false,
+    shopCode: null,
+    shopRole: null,
     shopName: '',
     shopCity: '',
     shopState: '',
@@ -1922,6 +1995,8 @@ async function persistProfile(fields){
   if (fields.name) row.name = fields.name;
   if (fields.license !== undefined) row.license = fields.license;
   if (fields.publicListing !== undefined) row.public_listing = fields.publicListing;
+  if (fields.shopCode !== undefined) row.shop_code = fields.shopCode;
+  if (fields.shopRole !== undefined) row.shop_role = fields.shopRole;
   if (fields.shopName !== undefined) row.shop_name = fields.shopName;
   if (fields.shopCity !== undefined) row.shop_city = fields.shopCity;
   if (fields.shopState !== undefined) row.shop_state = fields.shopState;
@@ -2037,6 +2112,7 @@ function showBusinessSubtab(mode){
   if (mode === 'loyalty' && window.initLoyaltyTab) window.initLoyaltyTab();
   if (mode === 'clients' && window.initMyClientsTab) window.initMyClientsTab();
   if (mode === 'inventory' && window.initInventoryTab) window.initInventoryTab();
+  if (mode === 'shop' && window.initShopTab) window.initShopTab();
 }
 document.querySelectorAll('#business-mode-toggle .mode-btn').forEach(btn=>{
   btn.addEventListener('click', ()=> showBusinessSubtab(btn.dataset.bizMode));
@@ -5328,6 +5404,295 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   };
 })();
 /* =========================================================
+   SHOP TAB (Business > Shop) -- multi-barber shop/owner management.
+   Schema: a `shops` table (name/address/phone, owner_code), a `shop_code` +
+   `shop_role` ('owner'|'staff') on each pro's own profile row, and a
+   `shop_invites` table so nobody is added to a shop without accepting an
+   invite themselves. Deliberately narrow in scope for now: joining a shop
+   only affects this tab -- a staff member's own clients, consults, bookings,
+   and public listing are untouched and stay theirs alone.
+   ========================================================= */
+(function(){
+  const root = document.getElementById('tab-shop');
+  let myShop = null; // the shops row, when I'm a member (owner or staff)
+  let armedRemoveCode = null; // "tap again to remove" for team members
+  let armedLeave = false; // "tap again to confirm" for leaving a shop
+
+  function escapeHtmlShop(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function genShopInviteId(){ return 'invite_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function shopAddressLine(shop){
+    if (!shop) return '';
+    const bits = [shop.address, [shop.city, shop.state].filter(Boolean).join(', ')].filter(Boolean);
+    return bits.join(' &middot; ') + (shop.phone ? (bits.length ? ' &middot; ' : '') + shop.phone : '');
+  }
+
+  async function fetchShopByCode(code){
+    if (!code) return null;
+    try{
+      const { data, error } = await supabaseClient.from('shops').select('*').eq('code', code).maybeSingle();
+      if (error) throw error;
+      return data;
+    }catch(e){ console.warn('load shop failed', e); return null; }
+  }
+
+  function showSection(which){
+    root.querySelector('#shop-none-section').style.display = which === 'none' ? 'flex' : 'none';
+    root.querySelector('#shop-owner-section').style.display = which === 'owner' ? 'flex' : 'none';
+    root.querySelector('#shop-staff-section').style.display = which === 'staff' ? 'flex' : 'none';
+  }
+
+  // ---- Not in a shop: invites addressed to me ----
+  async function loadMyPendingInvites(){
+    const section = root.querySelector('#shop-invites-section');
+    const listEl = root.querySelector('#shop-invites-list');
+    if (!dbAvailable || !profileCode){ section.style.display = 'none'; return; }
+    try{
+      const { data, error } = await supabaseClient.from('shop_invites').select('*').eq('invited_code', profileCode).eq('status', 'pending');
+      if (error) throw error;
+      const invites = data || [];
+      if (!invites.length){ section.style.display = 'none'; listEl.innerHTML = ''; return; }
+      section.style.display = 'flex';
+      listEl.innerHTML = invites.map(inv => `
+        <div class="detail-card" data-invite-id="${inv.id}">
+          <strong>${escapeHtmlShop(inv.shop_name)}</strong>
+          <span class="screen-sub" style="margin:0;">Invited by ${escapeHtmlShop(inv.invited_by_name || 'the owner')}</span>
+          <div class="btn-row" style="gap:10px; margin-top:4px;">
+            <button type="button" class="btn btn-primary" data-invite-accept="${inv.id}" style="flex:1;">Accept</button>
+            <button type="button" class="btn btn-ghost" data-invite-decline="${inv.id}" style="flex:1;">Decline</button>
+          </div>
+        </div>`).join('');
+    }catch(e){
+      console.warn('load pending invites failed', e);
+      section.style.display = 'none';
+    }
+  }
+  async function fetchInviteById(id){
+    try{
+      const { data, error } = await supabaseClient.from('shop_invites').select('*').eq('id', id).maybeSingle();
+      if (error) throw error;
+      return data;
+    }catch(e){ console.warn('load invite failed', e); return null; }
+  }
+  root.querySelector('#shop-invites-list').addEventListener('click', async (e)=>{
+    const acceptId = e.target.dataset.inviteAccept;
+    const declineId = e.target.dataset.inviteDecline;
+    if (acceptId){
+      const inviteRow = await fetchInviteById(acceptId);
+      if (!inviteRow) return;
+      try{
+        await supabaseClient.from('shop_invites').update({ status:'accepted', responded_at: new Date().toISOString() }).eq('id', acceptId);
+      }catch(err){ console.warn('accept invite failed', err); }
+      const result = await persistProfile({ shopCode: inviteRow.shop_code, shopRole: 'staff' });
+      profile.shopCode = inviteRow.shop_code;
+      profile.shopRole = 'staff';
+      if (!result.ok) showToast("Joined, but couldn't save -- try reopening this tab.");
+      loadShopState();
+    }
+    if (declineId){
+      try{
+        await supabaseClient.from('shop_invites').update({ status:'declined', responded_at: new Date().toISOString() }).eq('id', declineId);
+      }catch(err){ console.warn('decline invite failed', err); }
+      loadMyPendingInvites();
+    }
+  });
+
+  // ---- Create a shop ----
+  root.querySelector('#btn-shop-create').addEventListener('click', async ()=>{
+    const statusEl = root.querySelector('#shop-create-status');
+    const name = root.querySelector('#shop-create-name').value.trim();
+    const address = root.querySelector('#shop-create-address').value.trim();
+    const city = root.querySelector('#shop-create-city').value.trim();
+    const state = root.querySelector('#shop-create-state').value.trim().toUpperCase();
+    const phone = root.querySelector('#shop-create-phone').value.trim();
+    const code = sanitizeCode(root.querySelector('#shop-create-code').value);
+    if (!name){ statusEl.textContent = 'Give your shop a name first.'; return; }
+    if (!code){ statusEl.textContent = 'Pick a shop code first.'; return; }
+    if (!dbAvailable){ statusEl.textContent = "Live saving isn't connected right now."; return; }
+    statusEl.textContent = 'Checking that code…';
+    try{
+      const { data: existing, error: checkErr } = await supabaseClient.from('shops').select('code').eq('code', code).maybeSingle();
+      if (checkErr) throw checkErr;
+      if (existing){ statusEl.textContent = 'That shop code is already taken. Pick another.'; return; }
+      statusEl.textContent = 'Creating your shop…';
+      const { error } = await supabaseClient.from('shops').insert({
+        code, name, address: address || null, city: city || null, state: state || null, phone: phone || null,
+        owner_code: profileCode
+      });
+      if (error) throw error;
+      const result = await persistProfile({ shopCode: code, shopRole: 'owner' });
+      profile.shopCode = code;
+      profile.shopRole = 'owner';
+      if (!result.ok){ statusEl.textContent = "Shop created, but couldn't link your account -- try reopening this tab."; return; }
+      loadShopState();
+    }catch(e){
+      console.warn('create shop failed', e);
+      statusEl.textContent = "Couldn't create your shop. Try again.";
+    }
+  });
+
+  // ---- Owner: shop header + team ----
+  async function loadOwnerView(){
+    root.querySelector('#shop-owner-name').textContent = myShop ? myShop.name : 'Your shop';
+    root.querySelector('#shop-owner-address').innerHTML = shopAddressLine(myShop) || '&nbsp;';
+    await renderTeamList();
+    await loadSentInvites();
+  }
+  async function renderTeamList(){
+    const listEl = root.querySelector('#shop-team-list');
+    if (!dbAvailable || !profile.shopCode){ listEl.innerHTML = ''; return; }
+    try{
+      const { data, error } = await supabaseClient.from('profiles').select('code, name, title, shop_role').eq('shop_code', profile.shopCode);
+      if (error) throw error;
+      const team = (data || []).slice().sort((a,b)=> (a.shop_role==='owner'?-1:0) - (b.shop_role==='owner'?-1:0));
+      listEl.innerHTML = team.map(m => `
+        <div class="detail-card" style="flex-direction:row; align-items:center; gap:10px;" data-member-code="${m.code}">
+          <div style="flex:1; min-width:0;">
+            <strong>${escapeHtmlShop(m.name || m.code)}</strong>
+            <span class="screen-sub" style="margin:0;">${m.shop_role === 'owner' ? 'Owner' : (m.title || 'Staff')}</span>
+          </div>
+          ${m.code !== profileCode ? `<button type="button" class="link-btn" data-team-remove="${m.code}" style="padding:0; color:var(--behind); flex:none;">Remove</button>` : ''}
+        </div>`).join('');
+    }catch(e){
+      console.warn('load team failed', e);
+      listEl.innerHTML = '';
+    }
+  }
+  root.querySelector('#shop-team-list').addEventListener('click', async (e)=>{
+    const removeCode = e.target.dataset.teamRemove;
+    if (!removeCode) return;
+    if (armedRemoveCode !== removeCode){
+      armedRemoveCode = removeCode;
+      e.target.textContent = 'Tap again to remove';
+      setTimeout(()=>{ if (armedRemoveCode === removeCode){ armedRemoveCode = null; renderTeamList(); } }, 4000);
+      return;
+    }
+    armedRemoveCode = null;
+    try{
+      await supabaseClient.from('profiles').update({ shop_code: null, shop_role: null }).eq('code', removeCode);
+    }catch(err){ console.warn('remove team member failed', err); }
+    renderTeamList();
+  });
+
+  // ---- Owner: send / cancel invites ----
+  root.querySelector('#btn-shop-invite-send').addEventListener('click', async ()=>{
+    const statusEl = root.querySelector('#shop-invite-status');
+    const codeInput = root.querySelector('#shop-invite-code');
+    const targetCode = sanitizeCode(codeInput.value);
+    if (!targetCode){ statusEl.textContent = "Enter the barber's booking code first."; return; }
+    if (targetCode === profileCode){ statusEl.textContent = "That's your own code."; return; }
+    if (!dbAvailable){ statusEl.textContent = "Live saving isn't connected right now."; return; }
+    statusEl.textContent = 'Looking that code up…';
+    try{
+      const { data: target, error: lookupErr } = await supabaseClient.from('profiles').select('code, name, shop_code').eq('code', targetCode).maybeSingle();
+      if (lookupErr) throw lookupErr;
+      if (!target){ statusEl.textContent = "Couldn't find a pro with that code."; return; }
+      if (target.shop_code){ statusEl.textContent = target.shop_code === profile.shopCode ? 'Already on your team.' : "That pro is already part of a shop."; return; }
+      const { data: existingInvite, error: existErr } = await supabaseClient.from('shop_invites').select('id').eq('shop_code', profile.shopCode).eq('invited_code', targetCode).eq('status', 'pending').maybeSingle();
+      if (existErr) throw existErr;
+      if (existingInvite){ statusEl.textContent = 'Already invited -- waiting on their answer.'; return; }
+      const { error: insertErr } = await supabaseClient.from('shop_invites').insert({
+        id: genShopInviteId(),
+        shop_code: profile.shopCode,
+        shop_name: myShop ? myShop.name : '',
+        invited_code: targetCode,
+        invited_by_code: profileCode,
+        invited_by_name: profile.name,
+        status: 'pending'
+      });
+      if (insertErr) throw insertErr;
+      statusEl.textContent = `Invite sent to ${target.name || targetCode}.`;
+      codeInput.value = '';
+      loadSentInvites();
+    }catch(e){
+      console.warn('send invite failed', e);
+      statusEl.textContent = "Couldn't send that invite. Try again.";
+    }
+  });
+  async function loadSentInvites(){
+    const section = root.querySelector('#shop-pending-invites-section');
+    const listEl = root.querySelector('#shop-pending-invites-list');
+    if (!dbAvailable || !profile.shopCode){ section.style.display = 'none'; return; }
+    try{
+      const { data, error } = await supabaseClient.from('shop_invites').select('*').eq('shop_code', profile.shopCode).eq('status', 'pending');
+      if (error) throw error;
+      const invites = data || [];
+      if (!invites.length){ section.style.display = 'none'; listEl.innerHTML = ''; return; }
+      section.style.display = 'flex';
+      listEl.innerHTML = invites.map(inv => `
+        <div class="detail-card" style="flex-direction:row; align-items:center; gap:10px;">
+          <span style="flex:1; min-width:0;">${escapeHtmlShop(inv.invited_code)}</span>
+          <button type="button" class="link-btn" data-invite-cancel="${inv.id}" style="padding:0; flex:none;">Cancel</button>
+        </div>`).join('');
+    }catch(e){
+      console.warn('load sent invites failed', e);
+      section.style.display = 'none';
+    }
+  }
+  root.querySelector('#shop-pending-invites-list').addEventListener('click', async (e)=>{
+    const cancelId = e.target.dataset.inviteCancel;
+    if (!cancelId) return;
+    try{
+      await supabaseClient.from('shop_invites').update({ status:'revoked', responded_at: new Date().toISOString() }).eq('id', cancelId);
+    }catch(err){ console.warn('cancel invite failed', err); }
+    loadSentInvites();
+  });
+
+  // ---- Staff: shop header + leave ----
+  function loadStaffView(){
+    root.querySelector('#shop-staff-shop-name').textContent = myShop ? myShop.name : 'Your shop';
+    root.querySelector('#shop-staff-shop-address').innerHTML = shopAddressLine(myShop) || '&nbsp;';
+  }
+  root.querySelector('#btn-shop-leave').addEventListener('click', async ()=>{
+    const statusEl = root.querySelector('#shop-leave-status');
+    const btn = root.querySelector('#btn-shop-leave');
+    if (!armedLeave){
+      armedLeave = true;
+      btn.textContent = 'Tap again to confirm leaving';
+      setTimeout(()=>{ if (armedLeave){ armedLeave = false; btn.textContent = 'Leave this shop'; } }, 4000);
+      return;
+    }
+    armedLeave = false;
+    btn.textContent = 'Leave this shop';
+    const result = await persistProfile({ shopCode: null, shopRole: null });
+    profile.shopCode = null;
+    profile.shopRole = null;
+    if (!result.ok){ statusEl.textContent = "Couldn't save -- try again."; return; }
+    loadShopState();
+  });
+
+  // ---- Entry point ----
+  async function loadShopState(){
+    // Re-check my own shop link fresh, in case an owner removed me (or I
+    // accepted/left elsewhere) since this tab was last open.
+    if (dbAvailable && profileCode){
+      try{
+        const { data } = await supabaseClient.from('profiles').select('shop_code, shop_role').eq('code', profileCode).maybeSingle();
+        if (data){
+          profile.shopCode = data.shop_code || null;
+          profile.shopRole = data.shop_role || null;
+        }
+      }catch(e){ console.warn('refresh shop link failed', e); }
+    }
+    if (!profile.shopCode){
+      myShop = null;
+      showSection('none');
+      loadMyPendingInvites();
+      return;
+    }
+    myShop = await fetchShopByCode(profile.shopCode);
+    if (profile.shopRole === 'owner'){
+      showSection('owner');
+      loadOwnerView();
+    } else {
+      showSection('staff');
+      loadStaffView();
+    }
+  }
+  window.initShopTab = function(){
+    loadShopState();
+  };
+})();
+/* =========================================================
    AUTH / PROFILE LOAD / SHARED READ-ONLY VIEW / BOOT
    ========================================================= */
 async function fetchProfileRowByUserId(userId){
@@ -5348,6 +5713,8 @@ function applyProfileRow(data){
   profile.pace = Object.assign(defaultProfile().pace, data.pace||{});
   profile.techniques = Array.isArray(data.techniques) && data.techniques.length ? data.techniques : defaultTechniques();
   profile.publicListing = !!data.public_listing;
+  profile.shopCode = data.shop_code || null;
+  profile.shopRole = data.shop_role || null;
   profile.shopName = data.shop_name || '';
   profile.shopCity = data.shop_city || '';
   profile.shopState = data.shop_state || '';
