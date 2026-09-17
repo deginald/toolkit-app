@@ -1588,6 +1588,19 @@
             <label>Website <span style="text-transform:none; font-weight:600;">(optional)</span></label>
             <div class="input-row"><input id="listing-website" type="text" placeholder="e.g. https://yourshop.com"></div>
           </div>
+          <div class="field">
+            <label>Short bio <span style="text-transform:none; font-weight:600;">(optional)</span></label>
+            <div class="input-row"><textarea id="listing-bio" rows="3" maxlength="400" placeholder="A couple sentences about your work and style"></textarea></div>
+            <p class="foot-note-small" style="margin:2px 0 0;">Shown on your public Find a Pro profile.</p>
+          </div>
+        </div>
+        <div class="field" id="listing-photos-field" style="display:none;">
+          <label>Portfolio photos <span style="text-transform:none; font-weight:600;">(optional)</span></label>
+          <p class="foot-note-small" style="margin:0 0 8px;">Add a few photos of your work. Clients see these on your public profile and in search results.</p>
+          <div class="checkpoint-photo-grid" id="listing-photos-grid" style="justify-content:flex-start;"></div>
+          <input type="file" accept="image/*" multiple id="listing-photos-input" style="display:none;">
+          <button class="btn btn-outline" id="btn-listing-add-photos" type="button" style="margin-top:10px; width:100%;">Add photos</button>
+          <p class="foot-note-small" id="listing-photos-status">&nbsp;</p>
         </div>
         <button class="btn btn-primary" id="btn-save-listing" type="button">Save listing</button>
         <p class="foot-note-small" id="listing-save-note">&nbsp;</p>
@@ -1822,6 +1835,8 @@ function defaultProfile(name){
     shopState: '',
     shopPhone: '',
     shopAddress: '',
+    bio: '',
+    portfolioPhotos: [],
     ndaVersion: '',
     ndaAcceptedAt: '',
     social: { instagram: '', facebook: '', website: '' },
@@ -1878,6 +1893,8 @@ async function persistProfile(fields){
   if (fields.shopState !== undefined) row.shop_state = fields.shopState;
   if (fields.shopPhone !== undefined) row.shop_phone = fields.shopPhone;
   if (fields.shopAddress !== undefined) row.shop_address = fields.shopAddress;
+  if (fields.bio !== undefined) row.bio = fields.bio;
+  if (fields.portfolioPhotos !== undefined) row.portfolio_photos = fields.portfolioPhotos;
   if (fields.ndaVersion !== undefined) row.nda_version = fields.ndaVersion;
   if (fields.ndaAcceptedAt !== undefined) row.nda_accepted_at = fields.ndaAcceptedAt;
   if (fields.social !== undefined) row.social = fields.social;
@@ -5193,6 +5210,8 @@ function applyProfileRow(data){
   profile.shopState = data.shop_state || '';
   profile.shopPhone = data.shop_phone || '';
   profile.shopAddress = data.shop_address || '';
+  profile.bio = data.bio || '';
+  profile.portfolioPhotos = Array.isArray(data.portfolio_photos) ? data.portfolio_photos : [];
   profile.ndaVersion = data.nda_version || '';
   profile.ndaAcceptedAt = data.nda_accepted_at || '';
   profile.social = Object.assign({ instagram:'', facebook:'', website:'' }, data.social || {});
@@ -5703,12 +5722,75 @@ function populateAccountListing(){
   document.getElementById('listing-instagram').value = social.instagram || '';
   document.getElementById('listing-facebook').value = social.facebook || '';
   document.getElementById('listing-website').value = social.website || '';
+  document.getElementById('listing-bio').value = profile.bio || '';
   document.getElementById('listing-fields').style.display = profile.publicListing ? 'flex' : 'none';
+  document.getElementById('listing-photos-field').style.display = profile.publicListing ? 'flex' : 'none';
   document.getElementById('listing-save-note').textContent = ' ';
+  renderListingPhotos();
   updateListingViewLink();
 }
 document.getElementById('listing-public-toggle').addEventListener('change', function(){
   document.getElementById('listing-fields').style.display = this.checked ? 'flex' : 'none';
+  document.getElementById('listing-photos-field').style.display = this.checked ? 'flex' : 'none';
+});
+/* ---- Portfolio photos (public listing) ---- */
+function renderListingPhotos(){
+  const grid = document.getElementById('listing-photos-grid');
+  const photos = Array.isArray(profile.portfolioPhotos) ? profile.portfolioPhotos : [];
+  grid.innerHTML = photos.map((p, idx) => `
+    <div class="checkpoint-photo-wrap">
+      <img class="checkpoint-photo" src="${p.url}" alt="Portfolio photo ${idx+1}">
+      <button type="button" class="checkpoint-photo-remove" data-remove-listing-photo="${idx}" aria-label="Remove this photo">&times;</button>
+    </div>`).join('');
+  grid.querySelectorAll('[data-remove-listing-photo]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const idx = parseInt(btn.dataset.removeListingPhoto, 10);
+      const photos = (profile.portfolioPhotos || []).slice();
+      const removed = photos.splice(idx, 1)[0];
+      const statusEl = document.getElementById('listing-photos-status');
+      statusEl.textContent = 'Removing…';
+      if (removed && removed.path && dbAvailable){
+        try{ await supabaseClient.storage.from('barber-photos').remove([removed.path]); }
+        catch(e){ console.warn('portfolio photo storage remove failed', e); }
+      }
+      profile.portfolioPhotos = photos;
+      const result = await persistProfile({ portfolioPhotos: photos });
+      statusEl.textContent = (result && result.ok) ? 'Photo removed.' : ("Couldn't save: " + ((result && result.message) || 'try again.'));
+      renderListingPhotos();
+    });
+  });
+}
+document.getElementById('btn-listing-add-photos').addEventListener('click', ()=> document.getElementById('listing-photos-input').click());
+document.getElementById('listing-photos-input').addEventListener('change', async (e)=>{
+  const files = Array.from(e.target.files || []);
+  e.target.value = '';
+  if (!files.length || !profileCode) return;
+  const statusEl = document.getElementById('listing-photos-status');
+  if (!dbAvailable){ statusEl.textContent = "Live saving isn't connected right now."; return; }
+  statusEl.textContent = files.length > 1 ? 'Uploading photos…' : 'Uploading photo…';
+  const uploaded = [];
+  for (let i=0; i<files.length; i++){
+    try{
+      const file = await compressPhotoForUpload(files[i]);
+      const safeName = (file.name || 'photo.jpg').replace(/[^a-zA-Z0-9_.-]/g,'_');
+      const path = `${profileCode}/${Date.now()}-${i}-${safeName}`;
+      const { error: upErr } = await supabaseClient.storage.from('barber-photos').upload(path, file);
+      if (upErr) throw upErr;
+      const { data: urlData } = supabaseClient.storage.from('barber-photos').getPublicUrl(path);
+      uploaded.push({ url: urlData.publicUrl, path });
+    }catch(err){
+      console.warn('portfolio photo upload failed', err);
+      statusEl.textContent = "Couldn't upload one of those photos: " + ((err && err.message) || 'unknown error') + ". Try again.";
+    }
+  }
+  if (!uploaded.length) return;
+  const photos = (profile.portfolioPhotos || []).concat(uploaded);
+  profile.portfolioPhotos = photos;
+  const result = await persistProfile({ portfolioPhotos: photos });
+  statusEl.textContent = (result && result.ok)
+    ? (uploaded.length > 1 ? `${uploaded.length} photos added.` : 'Photo added.')
+    : ("Couldn't save: " + ((result && result.message) || 'try again.'));
+  renderListingPhotos();
 });
 document.getElementById('btn-save-listing').addEventListener('click', async ()=>{
   const isPublic = document.getElementById('listing-public-toggle').checked;
@@ -5723,11 +5805,13 @@ document.getElementById('btn-save-listing').addEventListener('click', async ()=>
     facebook: document.getElementById('listing-facebook').value.trim(),
     website: document.getElementById('listing-website').value.trim()
   };
+  profile.bio = document.getElementById('listing-bio').value.trim();
   const note = document.getElementById('listing-save-note');
   note.textContent = 'Saving…';
   const result = await persistProfile({
     publicListing: profile.publicListing, shopName: profile.shopName, shopCity: profile.shopCity,
-    shopState: profile.shopState, shopPhone: profile.shopPhone, shopAddress: profile.shopAddress, social: profile.social
+    shopState: profile.shopState, shopPhone: profile.shopPhone, shopAddress: profile.shopAddress, social: profile.social,
+    bio: profile.bio
   });
   if (result && result.ok){
     note.textContent = isPublic ? 'Saved. You’re live on Find a Pro.' : 'Saved.';
