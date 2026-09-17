@@ -61,7 +61,8 @@
   .pro-card:focus-visible{ outline:2px solid var(--brass); outline-offset:-2px; }
   .pro-card-body{ display:flex; gap:12px; padding:10px 14px 14px; }
   .pro-avatar-col{ flex:none; width:52px; display:flex; flex-direction:column; align-items:center; gap:5px; }
-  .pro-avatar{ width:52px; height:52px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--surface), var(--paper)); color:var(--brass); font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:19px; }
+  .pro-avatar{ width:52px; height:52px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--surface), var(--paper)); color:var(--brass); font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:19px; overflow:hidden; }
+  .pro-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
   .pro-avatar--lg{ width:68px; height:68px; font-size:24px; }
   .pro-avatar-rating{ font-size:10px; color:var(--muted); text-align:center; line-height:1.3; }
   .pro-avatar-rating .stars{ color:var(--brass); letter-spacing:0.5px; display:block; font-size:11px; }
@@ -317,12 +318,20 @@ function starsFor(n){
   return '★★★★★☆☆☆☆☆'.slice(5 - rounded, 10 - rounded);
 }
 
-// Small rating readout shown under the avatar placeholder, on both the search-result
-// cards and the profile page header -- kept as one function so the two stay in sync.
+// Small rating readout shown under the avatar, on both the search-result cards and
+// the profile page header -- kept as one function so the two stay in sync.
 function avatarRatingHtml(agg){
   return agg && agg.count
     ? `<span class="stars">${starsFor(agg.overall)}</span>${agg.overall.toFixed(1)} · ${agg.count}`
     : 'No reviews yet';
+}
+// The avatar itself: the pro's uploaded profile picture if they've added one,
+// otherwise the same initial-letter placeholder used everywhere else in the app.
+function avatarInnerHtml(p){
+  if (p.profile_pic && p.profile_pic.url){
+    return `<img src="${p.profile_pic.url}" alt="${p.name ? p.name + ' profile photo' : 'Profile photo'}">`;
+  }
+  return (p.name || '?').trim().charAt(0).toUpperCase();
 }
 
 function toTitleCase(str){
@@ -461,7 +470,7 @@ function renderList(){
       ${photoHtml}
       <div class="pro-card-body">
         <div class="pro-avatar-col">
-          <div class="pro-avatar" aria-hidden="true">${initial}</div>
+          <div class="pro-avatar" aria-hidden="true">${avatarInnerHtml(p)}</div>
           <div class="pro-avatar-rating">${avatarRatingHtml(agg)}</div>
         </div>
         <div class="pro-info-col">
@@ -510,7 +519,7 @@ async function showDetail(code){
   document.getElementById('detail-name').textContent = p.name || 'Unnamed';
   document.getElementById('detail-title').textContent = p.title || '';
   document.getElementById('detail-shop-line').textContent = [p.shop_name, locationLine(p)].filter(Boolean).join(' · ');
-  document.getElementById('detail-avatar').textContent = (p.name || '?').trim().charAt(0).toUpperCase();
+  document.getElementById('detail-avatar').innerHTML = avatarInnerHtml(p);
   document.getElementById('detail-avatar-rating').innerHTML = avatarRatingHtml(allAggregates[code]);
 
   // ---- Hero photo slider ----
