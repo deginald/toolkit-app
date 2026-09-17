@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-17T18-23-40Z">
+<meta name="app-build" content="2026-09-17T18-26-08Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -6095,9 +6095,17 @@ document.getElementById('btn-share-app-native').addEventListener('click', async 
 document.getElementById('btn-auth-back').addEventListener('click', ()=>{
   showRoleScreen();
 });
+// Each reset request immediately invalidates whatever link a previous request already sent
+// -- so tapping this more than once is exactly how someone ends up clicking a dead link
+// without realizing it (the newest email is the only one that still works). A short cooldown
+// after a successful send makes that much harder to do by accident, and the message spells
+// it out for anyone who already has more than one of these emails sitting in their inbox.
+let forgotPasswordCooldownUntil = 0;
 document.getElementById('auth-forgot-link').addEventListener('click', async (e)=>{
   e.preventDefault();
+  const link = document.getElementById('auth-forgot-link');
   const note = document.getElementById('auth-note');
+  if (Date.now() < forgotPasswordCooldownUntil){ return; }
   const email = document.getElementById('auth-email').value.trim();
   if (!email){ note.textContent = 'Enter your email above first, then tap Forgot password.'; return; }
   if (!dbAvailable){ note.textContent = "Live saving isn't connected right now."; return; }
@@ -6109,7 +6117,11 @@ document.getElementById('auth-forgot-link').addEventListener('click', async (e)=
     const redirectTo = window.location.origin + window.location.pathname;
     const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
     if (error) throw error;
-    note.textContent = 'Check your email for a password reset link.';
+    note.textContent = 'Check your email for a password reset link. Only the most recently sent one will work, so if you request another, use that one instead.';
+    forgotPasswordCooldownUntil = Date.now() + 30000;
+    link.style.opacity = '0.5';
+    link.style.pointerEvents = 'none';
+    setTimeout(()=>{ link.style.opacity = ''; link.style.pointerEvents = ''; }, 30000);
   }catch(err){
     console.warn('reset password failed', err);
     note.textContent = (err && err.message) ? err.message : "Couldn't send that. Try again.";
