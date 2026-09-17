@@ -37,7 +37,7 @@
     -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; }
   .brand-name{ font-size:12px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--ink); margin:6px 0 0; }
 
-  #app-root{ max-width:460px; margin:0 auto; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; background:var(--bg-gradient); box-shadow:0 0 0 1px var(--line); }
+  #app-root{ max-width:460px; margin:0 auto; min-height:100vh; min-height:100svh; display:flex; flex-direction:column; background:var(--bg-gradient); box-shadow:0 0 0 1px var(--line); }
   .center-screen{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; gap:14px; text-align:center; }
 
   .link-btn{ border:none; background:transparent; color:var(--brass); font-family:'Public Sans',sans-serif; font-weight:700; font-size:12.5px; cursor:pointer; padding:6px 0; }
@@ -56,8 +56,13 @@
   .walk-header{ display:flex; align-items:center; gap:10px; }
   .back-btn{ background:var(--paper); border:1px solid var(--line); width:32px; height:32px; border-radius:9px; font-size:16px; color:var(--ink); cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
 
-  .pro-card{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:14px; display:flex; flex-direction:column; gap:6px; cursor:pointer; text-align:left; width:100%; font-family:inherit; color:inherit; }
+  .pro-card{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:0; display:flex; flex-direction:column; gap:0; cursor:pointer; text-align:left; width:100%; font-family:inherit; color:inherit; overflow:hidden; }
   .pro-card:hover{ border-color:var(--brass); }
+  .pro-card-body{ display:flex; flex-direction:column; gap:6px; padding:12px 14px 14px; }
+  .pro-photo-strip{ display:flex; width:100%; height:150px; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .pro-photo-strip::-webkit-scrollbar{ display:none; }
+  .pro-photo-strip img{ width:100%; height:100%; flex:none; scroll-snap-align:start; object-fit:cover; display:block; background:var(--surface); }
+  .pro-photo-placeholder{ width:100%; height:150px; flex:none; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--surface), var(--paper)); color:var(--brass); font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:34px; }
   .pro-name{ font-family:'Libre Franklin',sans-serif; font-weight:700; font-size:15.5px; }
   .pro-title{ font-size:11.5px; color:var(--brass); font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
   .pro-shop{ font-size:12.5px; color:var(--ink); }
@@ -91,6 +96,32 @@
   .review-stars-row{ display:flex; flex-wrap:wrap; gap:10px; font-size:11.5px; color:var(--muted); }
   .review-stars-row .stars{ color:var(--brass); }
   .review-comment{ font-size:13px; color:var(--ink); line-height:1.5; white-space:pre-wrap; }
+
+  .profile-hero{ position:relative; width:100%; height:280px; flex:none; background:var(--surface); overflow:hidden; }
+  .profile-hero-strip{ display:flex; width:100%; height:100%; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .profile-hero-strip::-webkit-scrollbar{ display:none; }
+  .profile-hero-strip img{ width:100%; height:100%; flex:none; scroll-snap-align:start; object-fit:cover; display:block; cursor:pointer; }
+  .profile-hero-placeholder{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--surface), var(--paper)); color:var(--brass); font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:68px; }
+  .hero-back-btn{ position:absolute; top:max(16px, calc(env(safe-area-inset-top) + 12px)); left:16px; width:36px; height:36px; border-radius:50%; border:none; background:rgba(10,18,32,0.55); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); color:#F5F0E6; font-size:16px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:2; }
+  .profile-hero-dots{ position:absolute; bottom:12px; left:0; right:0; display:flex; justify-content:center; gap:5px; z-index:2; pointer-events:none; }
+  .profile-hero-dots span{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.4); transition:background .15s ease; }
+  .profile-hero-dots span.active{ background:#fff; }
+  .profile-sheet{ position:relative; margin-top:-20px; background:var(--bg-gradient); border-radius:20px 20px 0 0; z-index:1; }
+
+  .info-row{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+  .map-embed-wrap{ border-radius:12px; overflow:hidden; border:1px solid var(--line); aspect-ratio:16/9; background:var(--paper); }
+  .map-embed-wrap iframe{ width:100%; height:100%; border:0; display:block; }
+  .hours-toggle{ display:flex; align-items:center; justify-content:space-between; width:100%; background:transparent; border:none; padding:0; color:inherit; font-family:inherit; cursor:pointer; text-align:left; }
+  .hours-toggle .chev{ transition:transform .15s ease; color:var(--muted); }
+  .hours-toggle.open .chev{ transform:rotate(180deg); }
+  .hours-list{ display:none; flex-direction:column; gap:0; margin-top:10px; }
+  .hours-list.open{ display:flex; }
+  .hours-row{ display:flex; justify-content:space-between; font-size:12.5px; padding:6px 0; border-bottom:1px solid var(--line); }
+  .hours-row:last-child{ border-bottom:none; }
+  .hours-row .hd-day{ color:var(--muted); font-weight:600; }
+  .hours-row.is-today .hd-day{ color:var(--brass); }
+  .bkc-svc-row-book{ display:flex; align-items:center; gap:9px; padding:11px 12px; border:1px solid var(--line); border-radius:10px; background:var(--paper); }
+  .bkc-svc-book-btn{ border:1px solid var(--brass); background:transparent; color:var(--brass); border-radius:8px; padding:6px 11px; font-size:11.5px; font-weight:700; cursor:pointer; flex-shrink:0; }
 </style>
 </head>
 <body>
@@ -101,7 +132,7 @@
     <p class="eyebrow-mini">Loading&hellip;</p>
   </div>
 
-  <div id="list-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100dvh;">
+  <div id="list-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100svh;">
     <header style="padding:20px 20px 4px; padding-top:max(20px, calc(env(safe-area-inset-top) + 16px));">
       <button type="button" class="link-btn" id="btn-directory-exit" style="padding:0 0 10px;">&larr; All Hair Connect</button>
       <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
@@ -119,18 +150,40 @@
     </main>
   </div>
 
-  <div id="detail-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100dvh;">
-    <main class="content" style="padding-top:max(20px, calc(env(safe-area-inset-top) + 16px));">
-      <div class="walk-header">
-        <button class="back-btn" id="btn-back-list" aria-label="Back to search results">&larr;</button>
-        <div><div class="eyebrow-mini">Find a Pro</div></div>
-      </div>
+  <div id="detail-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100svh;">
+    <div class="profile-hero" id="profile-hero">
+      <div class="profile-hero-strip" id="profile-hero-strip"></div>
+      <div class="profile-hero-placeholder" id="profile-hero-placeholder" style="display:none;"></div>
+      <button type="button" class="hero-back-btn" id="btn-back-list" aria-label="Back to search results">&larr;</button>
+      <div class="profile-hero-dots" id="profile-hero-dots"></div>
+    </div>
+    <main class="content profile-sheet" style="padding-top:20px;">
       <div>
         <h2 class="screen-title" id="detail-name">&nbsp;</h2>
         <p class="pro-title" id="detail-title">&nbsp;</p>
         <p class="screen-sub" id="detail-shop-line" style="margin-top:6px;">&nbsp;</p>
-        <p class="screen-sub" id="detail-contact-line" style="margin-top:2px; display:none;">&nbsp;</p>
       </div>
+      <p class="screen-sub" id="detail-bio" style="display:none; margin:0;">&nbsp;</p>
+
+      <div class="detail-card" id="detail-location-card" style="display:none;">
+        <p class="eyebrow-mini2" style="margin:0;">Location</p>
+        <p class="screen-sub" id="detail-contact-line" style="margin:0;">&nbsp;</p>
+        <div class="map-embed-wrap" id="detail-map-wrap" style="display:none;"><iframe id="detail-map-frame" src="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Shop location"></iframe></div>
+      </div>
+
+      <div class="detail-card" id="detail-hours-card" style="display:none;">
+        <button type="button" class="hours-toggle" id="btn-hours-toggle">
+          <p class="eyebrow-mini2" style="margin:0;">Hours</p>
+          <span class="chev">&#9662;</span>
+        </button>
+        <div class="hours-list" id="detail-hours-list"></div>
+      </div>
+
+      <div class="detail-card" id="detail-policies-card" style="display:none;">
+        <p class="eyebrow-mini2" style="margin:0;">Policies</p>
+        <p class="screen-sub" id="detail-policies-text" style="margin:0;">&nbsp;</p>
+      </div>
+
       <div class="social-row" id="detail-social"></div>
 
       <div id="detail-booking-block" style="display:none; flex-direction:column; gap:14px; border:1px solid var(--brass); background:var(--brass-tint); border-radius:14px; padding:16px;">
@@ -297,13 +350,22 @@ function renderList(){
     const ratingLine = agg.count
       ? `<span class="stars">${starsFor(agg.overall)}</span> ${agg.overall.toFixed(1)} · ${agg.count} review${agg.count===1?'':'s'}`
       : 'No reviews yet';
+    const photos = Array.isArray(p.portfolio_photos) ? p.portfolio_photos.filter(ph=>ph && ph.url) : [];
+    const photoHtml = photos.length
+      ? `<div class="pro-photo-strip">${photos.map(ph=>`<img src="${ph.url}" alt="Work by ${p.name || 'this pro'}" loading="lazy">`).join('')}</div>`
+      : `<div class="pro-photo-placeholder">${(p.name || '?').trim().charAt(0).toUpperCase()}</div>`;
     card.innerHTML = `
-      <div class="pro-name">${p.name || 'Unnamed'}</div>
-      <div class="pro-title">${p.title || ''}</div>
-      ${p.shop_name ? `<div class="pro-shop">${p.shop_name}</div>` : ''}
-      ${locationLine(p) ? `<div class="pro-loc">${locationLine(p)}</div>` : ''}
-      <div class="pro-rating">${ratingLine}</div>
+      ${photoHtml}
+      <div class="pro-card-body">
+        <div class="pro-name">${p.name || 'Unnamed'}</div>
+        <div class="pro-title">${p.title || ''}</div>
+        ${p.shop_name ? `<div class="pro-shop">${p.shop_name}</div>` : ''}
+        ${locationLine(p) ? `<div class="pro-loc">${locationLine(p)}</div>` : ''}
+        <div class="pro-rating">${ratingLine}</div>
+      </div>
     `;
+    // A swipe across the photo strip scrolls it (native browser behavior: a touch drag
+    // doesn't fire a click on release), so this only needs to handle a genuine tap.
     card.addEventListener('click', ()=> showDetail(p.code));
     holder.appendChild(card);
   });
@@ -330,15 +392,102 @@ async function showDetail(code){
   document.getElementById('detail-title').textContent = p.title || '';
   document.getElementById('detail-shop-line').textContent = [p.shop_name, locationLine(p)].filter(Boolean).join(' · ');
 
+  // ---- Hero photo slider ----
+  const heroStrip = document.getElementById('profile-hero-strip');
+  const heroPlaceholder = document.getElementById('profile-hero-placeholder');
+  const heroDots = document.getElementById('profile-hero-dots');
+  const heroPhotos = Array.isArray(p.portfolio_photos) ? p.portfolio_photos.filter(ph=>ph && ph.url) : [];
+  heroStrip.innerHTML = '';
+  heroDots.innerHTML = '';
+  heroStrip.onscroll = null;
+  if (heroPhotos.length){
+    heroStrip.style.display = '';
+    heroPlaceholder.style.display = 'none';
+    heroPhotos.forEach((ph, idx)=>{
+      const img = document.createElement('img');
+      img.src = ph.url;
+      img.alt = `Work by ${p.name || 'this pro'}`;
+      img.loading = 'lazy';
+      heroStrip.appendChild(img);
+      if (heroPhotos.length > 1){
+        const dot = document.createElement('span');
+        if (idx === 0) dot.className = 'active';
+        heroDots.appendChild(dot);
+      }
+    });
+    if (heroPhotos.length > 1){
+      heroStrip.onscroll = function(){
+        const idx = Math.round(this.scrollLeft / (this.clientWidth || 1));
+        Array.from(heroDots.children).forEach((d,i)=> d.classList.toggle('active', i===idx));
+      };
+    }
+  } else {
+    heroStrip.style.display = 'none';
+    heroPlaceholder.style.display = 'flex';
+    heroPlaceholder.textContent = (p.name || '?').trim().charAt(0).toUpperCase();
+  }
+
+  // ---- Bio ----
+  const bioEl = document.getElementById('detail-bio');
+  if (p.bio && p.bio.trim()){
+    bioEl.textContent = p.bio.trim();
+    bioEl.style.display = 'block';
+  } else {
+    bioEl.style.display = 'none';
+  }
+
   const contactBits = [];
   if (p.shop_address) contactBits.push(p.shop_address);
   if (p.shop_phone) contactBits.push(p.shop_phone);
   const contactLine = document.getElementById('detail-contact-line');
+  const locationCard = document.getElementById('detail-location-card');
   if (contactBits.length){
     contactLine.textContent = contactBits.join(' · ');
     contactLine.style.display = 'block';
+    locationCard.style.display = 'flex';
   } else {
     contactLine.style.display = 'none';
+    locationCard.style.display = 'none';
+  }
+
+  // ---- Embedded map ----
+  const mapWrap = document.getElementById('detail-map-wrap');
+  const mapFrame = document.getElementById('detail-map-frame');
+  if (p.shop_address && p.shop_address.trim()){
+    mapFrame.src = `https://www.google.com/maps?q=${encodeURIComponent(p.shop_address.trim())}&output=embed`;
+    mapWrap.style.display = 'block';
+  } else {
+    mapFrame.src = '';
+    mapWrap.style.display = 'none';
+  }
+
+  // ---- Hours ----
+  const hoursCard = document.getElementById('detail-hours-card');
+  const hoursList = document.getElementById('detail-hours-list');
+  const hoursToggleBtn = document.getElementById('btn-hours-toggle');
+  if (p.booking_enabled && p.booking_hours && Object.keys(p.booking_hours).length){
+    hoursCard.style.display = 'flex';
+    hoursToggleBtn.classList.remove('open');
+    hoursList.classList.remove('open');
+    const todayKey = DAY_KEYS[new Date().getDay()];
+    const DAY_LABELS = { sun:'Sunday', mon:'Monday', tue:'Tuesday', wed:'Wednesday', thu:'Thursday', fri:'Friday', sat:'Saturday' };
+    hoursList.innerHTML = DAY_KEYS.map(key=>{
+      const h = p.booking_hours[key];
+      const rowClass = key === todayKey ? 'hours-row is-today' : 'hours-row';
+      const timeLabel = (!h || h.closed) ? 'Closed' : `${fmtTime12(h.open||'09:00')} - ${fmtTime12(h.close||'18:00')}`;
+      return `<div class="${rowClass}"><span class="hd-day">${DAY_LABELS[key]}</span><span>${timeLabel}</span></div>`;
+    }).join('');
+  } else {
+    hoursCard.style.display = 'none';
+  }
+
+  // ---- Policies ----
+  const policiesCard = document.getElementById('detail-policies-card');
+  if (p.booking_policy && p.booking_policy.trim()){
+    document.getElementById('detail-policies-text').textContent = p.booking_policy.trim();
+    policiesCard.style.display = 'flex';
+  } else {
+    policiesCard.style.display = 'none';
   }
 
   const social = p.social || {};
@@ -455,12 +604,15 @@ function showBkcStep(name){
 function renderBkcServices(){
   const holder = document.getElementById('bkc-services-list');
   holder.innerHTML = (bkc.pro.booking_services||[]).map(s=> `
-    <label class="bkc-svc-row">
-      <input type="checkbox" class="bkc-svc-check" data-svc="${s.id}">
-      <span style="flex:1;">${s.name}</span>
-      <span style="font-weight:700;">$${s.price}</span>
-      <span style="color:var(--muted); font-size:11.5px;">${fmtDuration(s.duration)}</span>
-    </label>
+    <div class="bkc-svc-row-book">
+      <label style="display:flex; align-items:center; gap:9px; flex:1; cursor:pointer;">
+        <input type="checkbox" class="bkc-svc-check" data-svc="${s.id}">
+        <span style="flex:1;">${s.name}</span>
+        <span style="font-weight:700;">$${s.price}</span>
+        <span style="color:var(--muted); font-size:11.5px;">${fmtDuration(s.duration)}</span>
+      </label>
+      <button type="button" class="bkc-svc-book-btn" data-book-svc="${s.id}">Book</button>
+    </div>
   `).join('');
   holder.querySelectorAll('.bkc-svc-check').forEach(cb=>{
     cb.addEventListener('change', function(){
@@ -470,7 +622,23 @@ function renderBkcServices(){
       updateBkcTotal();
     });
   });
+  holder.querySelectorAll('.bkc-svc-book-btn').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      const id = this.dataset.bookSvc;
+      bkc.selectedIds = [id];
+      holder.querySelectorAll('.bkc-svc-check').forEach(cb=>{ cb.checked = (cb.dataset.svc === id); });
+      updateBkcTotal();
+      goToBkcSlots();
+    });
+  });
   updateBkcTotal();
+}
+function goToBkcSlots(){
+  showBkcStep('slots');
+  const dateInput = document.getElementById('bkc-date');
+  if (!dateInput.value) dateInput.value = todayIso();
+  bkc.date = dateInput.value;
+  renderBkcSlots();
 }
 function selectedServices(){
   return (bkc.pro.booking_services||[]).filter(s=> bkc.selectedIds.includes(s.id));
@@ -482,13 +650,7 @@ function updateBkcTotal(){
   document.getElementById('bkc-total-label').textContent = `$${totalPrice} · ${fmtDuration(totalMins || 0)}`;
   document.getElementById('btn-bkc-next-date').disabled = svcs.length === 0;
 }
-document.getElementById('btn-bkc-next-date').addEventListener('click', ()=>{
-  showBkcStep('slots');
-  const dateInput = document.getElementById('bkc-date');
-  if (!dateInput.value) dateInput.value = todayIso();
-  bkc.date = dateInput.value;
-  renderBkcSlots();
-});
+document.getElementById('btn-bkc-next-date').addEventListener('click', goToBkcSlots);
 document.getElementById('btn-bkc-back-services').addEventListener('click', ()=> showBkcStep('services'));
 document.getElementById('bkc-date').addEventListener('change', function(){
   bkc.date = this.value;
@@ -765,6 +927,10 @@ document.getElementById('btn-back-list').addEventListener('click', ()=>{
   renderList();
 });
 document.getElementById('search-input').addEventListener('input', renderList);
+document.getElementById('btn-hours-toggle').addEventListener('click', function(){
+  this.classList.toggle('open');
+  document.getElementById('detail-hours-list').classList.toggle('open');
+});
 document.getElementById('btn-directory-exit').addEventListener('click', ()=>{
   window.location.href = 'index.html';
 });
