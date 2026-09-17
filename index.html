@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-17T18-26-08Z">
+<meta name="app-build" content="2026-09-17T22-14-31Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -183,6 +183,8 @@
   .break-item .bi-text{ display:flex; flex-direction:column; gap:2px; }
   .break-item .bi-label{ font-size:13.5px; font-weight:700; }
   .break-item .bi-range{ font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .break-item .bi-actions{ display:flex; align-items:center; gap:2px; flex:none; }
+  .break-item .bi-edit{ border:none; background:transparent; color:var(--brass); font-family:'Public Sans',sans-serif; font-size:12.5px; font-weight:700; cursor:pointer; padding:4px 6px; }
   .break-item .bi-remove{ border:none; background:transparent; color:var(--muted); font-size:16px; font-weight:700; cursor:pointer; line-height:1; padding:4px 6px; }
   .break-item .bi-remove:hover{ color:var(--behind); }
   .delta-chip{ font-size:12px; font-weight:700; color:var(--behind); background:var(--behind-tint); padding:4px 9px; border-radius:8px; width:fit-content; font-variant-numeric:tabular-nums; }
@@ -699,11 +701,12 @@
             <div id="break-list" style="display:flex; flex-direction:column; gap:8px;"></div>
           </div>
           <div class="card" style="gap:10px;">
-            <p class="eyebrow-mini2">Add a break</p>
+            <p class="eyebrow-mini2" id="brk-form-title">Add a break</p>
             <div class="input-row"><input id="brk-label" type="text" placeholder="e.g. Spring Break"></div>
             <div class="input-row"><span class="suffix">From</span><input id="brk-start" type="date"></div>
             <div class="input-row"><span class="suffix">To</span><input id="brk-end" type="date"></div>
             <button class="btn btn-primary" id="btn-add-break" style="padding:10px;">+ Add break</button>
+            <button class="btn btn-ghost" id="btn-cancel-edit-break" type="button" style="display:none; padding:10px;">Cancel</button>
           </div>
           <div class="spacer"></div>
           <button class="btn btn-primary" data-goto="dashboard">Calculate my pace</button>
@@ -2271,7 +2274,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   const root = document.getElementById('tab-pace');
   const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const SHORT = ['S','M','T','W','T','F','S'];
-  const pstate = { absenceMode:'full', originalDate:null };
+  const pstate = { absenceMode:'full', originalDate:null, editingBreakIdx:null };
+  function escapeHtmlPace(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function fmtHours(decimalHours){
     const h = Math.floor(decimalHours);
     const m = Math.round((decimalHours - h) * 60);
@@ -2340,16 +2344,45 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     P().breaks.forEach((b, i)=>{
       const el = document.createElement('div');
       el.className = 'break-item';
-      el.innerHTML = `<div class="bi-text"><span class="bi-label">${b.label}</span><span class="bi-range">${fmtRange(b.start, b.end)}</span></div><button class="bi-remove" type="button" data-idx="${i}" aria-label="Remove this break">&times;</button>`;
+      if (i === pstate.editingBreakIdx) el.style.borderColor = 'var(--brass)';
+      el.innerHTML = `<div class="bi-text"><span class="bi-label">${escapeHtmlPace(b.label)}</span><span class="bi-range">${fmtRange(b.start, b.end)}</span></div><div class="bi-actions"><button class="bi-edit" type="button" data-idx="${i}" aria-label="Edit this break">Edit</button><button class="bi-remove" type="button" data-idx="${i}" aria-label="Remove this break">&times;</button></div>`;
       list.appendChild(el);
+    });
+    list.querySelectorAll('.bi-edit').forEach(btn=>{
+      btn.addEventListener('click', e=> startEditBreak(parseInt(e.target.dataset.idx)));
     });
     list.querySelectorAll('.bi-remove').forEach(btn=>{
       btn.addEventListener('click', e=>{
-        P().breaks.splice(parseInt(e.target.dataset.idx),1);
+        const idx = parseInt(e.target.dataset.idx);
+        if (pstate.editingBreakIdx === idx) exitBreakEditMode();
+        P().breaks.splice(idx,1);
         renderBreaks();
         persistProfile({pace:P()});
       });
     });
+  }
+  function startEditBreak(idx){
+    const b = P().breaks[idx];
+    if (!b) return;
+    pstate.editingBreakIdx = idx;
+    root.querySelector('#brk-label').value = b.label;
+    root.querySelector('#brk-start').value = b.start;
+    root.querySelector('#brk-end').value = b.end;
+    root.querySelector('#brk-form-title').textContent = 'Edit break';
+    root.querySelector('#btn-add-break').textContent = 'Save changes';
+    root.querySelector('#btn-cancel-edit-break').style.display = '';
+    root.querySelector('#brk-label').focus();
+    renderBreaks();
+  }
+  function exitBreakEditMode(){
+    pstate.editingBreakIdx = null;
+    root.querySelector('#brk-label').value = '';
+    root.querySelector('#brk-start').value = '';
+    root.querySelector('#brk-end').value = '';
+    root.querySelector('#brk-form-title').textContent = 'Add a break';
+    root.querySelector('#btn-add-break').textContent = '+ Add break';
+    root.querySelector('#btn-cancel-edit-break').style.display = 'none';
+    renderBreaks();
   }
   function renderAbsences(){
     const list = root.querySelector('#absence-list');
@@ -2463,6 +2496,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   function goto(step){
     root.querySelectorAll('.step-btn').forEach(b=>b.classList.toggle('active', b.dataset.goto===step));
     root.querySelectorAll('[data-screen]').forEach(p=>p.classList.toggle('show', p.dataset.screen===step));
+    if (step !== 'calendar' && pstate.editingBreakIdx !== null) exitBreakEditMode();
     if (step === 'dashboard') recalcDashboard();
     if (step === 'absence') updateAbsenceEstimate();
     if (step === 'result') recalcResult();
@@ -2475,13 +2509,16 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const start = root.querySelector('#brk-start').value;
     const end = root.querySelector('#brk-end').value;
     if (!label || !start || !end) return;
-    P().breaks.push({label, start, end: end < start ? start : end});
-    root.querySelector('#brk-label').value = '';
-    root.querySelector('#brk-start').value = '';
-    root.querySelector('#brk-end').value = '';
-    renderBreaks();
+    const fixedEnd = end < start ? start : end;
+    if (pstate.editingBreakIdx !== null && P().breaks[pstate.editingBreakIdx]){
+      P().breaks[pstate.editingBreakIdx] = {label, start, end: fixedEnd};
+    } else {
+      P().breaks.push({label, start, end: fixedEnd});
+    }
+    exitBreakEditMode();
     persistProfile({pace:P()});
   });
+  root.querySelector('#btn-cancel-edit-break').addEventListener('click', exitBreakEditMode);
   root.querySelector('#ab-start').addEventListener('input', updateAbsenceEstimate);
   root.querySelector('#ab-end').addEventListener('input', updateAbsenceEstimate);
   root.querySelectorAll('.mode-btn').forEach(btn=> btn.addEventListener('click', ()=> setAbsenceMode(btn.dataset.mode)));
