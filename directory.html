@@ -59,7 +59,13 @@
   .pro-card{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:0; display:flex; flex-direction:column; gap:0; cursor:pointer; text-align:left; width:100%; font-family:inherit; color:inherit; overflow:hidden; }
   .pro-card:hover{ border-color:var(--brass); }
   .pro-card:focus-visible{ outline:2px solid var(--brass); outline-offset:-2px; }
-  .pro-card-body{ display:flex; flex-direction:column; gap:6px; padding:10px 14px 14px; }
+  .pro-card-body{ display:flex; gap:12px; padding:10px 14px 14px; }
+  .pro-avatar-col{ flex:none; width:52px; display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .pro-avatar{ width:52px; height:52px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--surface), var(--paper)); color:var(--brass); font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:19px; }
+  .pro-avatar--lg{ width:68px; height:68px; font-size:24px; }
+  .pro-avatar-rating{ font-size:10px; color:var(--muted); text-align:center; line-height:1.3; }
+  .pro-avatar-rating .stars{ color:var(--brass); letter-spacing:0.5px; display:block; font-size:11px; }
+  .pro-info-col{ flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
   .pro-photo-filmstrip{ display:flex; gap:8px; padding:14px 14px 0; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
   .pro-photo-filmstrip::-webkit-scrollbar{ display:none; }
   .pro-photo-thumb{ flex:none; width:64px; height:64px; border-radius:10px; overflow:hidden; border:none; padding:0; cursor:pointer; background:var(--surface); }
@@ -69,8 +75,6 @@
   .pro-title{ font-size:11.5px; color:var(--brass); font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
   .pro-shop{ font-size:12.5px; color:var(--ink); }
   .pro-loc{ font-size:11.5px; color:var(--muted); }
-  .pro-rating{ font-size:12.5px; color:var(--muted); margin-top:2px; }
-  .pro-rating .stars{ color:var(--brass); letter-spacing:1px; }
 
   .empty-note{ border:1px dashed var(--line); border-radius:14px; padding:22px 16px; text-align:center; color:var(--muted); font-size:13px; line-height:1.5; }
 
@@ -170,10 +174,16 @@
       <div class="profile-hero-dots" id="profile-hero-dots"></div>
     </div>
     <main class="content profile-sheet" style="padding-top:20px;">
-      <div>
-        <h2 class="screen-title" id="detail-name">&nbsp;</h2>
-        <p class="pro-title" id="detail-title">&nbsp;</p>
-        <p class="screen-sub" id="detail-shop-line" style="margin-top:6px;">&nbsp;</p>
+      <div style="display:flex; gap:14px;">
+        <div class="pro-avatar-col" style="width:68px;">
+          <div class="pro-avatar pro-avatar--lg" id="detail-avatar" aria-hidden="true"></div>
+          <div class="pro-avatar-rating" id="detail-avatar-rating"></div>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <h2 class="screen-title" id="detail-name">&nbsp;</h2>
+          <p class="pro-title" id="detail-title">&nbsp;</p>
+          <p class="screen-sub" id="detail-shop-line" style="margin-top:6px;">&nbsp;</p>
+        </div>
       </div>
       <p class="screen-sub" id="detail-bio" style="display:none; margin:0;">&nbsp;</p>
 
@@ -307,6 +317,14 @@ function starsFor(n){
   return '★★★★★☆☆☆☆☆'.slice(5 - rounded, 10 - rounded);
 }
 
+// Small rating readout shown under the avatar placeholder, on both the search-result
+// cards and the profile page header -- kept as one function so the two stay in sync.
+function avatarRatingHtml(agg){
+  return agg && agg.count
+    ? `<span class="stars">${starsFor(agg.overall)}</span>${agg.overall.toFixed(1)} · ${agg.count}`
+    : 'No reviews yet';
+}
+
 function toTitleCase(str){
   if (!str) return str;
   return str.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
@@ -434,21 +452,24 @@ function renderList(){
     card.setAttribute('role', 'button');
     card.tabIndex = 0;
     card.setAttribute('aria-label', `View ${p.name || 'this pro'}'s profile`);
-    const ratingLine = agg.count
-      ? `<span class="stars">${starsFor(agg.overall)}</span> ${agg.overall.toFixed(1)} · ${agg.count} review${agg.count===1?'':'s'}`
-      : 'No reviews yet';
+    const initial = (p.name || '?').trim().charAt(0).toUpperCase();
     const photos = Array.isArray(p.portfolio_photos) ? p.portfolio_photos.filter(ph=>ph && ph.url) : [];
     const photoHtml = photos.length
       ? `<div class="pro-photo-filmstrip">${photos.map((ph,idx)=>`<button type="button" class="pro-photo-thumb" data-thumb-idx="${idx}" aria-label="View photo ${idx+1} of ${photos.length} from ${p.name || 'this pro'}"><img src="${ph.url}" alt="Work by ${p.name || 'this pro'}" loading="lazy"></button>`).join('')}</div>`
-      : `<div class="pro-photo-filmstrip"><div class="pro-photo-thumb-placeholder">${(p.name || '?').trim().charAt(0).toUpperCase()}</div></div>`;
+      : `<div class="pro-photo-filmstrip"><div class="pro-photo-thumb-placeholder">${initial}</div></div>`;
     card.innerHTML = `
       ${photoHtml}
       <div class="pro-card-body">
-        <div class="pro-name">${p.name || 'Unnamed'}</div>
-        <div class="pro-title">${p.title || ''}</div>
-        ${p.shop_name ? `<div class="pro-shop">${p.shop_name}</div>` : ''}
-        ${locationLine(p) ? `<div class="pro-loc">${locationLine(p)}</div>` : ''}
-        <div class="pro-rating">${ratingLine}</div>
+        <div class="pro-avatar-col">
+          <div class="pro-avatar" aria-hidden="true">${initial}</div>
+          <div class="pro-avatar-rating">${avatarRatingHtml(agg)}</div>
+        </div>
+        <div class="pro-info-col">
+          <div class="pro-name">${p.name || 'Unnamed'}</div>
+          <div class="pro-title">${p.title || ''}</div>
+          ${p.shop_name ? `<div class="pro-shop">${p.shop_name}</div>` : ''}
+          ${locationLine(p) ? `<div class="pro-loc">${locationLine(p)}</div>` : ''}
+        </div>
       </div>
     `;
     // Tapping a thumbnail opens the full-view lightbox instead of the profile; tapping
@@ -489,6 +510,8 @@ async function showDetail(code){
   document.getElementById('detail-name').textContent = p.name || 'Unnamed';
   document.getElementById('detail-title').textContent = p.title || '';
   document.getElementById('detail-shop-line').textContent = [p.shop_name, locationLine(p)].filter(Boolean).join(' · ');
+  document.getElementById('detail-avatar').textContent = (p.name || '?').trim().charAt(0).toUpperCase();
+  document.getElementById('detail-avatar-rating').innerHTML = avatarRatingHtml(allAggregates[code]);
 
   // ---- Hero photo slider ----
   const heroStrip = document.getElementById('profile-hero-strip');
@@ -611,6 +634,7 @@ async function showDetail(code){
   try{ reviews = await fetchReviewsFor(code); }catch(e){ console.warn('reviews load failed', e); }
   const agg = aggregateReviews(reviews);
   allAggregates[code] = agg;
+  document.getElementById('detail-avatar-rating').innerHTML = avatarRatingHtml(agg);
 
   const scoresHolder = document.getElementById('detail-scores');
   if (!agg.count){
