@@ -276,6 +276,7 @@
   .summary-row span:first-child{ color:var(--muted); font-weight:600; }
   .summary-row span:last-child{ font-weight:700; text-align:right; }
   .detail-card{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+  .detail-card[role="button"]:focus-visible{ outline:2px solid var(--brass); outline-offset:-2px; }
   .detail-row{ display:flex; justify-content:space-between; gap:10px; font-size:12.5px; }
   .detail-row span:first-child{ color:var(--muted); font-weight:600; }
   .detail-row span:last-child{ font-weight:700; text-align:right; }
@@ -1194,8 +1195,24 @@
         </div>
         <div class="biz-pane" data-biz="clients" id="tab-my-clients">
           <div class="screen-body show" data-screen="dashboard" style="gap:14px;">
-            <p class="screen-sub" style="margin:0;">Clients you've saved a visit for through Consult, in one searchable list. Tap one to look them up again in Consult.</p>
+            <p class="screen-sub" style="margin:0;">Clients you've saved a visit for through Consult, in one searchable list. Tap a client to look them up again in Consult, or check the box to send a notification.</p>
             <div class="input-row"><input id="myclients-search" type="text" placeholder="Search by name or code"></div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+              <label class="check-row" style="padding:8px 12px; flex:none; gap:7px;">
+                <input type="checkbox" id="myclients-select-all">
+                <span>Select all</span>
+              </label>
+              <button type="button" class="link-btn" id="btn-myclients-message" style="padding:0; display:none;">Message selected (<span id="myclients-selected-count">0</span>)</button>
+            </div>
+            <div id="myclients-compose-panel" style="display:none; flex-direction:column; gap:8px; padding:12px; border:1px solid var(--line); border-radius:10px; background:var(--paper);">
+              <p class="screen-sub" id="myclients-compose-target" style="margin:0;">Sending to 0 clients.</p>
+              <div class="input-row"><textarea id="myclients-compose-text" rows="3" maxlength="300" placeholder="Write your message…"></textarea></div>
+              <div class="btn-row" style="gap:14px;">
+                <button type="button" class="btn btn-primary" id="btn-myclients-compose-send" style="flex:1;">Send</button>
+                <button type="button" class="link-btn" id="btn-myclients-compose-cancel" style="padding:0;">Cancel</button>
+              </div>
+              <p class="screen-sub" id="myclients-compose-status" style="margin:0;">&nbsp;</p>
+            </div>
             <div id="myclients-list" style="display:flex; flex-direction:column; gap:8px;"></div>
             <p class="screen-sub" id="myclients-empty" style="display:none; margin:0;">No clients yet. They'll show up here once you save a visit for them through Consult.</p>
           </div>
@@ -4962,6 +4979,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   const root = document.getElementById('tab-my-clients');
   let myClients = [];
   let myClientsLoaded = false;
+  let lastFiltered = [];
+  // Which client codes are checked -- kept across searches/re-renders/tab
+  // revisits for the lifetime of this session, cleared only after a send.
+  const selectedClients = new Set();
   function fmtVisitDate(iso){
     if (!iso) return '';
     try{ return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }catch(e){ return iso; }
@@ -4971,32 +4992,67 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const lastDate = visits.reduce((latest, v) => (!latest || (v.date && v.date > latest)) ? v.date : latest, '');
     return { code: row.code, name: row.name || 'Client', visitCount: visits.length, lastDate };
   }
+  function updateSelectionUI(){
+    const count = selectedClients.size;
+    const msgBtn = root.querySelector('#btn-myclients-message');
+    const countEl = root.querySelector('#myclients-selected-count');
+    countEl.textContent = String(count);
+    msgBtn.style.display = count > 0 ? 'inline' : 'none';
+    const targetEl = root.querySelector('#myclients-compose-target');
+    if (targetEl) targetEl.textContent = `Sending to ${count} client${count===1?'':'s'}.`;
+    if (count === 0){
+      const panel = root.querySelector('#myclients-compose-panel');
+      if (panel) panel.style.display = 'none';
+    }
+  }
+  function updateSelectAllState(){
+    const selectAllCb = root.querySelector('#myclients-select-all');
+    if (!lastFiltered.length){
+      selectAllCb.checked = false;
+      selectAllCb.indeterminate = false;
+      return;
+    }
+    const allSelected = lastFiltered.every(c => selectedClients.has(c.code));
+    const anySelected = lastFiltered.some(c => selectedClients.has(c.code));
+    selectAllCb.checked = allSelected;
+    selectAllCb.indeterminate = !allSelected && anySelected;
+  }
   function renderMyClients(filterText){
     const listEl = root.querySelector('#myclients-list');
     const emptyEl = root.querySelector('#myclients-empty');
     const q = (filterText || '').trim().toLowerCase();
     const filtered = myClients.filter(c => !q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q));
+    lastFiltered = filtered;
     if (!myClients.length){
       listEl.innerHTML = '';
       emptyEl.style.display = 'block';
       emptyEl.textContent = "No clients yet. They'll show up here once you save a visit for them through Consult.";
+      updateSelectAllState();
+      updateSelectionUI();
       return;
     }
     if (!filtered.length){
       listEl.innerHTML = '';
       emptyEl.style.display = 'block';
       emptyEl.textContent = 'No clients match that search.';
+      updateSelectAllState();
+      updateSelectionUI();
       return;
     }
     emptyEl.style.display = 'none';
     listEl.innerHTML = filtered.map(c => `
-      <button type="button" class="detail-card" data-open-client="${c.code}" style="text-align:left; cursor:pointer;">
-        <div class="detail-row" style="align-items:center;">
-          <strong>${c.name}</strong>
-          <span class="screen-sub" style="margin:0;">${c.visitCount} visit${c.visitCount===1?'':'s'}</span>
+      <div class="detail-card" role="button" tabindex="0" data-open-client="${c.code}" style="text-align:left; cursor:pointer; flex-direction:row; align-items:center; gap:12px;">
+        <input type="checkbox" class="myclients-check" data-select-client="${c.code}" ${selectedClients.has(c.code) ? 'checked' : ''} aria-label="Select ${c.name}" style="width:18px; height:18px; accent-color:var(--brass); flex:none;">
+        <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;">
+          <div class="detail-row" style="align-items:center;">
+            <strong>${c.name}</strong>
+            <span class="screen-sub" style="margin:0;">${c.visitCount} visit${c.visitCount===1?'':'s'}</span>
+          </div>
+          <span class="screen-sub" style="margin:0;">${c.code}${c.lastDate ? ' &middot; last visit ' + fmtVisitDate(c.lastDate) : ''}</span>
         </div>
-        <span class="screen-sub" style="margin:0;">${c.code}${c.lastDate ? ' &middot; last visit ' + fmtVisitDate(c.lastDate) : ''}</span>
-      </button>`).join('');
+      </div>`).join('');
+    updateSelectAllState();
+    updateSelectionUI();
   }
   async function loadMyClients(){
     const listEl = root.querySelector('#myclients-list');
@@ -5024,9 +5080,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     renderMyClients(this.value);
   });
   root.querySelector('#myclients-list').addEventListener('click', (e)=>{
-    const btn = e.target.closest('[data-open-client]');
-    if (!btn) return;
-    const code = btn.dataset.openClient;
+    // A checkbox click bubbles up to this same handler -- let its own change
+    // handler manage selection and don't also navigate into Consult.
+    if (e.target.closest('[data-select-client]')) return;
+    const card = e.target.closest('[data-open-client]');
+    if (!card) return;
+    const code = card.dataset.openClient;
     showTab('consult');
     setTimeout(()=>{
       const input = document.getElementById('consult-client-code-input');
@@ -5034,6 +5093,72 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       if (input) input.value = code;
       if (lookupBtn) lookupBtn.click();
     }, 50);
+  });
+  root.querySelector('#myclients-list').addEventListener('keydown', (e)=>{
+    if (e.target.closest('[data-select-client]')) return;
+    const card = e.target.closest('[data-open-client]');
+    if (!card) return;
+    if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); card.click(); }
+  });
+  root.querySelector('#myclients-list').addEventListener('change', (e)=>{
+    const cb = e.target.closest('[data-select-client]');
+    if (!cb) return;
+    const code = cb.dataset.selectClient;
+    if (cb.checked) selectedClients.add(code); else selectedClients.delete(code);
+    updateSelectAllState();
+    updateSelectionUI();
+  });
+  root.querySelector('#myclients-select-all').addEventListener('change', function(){
+    if (this.checked){
+      lastFiltered.forEach(c => selectedClients.add(c.code));
+    } else {
+      lastFiltered.forEach(c => selectedClients.delete(c.code));
+    }
+    renderMyClients(root.querySelector('#myclients-search').value);
+  });
+  root.querySelector('#btn-myclients-message').addEventListener('click', ()=>{
+    root.querySelector('#myclients-compose-panel').style.display = 'flex';
+    updateSelectionUI();
+    root.querySelector('#myclients-compose-text').focus();
+  });
+  root.querySelector('#btn-myclients-compose-cancel').addEventListener('click', ()=>{
+    root.querySelector('#myclients-compose-panel').style.display = 'none';
+    root.querySelector('#myclients-compose-text').value = '';
+    root.querySelector('#myclients-compose-status').textContent = ' ';
+  });
+  root.querySelector('#btn-myclients-compose-send').addEventListener('click', async ()=>{
+    const textEl = root.querySelector('#myclients-compose-text');
+    const statusEl = root.querySelector('#myclients-compose-status');
+    const sendBtn = root.querySelector('#btn-myclients-compose-send');
+    const message = textEl.value.trim();
+    const codes = Array.from(selectedClients);
+    if (!codes.length){ statusEl.textContent = 'Select at least one client first.'; return; }
+    if (!message){ statusEl.textContent = 'Write a message first.'; return; }
+    if (!dbAvailable){ statusEl.textContent = "Live saving isn't connected right now."; return; }
+    sendBtn.disabled = true;
+    statusEl.textContent = 'Sending…';
+    try{
+      const { data, error } = await supabaseClient.functions.invoke('send-quick-message', {
+        body: { broadcast: true, barber_code: profileCode, barber_name: profile.name, client_codes: codes, message }
+      });
+      if (error) throw error;
+      if (data && data.ok){
+        const sent = data.sentCount || 0;
+        const total = data.totalSelected || codes.length;
+        statusEl.textContent = sent === total
+          ? `Sent to all ${total} selected client${total===1?'':'s'}.`
+          : `Sent to ${sent} of ${total} selected clients. The rest haven't turned on notifications yet.`;
+        textEl.value = '';
+      } else if (data && data.reason === 'not_subscribed'){
+        statusEl.textContent = "None of the selected clients have turned on notifications yet.";
+      } else {
+        statusEl.textContent = "Couldn't send. Try again.";
+      }
+    }catch(err){
+      console.warn('broadcast send failed', err);
+      statusEl.textContent = "Couldn't send. Try again.";
+    }
+    sendBtn.disabled = false;
   });
   window.initMyClientsTab = function(){
     // Cheap to call every time the tab is opened -- keeps the list current without
