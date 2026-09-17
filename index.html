@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-17T18-06-33Z">
+<meta name="app-build" content="2026-09-17T18-23-40Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -362,11 +362,14 @@
   // A password-reset email link can land here on a browser/device that never had the
   // invite code entered on it (a different browser than usual, a fresh device, cleared
   // storage) -- without this, someone resetting their password would be stuck looking at
-  // the invite-code prompt instead of the "set a new password" screen running underneath.
+  // the invite-code prompt instead of the "set a new password" screen (or, if the link
+  // itself expired or was already used, the explanation for that) running underneath.
   // Supabase's reset links carry "type=recovery" in the query string or the URL fragment
-  // depending on flow type, so check both rather than assuming one.
+  // depending on flow type, and an expired/used link comes back as "error=access_denied"
+  // instead -- check for either, in both places, rather than assuming one.
   try{
-    if(/[?&#]type=recovery(&|$)/.test(window.location.search) || /[?&#]type=recovery(&|$)/.test(window.location.hash)){
+    var linkText = window.location.search + ' ' + window.location.hash;
+    if(/[?&#]type=recovery(&|$)/.test(linkText) || /error=access_denied/.test(linkText) || /error_code=otp_expired/.test(linkText)){
       gate.remove();
       return;
     }
@@ -6694,10 +6697,27 @@ async function initSharedView(code){
   if (sharedViewPollId) clearInterval(sharedViewPollId);
   sharedViewPollId = setInterval(renderOnce, 8000);
 }
+// A password-reset link is single-use and time-limited. If it already expired, was already
+// used, or a newer reset email superseded it, Supabase redirects back here with
+// "error=access_denied&error_code=otp_expired" in the URL instead of a usable token --
+// there's no PASSWORD_RECOVERY event to catch in that case (nothing valid was ever
+// established), so without this check someone in that situation just silently lands on the
+// ordinary home screen with no idea why the reset didn't work.
+function checkAuthLinkError(){
+  try{
+    const linkText = window.location.search + ' ' + window.location.hash;
+    if (!/error=access_denied/.test(linkText) && !/error_code=otp_expired/.test(linkText)) return false;
+    showAuthScreen('returning');
+    document.getElementById('auth-note').textContent = 'That reset link expired or was already used. Enter your email below and tap "Forgot password?" to get a new one.';
+    try{ window.history.replaceState({}, '', window.location.pathname); }catch(e){}
+    return true;
+  }catch(e){ return false; }
+}
 async function boot(){
   const params = new URLSearchParams(window.location.search);
   const viewCode = params.get('view');
   dbAvailable = !!supabaseClient;
+  if (checkAuthLinkError()) return;
   if (viewCode){
     await initSharedView(sanitizeCode(viewCode));
     return;
