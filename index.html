@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-17T16-15-19Z">
+<meta name="app-build" content="2026-09-17T18-06-33Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -359,6 +359,18 @@
       return;
     }
   }catch(e){}
+  // A password-reset email link can land here on a browser/device that never had the
+  // invite code entered on it (a different browser than usual, a fresh device, cleared
+  // storage) -- without this, someone resetting their password would be stuck looking at
+  // the invite-code prompt instead of the "set a new password" screen running underneath.
+  // Supabase's reset links carry "type=recovery" in the query string or the URL fragment
+  // depending on flow type, so check both rather than assuming one.
+  try{
+    if(/[?&#]type=recovery(&|$)/.test(window.location.search) || /[?&#]type=recovery(&|$)/.test(window.location.hash)){
+      gate.remove();
+      return;
+    }
+  }catch(e){}
   document.body.style.overflow = 'hidden';
   var input = document.getElementById('ahc-gate-input');
   var err = document.getElementById('ahc-gate-error');
@@ -593,6 +605,32 @@
       </div>
       <button class="btn btn-primary" type="submit" id="auth-submit-btn">Create my account</button>
       <p class="foot-note-small" id="auth-note">&nbsp;</p>
+      </form>
+    </main>
+  </div>
+  <div id="recovery-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100svh;">
+    <header class="topbar">
+      <div style="width:40px;"></div>
+      <div class="tb-name">Reset password</div>
+      <div style="width:40px;"></div>
+    </header>
+    <main class="tab-content" style="display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center;">
+      <div>
+        <p class="eyebrow-mini">All Hair Connect</p>
+        <p class="screen-sub" style="margin-top:6px;">Choose a new password for your account.</p>
+      </div>
+      <form class="auth-form" id="recovery-form" style="width:100%; max-width:320px;">
+        <div class="field">
+          <label>New password</label>
+          <div class="input-row"><input id="recovery-password" type="password" placeholder="At least 6 characters" autocomplete="new-password" minlength="6" required></div>
+        </div>
+        <div class="field">
+          <label>Confirm new password</label>
+          <div class="input-row"><input id="recovery-password-confirm" type="password" placeholder="Re-enter your new password" autocomplete="new-password" minlength="6" required></div>
+        </div>
+        <button class="btn btn-primary" type="submit" id="recovery-submit-btn">Set new password</button>
+        <p class="foot-note-small" id="recovery-note">&nbsp;</p>
+        <button type="button" class="link-btn" id="btn-recovery-cancel">Cancel</button>
       </form>
     </main>
   </div>
@@ -1791,6 +1829,27 @@ try{
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 }catch(e){ supabaseClient = null; }
+/* =========================================================
+   PASSWORD RECOVERY
+   When someone taps the "reset your password" link from their email,
+   Supabase's own client library detects the token in that URL and fires
+   this event with a temporary session for exactly that purpose. Without
+   this, that link would just quietly log them in with their OLD session
+   state (or do nothing) instead of ever asking for a new password --
+   registered here, immediately, so it can't miss the event by not being
+   set up yet when the page finishes loading.
+   ========================================================= */
+let inPasswordRecovery = false;
+if (supabaseClient){
+  try{
+    supabaseClient.auth.onAuthStateChange((event)=>{
+      if (event === 'PASSWORD_RECOVERY'){
+        inPasswordRecovery = true;
+        if (typeof showRecoveryScreen === 'function') showRecoveryScreen();
+      }
+    });
+  }catch(e){ console.warn('auth state listener failed', e); }
+}
 /* =========================================================
    WEB PUSH NOTIFICATIONS
    Replaces phone-number based text alerts. No phone number is
@@ -5915,6 +5974,55 @@ function showAuthScreen(forceMode){
     document.getElementById('auth-note').textContent = "Live saving isn't connected right now. You can still try everything out, but it won't be kept.";
   }
 }
+function showRecoveryScreen(){
+  document.getElementById('loading-screen').hidden = true;
+  document.getElementById('role-screen').hidden = true;
+  document.getElementById('auth-screen').hidden = true;
+  document.getElementById('app-shell').hidden = true;
+  const ndaScreen = document.getElementById('nda-screen');
+  if (ndaScreen) ndaScreen.hidden = true;
+  document.getElementById('recovery-screen').hidden = false;
+  document.getElementById('recovery-password').value = '';
+  document.getElementById('recovery-password-confirm').value = '';
+  document.getElementById('recovery-note').textContent = ' ';
+  // Tidy the reset token out of the address bar now that it's done its job -- leaving it
+  // there would re-trigger this screen (or confuse things) on a later reload or share.
+  try{ window.history.replaceState({}, '', window.location.pathname); }catch(e){}
+}
+document.getElementById('recovery-form').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const note = document.getElementById('recovery-note');
+  const submitBtn = document.getElementById('recovery-submit-btn');
+  const pw = document.getElementById('recovery-password').value;
+  const pwConfirm = document.getElementById('recovery-password-confirm').value;
+  if (pw.length < 6){ note.textContent = 'Use at least 6 characters.'; return; }
+  if (pw !== pwConfirm){ note.textContent = "Those passwords don't match."; return; }
+  if (!dbAvailable){ note.textContent = "Live saving isn't connected right now."; return; }
+  submitBtn.disabled = true;
+  note.textContent = 'Saving your new password…';
+  try{
+    const { error } = await supabaseClient.auth.updateUser({ password: pw });
+    if (error) throw error;
+    inPasswordRecovery = false;
+    // Sign out of this one-time recovery session rather than dropping them straight into
+    // the app from it -- asking them to log in fresh with the new password confirms it
+    // actually took, the same way most password-reset flows close the loop.
+    try{ await supabaseClient.auth.signOut(); }catch(err){}
+    document.getElementById('recovery-screen').hidden = true;
+    showAuthScreen('returning');
+    document.getElementById('auth-note').textContent = 'Password updated. Log in with your new password.';
+  }catch(err){
+    console.warn('password update failed', err);
+    note.textContent = (err && err.message) ? err.message : "Couldn't update your password. The reset link may have expired -- request a new one.";
+    submitBtn.disabled = false;
+  }
+});
+document.getElementById('btn-recovery-cancel').addEventListener('click', async ()=>{
+  try{ if (dbAvailable) await supabaseClient.auth.signOut(); }catch(e){}
+  inPasswordRecovery = false;
+  document.getElementById('recovery-screen').hidden = true;
+  showRoleScreen();
+});
 document.getElementById('btn-role-client').addEventListener('click', ()=>{
   window.location.href = 'passport.html';
 });
@@ -5991,7 +6099,12 @@ document.getElementById('auth-forgot-link').addEventListener('click', async (e)=
   if (!email){ note.textContent = 'Enter your email above first, then tap Forgot password.'; return; }
   if (!dbAvailable){ note.textContent = "Live saving isn't connected right now."; return; }
   try{
-    const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
+    // Explicit redirectTo so the emailed link always lands back on wherever this copy of
+    // the app is actually running, rather than depending on the Supabase project's Site
+    // URL setting -- that URL still has to be added to Supabase's allowed Redirect URLs
+    // (Authentication > URL Configuration) or Supabase will refuse to honor it.
+    const redirectTo = window.location.origin + window.location.pathname;
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
     if (error) throw error;
     note.textContent = 'Check your email for a password reset link.';
   }catch(err){
@@ -6601,10 +6714,14 @@ async function continueBoot(){
   if (dbAvailable){
     try{
       const { data } = await supabaseClient.auth.getSession();
+      // A password-reset link's temporary session would otherwise satisfy this same check
+      // and drop the person straight into the app -- skip it here so the recovery screen
+      // (already shown, or about to be, by the PASSWORD_RECOVERY listener above) wins.
+      if (inPasswordRecovery) return;
       const session = data && data.session;
       if (session && session.user){
         const ok = await tryLoadProfileByUserId(session.user.id);
-        if (ok){ enterApp(); return; }
+        if (ok && !inPasswordRecovery){ enterApp(); return; }
       }
     }catch(e){ console.warn('session check failed', e); }
   }
