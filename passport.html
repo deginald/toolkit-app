@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect: Hair Passport</title>
-<meta name="app-build" content="2026-09-18T14-01-18Z">
+<meta name="app-build" content="2026-09-18T20-43-26Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -576,7 +576,7 @@ function toTitleCase(str){
   return str.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
 }
 function defaultClient(name){
-  return { code:null, name: name || 'You', email:'', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'' };
+  return { code:null, name: name || 'You', email:'', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'', hiddenBookAgain: [] };
 }
 function showToast(msg, danger){
   const t = document.getElementById('toast');
@@ -605,6 +605,7 @@ async function tryLoadClient(code){
       client.created_at = data.created_at || client.created_at;
       client.ndaVersion = data.nda_version || '';
       client.ndaAcceptedAt = data.nda_accepted_at || '';
+      client.hiddenBookAgain = Array.isArray(data.hidden_book_again) ? data.hidden_book_again : [];
       clientCode = code;
       return true;
     }
@@ -661,6 +662,7 @@ async function persistClient(){
     const row = { name: client.name, visits: client.visits, updated_at: new Date().toISOString() };
     if (client.ndaVersion !== undefined) row.nda_version = client.ndaVersion;
     if (client.ndaAcceptedAt !== undefined) row.nda_accepted_at = client.ndaAcceptedAt;
+    row.hidden_book_again = client.hiddenBookAgain || [];
     const { error } = await supabaseClient.from('clients').update(row).eq('code', clientCode);
     if (error) throw error;
   }catch(e){ console.warn('save failed', e); showToast("Couldn't save: try again", true); }
@@ -781,15 +783,39 @@ function uniqueBarbers(){
   return order.map(code=> seen[code]);
 }
 
+let bookAgainRemoveArmed = null;
 function renderBookAgain(){
   const section = document.getElementById('bookagain-section');
   const holder = document.getElementById('bookagain-list-holder');
-  const barbers = uniqueBarbers();
+  const hidden = (client && client.hiddenBookAgain) || [];
+  const barbers = uniqueBarbers().filter(b => !hidden.includes(b.code));
   if (!barbers.length){ section.style.display = 'none'; return; }
   section.style.display = 'flex';
   holder.innerHTML = barbers.map(b => `
-    <a class="btn btn-outline" style="text-decoration:none; text-align:center;" href="directory.html?pro=${encodeURIComponent(b.code)}&client=${encodeURIComponent(clientCode)}">Book again with ${b.name}</a>
+    <div style="display:flex; flex-direction:column; gap:2px;">
+      <a class="btn btn-outline" style="text-decoration:none; text-align:center;" href="directory.html?pro=${encodeURIComponent(b.code)}&client=${encodeURIComponent(clientCode)}">Book again with ${b.name}</a>
+      <button type="button" class="link-btn" data-remove-pro="${b.code}" style="align-self:center; padding:3px 0; font-size:11.5px;">Remove from suggestions</button>
+    </div>
   `).join('');
+  holder.querySelectorAll('[data-remove-pro]').forEach(btn=>{
+    btn.addEventListener('click', async function(){
+      const code = this.dataset.removePro;
+      if (bookAgainRemoveArmed !== code){
+        bookAgainRemoveArmed = code;
+        this.textContent = 'Tap again to confirm';
+        setTimeout(()=>{
+          if (bookAgainRemoveArmed === code){ bookAgainRemoveArmed = null; renderBookAgain(); }
+        }, 3000);
+        return;
+      }
+      bookAgainRemoveArmed = null;
+      client.hiddenBookAgain = client.hiddenBookAgain || [];
+      if (!client.hiddenBookAgain.includes(code)) client.hiddenBookAgain.push(code);
+      await persistClient();
+      showToast('Removed from suggestions');
+      renderBookAgain();
+    });
+  });
 }
 
 let upcomingAppts = [];
