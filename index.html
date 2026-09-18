@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-18T13-52-36Z">
+<meta name="app-build" content="2026-09-18T14-01-18Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1637,6 +1637,16 @@
         <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Questions or feedback?</h2>
         <p class="screen-sub">Found a bug or have an idea? Email <a href="mailto:allhairconnect@gmail.com" style="color:var(--brass);">allhairconnect@gmail.com</a> any time.</p>
       </div>
+      <div class="tab-head" style="border-top:1px solid var(--line); padding-top:16px;">
+        <p class="eyebrow-mini">Your name</p>
+        <h2>Edit your name</h2>
+        <p class="screen-sub">Fix a typo or update how your name shows to clients and shops.</p>
+      </div>
+      <div class="field">
+        <div class="input-row"><input id="account-name" type="text" placeholder="e.g. Jordan Smith" autocomplete="name"></div>
+      </div>
+      <button class="btn btn-primary" id="btn-save-name" type="button">Save name</button>
+      <p class="foot-note-small" id="name-save-note">&nbsp;</p>
       <div class="tab-head" style="border-top:1px solid var(--line); padding-top:16px;">
         <p class="eyebrow-mini">Your role</p>
         <h2>Change your status</h2>
@@ -6646,6 +6656,7 @@ document.getElementById('btn-save-listing').addEventListener('click', async ()=>
   updateListingViewLink();
 });
 function showAccountScreen(){
+  populateAccountName();
   populateAccountTitleSelect();
   resetRoleChangePrompt();
   populateAccountLicense();
@@ -6654,6 +6665,22 @@ function showAccountScreen(){
   document.getElementById('app-shell').hidden = true;
   document.getElementById('account-screen').hidden = false;
 }
+function populateAccountName(){
+  document.getElementById('account-name').value = (profile && profile.name) || '';
+  document.getElementById('name-save-note').textContent = ' ';
+}
+document.getElementById('btn-save-name').addEventListener('click', async ()=>{
+  const note = document.getElementById('name-save-note');
+  const raw = document.getElementById('account-name').value.trim();
+  if (!raw){ note.textContent = "Name can't be blank."; return; }
+  const cleaned = toTitleCase(raw);
+  document.getElementById('account-name').value = cleaned;
+  profile.name = cleaned;
+  note.textContent = 'Saving…';
+  const result = await persistProfile({ name: cleaned });
+  note.textContent = result.ok ? 'Saved.' : ("Couldn't save: " + (result.message || 'unknown error'));
+  document.getElementById('tb-name').textContent = profile.name;
+});
 function hideAccountScreen(){
   document.getElementById('account-screen').hidden = true;
   document.getElementById('app-shell').hidden = false;

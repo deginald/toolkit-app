@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect: Hair Passport</title>
-<meta name="app-build" content="2026-09-17T22-24-17Z">
+<meta name="app-build" content="2026-09-18T14-01-18Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -366,6 +366,14 @@
           <p class="eyebrow-mini">Beta program</p>
           <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Questions or feedback?</h2>
           <p class="screen-sub">Found a bug or have an idea? Email <a href="mailto:allhairconnect@gmail.com" style="color:var(--brass);">allhairconnect@gmail.com</a> any time.</p>
+        </div>
+        <div style="border-top:1px solid var(--line); padding-top:16px;">
+          <p class="eyebrow-mini">Your name</p>
+          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Edit your name</h2>
+          <p class="screen-sub">Fix a typo or update how your name shows to your barber.</p>
+          <div class="input-row" style="margin-top:10px;"><input id="account-name" type="text" placeholder="e.g. Jordan Smith" autocomplete="name"></div>
+          <button class="btn btn-primary" id="btn-save-name" type="button" style="margin-top:10px;">Save name</button>
+          <p class="foot-note-small" id="account-name-status">&nbsp;</p>
         </div>
         <div style="border-top:1px solid var(--line); padding-top:16px;">
           <p class="eyebrow-mini">Notifications</p>
@@ -1291,7 +1299,22 @@ document.getElementById('btn-open-account').addEventListener('click', ()=>{
   populateNotificationsStatus();
   document.getElementById('account-email').value = (client && client.email) || '';
   document.getElementById('account-email-status').textContent = ' ';
+  document.getElementById('account-name').value = (client && client.name) || '';
+  document.getElementById('account-name-status').textContent = ' ';
   showScreen('account');
+});
+
+document.getElementById('btn-save-name').addEventListener('click', async ()=>{
+  const status = document.getElementById('account-name-status');
+  const raw = document.getElementById('account-name').value.trim();
+  if (!raw){ status.textContent = "Name can't be blank."; return; }
+  const cleaned = toTitleCase(raw);
+  document.getElementById('account-name').value = cleaned;
+  client.name = cleaned;
+  status.textContent = 'Saving…';
+  await persistClient();
+  status.textContent = 'Saved.';
+  document.getElementById('tb-name').textContent = client.name;
 });
 
 document.getElementById('btn-save-account-email').addEventListener('click', async ()=>{
