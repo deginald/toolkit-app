@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect: Hair Passport</title>
-<meta name="app-build" content="2026-09-18T20-43-26Z">
+<meta name="app-build" content="2026-09-18T22-28-32Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -390,6 +390,16 @@
           <p class="foot-note-small" id="notifications-status-note">&nbsp;</p>
           <p class="foot-note-small">Not seeing the message text in a notification? On iPhone, check Settings &rarr; Notifications &rarr; All Hair Connect &rarr; Show Previews, and set it to Always.</p>
         </div>
+        <div style="border-top:1px solid var(--line); padding-top:16px;">
+          <p class="eyebrow-mini">Messages from your barbers</p>
+          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Broader messages, not tied to one appointment</h2>
+          <p class="screen-sub">Separate from appointment alerts above: this lets a professional you've actually booked with send you a message that isn't about one specific appointment &mdash; a schedule change, a reminder they're taking new bookings, that kind of thing. Off by default. Only pros you've had a real visit with can ever reach you this way, never anyone else in the app.</p>
+          <label class="check-row" style="margin-top:10px;">
+            <input type="checkbox" id="account-notify-broadcast">
+            <span>Allow these messages</span>
+          </label>
+          <p class="foot-note-small" id="notify-broadcast-status">&nbsp;</p>
+        </div>
         <div style="border-top:1px solid var(--line); padding-top:16px; margin-top:16px;">
           <p class="eyebrow-mini">Account recovery</p>
           <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Recovery email</h2>
@@ -576,7 +586,7 @@ function toTitleCase(str){
   return str.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
 }
 function defaultClient(name){
-  return { code:null, name: name || 'You', email:'', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'', hiddenBookAgain: [] };
+  return { code:null, name: name || 'You', email:'', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'', hiddenBookAgain: [], notifyBroadcast:false, broadcastConsentAt:'' };
 }
 function showToast(msg, danger){
   const t = document.getElementById('toast');
@@ -606,6 +616,8 @@ async function tryLoadClient(code){
       client.ndaVersion = data.nda_version || '';
       client.ndaAcceptedAt = data.nda_accepted_at || '';
       client.hiddenBookAgain = Array.isArray(data.hidden_book_again) ? data.hidden_book_again : [];
+      client.notifyBroadcast = data.notify_broadcast === true;
+      client.broadcastConsentAt = data.broadcast_consent_at || '';
       clientCode = code;
       return true;
     }
@@ -663,6 +675,8 @@ async function persistClient(){
     if (client.ndaVersion !== undefined) row.nda_version = client.ndaVersion;
     if (client.ndaAcceptedAt !== undefined) row.nda_accepted_at = client.ndaAcceptedAt;
     row.hidden_book_again = client.hiddenBookAgain || [];
+    row.notify_broadcast = client.notifyBroadcast === true;
+    if (client.broadcastConsentAt !== undefined) row.broadcast_consent_at = client.broadcastConsentAt || null;
     const { error } = await supabaseClient.from('clients').update(row).eq('code', clientCode);
     if (error) throw error;
   }catch(e){ console.warn('save failed', e); showToast("Couldn't save: try again", true); }
@@ -1327,7 +1341,19 @@ document.getElementById('btn-open-account').addEventListener('click', ()=>{
   document.getElementById('account-email-status').textContent = ' ';
   document.getElementById('account-name').value = (client && client.name) || '';
   document.getElementById('account-name-status').textContent = ' ';
+  document.getElementById('account-notify-broadcast').checked = !!(client && client.notifyBroadcast);
+  document.getElementById('notify-broadcast-status').textContent = ' ';
   showScreen('account');
+});
+
+document.getElementById('account-notify-broadcast').addEventListener('change', async function(){
+  const status = document.getElementById('notify-broadcast-status');
+  const on = this.checked;
+  client.notifyBroadcast = on;
+  if (on && !client.broadcastConsentAt) client.broadcastConsentAt = new Date().toISOString();
+  status.textContent = 'Saving…';
+  await persistClient();
+  status.textContent = on ? 'On. You can turn this off anytime.' : 'Off. Your barbers can no longer send you these.';
 });
 
 document.getElementById('btn-save-name').addEventListener('click', async ()=>{

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-18T21-18-23Z">
+<meta name="app-build" content="2026-09-18T22-28-32Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1275,6 +1275,7 @@
             </div>
             <div id="myclients-compose-panel" style="display:none; flex-direction:column; gap:8px; padding:12px; border:1px solid var(--line); border-radius:10px; background:var(--paper);">
               <p class="screen-sub" id="myclients-compose-target" style="margin:0;">Sending to 0 clients.</p>
+              <p class="screen-sub" style="margin:0;">Only reaches clients who've opted in to messages from their barbers &mdash; not everyone you select will necessarily get it.</p>
               <div class="input-row"><textarea id="myclients-compose-text" rows="3" maxlength="300" placeholder="Write your message…"></textarea></div>
               <div class="btn-row" style="gap:14px;">
                 <button type="button" class="btn btn-primary" id="btn-myclients-compose-send" style="flex:1;">Send</button>
@@ -5422,10 +5423,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         const total = data.totalSelected || codes.length;
         statusEl.textContent = sent === total
           ? `Sent to all ${total} selected client${total===1?'':'s'}.`
-          : `Sent to ${sent} of ${total} selected clients. The rest haven't turned on notifications yet.`;
+          : `Sent to ${sent} of ${total} selected clients. The rest haven't opted in to messages from their barbers, or haven't turned on notifications yet.`;
         textEl.value = '';
+      } else if (data && data.reason === 'not_opted_in'){
+        statusEl.textContent = "None of the selected clients have opted in to messages from their barbers yet.";
       } else if (data && data.reason === 'not_subscribed'){
-        statusEl.textContent = "None of the selected clients have turned on notifications yet.";
+        statusEl.textContent = "The clients who opted in haven't turned on notifications yet.";
       } else {
         statusEl.textContent = "Couldn't send. Try again.";
       }
