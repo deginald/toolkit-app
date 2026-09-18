@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect: Find a Pro</title>
-<meta name="app-build" content="2026-09-17T22-24-17Z">
+<meta name="app-build" content="2026-09-18T20-33-17Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -161,6 +161,7 @@
   </div>
 
   <div id="list-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:0;">
+    <div id="pro-not-found-banner" class="banner" hidden style="padding-top:max(10px, calc(env(safe-area-inset-top) + 10px));">This professional's page is no longer available.</div>
     <header style="padding:20px 20px 4px; padding-top:max(20px, calc(env(safe-area-inset-top) + 16px));">
       <button type="button" class="link-btn" id="btn-directory-exit" style="padding:0 0 10px;">&larr; All Hair Connect</button>
       <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
@@ -527,7 +528,7 @@ async function showDetail(code){
       }
     }catch(e){ console.warn('direct pro lookup failed', e); }
   }
-  if (!p){ return; }
+  if (!p){ return false; }
   document.getElementById('list-screen').hidden = true;
   document.getElementById('detail-screen').hidden = false;
 
@@ -695,6 +696,7 @@ async function showDetail(code){
       reviewsHolder.appendChild(card);
     });
   }
+  return true;
 }
 
 /* =========================================================
@@ -1111,7 +1113,8 @@ async function boot(){
   document.getElementById('list-screen').hidden = false;
   renderList();
   if (proCode){
-    await showDetail(proCode);
+    const found = await showDetail(proCode);
+    document.getElementById('pro-not-found-banner').hidden = !!found;
   }
 }
 
