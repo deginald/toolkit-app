@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect: Find a Pro</title>
-<meta name="app-build" content="2026-09-18T20-33-17Z">
+<meta name="app-build" content="2026-09-18T21-18-23Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -715,6 +715,20 @@ function suggestClientCode(name){
   return `${base}-${suffix}`;
 }
 function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+// If a client previously removed this pro from their "Book again with..." suggestions
+// (see passport.html) and then books with them again anyway, treat that as the client
+// coming back on their own and clear the hide -- best-effort, never blocks the booking.
+async function clearHiddenBookAgain(clientCode, barberCode){
+  if (!dbAvailable || !clientCode || !barberCode) return;
+  try{
+    const { data, error } = await supabaseClient.from('clients').select('hidden_book_again').eq('code', clientCode).maybeSingle();
+    if (error) throw error;
+    const hidden = Array.isArray(data && data.hidden_book_again) ? data.hidden_book_again : [];
+    if (!hidden.includes(barberCode)) return;
+    const updated = hidden.filter(c => c !== barberCode);
+    await supabaseClient.from('clients').update({ hidden_book_again: updated }).eq('code', clientCode);
+  }catch(e){ console.warn('clear hidden book-again failed', e); }
+}
 function fmtDuration(mins){
   const h = Math.floor(mins/60), m = mins%60;
   if (h && m) return `${h} hr ${m} min`;
@@ -1019,6 +1033,7 @@ document.getElementById('btn-bkc-confirm').addEventListener('click', async ()=>{
   try{
     const { error } = await supabaseClient.from('appointments').insert(appt);
     if (error) throw error;
+    clearHiddenBookAgain(bkc.client.code, bkc.pro.code);
     renderBkcSuccess(appt);
     showBkcStep('success');
     // Best-effort: let the barber know a new booking came in. Never blocks or
