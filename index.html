@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-17T22-24-17Z">
+<meta name="app-build" content="2026-09-18T13-23-38Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1549,6 +1549,7 @@
                 <p class="foot-note-small">Your professional status (<span id="jobs-looking-status-note">Student</span>) is pulled from your account automatically.</p>
               </div>
               <button class="btn btn-primary" id="btn-jobs-save-looking" type="button">Save Looking listing</button>
+              <button class="btn btn-outline" id="btn-jobs-looking-preview" type="button">Preview profile</button>
               <p class="foot-note-small" id="jobs-looking-save-note">&nbsp;</p>
             </div>
             <div id="jobs-hiring-card" style="display:flex; flex-direction:column; gap:12px; border-top:1px solid var(--line); padding-top:20px;">
@@ -1585,6 +1586,13 @@
           </div>
         </div>
       </section>
+      <div id="jobs-looking-preview-panel" style="display:none; position:fixed; inset:0; z-index:600; background:var(--bg); overflow-y:auto;">
+        <div style="max-width:420px; margin:0 auto; padding:max(20px, env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));">
+          <button type="button" class="link-btn" id="btn-jobs-looking-preview-close" style="padding:6px 0 14px;">&larr; Back to editing</button>
+          <p class="eyebrow-mini" style="margin:0 0 8px; text-align:center;">This is how shops see your listing</p>
+          <div class="card" id="jobs-looking-preview-body" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+      </div>
     </main>
     <nav class="tabbar">
       <button class="tab-btn active" data-tabbtn="pace">
@@ -3711,21 +3719,24 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   });
   root.querySelector('#btn-jobs-search').addEventListener('click', searchListings);
 
+  function renderLookingDetailHtml(listing){
+    const locLine = [listing.city ? escapeHtml(listing.city) : '', listing.state ? escapeHtml(listing.state) : ''].filter(Boolean).join(', ');
+    const statusLine = craftStatusLine(listing);
+    return `
+      ${listing.photo_url ? `<img src="${escapeHtml(listing.photo_url)}" alt="" style="width:88px; height:88px; border-radius:50%; object-fit:cover; align-self:center;">` : ''}
+      <h2 class="screen-title" style="margin:0; text-align:center;">${escapeHtml(listing.name || 'Looking for work')}</h2>
+      <p class="screen-sub" style="margin:0; text-align:center;">${escapeHtml(statusLine)}${listing.grad_date ? (' · Graduating ' + escapeHtml(listing.grad_date)) : ''}</p>
+      ${locLine ? `<p class="screen-sub" style="margin:0; text-align:center;">${locLine}</p>` : ''}
+      ${listing.bio ? `<p style="margin:8px 0 0;">${escapeHtml(listing.bio)}</p>` : ''}
+      ${listing.social_link && sanitizeSocialUrl(listing.social_link) ? `<p style="margin:8px 0 0; text-align:center;"><a href="${escapeHtml(sanitizeSocialUrl(listing.social_link))}" target="_blank" rel="noopener noreferrer">View portfolio / social</a></p>` : ''}
+    `;
+  }
   let detailListing = null;
   function openListingDetail(listing){
     detailListing = listing;
     const body = root.querySelector('#jobs-detail-body');
-    const locLine = [listing.city ? escapeHtml(listing.city) : '', listing.state ? escapeHtml(listing.state) : ''].filter(Boolean).join(', ');
     if (listing.type === 'looking'){
-      const statusLine = craftStatusLine(listing);
-      body.innerHTML = `
-        ${listing.photo_url ? `<img src="${escapeHtml(listing.photo_url)}" alt="" style="width:88px; height:88px; border-radius:50%; object-fit:cover; align-self:center;">` : ''}
-        <h2 class="screen-title" style="margin:0; text-align:center;">${escapeHtml(listing.name || 'Looking for work')}</h2>
-        <p class="screen-sub" style="margin:0; text-align:center;">${escapeHtml(statusLine)}${listing.grad_date ? (' · Graduating ' + escapeHtml(listing.grad_date)) : ''}</p>
-        ${locLine ? `<p class="screen-sub" style="margin:0; text-align:center;">${locLine}</p>` : ''}
-        ${listing.bio ? `<p style="margin:8px 0 0;">${escapeHtml(listing.bio)}</p>` : ''}
-        ${listing.social_link && sanitizeSocialUrl(listing.social_link) ? `<p style="margin:8px 0 0; text-align:center;"><a href="${escapeHtml(sanitizeSocialUrl(listing.social_link))}" target="_blank" rel="noopener noreferrer">View portfolio / social</a></p>` : ''}
-      `;
+      body.innerHTML = renderLookingDetailHtml(listing);
     } else {
       const fullAddress = [listing.address, listing.city, listing.state].map(s => s ? escapeHtml(s) : '').filter(Boolean).join(', ');
       body.innerHTML = `
@@ -3779,6 +3790,25 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   root.querySelector('#jobs-hiring-toggle').addEventListener('change', function(){
     root.querySelector('#jobs-hiring-fields').style.display = this.checked ? 'flex' : 'none';
     root.querySelector('#jobs-hiring-toggle-label').textContent = this.checked ? 'on' : 'off';
+  });
+  root.querySelector('#btn-jobs-looking-preview').addEventListener('click', ()=>{
+    const specSel = root.querySelector('#jobs-looking-specialty');
+    const previewListing = {
+      name: root.querySelector('#jobs-looking-name').value.trim() || (profile && profile.name) || '',
+      bio: root.querySelector('#jobs-looking-bio').value.trim(),
+      city: root.querySelector('#jobs-looking-city').value.trim(),
+      state: root.querySelector('#jobs-looking-state').value.trim().toUpperCase(),
+      status: displayTitle(),
+      specialty: (specSel && specSel.value) || currentCraft() || '',
+      grad_date: isStudent() ? (root.querySelector('#jobs-looking-graddate').value || '') : '',
+      social_link: isStudent() ? root.querySelector('#jobs-looking-social').value.trim() : '',
+      photo_url: lookingPhotoUrl || ''
+    };
+    document.getElementById('jobs-looking-preview-body').innerHTML = renderLookingDetailHtml(previewListing);
+    document.getElementById('jobs-looking-preview-panel').style.display = 'block';
+  });
+  document.getElementById('btn-jobs-looking-preview-close').addEventListener('click', ()=>{
+    document.getElementById('jobs-looking-preview-panel').style.display = 'none';
   });
   let lookingPhotoUrl = '', lookingPhotoPath = '';
   root.querySelector('#btn-jobs-looking-photo').addEventListener('click', ()=> root.querySelector('#jobs-looking-photo-input').click());
@@ -3836,6 +3866,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
   async function loadMyListings(){
     updateLookingStatusFields();
+    const hiringCard = root.querySelector('#jobs-hiring-card');
+    if (hiringCard) hiringCard.style.display = isStudent() ? 'none' : 'flex';
     if (!dbAvailable || !profileCode) return;
     try{
       const { data: looking } = await supabaseClient.from('job_listings').select('*').eq('id', jobsListingId('looking')).maybeSingle();
