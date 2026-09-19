@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-19T00-57-03Z">
+<meta name="app-build" content="2026-09-19T01-18-58Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1286,7 +1286,7 @@
         </div>
         <div class="biz-pane" data-biz="clients" id="tab-my-clients">
           <div class="screen-body show" data-screen="dashboard" style="gap:14px;">
-            <p class="screen-sub" style="margin:0;">Clients you've saved a visit for through Consult, in one searchable list. Tap a client to look them up again in Consult, or check the box to send a notification.</p>
+            <p class="screen-sub" style="margin:0;">Clients you've saved a visit for through Consult, in one searchable list. Tap a client to look them up again in Consult, or check the box to send a message.</p>
             <div class="input-row"><input id="myclients-search" type="text" placeholder="Search by name or code"></div>
             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
               <label class="check-row" style="padding:8px 12px; flex:none; gap:7px;">
@@ -1295,9 +1295,20 @@
               </label>
               <button type="button" class="link-btn" id="btn-myclients-message" style="padding:0; display:none;">Message selected (<span id="myclients-selected-count">0</span>)</button>
             </div>
-            <div id="myclients-compose-panel" style="display:none; flex-direction:column; gap:8px; padding:12px; border:1px solid var(--line); border-radius:10px; background:var(--paper);">
+            <div id="myclients-compose-panel" style="display:none; flex-direction:column; gap:10px; padding:12px; border:1px solid var(--line); border-radius:10px; background:var(--paper);">
               <p class="screen-sub" id="myclients-compose-target" style="margin:0;">Sending to 0 clients.</p>
-              <p class="screen-sub" style="margin:0;">Only reaches clients who've opted in to messages from their barbers &mdash; not everyone you select will necessarily get it.</p>
+              <div>
+                <p class="eyebrow-mini2" style="margin:0 0 6px;">What kind of message is this?</p>
+                <label class="check-row" style="margin-bottom:6px;">
+                  <input type="radio" name="myclients-compose-category" id="myclients-category-announcement" value="shop_announcement">
+                  <span>Shop announcement <span style="text-transform:none; font-weight:600;">&mdash; hours, closures, new services</span></span>
+                </label>
+                <label class="check-row">
+                  <input type="radio" name="myclients-compose-category" id="myclients-category-promotion" value="promotion">
+                  <span>Promotion / special <span style="text-transform:none; font-weight:600;">&mdash; a discount or offer</span></span>
+                </label>
+              </div>
+              <p class="screen-sub" style="margin:0;">Only reaches clients who've opted in to that specific category &mdash; not everyone you select will necessarily get it, and picking a category is required.</p>
               <div class="input-row"><textarea id="myclients-compose-text" rows="3" maxlength="300" placeholder="Write your message…"></textarea></div>
               <div class="btn-row" style="gap:14px;">
                 <button type="button" class="btn btn-primary" id="btn-myclients-compose-send" style="flex:1;">Send</button>
@@ -1307,6 +1318,7 @@
             </div>
             <div id="myclients-list" style="display:flex; flex-direction:column; gap:8px;"></div>
             <p class="screen-sub" id="myclients-empty" style="display:none; margin:0;">No clients yet. They'll show up here once you save a visit for them through Consult.</p>
+            <p class="foot-note-small" style="margin:0;">This list only ever holds clients you've actually served through the app &mdash; All Hair Connect has no way to import contacts from your phone or elsewhere to build a marketing list.</p>
           </div>
         </div>
         <div class="biz-pane" data-biz="inventory" id="tab-inventory">
@@ -5494,6 +5506,11 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
     renderMyClients(root.querySelector('#myclients-search').value);
   });
+  function resetMyClientsCompose(){
+    root.querySelector('#myclients-compose-text').value = '';
+    root.querySelector('#myclients-compose-status').textContent = ' ';
+    root.querySelectorAll('input[name="myclients-compose-category"]').forEach(r => r.checked = false);
+  }
   root.querySelector('#btn-myclients-message').addEventListener('click', ()=>{
     root.querySelector('#myclients-compose-panel').style.display = 'flex';
     updateSelectionUI();
@@ -5501,8 +5518,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   });
   root.querySelector('#btn-myclients-compose-cancel').addEventListener('click', ()=>{
     root.querySelector('#myclients-compose-panel').style.display = 'none';
-    root.querySelector('#myclients-compose-text').value = '';
-    root.querySelector('#myclients-compose-status').textContent = ' ';
+    resetMyClientsCompose();
   });
   root.querySelector('#btn-myclients-compose-send').addEventListener('click', async ()=>{
     const textEl = root.querySelector('#myclients-compose-text');
@@ -5510,14 +5526,18 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const sendBtn = root.querySelector('#btn-myclients-compose-send');
     const message = textEl.value.trim();
     const codes = Array.from(selectedClients);
+    const categoryInput = root.querySelector('input[name="myclients-compose-category"]:checked');
+    const category = categoryInput ? categoryInput.value : '';
+    const categoryLabel = category === 'promotion' ? 'promotions/specials' : 'shop announcements';
     if (!codes.length){ statusEl.textContent = 'Select at least one client first.'; return; }
+    if (!category){ statusEl.textContent = 'Choose whether this is a shop announcement or a promotion/special.'; return; }
     if (!message){ statusEl.textContent = 'Write a message first.'; return; }
     if (!dbAvailable){ statusEl.textContent = "Live saving isn't connected right now."; return; }
     sendBtn.disabled = true;
     statusEl.textContent = 'Sending…';
     try{
       const { data, error } = await supabaseClient.functions.invoke('send-quick-message', {
-        body: { broadcast: true, barber_code: profileCode, barber_name: profile.name, client_codes: codes, message }
+        body: { broadcast: true, category, barber_code: profileCode, barber_name: profile.name, client_codes: codes, message }
       });
       if (error) throw error;
       if (data && data.ok){
@@ -5525,10 +5545,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         const total = data.totalSelected || codes.length;
         statusEl.textContent = sent === total
           ? `Sent to all ${total} selected client${total===1?'':'s'}.`
-          : `Sent to ${sent} of ${total} selected clients. The rest haven't opted in to messages from their barbers, or haven't turned on notifications yet.`;
+          : `Sent to ${sent} of ${total} selected clients. The rest haven't opted in to ${categoryLabel}, or haven't turned on notifications yet.`;
         textEl.value = '';
       } else if (data && data.reason === 'not_opted_in'){
-        statusEl.textContent = "None of the selected clients have opted in to messages from their barbers yet.";
+        statusEl.textContent = `None of the selected clients have opted in to ${categoryLabel} yet.`;
       } else if (data && data.reason === 'not_subscribed'){
         statusEl.textContent = "The clients who opted in haven't turned on notifications yet.";
       } else {

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect: Hair Passport</title>
-<meta name="app-build" content="2026-09-19T00-57-03Z">
+<meta name="app-build" content="2026-09-19T01-18-58Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -376,8 +376,8 @@
           <p class="foot-note-small" id="account-name-status">&nbsp;</p>
         </div>
         <div style="border-top:1px solid var(--line); padding-top:16px;">
-          <p class="eyebrow-mini">Notifications</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Quick message alerts</h2>
+          <p class="eyebrow-mini">Communication preferences</p>
+          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Appointment &amp; service messages</h2>
           <p class="screen-sub">Turn this on to get notified when your barber sends you a quick message about an appointment, and to send them one yourself. No phone number needed.</p>
           <div id="ios-homescreen-tip" style="display:none; flex-direction:column; gap:6px; padding:12px 14px; border-radius:10px; background:var(--brass-tint); border:1px solid var(--brass);">
             <p class="screen-sub" style="margin:0;"><strong>On an iPhone, notifications only work once this is added to your Home Screen.</strong> Safari can't turn them on from inside a regular browser tab.</p>
@@ -391,13 +391,18 @@
           <p class="foot-note-small">Not seeing the message text in a notification? On iPhone, check Settings &rarr; Notifications &rarr; All Hair Connect &rarr; Show Previews, and set it to Always.</p>
         </div>
         <div style="border-top:1px solid var(--line); padding-top:16px;">
-          <p class="eyebrow-mini">Messages from your barbers</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Broader messages, not tied to one appointment</h2>
-          <p class="screen-sub">Separate from appointment alerts above: this lets a professional you've actually booked with send you a message that isn't about one specific appointment &mdash; a schedule change, a reminder they're taking new bookings, that kind of thing. Off by default. Only pros you've had a real visit with can ever reach you this way, never anyone else in the app.</p>
-          <label class="check-row" style="margin-top:10px;">
-            <input type="checkbox" id="account-notify-broadcast">
-            <span>Allow these messages</span>
-          </label>
+          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Shop announcements &amp; promotions</h2>
+          <p class="screen-sub">Separate from appointment messages above, and from each other: a professional you've actually had a visit with can ask to send you these, but only once you've turned each one on. Both are off by default, and turning one on never turns on the other. Only pros you've had a real visit with can ever reach you this way, never anyone else in the app.</p>
+          <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+            <label class="check-row">
+              <input type="checkbox" id="account-notify-announcements">
+              <span>Shop announcements <span style="text-transform:none; font-weight:600;">&mdash; hours, closures, new services</span></span>
+            </label>
+            <label class="check-row">
+              <input type="checkbox" id="account-notify-promotions">
+              <span>Promotions &amp; specials <span style="text-transform:none; font-weight:600;">&mdash; discounts and offers</span></span>
+            </label>
+          </div>
           <p class="foot-note-small" id="notify-broadcast-status">&nbsp;</p>
         </div>
         <div style="border-top:1px solid var(--line); padding-top:16px;">
@@ -602,7 +607,7 @@ function toTitleCase(str){
   return str.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
 }
 function defaultClient(name){
-  return { code:null, name: name || 'You', email:'', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'', hiddenBookAgain: [], notifyBroadcast:false, broadcastConsentAt:'', photoConsentRecord:false, photoConsentRecordAt:'', photoConsentMarketing:false, photoConsentMarketingAt:'' };
+  return { code:null, name: name || 'You', email:'', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'', hiddenBookAgain: [], notifyShopAnnouncements:false, notifyShopAnnouncementsAt:'', notifyPromotions:false, notifyPromotionsAt:'', photoConsentRecord:false, photoConsentRecordAt:'', photoConsentMarketing:false, photoConsentMarketingAt:'' };
 }
 function showToast(msg, danger){
   const t = document.getElementById('toast');
@@ -632,8 +637,10 @@ async function tryLoadClient(code){
       client.ndaVersion = data.nda_version || '';
       client.ndaAcceptedAt = data.nda_accepted_at || '';
       client.hiddenBookAgain = Array.isArray(data.hidden_book_again) ? data.hidden_book_again : [];
-      client.notifyBroadcast = data.notify_broadcast === true;
-      client.broadcastConsentAt = data.broadcast_consent_at || '';
+      client.notifyShopAnnouncements = data.notify_shop_announcements === true;
+      client.notifyShopAnnouncementsAt = data.notify_shop_announcements_at || '';
+      client.notifyPromotions = data.notify_promotions === true;
+      client.notifyPromotionsAt = data.notify_promotions_at || '';
       client.photoConsentRecord = data.photo_consent_record === true;
       client.photoConsentRecordAt = data.photo_consent_record_at || '';
       client.photoConsentMarketing = data.photo_consent_marketing === true;
@@ -695,8 +702,10 @@ async function persistClient(){
     if (client.ndaVersion !== undefined) row.nda_version = client.ndaVersion;
     if (client.ndaAcceptedAt !== undefined) row.nda_accepted_at = client.ndaAcceptedAt;
     row.hidden_book_again = client.hiddenBookAgain || [];
-    row.notify_broadcast = client.notifyBroadcast === true;
-    if (client.broadcastConsentAt !== undefined) row.broadcast_consent_at = client.broadcastConsentAt || null;
+    row.notify_shop_announcements = client.notifyShopAnnouncements === true;
+    if (client.notifyShopAnnouncementsAt !== undefined) row.notify_shop_announcements_at = client.notifyShopAnnouncementsAt || null;
+    row.notify_promotions = client.notifyPromotions === true;
+    if (client.notifyPromotionsAt !== undefined) row.notify_promotions_at = client.notifyPromotionsAt || null;
     row.photo_consent_record = client.photoConsentRecord === true;
     if (client.photoConsentRecordAt !== undefined) row.photo_consent_record_at = client.photoConsentRecordAt || null;
     row.photo_consent_marketing = client.photoConsentMarketing === true;
@@ -1365,7 +1374,8 @@ document.getElementById('btn-open-account').addEventListener('click', ()=>{
   document.getElementById('account-email-status').textContent = ' ';
   document.getElementById('account-name').value = (client && client.name) || '';
   document.getElementById('account-name-status').textContent = ' ';
-  document.getElementById('account-notify-broadcast').checked = !!(client && client.notifyBroadcast);
+  document.getElementById('account-notify-announcements').checked = !!(client && client.notifyShopAnnouncements);
+  document.getElementById('account-notify-promotions').checked = !!(client && client.notifyPromotions);
   document.getElementById('notify-broadcast-status').textContent = ' ';
   document.getElementById('account-photo-consent-record').checked = !!(client && client.photoConsentRecord);
   document.getElementById('account-photo-consent-marketing').checked = !!(client && client.photoConsentMarketing);
@@ -1373,14 +1383,24 @@ document.getElementById('btn-open-account').addEventListener('click', ()=>{
   showScreen('account');
 });
 
-document.getElementById('account-notify-broadcast').addEventListener('change', async function(){
+document.getElementById('account-notify-announcements').addEventListener('change', async function(){
   const status = document.getElementById('notify-broadcast-status');
   const on = this.checked;
-  client.notifyBroadcast = on;
-  if (on && !client.broadcastConsentAt) client.broadcastConsentAt = new Date().toISOString();
+  client.notifyShopAnnouncements = on;
+  if (on && !client.notifyShopAnnouncementsAt) client.notifyShopAnnouncementsAt = new Date().toISOString();
   status.textContent = 'Saving…';
   await persistClient();
-  status.textContent = on ? 'On. You can turn this off anytime.' : 'Off. Your barbers can no longer send you these.';
+  status.textContent = on ? 'Shop announcements: on.' : 'Shop announcements: off.';
+});
+
+document.getElementById('account-notify-promotions').addEventListener('change', async function(){
+  const status = document.getElementById('notify-broadcast-status');
+  const on = this.checked;
+  client.notifyPromotions = on;
+  if (on && !client.notifyPromotionsAt) client.notifyPromotionsAt = new Date().toISOString();
+  status.textContent = 'Saving…';
+  await persistClient();
+  status.textContent = on ? 'Promotions & specials: on.' : 'Promotions & specials: off.';
 });
 
 async function savePhotoConsent(){
