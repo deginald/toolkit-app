@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-18T22-28-32Z">
+<meta name="app-build" content="2026-09-19T00-57-03Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1054,10 +1054,32 @@
                   <p class="eyebrow-mini2" id="bk-lookup-name" style="margin:0;"></p>
                   <div class="checkpoint-photo-grid" id="bk-lookup-photos"></div>
                   <p class="screen-sub" id="bk-lookup-photos-empty" style="display:none; margin:0;">No photos saved for this client yet.</p>
+                  <div id="bk-lookup-consent-box" style="display:flex; flex-direction:column; gap:6px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--paper);">
+                    <p class="eyebrow-mini2" style="margin:0;">Photo consent</p>
+                    <p class="screen-sub" id="bk-lookup-consent-status" style="margin:0;">&nbsp;</p>
+                    <button type="button" class="link-btn" id="btn-bk-lookup-consent-edit" style="align-self:flex-start; padding:0;">Ask / update</button>
+                    <div id="bk-lookup-consent-form" style="display:none; flex-direction:column; gap:10px; margin-top:4px; padding-top:10px; border-top:1px solid var(--line);">
+                      <label class="check-row">
+                        <input type="checkbox" id="bk-lookup-consent-record">
+                        <span>Client has agreed to before/after photos being saved to their Hair Passport</span>
+                      </label>
+                      <label class="check-row">
+                        <input type="checkbox" id="bk-lookup-consent-marketing">
+                        <span>They've also agreed these can be used in my portfolio or marketing (separate &mdash; optional)</span>
+                      </label>
+                      <p class="foot-note-small" style="margin:0;">These are two separate permissions. Saying yes to the first doesn't mean yes to the second &mdash; ask about each one.</p>
+                      <div class="btn-row" style="gap:10px;">
+                        <button type="button" class="btn btn-primary" id="btn-bk-lookup-consent-save" style="flex:1;">Save</button>
+                        <button type="button" class="link-btn" id="btn-bk-lookup-consent-cancel" style="padding:0;">Cancel</button>
+                      </div>
+                      <p class="foot-note-small" id="bk-lookup-consent-save-status">&nbsp;</p>
+                    </div>
+                  </div>
                   <div class="field">
                     <label>Notes about this visit <span style="text-transform:none; font-weight:600;">(optional)</span></label>
                     <div class="input-row"><textarea id="bk-lookup-notes" placeholder="e.g. Wants it a little shorter on the sides next time" style="min-height:60px;"></textarea></div>
                   </div>
+                  <p class="screen-sub" style="margin:0;">&#128247; Photos you add here are saved to this client's Hair Passport &mdash; make sure they know you're taking one.</p>
                   <input type="file" accept="image/*" capture="environment" multiple id="bk-lookup-file-input" style="display:none;">
                   <div class="btn-row" style="gap:10px;">
                     <button class="btn btn-primary" id="btn-bk-lookup-addphoto" type="button" style="flex:1;">Add photos</button>
@@ -1787,7 +1809,7 @@
         </div>
         <div class="field" id="listing-photos-field" style="display:none;">
           <label>Portfolio photos <span style="text-transform:none; font-weight:600;">(optional, up to 14)</span></label>
-          <p class="foot-note-small" style="margin:0 0 8px;">Add a few photos of your work. Clients see these on your public profile and in search results.</p>
+          <p class="foot-note-small" style="margin:0 0 8px;">Add a few photos of your work. Clients see these on your public profile and in search results. This is separate from Hair Passport photo consent &mdash; if a client is recognizable in a photo here, make sure they've agreed to it being shown publicly before you add it.</p>
           <div class="checkpoint-photo-grid" id="listing-photos-grid" style="justify-content:flex-start;"></div>
           <input type="file" accept="image/*" multiple id="listing-photos-input" style="display:none;">
           <button class="btn btn-outline" id="btn-listing-add-photos" type="button" style="margin-top:10px; width:100%;">Add photos</button>
@@ -4472,6 +4494,69 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       });
     });
   }
+  // Photo consent has two separate, independent permissions: whether before/after
+  // photos may be saved to this client's Hair Passport at all, and -- entirely
+  // separately -- whether they may also be used in this professional's public
+  // portfolio or marketing. Granting one never implies the other.
+  function fmtConsentDate(iso){
+    if (!iso) return '';
+    try{ return new Date(iso).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); }
+    catch(e){ return ''; }
+  }
+  function renderBkLookupConsent(){
+    if (!bkLookupClient) return;
+    const statusEl = root.querySelector('#bk-lookup-consent-status');
+    const parts = [];
+    parts.push(bkLookupClient.photoConsentRecord
+      ? 'Record: yes' + (bkLookupClient.photoConsentRecordAt ? ' (since ' + fmtConsentDate(bkLookupClient.photoConsentRecordAt) + ')' : '')
+      : 'Record: not yet asked');
+    parts.push(bkLookupClient.photoConsentMarketing
+      ? 'Portfolio/marketing: yes' + (bkLookupClient.photoConsentMarketingAt ? ' (since ' + fmtConsentDate(bkLookupClient.photoConsentMarketingAt) + ')' : '')
+      : 'Portfolio/marketing: no');
+    statusEl.textContent = parts.join(' · ');
+    root.querySelector('#bk-lookup-consent-record').checked = bkLookupClient.photoConsentRecord;
+    root.querySelector('#bk-lookup-consent-marketing').checked = bkLookupClient.photoConsentMarketing;
+  }
+  function openBkLookupConsentForm(){
+    root.querySelector('#bk-lookup-consent-form').style.display = 'flex';
+    root.querySelector('#bk-lookup-consent-save-status').textContent = ' ';
+  }
+  root.querySelector('#btn-bk-lookup-consent-edit').addEventListener('click', openBkLookupConsentForm);
+  root.querySelector('#btn-bk-lookup-consent-cancel').addEventListener('click', ()=>{
+    root.querySelector('#bk-lookup-consent-form').style.display = 'none';
+    renderBkLookupConsent();
+  });
+  root.querySelector('#btn-bk-lookup-consent-save').addEventListener('click', async ()=>{
+    if (!bkLookupClient) return;
+    const saveStatus = root.querySelector('#bk-lookup-consent-save-status');
+    const recordChecked = root.querySelector('#bk-lookup-consent-record').checked;
+    const marketingChecked = root.querySelector('#bk-lookup-consent-marketing').checked;
+    if (marketingChecked && !recordChecked){
+      saveStatus.textContent = "Portfolio/marketing consent needs record consent checked too.";
+      return;
+    }
+    if (!dbAvailable){ saveStatus.textContent = "Live saving isn't connected right now."; return; }
+    saveStatus.textContent = 'Saving…';
+    const nowIso = new Date().toISOString();
+    const update = { photo_consent_record: recordChecked, photo_consent_marketing: marketingChecked };
+    // Only stamp a new consent date the moment it actually turns on -- unchecking
+    // later doesn't erase the historical record of when it was first granted.
+    if (recordChecked && !bkLookupClient.photoConsentRecordAt) update.photo_consent_record_at = nowIso;
+    if (marketingChecked && !bkLookupClient.photoConsentMarketingAt) update.photo_consent_marketing_at = nowIso;
+    try{
+      const { error } = await supabaseClient.from('clients').update(update).eq('code', bkLookupClient.code);
+      if (error) throw error;
+      bkLookupClient.photoConsentRecord = recordChecked;
+      bkLookupClient.photoConsentMarketing = marketingChecked;
+      if (update.photo_consent_record_at) bkLookupClient.photoConsentRecordAt = update.photo_consent_record_at;
+      if (update.photo_consent_marketing_at) bkLookupClient.photoConsentMarketingAt = update.photo_consent_marketing_at;
+      root.querySelector('#bk-lookup-consent-form').style.display = 'none';
+      renderBkLookupConsent();
+    }catch(e){
+      console.warn('save photo consent failed', e);
+      saveStatus.textContent = "Couldn't save: try again.";
+    }
+  });
   async function performBkLookup(codeOverride){
     const code = sanitizeCode(codeOverride !== undefined ? codeOverride : root.querySelector('#bk-lookup-code').value);
     const statusEl = root.querySelector('#bk-lookup-status');
@@ -4490,13 +4575,19 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         code,
         name: data.name || 'Client',
         visits: Array.isArray(data.visits) ? data.visits : [],
-        barberCodes: Array.isArray(data.barber_codes) ? data.barber_codes : []
+        barberCodes: Array.isArray(data.barber_codes) ? data.barber_codes : [],
+        photoConsentRecord: data.photo_consent_record === true,
+        photoConsentRecordAt: data.photo_consent_record_at || '',
+        photoConsentMarketing: data.photo_consent_marketing === true,
+        photoConsentMarketingAt: data.photo_consent_marketing_at || ''
       };
       statusEl.textContent = ' ';
       root.querySelector('#bk-lookup-search').style.display = 'none';
       root.querySelector('#bk-lookup-name').textContent = bkLookupClient.name;
       root.querySelector('#bk-lookup-upload-status').textContent = ' ';
       root.querySelector('#bk-lookup-notes').value = '';
+      root.querySelector('#bk-lookup-consent-form').style.display = 'none';
+      renderBkLookupConsent();
       renderBkLookupPhotos();
       resultEl.style.display = 'flex';
     }catch(e){
@@ -4671,7 +4762,18 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       return false;
     }
   }
-  root.querySelector('#btn-bk-lookup-addphoto').addEventListener('click', ()=> root.querySelector('#bk-lookup-file-input').click());
+  root.querySelector('#btn-bk-lookup-addphoto').addEventListener('click', ()=>{
+    if (!bkLookupClient) return;
+    if (!bkLookupClient.photoConsentRecord){
+      // Don't let the camera open at all until the client's been asked -- this is the
+      // one moment that actually creates a permanent photo of them, so it's the one
+      // moment worth a hard stop rather than just a reminder.
+      openBkLookupConsentForm();
+      root.querySelector('#bk-lookup-consent-save-status').textContent = "Get the client's OK first, then check the box above.";
+      return;
+    }
+    root.querySelector('#bk-lookup-file-input').click();
+  });
   root.querySelector('#bk-lookup-file-input').addEventListener('change', async (e)=>{
     const files = Array.from(e.target.files || []);
     e.target.value = ''; // lets the same photo be picked again later if needed

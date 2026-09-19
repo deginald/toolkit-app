@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect: Hair Passport</title>
-<meta name="app-build" content="2026-09-18T22-28-32Z">
+<meta name="app-build" content="2026-09-19T00-57-03Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -400,6 +400,22 @@
           </label>
           <p class="foot-note-small" id="notify-broadcast-status">&nbsp;</p>
         </div>
+        <div style="border-top:1px solid var(--line); padding-top:16px;">
+          <p class="eyebrow-mini">Photo consent</p>
+          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Before/after photos</h2>
+          <p class="screen-sub">Your barber may ask to take before/after photos and save them to your Hair Passport. These two permissions are separate &mdash; agreeing to one doesn't turn on the other, and you can change either any time.</p>
+          <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+            <label class="check-row">
+              <input type="checkbox" id="account-photo-consent-record">
+              <span>Save before/after photos to my Hair Passport</span>
+            </label>
+            <label class="check-row">
+              <input type="checkbox" id="account-photo-consent-marketing">
+              <span>Also allow those photos in a professional's portfolio or marketing</span>
+            </label>
+          </div>
+          <p class="foot-note-small" id="photo-consent-status">&nbsp;</p>
+        </div>
         <div style="border-top:1px solid var(--line); padding-top:16px; margin-top:16px;">
           <p class="eyebrow-mini">Account recovery</p>
           <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Recovery email</h2>
@@ -586,7 +602,7 @@ function toTitleCase(str){
   return str.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
 }
 function defaultClient(name){
-  return { code:null, name: name || 'You', email:'', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'', hiddenBookAgain: [], notifyBroadcast:false, broadcastConsentAt:'' };
+  return { code:null, name: name || 'You', email:'', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'', hiddenBookAgain: [], notifyBroadcast:false, broadcastConsentAt:'', photoConsentRecord:false, photoConsentRecordAt:'', photoConsentMarketing:false, photoConsentMarketingAt:'' };
 }
 function showToast(msg, danger){
   const t = document.getElementById('toast');
@@ -618,6 +634,10 @@ async function tryLoadClient(code){
       client.hiddenBookAgain = Array.isArray(data.hidden_book_again) ? data.hidden_book_again : [];
       client.notifyBroadcast = data.notify_broadcast === true;
       client.broadcastConsentAt = data.broadcast_consent_at || '';
+      client.photoConsentRecord = data.photo_consent_record === true;
+      client.photoConsentRecordAt = data.photo_consent_record_at || '';
+      client.photoConsentMarketing = data.photo_consent_marketing === true;
+      client.photoConsentMarketingAt = data.photo_consent_marketing_at || '';
       clientCode = code;
       return true;
     }
@@ -677,6 +697,10 @@ async function persistClient(){
     row.hidden_book_again = client.hiddenBookAgain || [];
     row.notify_broadcast = client.notifyBroadcast === true;
     if (client.broadcastConsentAt !== undefined) row.broadcast_consent_at = client.broadcastConsentAt || null;
+    row.photo_consent_record = client.photoConsentRecord === true;
+    if (client.photoConsentRecordAt !== undefined) row.photo_consent_record_at = client.photoConsentRecordAt || null;
+    row.photo_consent_marketing = client.photoConsentMarketing === true;
+    if (client.photoConsentMarketingAt !== undefined) row.photo_consent_marketing_at = client.photoConsentMarketingAt || null;
     const { error } = await supabaseClient.from('clients').update(row).eq('code', clientCode);
     if (error) throw error;
   }catch(e){ console.warn('save failed', e); showToast("Couldn't save: try again", true); }
@@ -1343,6 +1367,9 @@ document.getElementById('btn-open-account').addEventListener('click', ()=>{
   document.getElementById('account-name-status').textContent = ' ';
   document.getElementById('account-notify-broadcast').checked = !!(client && client.notifyBroadcast);
   document.getElementById('notify-broadcast-status').textContent = ' ';
+  document.getElementById('account-photo-consent-record').checked = !!(client && client.photoConsentRecord);
+  document.getElementById('account-photo-consent-marketing').checked = !!(client && client.photoConsentMarketing);
+  document.getElementById('photo-consent-status').textContent = ' ';
   showScreen('account');
 });
 
@@ -1354,6 +1381,35 @@ document.getElementById('account-notify-broadcast').addEventListener('change', a
   status.textContent = 'Saving…';
   await persistClient();
   status.textContent = on ? 'On. You can turn this off anytime.' : 'Off. Your barbers can no longer send you these.';
+});
+
+async function savePhotoConsent(){
+  const status = document.getElementById('photo-consent-status');
+  status.textContent = 'Saving…';
+  await persistClient();
+  status.textContent = 'Saved.';
+}
+document.getElementById('account-photo-consent-record').addEventListener('change', async function(){
+  const on = this.checked;
+  client.photoConsentRecord = on;
+  if (on && !client.photoConsentRecordAt) client.photoConsentRecordAt = new Date().toISOString();
+  // Marketing use of photos doesn't make sense once record consent is off --
+  // no photos are being saved for a barber to use anywhere in the first place.
+  if (!on && client.photoConsentMarketing){
+    client.photoConsentMarketing = false;
+    document.getElementById('account-photo-consent-marketing').checked = false;
+  }
+  await savePhotoConsent();
+});
+document.getElementById('account-photo-consent-marketing').addEventListener('change', async function(){
+  if (this.checked && !client.photoConsentRecord){
+    this.checked = false;
+    document.getElementById('photo-consent-status').textContent = 'Turn on the Hair Passport photo permission first.';
+    return;
+  }
+  client.photoConsentMarketing = this.checked;
+  if (this.checked && !client.photoConsentMarketingAt) client.photoConsentMarketingAt = new Date().toISOString();
+  await savePhotoConsent();
 });
 
 document.getElementById('btn-save-name').addEventListener('click', async ()=>{
