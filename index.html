@@ -7100,9 +7100,12 @@ document.getElementById('btn-role-change-confirm').addEventListener('click', asy
   showToast('Role updated. Pace and Ledger are no longer available');
 });
 // Calls the notification function with a time limit so a slow or unavailable server can't freeze a screen.
+// Name (web address) of the Supabase Edge Function that sends these messages. The dashboard editor gave it a generated name;
+// if you ever redeploy it under a different name, change it here (and in index-appstore.html / passport.html).
+var QUICK_MESSAGE_FUNCTION = 'rapid-task';
 window.invokeQuickMessage = function(body){
   return Promise.race([
-    supabaseClient.functions.invoke('send-quick-message', { body: body }),
+    supabaseClient.functions.invoke(QUICK_MESSAGE_FUNCTION, { body: body }),
     new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('The message service took too long to respond. Try again in a moment.')); }, 12000); })
   ]);
 };
