@@ -434,7 +434,8 @@
         <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
           <p class="eyebrow-mini" style="color:var(--behind);">Danger zone</p>
           <button class="btn btn-danger" id="btn-delete-account">Delete my account</button>
-          <p class="foot-note-small">This permanently deletes your Hair Passport and frees your code for someone else to use. It can't be undone.</p>
+          <p class="foot-note-small">This permanently deletes your Hair Passport, your photos, your reviews, and your notification settings, and frees your code for someone else to use. It can't be undone. Professionals you've booked with keep an anonymous "Deleted client" entry in their appointment history.</p>
+          <p class="foot-note-small" id="delete-account-status" style="margin:0;">&nbsp;</p>
         </div>
       </div>
 
@@ -686,14 +687,37 @@ async function deleteClientPhotos(code){
     }
   }catch(e){ console.warn('delete client photos failed', e); }
 }
+// Everything else tied to this client's code, so nothing personal is left behind. A
+// professional's own appointment history is kept but made anonymous, so their calendar and
+// earnings stay accurate.
+async function deleteClientRelatedData(code){
+  const { data: appts, error: apptErr } = await supabaseClient.from('appointments').select('id').eq('client_code', code);
+  if (apptErr) throw apptErr;
+  const ids = (appts || []).map(a => a.id);
+  for (let i = 0; i < ids.length; i += 200){
+    const { error } = await supabaseClient.from('quick_messages').delete().eq('sender_role', 'client').in('appointment_id', ids.slice(i, i + 200));
+    if (error) throw error;
+  }
+  const results = await Promise.all([
+    supabaseClient.from('reviews').delete().eq('client_code', code),
+    supabaseClient.from('loyalty_redemptions').delete().eq('client_code', code),
+    supabaseClient.from('push_subscriptions').delete().eq('owner_code', code).eq('owner_role', 'client'),
+    supabaseClient.from('appointments').update({ client_name: 'Deleted client', client_code: 'deleted-client' }).eq('client_code', code)
+  ]);
+  for (const res of results){ if (res.error) throw res.error; }
+}
 async function deleteClientRow(code){
-  if (!dbAvailable || !code) return true;
+  if (!dbAvailable || !code) return { ok: true };
   try{
     await deleteClientPhotos(code);
+    await deleteClientRelatedData(code);
     const { error } = await supabaseClient.from('clients').delete().eq('code', code);
     if (error) throw error;
-    return true;
-  }catch(e){ console.warn('delete failed', e); return false; }
+    return { ok: true };
+  }catch(e){
+    console.warn('delete failed', e);
+    return { ok: false, message: (e && e.message) || 'unknown error' };
+  }
 }
 
 async function persistClient(){
@@ -1211,7 +1235,7 @@ document.getElementById('btn-submit-rating').addEventListener('click', async ()=
     document.getElementById('btn-submit-rating').textContent = 'Update rating';
   }catch(e){
     console.warn('rating save failed', e);
-    note.textContent = "Couldn't save your rating: try again.";
+    note.textContent = "Couldn't save your rating: " + ((e && e.message) || 'try again') + ".";
   }
 });
 
@@ -1547,7 +1571,14 @@ document.getElementById('btn-delete-account').addEventListener('click', async fu
   }
   deleteAccountArmed = false;
   this.disabled = true;
-  await deleteClientRow(clientCode);
+  const deleteResult = await deleteClientRow(clientCode);
+  if (!deleteResult.ok){
+    document.getElementById('delete-account-status').textContent = "Couldn't finish deleting your account: " + deleteResult.message + ". You're still signed in, so you can tap Delete again to retry, or email allhairconnect@gmail.com for help.";
+    this.disabled = false;
+    this.textContent = 'Delete my account';
+    return;
+  }
+  document.getElementById('delete-account-status').textContent = ' ';
   try{ localStorage.removeItem('passportClientCode'); }catch(e){}
   client = null; clientCode = null;
   this.disabled = false;

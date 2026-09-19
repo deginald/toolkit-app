@@ -488,7 +488,7 @@
       <div class="option-card" id="btn-role-pro">
         <span class="oc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6.2" cy="6.2" r="2.4" stroke="currentColor" stroke-width="1.7"/><circle cx="6.2" cy="17.8" r="2.4" stroke="currentColor" stroke-width="1.7"/><path d="M8 7.6L20 18.5M8 16.4L20 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
         <span class="oc-label">I'm a Professional</span>
-        <span class="oc-sub">Barber, cosmetologist, or student.</span>
+        <span class="oc-sub">Barber, cosmetologist, or student. Students can track their graduation date with Pace.</span>
       </div>
       <div class="option-card" id="btn-role-directory">
         <span class="oc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.7"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
@@ -1871,7 +1871,8 @@
       <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
         <p class="eyebrow-mini" style="color:var(--behind);">Danger zone</p>
         <button class="btn btn-danger" id="btn-delete-account">Delete my account</button>
-        <p class="foot-note-small">This permanently deletes your profile and signs you out. It can't be undone. Your login itself (email and password) isn't removed automatically; contact support if you'd like that cleared too.</p>
+        <p class="foot-note-small">This permanently deletes your account: your login (email and password), profile, appointments, Jobs Board listings and messages, and the photos you uploaded. It can't be undone. Notes and photos you saved to a client's Hair Passport belong to that client's record and stay with them.</p>
+        <p class="foot-note-small" id="delete-account-status" style="margin:0;">&nbsp;</p>
       </div>
     </main>
   </div>
@@ -3014,6 +3015,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       } else {
         const photos = [];
         const files = cstate.checkpointPhotos;
+        if (files.length){
+          // Saving photos to a client's record needs that client's recorded consent, and the only
+          // screen that checks for it is Booking > Look up a client. This older path never did,
+          // so it refuses rather than save around the consent check.
+          statusEl.textContent = "Photos can only be saved to a client's record from Booking > Look up a client, once the client has agreed.";
+          saveBtn.disabled = false;
+          return;
+        }
         for (let i=0; i<files.length; i++){
           const rawFile = files[i];
           const file = await compressPhotoForUpload(rawFile);
@@ -5758,6 +5767,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         statusEl.textContent = `None of the selected clients have opted in to ${categoryLabel} yet.`;
       } else if (data && data.reason === 'not_subscribed'){
         statusEl.textContent = "The clients who opted in haven't turned on notifications yet.";
+      } else if (data && data.reason === 'blocked_text'){
+        statusEl.textContent = data.error || 'That message contains language that is not allowed. Please reword it and try again.';
       } else {
         statusEl.textContent = "Couldn't send. Try again.";
       }
@@ -6606,6 +6617,14 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
       const { data: existingCode, error: codeCheckErr } = await supabaseClient.from('profiles').select('code').eq('code', code).maybeSingle();
       if (codeCheckErr) throw codeCheckErr;
       if (existingCode){ note.textContent = 'That booking code is already taken. Pick another.'; submitBtn.disabled = false; return; }
+      try{
+        const { data: hit, error: hitErr } = await supabaseClient.rpc('find_blocked_term', { t: name });
+        if (!hitErr && typeof hit === 'string' && hit){
+          note.textContent = 'That name contains language that is not allowed on All Hair Connect. Please use your real name.';
+          submitBtn.disabled = false;
+          return;
+        }
+      }catch(_e){}
       note.textContent = 'Creating your account…';
       const { data, error } = await supabaseClient.auth.signUp({ email, password });
       if (error) throw error;
@@ -7089,13 +7108,40 @@ document.getElementById('btn-delete-account').addEventListener('click', async fu
     return;
   }
   deleteAccountArmed = false;
-  this.disabled = true;
-  await deleteProfileRow(profileCode);
+  const btn = this;
+  const statusEl = document.getElementById('delete-account-status');
+  btn.disabled = true;
+  statusEl.textContent = 'Deleting your account\u2026';
+  // The delete-account Edge Function removes the data AND the login (the app can't remove a
+  // login itself). We only sign out and say "deleted" once the server confirms it worked.
+  // With no live connection nothing was ever saved anywhere, so there is nothing to delete.
+  if (dbAvailable){
+    let failure = '';
+    try{
+      const { data, error } = await supabaseClient.functions.invoke('delete-account');
+      if (error){
+        failure = error.message || 'unknown error';
+        try{
+          const body = (error.context && typeof error.context.json === 'function') ? await error.context.json() : null;
+          if (body && body.error) failure = body.error;
+        }catch(_e){}
+      } else if (!data || data.ok !== true){
+        failure = (data && data.error) || 'the server did not confirm the deletion';
+      }
+    }catch(e){ failure = (e && e.message) || 'unknown error'; }
+    if (failure){
+      statusEl.textContent = "Couldn't finish deleting your account: " + failure + " You're still signed in, so you can tap Delete again to retry, or email allhairconnect@gmail.com for help.";
+      btn.disabled = false;
+      btn.textContent = 'Delete my account';
+      return;
+    }
+  }
+  statusEl.textContent = ' ';
   try{ if (dbAvailable) await supabaseClient.auth.signOut(); }catch(e){}
   try{ localStorage.removeItem('pilotProfileCode'); }catch(e){}
   profile = null; profileCode = null;
-  this.disabled = false;
-  this.textContent = 'Delete my account';
+  btn.disabled = false;
+  btn.textContent = 'Delete my account';
   document.getElementById('account-screen').hidden = true;
   document.getElementById('app-shell').hidden = true;
   showToast('Account deleted');
