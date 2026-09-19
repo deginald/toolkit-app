@@ -7099,6 +7099,9 @@ document.getElementById('btn-role-change-confirm').addEventListener('click', asy
   showTab(currentTab || 'booking');
   showToast('Role updated. Pace and Ledger are no longer available');
 });
+// Name (web address) of the Supabase Edge Function that deletes an account. If you ever redeploy it under a different
+// name, change it here and in index-appstore.html.
+const DELETE_ACCOUNT_FUNCTION = 'quick-processor';
 let deleteAccountArmed = false;
 document.getElementById('btn-delete-account').addEventListener('click', async function(){
   if (!deleteAccountArmed){
@@ -7118,7 +7121,7 @@ document.getElementById('btn-delete-account').addEventListener('click', async fu
   if (dbAvailable){
     let failure = '';
     try{
-      const { data, error } = await supabaseClient.functions.invoke('delete-account');
+      const { data, error } = await supabaseClient.functions.invoke(DELETE_ACCOUNT_FUNCTION);
       if (error){
         failure = error.message || 'unknown error';
         try{
