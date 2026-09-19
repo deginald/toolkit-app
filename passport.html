@@ -363,9 +363,10 @@
           <div><div class="vc-date">Account</div></div>
         </div>
         <div>
-          <p class="eyebrow-mini">Beta program</p>
+          <p class="eyebrow-mini">Support</p>
           <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Questions or feedback?</h2>
           <p class="screen-sub">Found a bug or have an idea? Email <a href="mailto:allhairconnect@gmail.com" style="color:var(--brass);">allhairconnect@gmail.com</a> any time.</p>
+          <p class="screen-sub" style="margin-top:8px;"><a href="https://app.allhairconnect.com/privacy.html" target="_blank" rel="noopener" style="color:var(--brass);">Privacy Policy</a> &middot; <a href="https://app.allhairconnect.com/terms.html" target="_blank" rel="noopener" style="color:var(--brass);">Terms of Service</a></p>
         </div>
         <div style="border-top:1px solid var(--line); padding-top:16px;">
           <p class="eyebrow-mini">Your name</p>
@@ -715,13 +716,8 @@ async function persistClient(){
   }catch(e){ console.warn('save failed', e); showToast("Couldn't save: try again", true); }
 }
 
-function syncNdaToServer(){
-  if (client && client.ndaVersion !== NDA_VERSION){
-    client.ndaVersion = NDA_VERSION;
-    client.ndaAcceptedAt = new Date().toISOString();
-    persistClient();
-  }
-}
+// The beta NDA has been retired, so nothing is recorded here any more.
+function syncNdaToServer(){}
 
 function syncNameToServer(){
   if (!client) return;
@@ -1565,11 +1561,6 @@ document.getElementById('btn-delete-account').addEventListener('click', async fu
 
 async function boot(){
   dbAvailable = !!supabaseClient;
-
-  if (!ndaAccepted()){
-    showNdaScreen(continueBoot);
-    return;
-  }
 
   await continueBoot();
 }

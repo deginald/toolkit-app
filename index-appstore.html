@@ -1442,6 +1442,13 @@
               <button class="btn btn-primary" id="btn-jobs-send-message" type="button">Send message</button>
               <p class="foot-note-small" id="jobs-message-status">&nbsp;</p>
             </div>
+            <div id="jobs-safety-row" style="display:none; flex-direction:column; gap:4px; border-top:1px solid var(--line); padding-top:10px;">
+              <div style="display:flex; gap:18px; flex-wrap:wrap;">
+                <button type="button" class="link-btn" id="btn-jobs-report-listing">Report this listing</button>
+                <button type="button" class="link-btn" id="btn-jobs-block-listing">Block this user</button>
+              </div>
+              <p class="foot-note-small" id="jobs-safety-status" style="margin:0;">&nbsp;</p>
+            </div>
           </div>
         </div>
 
@@ -1535,6 +1542,12 @@
             <p class="screen-sub" style="margin:0;">Intro messages people have sent to your Jobs Board listings.</p>
             <div id="jobs-messages-list" style="display:flex; flex-direction:column; gap:8px;"></div>
             <p class="screen-sub" id="jobs-messages-empty" style="display:none; margin:0;">No messages yet.</p>
+            <p class="foot-note-small" id="jobs-messages-safety-status" style="margin:0;">&nbsp;</p>
+            <div id="jobs-blocked-section" style="display:none; flex-direction:column; gap:6px; border-top:1px solid var(--line); padding-top:12px; margin-top:6px;">
+              <p class="eyebrow-mini" style="margin:0;">Blocked users</p>
+              <p class="foot-note-small" style="margin:0;">Blocked users can't message you, and their listings and messages are hidden from you.</p>
+              <div id="jobs-blocked-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+            </div>
           </div>
         </div>
       </section>
@@ -1543,6 +1556,25 @@
           <button type="button" class="link-btn" id="btn-jobs-looking-preview-close" style="padding:6px 0 14px;">&larr; Back to editing</button>
           <p class="eyebrow-mini" style="margin:0 0 8px; text-align:center;">This is how shops see your listing</p>
           <div class="card" id="jobs-looking-preview-body" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+      </div>
+      <div id="jobs-report-panel" style="display:none; position:fixed; inset:0; z-index:600; background:var(--bg); overflow-y:auto;">
+        <div style="max-width:420px; margin:0 auto; padding:max(20px, env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:12px;">
+          <button type="button" class="link-btn" id="btn-jobs-report-close" style="padding:6px 0 4px; align-self:flex-start;">&larr; Cancel</button>
+          <p class="eyebrow-mini" style="margin:0;">Report</p>
+          <h2 class="screen-title" id="jobs-report-title" style="margin:0;">Report this listing</h2>
+          <p class="screen-sub" style="margin:0;">Tell us what's wrong. Reports go to All Hair Connect for review, and the person you report is not told who reported them.</p>
+          <div class="field"><div class="input-row"><select id="jobs-report-reason" aria-label="Reason for report">
+            <option value="">Choose a reason</option>
+            <option value="Spam or scam">Spam or scam</option>
+            <option value="Harassment or abuse">Harassment or abuse</option>
+            <option value="Inappropriate or offensive content">Inappropriate or offensive content</option>
+            <option value="Fake or misleading listing">Fake or misleading listing</option>
+            <option value="Other">Other</option>
+          </select></div></div>
+          <div class="field"><div class="input-row"><textarea id="jobs-report-details" rows="4" placeholder="Anything else we should know? (optional)"></textarea></div></div>
+          <button type="button" class="btn btn-primary" id="btn-jobs-report-submit">Send report</button>
+          <p class="foot-note-small" id="jobs-report-status">&nbsp;</p>
         </div>
       </div>
     </main>
@@ -3647,6 +3679,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const city = root.querySelector('#jobs-search-city').value.trim().toLowerCase();
     const state = root.querySelector('#jobs-search-state').value.trim().toLowerCase();
     const specialty = root.querySelector('#jobs-search-specialty').value;
+    await ensureBlocksLoaded();
     let rows = [];
     try{
       const { data, error } = await supabaseClient.from('job_listings').select('*').eq('type', browseType).eq('active', true);
@@ -3654,6 +3687,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       rows = data || [];
     }catch(e){ console.warn('jobs search failed', e); }
     rows = rows.filter(r => r.profile_code !== profileCode);
+    rows = rows.filter(r => !isBlocked(r.profile_code));
     if (city) rows = rows.filter(r => (r.city||'').toLowerCase().includes(city));
     if (state) rows = rows.filter(r => (r.state||'').toLowerCase() === state);
     if (specialty && browseType === 'looking') rows = rows.filter(r => r.specialty === specialty);
@@ -3737,6 +3771,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
     const msgBox = root.querySelector('#jobs-message-box');
     msgBox.style.display = (listing.profile_code !== profileCode) ? 'flex' : 'none';
+    root.querySelector('#jobs-safety-row').style.display = (listing.profile_code !== profileCode) ? 'flex' : 'none';
+    root.querySelector('#jobs-safety-status').textContent = ' ';
+    resetArmed(root.querySelector('#btn-jobs-block-listing'));
     root.querySelector('#jobs-message-text').value = '';
     root.querySelector('#jobs-message-status').textContent = ' ';
     showScreen('detail');
@@ -3747,6 +3784,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (!text){ statusEl.textContent = 'Type a message first.'; return; }
     if (!dbAvailable || !detailListing){ statusEl.textContent = "Not connected right now. This wasn't saved."; return; }
     try{
+      const { data: blockRows, error: blockErr } = await supabaseClient.from('user_blocks').select('id').eq('blocker_code', detailListing.profile_code).eq('blocked_code', profileCode).limit(1);
+      if (blockErr) throw blockErr;
+      if (blockRows && blockRows.length){ statusEl.textContent = "This person isn't accepting messages right now."; return; }
       const { data, error } = await supabaseClient.from('job_messages').insert({
         listing_id: detailListing.id,
         to_profile_code: detailListing.profile_code,
@@ -3963,9 +4003,11 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const emptyEl = root.querySelector('#jobs-messages-empty');
     if (!dbAvailable || !profileCode){ listEl.innerHTML = ''; emptyEl.style.display = 'block'; return; }
     try{
+      await ensureBlocksLoaded();
       const { data, error } = await supabaseClient.from('job_messages').select('*').eq('to_profile_code', profileCode);
       if (error) throw error;
-      const rows = (data || []).slice().sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+      const allRows = (data || []).slice().sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+      const rows = allRows.filter(m=> !isBlocked(m.from_profile_code));
       if (!rows.length){
         listEl.innerHTML = '';
         emptyEl.style.display = 'block';
@@ -3975,9 +4017,13 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
           <strong>${escapeHtml(m.from_name || 'Someone')}</strong>
           <span style="margin:0;">${escapeHtml(m.message)}</span>
           <span class="foot-note-small" style="margin:0;">${escapeHtml(new Date(m.created_at).toLocaleDateString())}</span>
+          <div style="display:flex; gap:18px;">
+            <button type="button" class="link-btn" data-msg-report="${escapeHtml(String(m.id))}" data-msg-from="${escapeHtml(m.from_profile_code || '')}" data-msg-listing="${escapeHtml(String(m.listing_id || ''))}">Report</button>
+            <button type="button" class="link-btn" data-msg-block="${escapeHtml(m.from_profile_code || '')}" data-msg-name="${escapeHtml(m.from_name || '')}">Block sender</button>
+          </div>
         </div>`).join('');
       }
-      const unread = rows.filter(m=> !m.read);
+      const unread = allRows.filter(m=> !m.read);
       if (unread.length){
         await Promise.all(unread.map(m=> supabaseClient.from('job_messages').update({ read: true }).eq('id', m.id)));
       }
@@ -3992,10 +4038,167 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   async function refreshMessageBadge(){
     if (!dbAvailable || !profileCode) return;
     try{
+      await ensureBlocksLoaded();
       const { data } = await supabaseClient.from('job_messages').select('*').eq('to_profile_code', profileCode);
-      updateMsgBadge((data || []).filter(m=> !m.read).length);
+      updateMsgBadge((data || []).filter(m=> !m.read && !isBlocked(m.from_profile_code)).length);
     }catch(e){}
   }
+
+
+  // ---- Safety: report + block ----
+  // User-generated content needs a way to report a listing or message and a way to block an
+  // abusive user (App Store guideline 1.2). Real Supabase error text is always shown, so a
+  // missing migration (content_reports / user_blocks tables) is visible instead of silent.
+  let blockedUsers = [];
+  let blocksLoadedFor = null;
+  let reportTarget = null;
+  function safetyId(prefix){ return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function isBlocked(code){ return !!code && blockedUsers.some(b=> b.blocked_code === code); }
+  function errText(e){ return (e && e.message) ? e.message : 'unknown error'; }
+  function resetArmed(btn){
+    if (!btn) return;
+    clearTimeout(btn._armTimer);
+    if (btn.dataset.armed === '1' && btn.dataset.origText) btn.textContent = btn.dataset.origText;
+    btn.dataset.armed = '';
+  }
+  // Two-tap confirm: first tap changes the label, second tap within 4 seconds does the action.
+  function armConfirm(btn, armedText, action){
+    if (btn.dataset.armed === '1'){
+      resetArmed(btn);
+      action();
+      return;
+    }
+    btn.dataset.origText = btn.textContent;
+    btn.dataset.armed = '1';
+    btn.textContent = armedText;
+    btn._armTimer = setTimeout(()=> resetArmed(btn), 4000);
+  }
+  function renderBlockedList(){
+    const sec = root.querySelector('#jobs-blocked-section');
+    const list = root.querySelector('#jobs-blocked-list');
+    if (!sec || !list) return;
+    sec.style.display = blockedUsers.length ? 'flex' : 'none';
+    list.innerHTML = blockedUsers.map(b=> `<div class="detail-row"><span>${escapeHtml(b.blocked_name || 'Blocked user')}</span><button type="button" class="link-btn" data-unblock-id="${escapeHtml(String(b.id))}">Unblock</button></div>`).join('');
+  }
+  async function loadBlockedUsers(){
+    if (!dbAvailable || !profileCode){ blockedUsers = []; renderBlockedList(); return; }
+    try{
+      const { data, error } = await supabaseClient.from('user_blocks').select('*').eq('blocker_code', profileCode);
+      if (error) throw error;
+      blockedUsers = data || [];
+    }catch(e){ console.warn('load blocked users failed', e); blockedUsers = []; }
+    renderBlockedList();
+  }
+  async function ensureBlocksLoaded(force){
+    if (!force && blocksLoadedFor === profileCode) return;
+    blocksLoadedFor = profileCode;
+    await loadBlockedUsers();
+  }
+  async function blockUser(code, name, statusEl){
+    if (!code || code === profileCode) return false;
+    if (!dbAvailable){ if (statusEl) statusEl.textContent = "Not connected right now. This wasn't saved."; return false; }
+    if (isBlocked(code)) return true;
+    try{
+      const row = { id: safetyId('blk'), blocker_code: profileCode, blocked_code: code, blocked_name: name || '' };
+      const { error } = await supabaseClient.from('user_blocks').insert(row);
+      if (error) throw error;
+      blockedUsers.push(row);
+      renderBlockedList();
+      return true;
+    }catch(e){
+      console.warn('block failed', e);
+      if (statusEl) statusEl.textContent = "Couldn't block this user: " + errText(e) + ".";
+      return false;
+    }
+  }
+  function openReport(target){
+    reportTarget = target;
+    document.getElementById('jobs-report-title').textContent = target.title || 'Report';
+    document.getElementById('jobs-report-reason').value = '';
+    document.getElementById('jobs-report-details').value = '';
+    document.getElementById('jobs-report-status').textContent = ' ';
+    document.getElementById('btn-jobs-report-submit').disabled = false;
+    document.getElementById('jobs-report-panel').style.display = 'block';
+  }
+  function closeReport(){
+    document.getElementById('jobs-report-panel').style.display = 'none';
+    reportTarget = null;
+  }
+  document.getElementById('btn-jobs-report-close').addEventListener('click', closeReport);
+  document.getElementById('jobs-report-reason').addEventListener('change', ()=>{ document.getElementById('jobs-report-status').textContent = ' '; });
+  document.getElementById('btn-jobs-report-submit').addEventListener('click', async ()=>{
+    const statusEl = document.getElementById('jobs-report-status');
+    const submitBtn = document.getElementById('btn-jobs-report-submit');
+    const reason = document.getElementById('jobs-report-reason').value;
+    if (!reportTarget) return;
+    if (!reason){ statusEl.textContent = 'Choose a reason first.'; return; }
+    if (!dbAvailable){ statusEl.textContent = "Not connected right now. This wasn't sent."; return; }
+    submitBtn.disabled = true;
+    statusEl.textContent = 'Sending…';
+    try{
+      const { error } = await supabaseClient.from('content_reports').insert({
+        id: safetyId('rpt'),
+        reporter_code: profileCode,
+        reported_code: reportTarget.reportedCode || '',
+        kind: reportTarget.kind,
+        listing_id: reportTarget.listingId || null,
+        message_id: reportTarget.messageId || null,
+        reason: reason,
+        details: document.getElementById('jobs-report-details').value.trim()
+      });
+      if (error) throw error;
+      statusEl.textContent = 'Thank you. Your report was sent and will be reviewed.';
+      setTimeout(closeReport, 1800);
+    }catch(e){
+      console.warn('report failed', e);
+      submitBtn.disabled = false;
+      statusEl.textContent = "Couldn't send your report: " + errText(e) + ". Try again.";
+    }
+  });
+  root.querySelector('#btn-jobs-report-listing').addEventListener('click', ()=>{
+    if (!detailListing) return;
+    openReport({ kind: 'listing', reportedCode: detailListing.profile_code, listingId: String(detailListing.id || ''), messageId: '', title: 'Report this listing' });
+  });
+  root.querySelector('#btn-jobs-block-listing').addEventListener('click', function(){
+    if (!detailListing) return;
+    const listing = detailListing;
+    const statusEl = root.querySelector('#jobs-safety-status');
+    armConfirm(this, 'Tap again to block', async ()=>{
+      const ok = await blockUser(listing.profile_code, listing.type === 'looking' ? listing.name : listing.business_name, statusEl);
+      if (ok){ showScreen('dashboard'); searchListings(); }
+    });
+  });
+  root.querySelector('#jobs-messages-list').addEventListener('click', e=>{
+    const statusEl = root.querySelector('#jobs-messages-safety-status');
+    const rep = e.target.closest('[data-msg-report]');
+    if (rep){
+      openReport({ kind: 'message', reportedCode: rep.dataset.msgFrom, listingId: rep.dataset.msgListing || '', messageId: rep.dataset.msgReport, title: 'Report this message' });
+      return;
+    }
+    const blk = e.target.closest('[data-msg-block]');
+    if (blk){
+      armConfirm(blk, 'Tap again to block', async ()=>{
+        const ok = await blockUser(blk.dataset.msgBlock, blk.dataset.msgName, statusEl);
+        if (ok){ statusEl.textContent = 'Blocked. You can undo this below.'; loadMessages(); }
+      });
+    }
+  });
+  root.querySelector('#jobs-blocked-list').addEventListener('click', async e=>{
+    const id = e.target.dataset.unblockId;
+    if (!id) return;
+    const statusEl = root.querySelector('#jobs-messages-safety-status');
+    try{
+      const { error } = await supabaseClient.from('user_blocks').delete().eq('id', id);
+      if (error) throw error;
+      blockedUsers = blockedUsers.filter(b=> String(b.id) !== id);
+      renderBlockedList();
+      statusEl.textContent = 'Unblocked.';
+      loadMessages();
+    }catch(err){
+      console.warn('unblock failed', err);
+      statusEl.textContent = "Couldn't unblock: " + errText(err) + ".";
+    }
+  });
 
   window.initJobsTab = function(){
     showJobsMode('browse');
