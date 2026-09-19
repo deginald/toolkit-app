@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-19T01-18-58Z">
+<meta name="app-build" content="2026-09-19T02-07-15Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -662,9 +662,10 @@
       <!-- ============ PACE ============ -->
       <section class="tab-pane" data-tab="pace" id="tab-pace">
         <div class="tab-head">
-          <p class="eyebrow-mini">Hours &amp; graduation pace</p>
+          <p class="eyebrow-mini">Real-Time Pace &amp; Projected Graduation Tracker</p>
           <h2>Pace</h2>
         </div>
+        <p class="foot-note-small" style="max-width:none;">This is a planning projection, calculated from the hours, absences, holidays, and schedule you enter here &mdash; it isn't your school's official record. Your actual completion and graduation requirements are determined by your school or licensing authority.</p>
         <nav class="steps">
           <button class="step-btn active" data-goto="setup"><span class="n">1</span>Set up</button>
           <button class="step-btn" data-goto="calendar"><span class="n">2</span>Calendar</button>
@@ -3794,7 +3795,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     return `
       ${listing.photo_url ? `<img src="${escapeHtml(listing.photo_url)}" alt="" style="width:88px; height:88px; border-radius:50%; object-fit:cover; align-self:center;">` : ''}
       <h2 class="screen-title" style="margin:0; text-align:center;">${escapeHtml(listing.name || 'Looking for work')}</h2>
-      <p class="screen-sub" style="margin:0; text-align:center;">${escapeHtml(statusLine)}${listing.grad_date ? (' · Graduating ' + escapeHtml(formatGradDateMDY(listing.grad_date))) : ''}</p>
+      <p class="screen-sub" style="margin:0; text-align:center;">${escapeHtml(statusLine)}${listing.grad_date ? (' · Projected graduation ' + escapeHtml(formatGradDateMDY(listing.grad_date))) : ''}</p>
       ${locLine ? `<p class="screen-sub" style="margin:0; text-align:center;">${locLine}</p>` : ''}
       ${listing.bio ? `<p style="margin:8px 0 0;">${escapeHtml(listing.bio)}</p>` : ''}
       ${listing.social_link && sanitizeSocialUrl(listing.social_link) ? `<p style="margin:8px 0 0; text-align:center;"><a href="${escapeHtml(sanitizeSocialUrl(listing.social_link))}" target="_blank" rel="noopener noreferrer">View portfolio / social</a></p>` : ''}
