@@ -4528,7 +4528,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       if (statusEl) statusEl.textContent = 'Sending…';
       e.target.disabled = true;
       try{
-        const { data, error } = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: sendId, sender_role: 'barber', message } });
+        const { data, error } = await invokeQuickMessage({ appointment_id: sendId, sender_role: 'barber', message });
         if (error) throw error;
         if (data && data.ok){
           if (statusEl) statusEl.textContent = 'Sent.';
@@ -5334,10 +5334,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     try{
       const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
       const svcNames = svcs.map(s=>s.name).join(', ');
-      await supabaseClient.functions.invoke('send-quick-message', { body: {
+      await invokeQuickMessage({
         appointment_id: appt.id, sender_role: 'barber',
         message: `I booked an appointment for you: ${dateLabel} at ${time} for ${svcNames}. It's saved in your Hair Passport.`
-      }});
+      });
     }catch(e){ console.warn('appointment notification text failed (non-blocking)', e); }
     resetManualCard();
     loadAppointments();
@@ -5752,9 +5752,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     sendBtn.disabled = true;
     statusEl.textContent = 'Sending…';
     try{
-      const { data, error } = await supabaseClient.functions.invoke('send-quick-message', {
-        body: { broadcast: true, category, barber_code: profileCode, barber_name: profile.name, client_codes: codes, message }
-      });
+      const { data, error } = await invokeQuickMessage(
+        { broadcast: true, category, barber_code: profileCode, barber_name: profile.name, client_codes: codes, message }
+      );
       if (error) throw error;
       if (data && data.ok){
         const sent = data.sentCount || 0;
@@ -7099,6 +7099,13 @@ document.getElementById('btn-role-change-confirm').addEventListener('click', asy
   showTab(currentTab || 'booking');
   showToast('Role updated. Pace and Ledger are no longer available');
 });
+// Calls the notification function with a time limit so a slow or unavailable server can't freeze a screen.
+window.invokeQuickMessage = function(body){
+  return Promise.race([
+    supabaseClient.functions.invoke('send-quick-message', { body: body }),
+    new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('The message service took too long to respond. Try again in a moment.')); }, 12000); })
+  ]);
+};
 // Name (web address) of the Supabase Edge Function that deletes an account. If you ever redeploy it under a different
 // name, change it here and in index-appstore.html.
 const DELETE_ACCOUNT_FUNCTION = 'quick-processor';

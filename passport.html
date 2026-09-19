@@ -468,6 +468,13 @@ try{
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 }catch(e){ supabaseClient = null; }
+// Calls the notification function with a time limit so a slow or unavailable server can't freeze a screen.
+window.invokeQuickMessage = function(body){
+  return Promise.race([
+    supabaseClient.functions.invoke('send-quick-message', { body: body }),
+    new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('The message service took too long to respond. Try again in a moment.')); }, 12000); })
+  ]);
+};
 
 /* =========================================================
    WEB PUSH NOTIFICATIONS
@@ -955,7 +962,7 @@ function renderUpcoming(list){
         const { error } = await supabaseClient.from('appointments').update({status:'cancelled'}).eq('id', a.id);
         if (error) throw error;
         // Best-effort: let the barber know. Never blocks the cancellation itself.
-        try{ await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: a.id, event: 'cancelled' } }); }catch(e){ console.warn('cancel notification failed', e); }
+        try{ await invokeQuickMessage({ appointment_id: a.id, event: 'cancelled' }); }catch(e){ console.warn('cancel notification failed', e); }
         await loadUpcomingAppointments();
       }catch(e){
         console.warn('cancel failed', e);
@@ -983,7 +990,7 @@ function renderUpcoming(list){
         if (statusEl) statusEl.textContent = 'Sending…';
         btn.disabled = true;
         try{
-          const { data, error } = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: apptId, sender_role: 'client', message } });
+          const { data, error } = await invokeQuickMessage({ appointment_id: apptId, sender_role: 'client', message });
           if (error) throw error;
           if (data && data.ok){
             if (statusEl) statusEl.textContent = 'Sent.';
