@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-19T02-54-19Z">
+<meta name="app-build" content="2026-09-23T17-30-47Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -488,7 +488,7 @@
       <div class="option-card" id="btn-role-pro">
         <span class="oc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6.2" cy="6.2" r="2.4" stroke="currentColor" stroke-width="1.7"/><circle cx="6.2" cy="17.8" r="2.4" stroke="currentColor" stroke-width="1.7"/><path d="M8 7.6L20 18.5M8 16.4L20 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
         <span class="oc-label">I'm a Professional</span>
-        <span class="oc-sub">Barber, cosmetologist, or student. Students can track their graduation date with Pace.</span>
+        <span class="oc-sub">Barber, cosmetologist, or student.</span>
       </div>
       <div class="option-card" id="btn-role-directory">
         <span class="oc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.7"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
@@ -502,8 +502,8 @@
       </div>
     </div>
     <p class="brand-footer" style="margin-top:10px;">A Stronger Hair Community<br>Together.</p>
+    <button type="button" class="btn btn-outline" id="btn-install-app" style="display:none; margin-top:10px; width:100%; max-width:320px;">Install App</button>
     <button type="button" class="link-btn" id="btn-share-app" style="margin-top:2px;">Share the app</button>
-    <p class="foot-note-small" style="text-align:center; margin-top:8px;"><a href="https://app.allhairconnect.com/privacy.html" target="_blank" rel="noopener" style="color:var(--brass);">Privacy Policy</a> &middot; <a href="https://app.allhairconnect.com/terms.html" target="_blank" rel="noopener" style="color:var(--brass);">Terms of Service</a></p>
   </div>
   <div id="share-app-panel" style="display:none; position:fixed; inset:0; z-index:600; background:var(--bg); overflow-y:auto;">
     <div style="max-width:420px; margin:0 auto; padding:max(20px, env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));">
@@ -524,6 +524,7 @@
       </div>
       <div class="card" style="gap:12px;">
         <p class="eyebrow-mini" style="margin:0;">Add to home screen</p>
+        <button type="button" class="btn btn-primary" id="btn-share-app-install" style="display:none; width:100%;">Install on this device</button>
         <div class="mode-toggle">
           <button type="button" class="mode-btn" id="btn-share-app-ios">iPhone</button>
           <button type="button" class="mode-btn" id="btn-share-app-android">Android</button>
@@ -611,7 +612,6 @@
       </div>
       <button class="btn btn-primary" type="submit" id="auth-submit-btn">Create my account</button>
       <p class="foot-note-small" id="auth-note">&nbsp;</p>
-      <p class="foot-note-small" style="text-align:center;">By creating an account or logging in, you agree to the <a href="https://app.allhairconnect.com/terms.html" target="_blank" rel="noopener" style="color:var(--brass);">Terms of Service</a> and <a href="https://app.allhairconnect.com/privacy.html" target="_blank" rel="noopener" style="color:var(--brass);">Privacy Policy</a>.</p>
       </form>
     </main>
   </div>
@@ -1528,13 +1528,6 @@
               <button class="btn btn-primary" id="btn-jobs-send-message" type="button">Send message</button>
               <p class="foot-note-small" id="jobs-message-status">&nbsp;</p>
             </div>
-            <div id="jobs-safety-row" style="display:none; flex-direction:column; gap:4px; border-top:1px solid var(--line); padding-top:10px;">
-              <div style="display:flex; gap:18px; flex-wrap:wrap;">
-                <button type="button" class="link-btn" id="btn-jobs-report-listing">Report this listing</button>
-                <button type="button" class="link-btn" id="btn-jobs-block-listing">Block this user</button>
-              </div>
-              <p class="foot-note-small" id="jobs-safety-status" style="margin:0;">&nbsp;</p>
-            </div>
           </div>
         </div>
 
@@ -1628,12 +1621,6 @@
             <p class="screen-sub" style="margin:0;">Intro messages people have sent to your Jobs Board listings.</p>
             <div id="jobs-messages-list" style="display:flex; flex-direction:column; gap:8px;"></div>
             <p class="screen-sub" id="jobs-messages-empty" style="display:none; margin:0;">No messages yet.</p>
-            <p class="foot-note-small" id="jobs-messages-safety-status" style="margin:0;">&nbsp;</p>
-            <div id="jobs-blocked-section" style="display:none; flex-direction:column; gap:6px; border-top:1px solid var(--line); padding-top:12px; margin-top:6px;">
-              <p class="eyebrow-mini" style="margin:0;">Blocked users</p>
-              <p class="foot-note-small" style="margin:0;">Blocked users can't message you, and their listings and messages are hidden from you.</p>
-              <div id="jobs-blocked-list" style="display:flex; flex-direction:column; gap:6px;"></div>
-            </div>
           </div>
         </div>
       </section>
@@ -1642,25 +1629,6 @@
           <button type="button" class="link-btn" id="btn-jobs-looking-preview-close" style="padding:6px 0 14px;">&larr; Back to editing</button>
           <p class="eyebrow-mini" style="margin:0 0 8px; text-align:center;">This is how shops see your listing</p>
           <div class="card" id="jobs-looking-preview-body" style="display:flex; flex-direction:column; gap:8px;"></div>
-        </div>
-      </div>
-      <div id="jobs-report-panel" style="display:none; position:fixed; inset:0; z-index:600; background:var(--bg); overflow-y:auto;">
-        <div style="max-width:420px; margin:0 auto; padding:max(20px, env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:12px;">
-          <button type="button" class="link-btn" id="btn-jobs-report-close" style="padding:6px 0 4px; align-self:flex-start;">&larr; Cancel</button>
-          <p class="eyebrow-mini" style="margin:0;">Report</p>
-          <h2 class="screen-title" id="jobs-report-title" style="margin:0;">Report this listing</h2>
-          <p class="screen-sub" style="margin:0;">Tell us what's wrong. Reports go to All Hair Connect for review, and the person you report is not told who reported them.</p>
-          <div class="field"><div class="input-row"><select id="jobs-report-reason" aria-label="Reason for report">
-            <option value="">Choose a reason</option>
-            <option value="Spam or scam">Spam or scam</option>
-            <option value="Harassment or abuse">Harassment or abuse</option>
-            <option value="Inappropriate or offensive content">Inappropriate or offensive content</option>
-            <option value="Fake or misleading listing">Fake or misleading listing</option>
-            <option value="Other">Other</option>
-          </select></div></div>
-          <div class="field"><div class="input-row"><textarea id="jobs-report-details" rows="4" placeholder="Anything else we should know? (optional)"></textarea></div></div>
-          <button type="button" class="btn btn-primary" id="btn-jobs-report-submit">Send report</button>
-          <p class="foot-note-small" id="jobs-report-status">&nbsp;</p>
         </div>
       </div>
     </main>
@@ -1706,7 +1674,6 @@
         <p class="eyebrow-mini">Beta program</p>
         <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Questions or feedback?</h2>
         <p class="screen-sub">Found a bug or have an idea? Email <a href="mailto:allhairconnect@gmail.com" style="color:var(--brass);">allhairconnect@gmail.com</a> any time.</p>
-        <p class="screen-sub" style="margin-top:8px;"><a href="https://app.allhairconnect.com/privacy.html" target="_blank" rel="noopener" style="color:var(--brass);">Privacy Policy</a> &middot; <a href="https://app.allhairconnect.com/terms.html" target="_blank" rel="noopener" style="color:var(--brass);">Terms of Service</a></p>
       </div>
       <div class="tab-head" style="border-top:1px solid var(--line); padding-top:16px;">
         <p class="eyebrow-mini">Your name</p>
@@ -1871,8 +1838,7 @@
       <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
         <p class="eyebrow-mini" style="color:var(--behind);">Danger zone</p>
         <button class="btn btn-danger" id="btn-delete-account">Delete my account</button>
-        <p class="foot-note-small">This permanently deletes your account: your login (email and password), profile, appointments, Jobs Board listings and messages, and the photos you uploaded. It can't be undone. Notes and photos you saved to a client's Hair Passport belong to that client's record and stay with them.</p>
-        <p class="foot-note-small" id="delete-account-status" style="margin:0;">&nbsp;</p>
+        <p class="foot-note-small">This permanently deletes your profile and signs you out. It can't be undone. Your login itself (email and password) isn't removed automatically; contact support if you'd like that cleared too.</p>
       </div>
     </main>
   </div>
@@ -1965,14 +1931,54 @@ function urlBase64ToUint8Array(base64String){
 function pushSupported(){
   return !!(window.isSecureContext && 'serviceWorker' in navigator && 'PushManager' in window);
 }
+// Shared standalone check (running installed, not in a regular browser tab) --
+// iOS Safari sets navigator.standalone; every other installable browser reflects
+// it through the display-mode media query instead.
+function isAppStandalone(){
+  return window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+}
 // iOS Safari only allows push notifications for a site that's been added to the Home
 // Screen -- a regular Safari tab can't turn them on at all. Used to show a heads-up
 // before someone taps "Turn on notifications" and it quietly doesn't work.
 function isIosNotStandalone(){
   const ua = navigator.userAgent || '';
   const isIos = /iPhone|iPad|iPod/i.test(ua);
-  const isStandalone = window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-  return isIos && !isStandalone;
+  return isIos && !isAppStandalone();
+}
+/* =========================================================
+   INSTALL PROMPT (beforeinstallprompt)
+   Chrome/Edge on Android and desktop fire this instead of leaving the
+   person to find "Add to Home Screen" in a menu -- capture it once and
+   reuse it wherever we offer an install button, instead of the manual
+   steps. iOS Safari never fires this event, so those buttons simply stay
+   hidden there and the manual instructions below carry the load.
+   ========================================================= */
+let deferredInstallPrompt = null;
+function updateInstallButtons(){
+  const show = !!deferredInstallPrompt && !isAppStandalone();
+  const a = document.getElementById('btn-install-app');
+  const b = document.getElementById('btn-share-app-install');
+  if (a) a.style.display = show ? 'block' : 'none';
+  if (b) b.style.display = show ? 'block' : 'none';
+}
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  updateInstallButtons();
+});
+window.addEventListener('appinstalled', ()=>{
+  deferredInstallPrompt = null;
+  updateInstallButtons();
+});
+async function runInstallPrompt(){
+  if (!deferredInstallPrompt) return;
+  const promptEvent = deferredInstallPrompt;
+  deferredInstallPrompt = null;
+  updateInstallButtons();
+  try{
+    promptEvent.prompt();
+    await promptEvent.userChoice;
+  }catch(e){ /* dismissed or unsupported -- nothing to recover */ }
 }
 let swRegistrationPromise = null;
 function registerServiceWorker(){
@@ -3015,14 +3021,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       } else {
         const photos = [];
         const files = cstate.checkpointPhotos;
-        if (files.length){
-          // Saving photos to a client's record needs that client's recorded consent, and the only
-          // screen that checks for it is Booking > Look up a client. This older path never did,
-          // so it refuses rather than save around the consent check.
-          statusEl.textContent = "Photos can only be saved to a client's record from Booking > Look up a client, once the client has agreed.";
-          saveBtn.disabled = false;
-          return;
-        }
         for (let i=0; i<files.length; i++){
           const rawFile = files[i];
           const file = await compressPhotoForUpload(rawFile);
@@ -3772,7 +3770,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const city = root.querySelector('#jobs-search-city').value.trim().toLowerCase();
     const state = root.querySelector('#jobs-search-state').value.trim().toLowerCase();
     const specialty = root.querySelector('#jobs-search-specialty').value;
-    await ensureBlocksLoaded();
     let rows = [];
     try{
       const { data, error } = await supabaseClient.from('job_listings').select('*').eq('type', browseType).eq('active', true);
@@ -3780,7 +3777,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       rows = data || [];
     }catch(e){ console.warn('jobs search failed', e); }
     rows = rows.filter(r => r.profile_code !== profileCode);
-    rows = rows.filter(r => !isBlocked(r.profile_code));
     if (city) rows = rows.filter(r => (r.city||'').toLowerCase().includes(city));
     if (state) rows = rows.filter(r => (r.state||'').toLowerCase() === state);
     if (specialty && browseType === 'looking') rows = rows.filter(r => r.specialty === specialty);
@@ -3864,9 +3860,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
     const msgBox = root.querySelector('#jobs-message-box');
     msgBox.style.display = (listing.profile_code !== profileCode) ? 'flex' : 'none';
-    root.querySelector('#jobs-safety-row').style.display = (listing.profile_code !== profileCode) ? 'flex' : 'none';
-    root.querySelector('#jobs-safety-status').textContent = ' ';
-    resetArmed(root.querySelector('#btn-jobs-block-listing'));
     root.querySelector('#jobs-message-text').value = '';
     root.querySelector('#jobs-message-status').textContent = ' ';
     showScreen('detail');
@@ -3877,9 +3870,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (!text){ statusEl.textContent = 'Type a message first.'; return; }
     if (!dbAvailable || !detailListing){ statusEl.textContent = "Not connected right now. This wasn't saved."; return; }
     try{
-      const { data: blockRows, error: blockErr } = await supabaseClient.from('user_blocks').select('id').eq('blocker_code', detailListing.profile_code).eq('blocked_code', profileCode).limit(1);
-      if (blockErr) throw blockErr;
-      if (blockRows && blockRows.length){ statusEl.textContent = "This person isn't accepting messages right now."; return; }
       const { data, error } = await supabaseClient.from('job_messages').insert({
         listing_id: detailListing.id,
         to_profile_code: detailListing.profile_code,
@@ -4096,11 +4086,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const emptyEl = root.querySelector('#jobs-messages-empty');
     if (!dbAvailable || !profileCode){ listEl.innerHTML = ''; emptyEl.style.display = 'block'; return; }
     try{
-      await ensureBlocksLoaded();
       const { data, error } = await supabaseClient.from('job_messages').select('*').eq('to_profile_code', profileCode);
       if (error) throw error;
-      const allRows = (data || []).slice().sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
-      const rows = allRows.filter(m=> !isBlocked(m.from_profile_code));
+      const rows = (data || []).slice().sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
       if (!rows.length){
         listEl.innerHTML = '';
         emptyEl.style.display = 'block';
@@ -4110,13 +4098,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
           <strong>${escapeHtml(m.from_name || 'Someone')}</strong>
           <span style="margin:0;">${escapeHtml(m.message)}</span>
           <span class="foot-note-small" style="margin:0;">${escapeHtml(new Date(m.created_at).toLocaleDateString())}</span>
-          <div style="display:flex; gap:18px;">
-            <button type="button" class="link-btn" data-msg-report="${escapeHtml(String(m.id))}" data-msg-from="${escapeHtml(m.from_profile_code || '')}" data-msg-listing="${escapeHtml(String(m.listing_id || ''))}">Report</button>
-            <button type="button" class="link-btn" data-msg-block="${escapeHtml(m.from_profile_code || '')}" data-msg-name="${escapeHtml(m.from_name || '')}">Block sender</button>
-          </div>
         </div>`).join('');
       }
-      const unread = allRows.filter(m=> !m.read);
+      const unread = rows.filter(m=> !m.read);
       if (unread.length){
         await Promise.all(unread.map(m=> supabaseClient.from('job_messages').update({ read: true }).eq('id', m.id)));
       }
@@ -4131,167 +4115,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   async function refreshMessageBadge(){
     if (!dbAvailable || !profileCode) return;
     try{
-      await ensureBlocksLoaded();
       const { data } = await supabaseClient.from('job_messages').select('*').eq('to_profile_code', profileCode);
-      updateMsgBadge((data || []).filter(m=> !m.read && !isBlocked(m.from_profile_code)).length);
+      updateMsgBadge((data || []).filter(m=> !m.read).length);
     }catch(e){}
   }
-
-
-  // ---- Safety: report + block ----
-  // User-generated content needs a way to report a listing or message and a way to block an
-  // abusive user (App Store guideline 1.2). Real Supabase error text is always shown, so a
-  // missing migration (content_reports / user_blocks tables) is visible instead of silent.
-  let blockedUsers = [];
-  let blocksLoadedFor = null;
-  let reportTarget = null;
-  function safetyId(prefix){ return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
-  function isBlocked(code){ return !!code && blockedUsers.some(b=> b.blocked_code === code); }
-  function errText(e){ return (e && e.message) ? e.message : 'unknown error'; }
-  function resetArmed(btn){
-    if (!btn) return;
-    clearTimeout(btn._armTimer);
-    if (btn.dataset.armed === '1' && btn.dataset.origText) btn.textContent = btn.dataset.origText;
-    btn.dataset.armed = '';
-  }
-  // Two-tap confirm: first tap changes the label, second tap within 4 seconds does the action.
-  function armConfirm(btn, armedText, action){
-    if (btn.dataset.armed === '1'){
-      resetArmed(btn);
-      action();
-      return;
-    }
-    btn.dataset.origText = btn.textContent;
-    btn.dataset.armed = '1';
-    btn.textContent = armedText;
-    btn._armTimer = setTimeout(()=> resetArmed(btn), 4000);
-  }
-  function renderBlockedList(){
-    const sec = root.querySelector('#jobs-blocked-section');
-    const list = root.querySelector('#jobs-blocked-list');
-    if (!sec || !list) return;
-    sec.style.display = blockedUsers.length ? 'flex' : 'none';
-    list.innerHTML = blockedUsers.map(b=> `<div class="detail-row"><span>${escapeHtml(b.blocked_name || 'Blocked user')}</span><button type="button" class="link-btn" data-unblock-id="${escapeHtml(String(b.id))}">Unblock</button></div>`).join('');
-  }
-  async function loadBlockedUsers(){
-    if (!dbAvailable || !profileCode){ blockedUsers = []; renderBlockedList(); return; }
-    try{
-      const { data, error } = await supabaseClient.from('user_blocks').select('*').eq('blocker_code', profileCode);
-      if (error) throw error;
-      blockedUsers = data || [];
-    }catch(e){ console.warn('load blocked users failed', e); blockedUsers = []; }
-    renderBlockedList();
-  }
-  async function ensureBlocksLoaded(force){
-    if (!force && blocksLoadedFor === profileCode) return;
-    blocksLoadedFor = profileCode;
-    await loadBlockedUsers();
-  }
-  async function blockUser(code, name, statusEl){
-    if (!code || code === profileCode) return false;
-    if (!dbAvailable){ if (statusEl) statusEl.textContent = "Not connected right now. This wasn't saved."; return false; }
-    if (isBlocked(code)) return true;
-    try{
-      const row = { id: safetyId('blk'), blocker_code: profileCode, blocked_code: code, blocked_name: name || '' };
-      const { error } = await supabaseClient.from('user_blocks').insert(row);
-      if (error) throw error;
-      blockedUsers.push(row);
-      renderBlockedList();
-      return true;
-    }catch(e){
-      console.warn('block failed', e);
-      if (statusEl) statusEl.textContent = "Couldn't block this user: " + errText(e) + ".";
-      return false;
-    }
-  }
-  function openReport(target){
-    reportTarget = target;
-    document.getElementById('jobs-report-title').textContent = target.title || 'Report';
-    document.getElementById('jobs-report-reason').value = '';
-    document.getElementById('jobs-report-details').value = '';
-    document.getElementById('jobs-report-status').textContent = ' ';
-    document.getElementById('btn-jobs-report-submit').disabled = false;
-    document.getElementById('jobs-report-panel').style.display = 'block';
-  }
-  function closeReport(){
-    document.getElementById('jobs-report-panel').style.display = 'none';
-    reportTarget = null;
-  }
-  document.getElementById('btn-jobs-report-close').addEventListener('click', closeReport);
-  document.getElementById('jobs-report-reason').addEventListener('change', ()=>{ document.getElementById('jobs-report-status').textContent = ' '; });
-  document.getElementById('btn-jobs-report-submit').addEventListener('click', async ()=>{
-    const statusEl = document.getElementById('jobs-report-status');
-    const submitBtn = document.getElementById('btn-jobs-report-submit');
-    const reason = document.getElementById('jobs-report-reason').value;
-    if (!reportTarget) return;
-    if (!reason){ statusEl.textContent = 'Choose a reason first.'; return; }
-    if (!dbAvailable){ statusEl.textContent = "Not connected right now. This wasn't sent."; return; }
-    submitBtn.disabled = true;
-    statusEl.textContent = 'Sending…';
-    try{
-      const { error } = await supabaseClient.from('content_reports').insert({
-        id: safetyId('rpt'),
-        reporter_code: profileCode,
-        reported_code: reportTarget.reportedCode || '',
-        kind: reportTarget.kind,
-        listing_id: reportTarget.listingId || null,
-        message_id: reportTarget.messageId || null,
-        reason: reason,
-        details: document.getElementById('jobs-report-details').value.trim()
-      });
-      if (error) throw error;
-      statusEl.textContent = 'Thank you. Your report was sent and will be reviewed.';
-      setTimeout(closeReport, 1800);
-    }catch(e){
-      console.warn('report failed', e);
-      submitBtn.disabled = false;
-      statusEl.textContent = "Couldn't send your report: " + errText(e) + ". Try again.";
-    }
-  });
-  root.querySelector('#btn-jobs-report-listing').addEventListener('click', ()=>{
-    if (!detailListing) return;
-    openReport({ kind: 'listing', reportedCode: detailListing.profile_code, listingId: String(detailListing.id || ''), messageId: '', title: 'Report this listing' });
-  });
-  root.querySelector('#btn-jobs-block-listing').addEventListener('click', function(){
-    if (!detailListing) return;
-    const listing = detailListing;
-    const statusEl = root.querySelector('#jobs-safety-status');
-    armConfirm(this, 'Tap again to block', async ()=>{
-      const ok = await blockUser(listing.profile_code, listing.type === 'looking' ? listing.name : listing.business_name, statusEl);
-      if (ok){ showScreen('dashboard'); searchListings(); }
-    });
-  });
-  root.querySelector('#jobs-messages-list').addEventListener('click', e=>{
-    const statusEl = root.querySelector('#jobs-messages-safety-status');
-    const rep = e.target.closest('[data-msg-report]');
-    if (rep){
-      openReport({ kind: 'message', reportedCode: rep.dataset.msgFrom, listingId: rep.dataset.msgListing || '', messageId: rep.dataset.msgReport, title: 'Report this message' });
-      return;
-    }
-    const blk = e.target.closest('[data-msg-block]');
-    if (blk){
-      armConfirm(blk, 'Tap again to block', async ()=>{
-        const ok = await blockUser(blk.dataset.msgBlock, blk.dataset.msgName, statusEl);
-        if (ok){ statusEl.textContent = 'Blocked. You can undo this below.'; loadMessages(); }
-      });
-    }
-  });
-  root.querySelector('#jobs-blocked-list').addEventListener('click', async e=>{
-    const id = e.target.dataset.unblockId;
-    if (!id) return;
-    const statusEl = root.querySelector('#jobs-messages-safety-status');
-    try{
-      const { error } = await supabaseClient.from('user_blocks').delete().eq('id', id);
-      if (error) throw error;
-      blockedUsers = blockedUsers.filter(b=> String(b.id) !== id);
-      renderBlockedList();
-      statusEl.textContent = 'Unblocked.';
-      loadMessages();
-    }catch(err){
-      console.warn('unblock failed', err);
-      statusEl.textContent = "Couldn't unblock: " + errText(err) + ".";
-    }
-  });
 
   window.initJobsTab = function(){
     showJobsMode('browse');
@@ -4528,7 +4355,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       if (statusEl) statusEl.textContent = 'Sending…';
       e.target.disabled = true;
       try{
-        const { data, error } = await invokeQuickMessage({ appointment_id: sendId, sender_role: 'barber', message });
+        const { data, error } = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: sendId, sender_role: 'barber', message } });
         if (error) throw error;
         if (data && data.ok){
           if (statusEl) statusEl.textContent = 'Sent.';
@@ -5334,10 +5161,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     try{
       const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
       const svcNames = svcs.map(s=>s.name).join(', ');
-      await invokeQuickMessage({
+      await supabaseClient.functions.invoke('send-quick-message', { body: {
         appointment_id: appt.id, sender_role: 'barber',
         message: `I booked an appointment for you: ${dateLabel} at ${time} for ${svcNames}. It's saved in your Hair Passport.`
-      });
+      }});
     }catch(e){ console.warn('appointment notification text failed (non-blocking)', e); }
     resetManualCard();
     loadAppointments();
@@ -5752,9 +5579,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     sendBtn.disabled = true;
     statusEl.textContent = 'Sending…';
     try{
-      const { data, error } = await invokeQuickMessage(
-        { broadcast: true, category, barber_code: profileCode, barber_name: profile.name, client_codes: codes, message }
-      );
+      const { data, error } = await supabaseClient.functions.invoke('send-quick-message', {
+        body: { broadcast: true, category, barber_code: profileCode, barber_name: profile.name, client_codes: codes, message }
+      });
       if (error) throw error;
       if (data && data.ok){
         const sent = data.sentCount || 0;
@@ -5767,8 +5594,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         statusEl.textContent = `None of the selected clients have opted in to ${categoryLabel} yet.`;
       } else if (data && data.reason === 'not_subscribed'){
         statusEl.textContent = "The clients who opted in haven't turned on notifications yet.";
-      } else if (data && data.reason === 'blocked_text'){
-        statusEl.textContent = data.error || 'That message contains language that is not allowed. Please reword it and try again.';
       } else {
         statusEl.textContent = "Couldn't send. Try again.";
       }
@@ -6522,6 +6347,7 @@ function openSharePanel(){
   const ua = navigator.userAgent || '';
   setShareAppDevice(/iPhone|iPad|iPod/i.test(ua) ? 'ios' : 'android');
   document.getElementById('btn-share-app-native').style.display = (navigator.share ? 'block' : 'none');
+  updateInstallButtons();
   document.getElementById('share-app-panel').style.display = 'block';
 }
 function closeSharePanel(){
@@ -6529,6 +6355,9 @@ function closeSharePanel(){
 }
 document.getElementById('btn-share-app').addEventListener('click', openSharePanel);
 document.getElementById('btn-share-app-close').addEventListener('click', closeSharePanel);
+document.getElementById('btn-install-app').addEventListener('click', runInstallPrompt);
+document.getElementById('btn-share-app-install').addEventListener('click', runInstallPrompt);
+updateInstallButtons();
 document.getElementById('btn-share-app-ios').addEventListener('click', ()=> setShareAppDevice('ios'));
 document.getElementById('btn-share-app-android').addEventListener('click', ()=> setShareAppDevice('android'));
 document.getElementById('btn-share-app-copy').addEventListener('click', async ()=>{
@@ -6617,14 +6446,6 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
       const { data: existingCode, error: codeCheckErr } = await supabaseClient.from('profiles').select('code').eq('code', code).maybeSingle();
       if (codeCheckErr) throw codeCheckErr;
       if (existingCode){ note.textContent = 'That booking code is already taken. Pick another.'; submitBtn.disabled = false; return; }
-      try{
-        const { data: hit, error: hitErr } = await supabaseClient.rpc('find_blocked_term', { t: name });
-        if (!hitErr && typeof hit === 'string' && hit){
-          note.textContent = 'That name contains language that is not allowed on All Hair Connect. Please use your real name.';
-          submitBtn.disabled = false;
-          return;
-        }
-      }catch(_e){}
       note.textContent = 'Creating your account…';
       const { data, error } = await supabaseClient.auth.signUp({ email, password });
       if (error) throw error;
@@ -7099,19 +6920,6 @@ document.getElementById('btn-role-change-confirm').addEventListener('click', asy
   showTab(currentTab || 'booking');
   showToast('Role updated. Pace and Ledger are no longer available');
 });
-// Calls the notification function with a time limit so a slow or unavailable server can't freeze a screen.
-// Name (web address) of the Supabase Edge Function that sends these messages. The dashboard editor gave it a generated name;
-// if you ever redeploy it under a different name, change it here (and in index-appstore.html / passport.html).
-var QUICK_MESSAGE_FUNCTION = 'rapid-task';
-window.invokeQuickMessage = function(body){
-  return Promise.race([
-    supabaseClient.functions.invoke(QUICK_MESSAGE_FUNCTION, { body: body }),
-    new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('The message service took too long to respond. Try again in a moment.')); }, 12000); })
-  ]);
-};
-// Name (web address) of the Supabase Edge Function that deletes an account. If you ever redeploy it under a different
-// name, change it here and in index-appstore.html.
-const DELETE_ACCOUNT_FUNCTION = 'quick-processor';
 let deleteAccountArmed = false;
 document.getElementById('btn-delete-account').addEventListener('click', async function(){
   if (!deleteAccountArmed){
@@ -7121,40 +6929,13 @@ document.getElementById('btn-delete-account').addEventListener('click', async fu
     return;
   }
   deleteAccountArmed = false;
-  const btn = this;
-  const statusEl = document.getElementById('delete-account-status');
-  btn.disabled = true;
-  statusEl.textContent = 'Deleting your account\u2026';
-  // The delete-account Edge Function removes the data AND the login (the app can't remove a
-  // login itself). We only sign out and say "deleted" once the server confirms it worked.
-  // With no live connection nothing was ever saved anywhere, so there is nothing to delete.
-  if (dbAvailable){
-    let failure = '';
-    try{
-      const { data, error } = await supabaseClient.functions.invoke(DELETE_ACCOUNT_FUNCTION);
-      if (error){
-        failure = error.message || 'unknown error';
-        try{
-          const body = (error.context && typeof error.context.json === 'function') ? await error.context.json() : null;
-          if (body && body.error) failure = body.error;
-        }catch(_e){}
-      } else if (!data || data.ok !== true){
-        failure = (data && data.error) || 'the server did not confirm the deletion';
-      }
-    }catch(e){ failure = (e && e.message) || 'unknown error'; }
-    if (failure){
-      statusEl.textContent = "Couldn't finish deleting your account: " + failure + " You're still signed in, so you can tap Delete again to retry, or email allhairconnect@gmail.com for help.";
-      btn.disabled = false;
-      btn.textContent = 'Delete my account';
-      return;
-    }
-  }
-  statusEl.textContent = ' ';
+  this.disabled = true;
+  await deleteProfileRow(profileCode);
   try{ if (dbAvailable) await supabaseClient.auth.signOut(); }catch(e){}
   try{ localStorage.removeItem('pilotProfileCode'); }catch(e){}
   profile = null; profileCode = null;
-  btn.disabled = false;
-  btn.textContent = 'Delete my account';
+  this.disabled = false;
+  this.textContent = 'Delete my account';
   document.getElementById('account-screen').hidden = true;
   document.getElementById('app-shell').hidden = true;
   showToast('Account deleted');

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect: Hair Passport</title>
-<meta name="app-build" content="2026-09-19T01-18-58Z">
+<meta name="app-build" content="2026-09-23T17-30-47Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -257,6 +257,13 @@
         <button type="button" class="link-btn" id="btn-notif-nudge-dismiss">Dismiss</button>
       </span>
     </div>
+    <div id="install-nudge-banner" class="banner action" hidden>
+      <span>Add your Hair Passport to your home screen for quick access.</span>
+      <span style="display:flex; gap:14px; flex:none;">
+        <button type="button" class="link-btn" id="btn-install-nudge-open">Add</button>
+        <button type="button" class="link-btn" id="btn-install-nudge-dismiss">Dismiss</button>
+      </span>
+    </div>
 
     <main class="content">
 
@@ -362,11 +369,26 @@
           <button class="back-btn" id="btn-back-home-from-account" aria-label="Back">&larr;</button>
           <div><div class="vc-date">Account</div></div>
         </div>
-        <div>
-          <p class="eyebrow-mini">Support</p>
+        <div id="add-home-screen-section">
+          <p class="eyebrow-mini">Quick access</p>
+          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Add to Home Screen</h2>
+          <p class="screen-sub">Install your Hair Passport like an app &mdash; faster to open, and full-screen with no browser bar.</p>
+          <button type="button" class="btn btn-primary" id="btn-install-app" style="display:none; margin-top:10px; width:100%;">Install on this device</button>
+          <div class="mode-toggle" style="margin-top:10px;">
+            <button type="button" class="mode-btn" id="btn-add-home-ios">iPhone</button>
+            <button type="button" class="mode-btn" id="btn-add-home-android">Android</button>
+          </div>
+          <div id="add-home-steps-ios" style="display:none; flex-direction:column; margin-top:8px;">
+            <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the Share icon (the square with an arrow pointing up) in Safari's toolbar.<br>2. Scroll down and tap "Add to Home Screen."<br>3. Tap "Add" in the top right.</p>
+          </div>
+          <div id="add-home-steps-android" style="display:none; flex-direction:column; margin-top:8px;">
+            <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the three-dot menu in the top right of Chrome.<br>2. Tap "Add to Home screen" or "Install app."<br>3. Tap "Add" or "Install" to confirm.</p>
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--line); padding-top:16px;">
+          <p class="eyebrow-mini">Beta program</p>
           <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Questions or feedback?</h2>
           <p class="screen-sub">Found a bug or have an idea? Email <a href="mailto:allhairconnect@gmail.com" style="color:var(--brass);">allhairconnect@gmail.com</a> any time.</p>
-          <p class="screen-sub" style="margin-top:8px;"><a href="https://app.allhairconnect.com/privacy.html" target="_blank" rel="noopener" style="color:var(--brass);">Privacy Policy</a> &middot; <a href="https://app.allhairconnect.com/terms.html" target="_blank" rel="noopener" style="color:var(--brass);">Terms of Service</a></p>
         </div>
         <div style="border-top:1px solid var(--line); padding-top:16px;">
           <p class="eyebrow-mini">Your name</p>
@@ -434,8 +456,7 @@
         <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
           <p class="eyebrow-mini" style="color:var(--behind);">Danger zone</p>
           <button class="btn btn-danger" id="btn-delete-account">Delete my account</button>
-          <p class="foot-note-small">This permanently deletes your Hair Passport, your photos, your reviews, and your notification settings, and frees your code for someone else to use. It can't be undone. Professionals you've booked with keep an anonymous "Deleted client" entry in their appointment history.</p>
-          <p class="foot-note-small" id="delete-account-status" style="margin:0;">&nbsp;</p>
+          <p class="foot-note-small">This permanently deletes your Hair Passport and frees your code for someone else to use. It can't be undone.</p>
         </div>
       </div>
 
@@ -468,16 +489,6 @@ try{
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 }catch(e){ supabaseClient = null; }
-// Calls the notification function with a time limit so a slow or unavailable server can't freeze a screen.
-// Name (web address) of the Supabase Edge Function that sends these messages. The dashboard editor gave it a generated name;
-// if you ever redeploy it under a different name, change it here (and in index-appstore.html / passport.html).
-var QUICK_MESSAGE_FUNCTION = 'rapid-task';
-window.invokeQuickMessage = function(body){
-  return Promise.race([
-    supabaseClient.functions.invoke(QUICK_MESSAGE_FUNCTION, { body: body }),
-    new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('The message service took too long to respond. Try again in a moment.')); }, 12000); })
-  ]);
-};
 
 /* =========================================================
    WEB PUSH NOTIFICATIONS
@@ -498,15 +509,87 @@ function urlBase64ToUint8Array(base64String){
 function pushSupported(){
   return !!(window.isSecureContext && 'serviceWorker' in navigator && 'PushManager' in window);
 }
+// Shared standalone check (running installed, not in a regular browser tab) --
+// iOS Safari sets navigator.standalone; every other installable browser reflects
+// it through the display-mode media query instead.
+function isAppStandalone(){
+  return window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+}
 // iOS Safari only allows push notifications for a site that's been added to the Home
 // Screen -- a regular Safari tab can't turn them on at all. Used to show a heads-up
 // before someone taps "Turn on notifications" and it quietly doesn't work.
 function isIosNotStandalone(){
   const ua = navigator.userAgent || '';
   const isIos = /iPhone|iPad|iPod/i.test(ua);
-  const isStandalone = window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-  return isIos && !isStandalone;
+  return isIos && !isAppStandalone();
 }
+/* =========================================================
+   INSTALL PROMPT (beforeinstallprompt)
+   Chrome/Edge on Android and desktop fire this instead of leaving the
+   person to find "Add to Home Screen" in a menu -- capture it once and
+   reuse it in the Account screen and the home-screen nudge banner. iOS
+   Safari never fires this event, so that button stays hidden there and
+   the manual steps carry the load instead.
+   ========================================================= */
+let deferredInstallPrompt = null;
+function updateInstallButtons(){
+  const show = !!deferredInstallPrompt && !isAppStandalone();
+  const btn = document.getElementById('btn-install-app');
+  if (btn) btn.style.display = show ? 'block' : 'none';
+}
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  updateInstallButtons();
+  updateInstallNudgeBanner();
+});
+window.addEventListener('appinstalled', ()=>{
+  deferredInstallPrompt = null;
+  updateInstallButtons();
+  updateInstallNudgeBanner();
+});
+async function runInstallPrompt(){
+  if (!deferredInstallPrompt) return;
+  const promptEvent = deferredInstallPrompt;
+  deferredInstallPrompt = null;
+  updateInstallButtons();
+  try{
+    promptEvent.prompt();
+    await promptEvent.userChoice;
+  }catch(e){ /* dismissed or unsupported -- nothing to recover */ }
+  updateInstallNudgeBanner();
+}
+function setAddHomeDevice(device){
+  document.getElementById('btn-add-home-ios').classList.toggle('active', device === 'ios');
+  document.getElementById('btn-add-home-android').classList.toggle('active', device !== 'ios');
+  document.getElementById('add-home-steps-ios').style.display = device === 'ios' ? 'flex' : 'none';
+  document.getElementById('add-home-steps-android').style.display = device === 'ios' ? 'none' : 'flex';
+}
+document.getElementById('btn-add-home-ios').addEventListener('click', ()=> setAddHomeDevice('ios'));
+document.getElementById('btn-add-home-android').addEventListener('click', ()=> setAddHomeDevice('android'));
+document.getElementById('btn-install-app').addEventListener('click', runInstallPrompt);
+setAddHomeDevice(/iPhone|iPad|iPod/i.test(navigator.userAgent || '') ? 'ios' : 'android');
+updateInstallButtons();
+// A brief, dismissible nudge on the home screen pointing people at the Account > Add to
+// Home Screen section -- same pattern as the notifications nudge below. Hides itself once
+// already installed, or once dismissed (remembered per device).
+function installNudgeDismissKey(){ return 'ahcInstallNudgeDismissed_' + (clientCode || ''); }
+function updateInstallNudgeBanner(){
+  const el = document.getElementById('install-nudge-banner');
+  if (!el) return;
+  if (isAppStandalone() || viewedViaSharedCode){ el.hidden = true; return; }
+  let dismissed = false;
+  try{ dismissed = localStorage.getItem(installNudgeDismissKey()) === '1'; }catch(e){}
+  el.hidden = dismissed;
+}
+document.getElementById('btn-install-nudge-open').addEventListener('click', ()=>{
+  if (deferredInstallPrompt){ runInstallPrompt(); return; }
+  document.getElementById('btn-open-account').click();
+});
+document.getElementById('btn-install-nudge-dismiss').addEventListener('click', ()=>{
+  try{ localStorage.setItem(installNudgeDismissKey(), '1'); }catch(e){}
+  document.getElementById('install-nudge-banner').hidden = true;
+});
 let swRegistrationPromise = null;
 function registerServiceWorker(){
   if (!pushSupported()) return Promise.resolve(null);
@@ -697,37 +780,14 @@ async function deleteClientPhotos(code){
     }
   }catch(e){ console.warn('delete client photos failed', e); }
 }
-// Everything else tied to this client's code, so nothing personal is left behind. A
-// professional's own appointment history is kept but made anonymous, so their calendar and
-// earnings stay accurate.
-async function deleteClientRelatedData(code){
-  const { data: appts, error: apptErr } = await supabaseClient.from('appointments').select('id').eq('client_code', code);
-  if (apptErr) throw apptErr;
-  const ids = (appts || []).map(a => a.id);
-  for (let i = 0; i < ids.length; i += 200){
-    const { error } = await supabaseClient.from('quick_messages').delete().eq('sender_role', 'client').in('appointment_id', ids.slice(i, i + 200));
-    if (error) throw error;
-  }
-  const results = await Promise.all([
-    supabaseClient.from('reviews').delete().eq('client_code', code),
-    supabaseClient.from('loyalty_redemptions').delete().eq('client_code', code),
-    supabaseClient.from('push_subscriptions').delete().eq('owner_code', code).eq('owner_role', 'client'),
-    supabaseClient.from('appointments').update({ client_name: 'Deleted client', client_code: 'deleted-client' }).eq('client_code', code)
-  ]);
-  for (const res of results){ if (res.error) throw res.error; }
-}
 async function deleteClientRow(code){
-  if (!dbAvailable || !code) return { ok: true };
+  if (!dbAvailable || !code) return true;
   try{
     await deleteClientPhotos(code);
-    await deleteClientRelatedData(code);
     const { error } = await supabaseClient.from('clients').delete().eq('code', code);
     if (error) throw error;
-    return { ok: true };
-  }catch(e){
-    console.warn('delete failed', e);
-    return { ok: false, message: (e && e.message) || 'unknown error' };
-  }
+    return true;
+  }catch(e){ console.warn('delete failed', e); return false; }
 }
 
 async function persistClient(){
@@ -750,8 +810,13 @@ async function persistClient(){
   }catch(e){ console.warn('save failed', e); showToast("Couldn't save: try again", true); }
 }
 
-// The beta NDA has been retired, so nothing is recorded here any more.
-function syncNdaToServer(){}
+function syncNdaToServer(){
+  if (client && client.ndaVersion !== NDA_VERSION){
+    client.ndaVersion = NDA_VERSION;
+    client.ndaAcceptedAt = new Date().toISOString();
+    persistClient();
+  }
+}
 
 function syncNameToServer(){
   if (!client) return;
@@ -965,7 +1030,7 @@ function renderUpcoming(list){
         const { error } = await supabaseClient.from('appointments').update({status:'cancelled'}).eq('id', a.id);
         if (error) throw error;
         // Best-effort: let the barber know. Never blocks the cancellation itself.
-        try{ await invokeQuickMessage({ appointment_id: a.id, event: 'cancelled' }); }catch(e){ console.warn('cancel notification failed', e); }
+        try{ await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: a.id, event: 'cancelled' } }); }catch(e){ console.warn('cancel notification failed', e); }
         await loadUpcomingAppointments();
       }catch(e){
         console.warn('cancel failed', e);
@@ -993,7 +1058,7 @@ function renderUpcoming(list){
         if (statusEl) statusEl.textContent = 'Sending…';
         btn.disabled = true;
         try{
-          const { data, error } = await invokeQuickMessage({ appointment_id: apptId, sender_role: 'client', message });
+          const { data, error } = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: apptId, sender_role: 'client', message } });
           if (error) throw error;
           if (data && data.ok){
             if (statusEl) statusEl.textContent = 'Sent.';
@@ -1245,7 +1310,7 @@ document.getElementById('btn-submit-rating').addEventListener('click', async ()=
     document.getElementById('btn-submit-rating').textContent = 'Update rating';
   }catch(e){
     console.warn('rating save failed', e);
-    note.textContent = "Couldn't save your rating: " + ((e && e.message) || 'try again') + ".";
+    note.textContent = "Couldn't save your rating: try again.";
   }
 });
 
@@ -1292,6 +1357,7 @@ function enterApp(){
   loadUpcomingAppointments();
   loadLoyalty();
   updateNotifNudgeBanner();
+  updateInstallNudgeBanner();
 }
 
 function setAuthMode(mode){
@@ -1581,14 +1647,7 @@ document.getElementById('btn-delete-account').addEventListener('click', async fu
   }
   deleteAccountArmed = false;
   this.disabled = true;
-  const deleteResult = await deleteClientRow(clientCode);
-  if (!deleteResult.ok){
-    document.getElementById('delete-account-status').textContent = "Couldn't finish deleting your account: " + deleteResult.message + ". You're still signed in, so you can tap Delete again to retry, or email allhairconnect@gmail.com for help.";
-    this.disabled = false;
-    this.textContent = 'Delete my account';
-    return;
-  }
-  document.getElementById('delete-account-status').textContent = ' ';
+  await deleteClientRow(clientCode);
   try{ localStorage.removeItem('passportClientCode'); }catch(e){}
   client = null; clientCode = null;
   this.disabled = false;
@@ -1602,6 +1661,11 @@ document.getElementById('btn-delete-account').addEventListener('click', async fu
 
 async function boot(){
   dbAvailable = !!supabaseClient;
+
+  if (!ndaAccepted()){
+    showNdaScreen(continueBoot);
+    return;
+  }
 
   await continueBoot();
 }

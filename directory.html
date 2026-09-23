@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect: Find a Pro</title>
-<meta name="app-build" content="2026-09-18T21-18-23Z">
+<meta name="app-build" content="2026-09-23T17-30-47Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -154,6 +154,17 @@
   <div id="update-available-banner" class="banner action" hidden style="padding-top:max(10px, calc(env(safe-area-inset-top) + 10px));">
     <span>A new version of the app is available.</span>
     <button type="button" class="link-btn" id="btn-update-refresh">Refresh</button>
+  </div>
+
+  <div id="install-nudge-banner" class="banner action" hidden style="padding-top:max(10px, calc(env(safe-area-inset-top) + 10px));">
+    <span>Add Find a Pro to your home screen for quick access.</span>
+    <span style="display:flex; gap:14px; flex:none;">
+      <button type="button" class="link-btn" id="btn-install-nudge-open">Add</button>
+      <button type="button" class="link-btn" id="btn-install-nudge-dismiss">Dismiss</button>
+    </span>
+  </div>
+  <div id="install-instructions-panel" hidden style="padding:0 20px 12px; text-align:left;">
+    <p class="screen-sub" style="margin:0;" id="install-instructions-text"></p>
   </div>
 
   <div id="loading-screen" class="center-screen">
@@ -1103,7 +1114,59 @@ document.getElementById('btn-directory-exit').addEventListener('click', ()=>{
   window.location.href = 'index.html';
 });
 
+// Shared standalone check (running installed, not in a regular browser tab) -- iOS
+// Safari sets navigator.standalone; every other installable browser reflects it
+// through the display-mode media query instead.
+function isAppStandalone(){
+  return window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+}
+/* =========================================================
+   INSTALL PROMPT (beforeinstallprompt)
+   This page has no service worker/push (it's a public, login-less browse
+   page), but it's still a real installable destination on its own -- so it
+   gets the same lightweight "add to home screen" nudge as the other two.
+   ========================================================= */
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+});
+window.addEventListener('appinstalled', ()=>{
+  deferredInstallPrompt = null;
+  document.getElementById('install-nudge-banner').hidden = true;
+  document.getElementById('install-instructions-panel').hidden = true;
+});
+function installNudgeDismissKey(){ return 'ahcDirInstallNudgeDismissed'; }
+function updateInstallNudgeBanner(){
+  const el = document.getElementById('install-nudge-banner');
+  if (!el) return;
+  if (isAppStandalone()){ el.hidden = true; return; }
+  let dismissed = false;
+  try{ dismissed = localStorage.getItem(installNudgeDismissKey()) === '1'; }catch(e){}
+  el.hidden = dismissed;
+}
+document.getElementById('btn-install-nudge-open').addEventListener('click', async ()=>{
+  if (deferredInstallPrompt){
+    const promptEvent = deferredInstallPrompt;
+    deferredInstallPrompt = null;
+    try{ promptEvent.prompt(); await promptEvent.userChoice; }catch(e){}
+    document.getElementById('install-nudge-banner').hidden = true;
+    return;
+  }
+  const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+  document.getElementById('install-instructions-text').textContent = isIos
+    ? 'Tap the Share icon in Safari’s toolbar, scroll down, tap "Add to Home Screen," then tap "Add."'
+    : 'Tap the three-dot menu in Chrome, tap "Add to Home screen" or "Install app," then confirm.';
+  document.getElementById('install-instructions-panel').hidden = false;
+});
+document.getElementById('btn-install-nudge-dismiss').addEventListener('click', ()=>{
+  try{ localStorage.setItem(installNudgeDismissKey(), '1'); }catch(e){}
+  document.getElementById('install-nudge-banner').hidden = true;
+  document.getElementById('install-instructions-panel').hidden = true;
+});
+
 async function boot(){
+  updateInstallNudgeBanner();
   if (!dbAvailable){
     document.getElementById('loading-screen').hidden = true;
     document.getElementById('list-screen').hidden = false;
