@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-23T18-16-51Z">
+<meta name="app-build" content="2026-09-23T18-25-09Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -338,13 +338,12 @@
     <p style="color:#A9B2C3;font-size:0.9rem;margin:0 0 20px;">All Hair Connect works best added to your Home Screen &mdash; faster to open, full-screen, and it's how you'll get appointment and message notifications.</p>
     <button id="ahc-gate-install" style="display:none;width:100%;background:linear-gradient(180deg,#E8C87E,#D4AF6A);color:#1a1206;border:none;padding:12px;border-radius:999px;font-weight:600;cursor:pointer;font-size:0.95rem;margin-bottom:14px;">Install Now</button>
     <div style="display:flex;border:1px solid rgba(255,255,255,0.14);border-radius:10px;padding:3px;gap:3px;background:#0c1526;margin-bottom:12px;">
-      <button type="button" id="ahc-gate-ios" style="flex:1;border:none;background:transparent;color:#A9B2C3;font-size:0.8rem;font-weight:700;padding:8px 6px;border-radius:7px;cursor:pointer;">iPhone</button>
-      <button type="button" id="ahc-gate-android" style="flex:1;border:none;background:transparent;color:#A9B2C3;font-size:0.8rem;font-weight:700;padding:8px 6px;border-radius:7px;cursor:pointer;">Android</button>
+      <button type="button" id="ahc-gate-ios" style="flex:1;border:none;background:transparent;color:#A9B2C3;font-size:0.8rem;font-weight:700;padding:8px 6px;border-radius:7px;cursor:pointer;transition:background 0.15s,color 0.15s;">iPhone</button>
+      <button type="button" id="ahc-gate-android" style="flex:1;border:none;background:transparent;color:#A9B2C3;font-size:0.8rem;font-weight:700;padding:8px 6px;border-radius:7px;cursor:pointer;transition:background 0.15s,color 0.15s;">Android</button>
     </div>
     <p id="ahc-gate-steps-ios" style="display:none;color:#A9B2C3;font-size:0.82rem;line-height:1.5;text-align:left;margin:0 0 18px;">1. Tap the Share icon (the square with an arrow pointing up) in Safari's toolbar.<br>2. Scroll down and tap "Add to Home Screen."<br>3. Tap "Add" in the top right.<br>4. Open All Hair Connect from that new icon.</p>
     <p id="ahc-gate-steps-android" style="display:none;color:#A9B2C3;font-size:0.82rem;line-height:1.5;text-align:left;margin:0 0 18px;">1. Tap the three-dot menu in Chrome's toolbar.<br>2. Tap "Add to Home screen" or "Install app."<br>3. Tap "Add" or "Install" to confirm.</p>
-    <button id="ahc-gate-continue" style="width:100%;background:transparent;color:#D4AF6A;border:1px solid #D4AF6A;padding:12px;border-radius:999px;font-weight:600;cursor:pointer;font-size:0.9rem;">Continue in browser</button>
-    <p style="color:#7C879C;font-size:0.78rem;margin:16px 0 0;">Already have an account? <a href="#" id="ahc-gate-login-link" style="color:#D4AF6A;">Log in</a></p>
+    <p style="color:#7C879C;font-size:0.78rem;margin:0;">Already have an account? <a href="#" id="ahc-gate-login-link" style="color:#D4AF6A;">Log in</a></p>
   </div>
 </div>
 <script>
@@ -411,16 +410,21 @@
     try{ promptEvent.prompt(); await promptEvent.userChoice; }catch(e){}
     dismissGate();
   });
+  var ACTIVE_BG = 'linear-gradient(180deg,#E8C87E,#D4AF6A)';
   function setDevice(device){
-    document.getElementById('ahc-gate-ios').style.color = device === 'ios' ? '#F3EFE6' : '#A9B2C3';
-    document.getElementById('ahc-gate-android').style.color = device === 'ios' ? '#A9B2C3' : '#F3EFE6';
-    document.getElementById('ahc-gate-steps-ios').style.display = device === 'ios' ? 'block' : 'none';
-    document.getElementById('ahc-gate-steps-android').style.display = device === 'ios' ? 'none' : 'block';
+    var iosBtn = document.getElementById('ahc-gate-ios');
+    var androidBtn = document.getElementById('ahc-gate-android');
+    var iosActive = device === 'ios';
+    iosBtn.style.background = iosActive ? ACTIVE_BG : 'transparent';
+    iosBtn.style.color = iosActive ? '#1a1206' : '#A9B2C3';
+    androidBtn.style.background = iosActive ? 'transparent' : ACTIVE_BG;
+    androidBtn.style.color = iosActive ? '#A9B2C3' : '#1a1206';
+    document.getElementById('ahc-gate-steps-ios').style.display = iosActive ? 'block' : 'none';
+    document.getElementById('ahc-gate-steps-android').style.display = iosActive ? 'none' : 'block';
   }
   document.getElementById('ahc-gate-ios').addEventListener('click', function(){ setDevice('ios'); });
   document.getElementById('ahc-gate-android').addEventListener('click', function(){ setDevice('android'); });
   setDevice(/iPhone|iPad|iPod/i.test(navigator.userAgent || '') ? 'ios' : 'android');
-  document.getElementById('ahc-gate-continue').addEventListener('click', dismissGate);
   // "Already have an account? Log in" -- lets someone skip straight past the
   // install pitch into the login form. By the time someone can actually click
   // this, the rest of the app has already loaded and run its own startup (it
