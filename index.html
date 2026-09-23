@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-23T17-30-47Z">
+<meta name="app-build" content="2026-09-23T18-16-51Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -330,45 +330,60 @@
 </style>
 </head>
 <body>
-  <!-- Access Gate -->
-<div id="ahc-gate" style="position:fixed;inset:0;z-index:99999;background:#0A1220;display:flex;align-items:center;justify-content:center;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <div style="width:100%;max-width:360px;background:#0F1A2B;border:1px solid rgba(212,175,106,0.25);border-radius:16px;padding:32px;text-align:center;">
+  <!-- Install Intro -->
+<div id="ahc-gate" style="position:fixed;inset:0;z-index:99999;background:#0A1220;display:flex;align-items:center;justify-content:center;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;overflow-y:auto;">
+  <div style="width:100%;max-width:360px;background:#0F1A2B;border:1px solid rgba(212,175,106,0.25);border-radius:16px;padding:32px;text-align:center;margin:auto;">
     <img src="logo.png" alt="All Hair Connect" style="width:64px;height:64px;border-radius:50%;margin:0 auto 16px;display:block;" onerror="this.style.display='none'">
-    <h2 style="color:#F3EFE6;font-size:1.1rem;margin:0 0 8px;">Invitation-Only Beta</h2>
-    <p style="color:#A9B2C3;font-size:0.9rem;margin:0 0 20px;">Enter your access code to continue.</p>
-    <input id="ahc-gate-input" type="text" inputmode="numeric" maxlength="4" placeholder="Access code" style="width:100%;box-sizing:border-box;background:#0c1526;border:1px solid rgba(255,255,255,0.14);color:#F3EFE6;padding:12px 14px;border-radius:10px;font-size:16px;margin-bottom:12px;text-align:center;letter-spacing:0.2em;">
-    <button id="ahc-gate-submit" style="width:100%;background:linear-gradient(180deg,#E8C87E,#D4AF6A);color:#1a1206;border:none;padding:12px;border-radius:999px;font-weight:600;cursor:pointer;font-size:0.95rem;">Enter</button>
-    <p id="ahc-gate-error" style="color:#e08383;font-size:0.82rem;margin:12px 0 0;display:none;">That code doesn't match. Try again.</p>
-    <p style="color:#7C879C;font-size:0.78rem;margin:16px 0 0;">Don't have a code? <a href="https://allhairconnect.com/#access" style="color:#D4AF6A;">Request access</a></p>
-    <p style="color:#7C879C;font-size:0.78rem;margin:10px 0 0;">Already invited and have an account? <a href="#" id="ahc-gate-login-link" style="color:#D4AF6A;">Log in</a></p>
+    <h2 style="color:#F3EFE6;font-size:1.1rem;margin:0 0 8px;">Get the Full Experience</h2>
+    <p style="color:#A9B2C3;font-size:0.9rem;margin:0 0 20px;">All Hair Connect works best added to your Home Screen &mdash; faster to open, full-screen, and it's how you'll get appointment and message notifications.</p>
+    <button id="ahc-gate-install" style="display:none;width:100%;background:linear-gradient(180deg,#E8C87E,#D4AF6A);color:#1a1206;border:none;padding:12px;border-radius:999px;font-weight:600;cursor:pointer;font-size:0.95rem;margin-bottom:14px;">Install Now</button>
+    <div style="display:flex;border:1px solid rgba(255,255,255,0.14);border-radius:10px;padding:3px;gap:3px;background:#0c1526;margin-bottom:12px;">
+      <button type="button" id="ahc-gate-ios" style="flex:1;border:none;background:transparent;color:#A9B2C3;font-size:0.8rem;font-weight:700;padding:8px 6px;border-radius:7px;cursor:pointer;">iPhone</button>
+      <button type="button" id="ahc-gate-android" style="flex:1;border:none;background:transparent;color:#A9B2C3;font-size:0.8rem;font-weight:700;padding:8px 6px;border-radius:7px;cursor:pointer;">Android</button>
+    </div>
+    <p id="ahc-gate-steps-ios" style="display:none;color:#A9B2C3;font-size:0.82rem;line-height:1.5;text-align:left;margin:0 0 18px;">1. Tap the Share icon (the square with an arrow pointing up) in Safari's toolbar.<br>2. Scroll down and tap "Add to Home Screen."<br>3. Tap "Add" in the top right.<br>4. Open All Hair Connect from that new icon.</p>
+    <p id="ahc-gate-steps-android" style="display:none;color:#A9B2C3;font-size:0.82rem;line-height:1.5;text-align:left;margin:0 0 18px;">1. Tap the three-dot menu in Chrome's toolbar.<br>2. Tap "Add to Home screen" or "Install app."<br>3. Tap "Add" or "Install" to confirm.</p>
+    <button id="ahc-gate-continue" style="width:100%;background:transparent;color:#D4AF6A;border:1px solid #D4AF6A;padding:12px;border-radius:999px;font-weight:600;cursor:pointer;font-size:0.9rem;">Continue in browser</button>
+    <p style="color:#7C879C;font-size:0.78rem;margin:16px 0 0;">Already have an account? <a href="#" id="ahc-gate-login-link" style="color:#D4AF6A;">Log in</a></p>
   </div>
 </div>
 <script>
 (function(){
-  var CODE = "0108";
-  // Exposed so a returning professional who logs in successfully (see the main app
-  // script's auth-form handler) can be re-granted access even if this gate's own
-  // "remembered code" flag didn't carry over -- e.g. opening the app from its
-  // Home Screen icon on an iPhone can start it in storage separate from Safari's,
-  // so someone who already entered the code in Safari can land back on this gate
-  // even though they were already invited and already have an account.
-  window.AHC_BETA_CODE = CODE;
   var gate = document.getElementById('ahc-gate');
   if(!gate) return;
+  var SEEN_KEY = 'ahc_install_intro_seen';
+  // Exposed so a returning professional who logs in successfully (see the main app
+  // script's auth-form handler / markAhcGateAndNdaPassed) can mark this intro as
+  // seen even if this gate's own "remembered" flag didn't carry over -- e.g.
+  // opening the app from its Home Screen icon on an iPhone can start it in storage
+  // separate from Safari's, so someone who already saw this in Safari can land
+  // back on this gate even though they already have an account.
+  window.AHC_INSTALL_INTRO_KEY = SEEN_KEY;
+  function isStandalone(){
+    return window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  }
+  function dismissGate(){
+    gate.remove();
+    document.body.style.overflow = '';
+    try{ localStorage.setItem(SEEN_KEY, '1'); }catch(e){}
+  }
+  // Already running installed -- this screen has nothing left to offer, skip it.
+  if (isStandalone()){ gate.remove(); return; }
   try{
-    if(localStorage.getItem('ahc_access_granted') === CODE){
+    if(localStorage.getItem(SEEN_KEY) === '1'){
       gate.remove();
       return;
     }
   }catch(e){}
-  // A password-reset email link can land here on a browser/device that never had the
-  // invite code entered on it (a different browser than usual, a fresh device, cleared
-  // storage) -- without this, someone resetting their password would be stuck looking at
-  // the invite-code prompt instead of the "set a new password" screen (or, if the link
-  // itself expired or was already used, the explanation for that) running underneath.
-  // Supabase's reset links carry "type=recovery" in the query string or the URL fragment
-  // depending on flow type, and an expired/used link comes back as "error=access_denied"
-  // instead -- check for either, in both places, rather than assuming one.
+  // A password-reset email link can land here on a browser/device that never saw
+  // this intro before (a different browser than usual, a fresh device, cleared
+  // storage) -- without this, someone resetting their password would be stuck
+  // looking at the install prompt instead of the "set a new password" screen (or,
+  // if the link itself expired or was already used, the explanation for that)
+  // running underneath. Supabase's reset links carry "type=recovery" in the query
+  // string or the URL fragment depending on flow type, and an expired/used link
+  // comes back as "error=access_denied" instead -- check for either, in both
+  // places, rather than assuming one.
   try{
     var linkText = window.location.search + ' ' + window.location.hash;
     if(/[?&#]type=recovery(&|$)/.test(linkText) || /error=access_denied/.test(linkText) || /error_code=otp_expired/.test(linkText)){
@@ -377,32 +392,44 @@
     }
   }catch(e){}
   document.body.style.overflow = 'hidden';
-  var input = document.getElementById('ahc-gate-input');
-  var err = document.getElementById('ahc-gate-error');
-  function tryEnter(){
-    if(input.value.trim() === CODE){
-      try{ localStorage.setItem('ahc_access_granted', CODE); }catch(e){}
-      gate.remove();
-      document.body.style.overflow = '';
-    } else {
-      err.style.display = 'block';
-    }
+  // Chrome/Edge (Android + desktop) fire this instead of leaving someone to find
+  // "Add to Home Screen" in a menu -- capture it here (registered before the main
+  // app script runs, so we won't miss it) and offer a real one-tap "Install Now"
+  // button instead of only the manual steps below. iOS Safari never fires this, so
+  // the button just stays hidden there and the manual steps carry the load.
+  var deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferredPrompt = e;
+    var btn = document.getElementById('ahc-gate-install');
+    if (btn) btn.style.display = 'block';
+  });
+  document.getElementById('ahc-gate-install').addEventListener('click', async function(){
+    if (!deferredPrompt) return;
+    var promptEvent = deferredPrompt;
+    deferredPrompt = null;
+    try{ promptEvent.prompt(); await promptEvent.userChoice; }catch(e){}
+    dismissGate();
+  });
+  function setDevice(device){
+    document.getElementById('ahc-gate-ios').style.color = device === 'ios' ? '#F3EFE6' : '#A9B2C3';
+    document.getElementById('ahc-gate-android').style.color = device === 'ios' ? '#A9B2C3' : '#F3EFE6';
+    document.getElementById('ahc-gate-steps-ios').style.display = device === 'ios' ? 'block' : 'none';
+    document.getElementById('ahc-gate-steps-android').style.display = device === 'ios' ? 'none' : 'block';
   }
-  document.getElementById('ahc-gate-submit').addEventListener('click', tryEnter);
-  input.addEventListener('keydown', function(e){ if(e.key === 'Enter') tryEnter(); });
-  // "Already invited and have an account? Log in" -- for someone who has already
-  // been through the code + NDA + account setup before, but landed on this gate
-  // again because this particular copy of the app (for example, the Home Screen
-  // icon version) doesn't remember that locally. By the time someone can actually
-  // click this, the rest of the app has already loaded and run its own startup
-  // (it runs underneath this gate the whole time), so jump straight to the login
+  document.getElementById('ahc-gate-ios').addEventListener('click', function(){ setDevice('ios'); });
+  document.getElementById('ahc-gate-android').addEventListener('click', function(){ setDevice('android'); });
+  setDevice(/iPhone|iPad|iPod/i.test(navigator.userAgent || '') ? 'ios' : 'android');
+  document.getElementById('ahc-gate-continue').addEventListener('click', dismissGate);
+  // "Already have an account? Log in" -- lets someone skip straight past the
+  // install pitch into the login form. By the time someone can actually click
+  // this, the rest of the app has already loaded and run its own startup (it
+  // runs underneath this gate the whole time), so jump straight to the login
   // form directly here rather than trying to flag it for that startup to notice --
   // it already decided on some other screen before this click ever happened.
-  // A successful login re-grants this copy of the app so it won't happen again here.
   document.getElementById('ahc-gate-login-link').addEventListener('click', function(e){
     e.preventDefault();
-    gate.remove();
-    document.body.style.overflow = '';
+    dismissGate();
     try{
       var ndaScreen = document.getElementById('nda-screen');
       if (ndaScreen) ndaScreen.hidden = true;
@@ -415,7 +442,7 @@
   });
 })();
 </script>
-<!-- End Access Gate -->
+<!-- End Install Intro -->
 <div id="app-root">
   <div id="update-available-banner" class="banner action" hidden style="padding-top:max(10px, calc(env(safe-area-inset-top) + 10px));">
     <span>A new version of the app is available.</span>
@@ -6411,15 +6438,16 @@ document.getElementById('auth-forgot-link').addEventListener('click', async (e)=
   }
 });
 // A successful signup or login is solid proof this device/browser copy of the app
-// belongs to someone already invited and already NDA-bound (only the gate+NDA+signup
-// flow ever creates an account in the first place), so re-stamp both local flags here
-// every time. This is what makes this copy of the app stop asking for the access code
-// again -- important for the "Log in" shortcut off the gate above, and cheap insurance
-// generally against this one copy's storage having lost those flags some other way
-// (e.g. it was opened from a Home Screen icon that started with separate storage).
+// belongs to someone who's already past the install intro and already NDA-bound
+// (only that gate+NDA+signup flow ever creates an account in the first place), so
+// re-stamp both local flags here every time. This is what makes this copy of the
+// app stop showing the install intro again -- important for the "Log in" shortcut
+// off the gate above, and cheap insurance generally against this one copy's
+// storage having lost those flags some other way (e.g. it was opened from a Home
+// Screen icon that started with separate storage).
 function markAhcGateAndNdaPassed(){
   try{
-    if (window.AHC_BETA_CODE) localStorage.setItem('ahc_access_granted', window.AHC_BETA_CODE);
+    localStorage.setItem(window.AHC_INSTALL_INTRO_KEY || 'ahc_install_intro_seen', '1');
   }catch(e){}
   markNdaAccepted();
 }
