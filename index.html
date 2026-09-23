@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-23T18-25-09Z">
+<meta name="app-build" content="2026-09-23T20-29-28Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -84,6 +84,8 @@
   .bk-pane.show{ display:flex; }
   [data-screen]{ display:none; }
   [data-screen].show{ display:flex; flex-direction:column; gap:16px; }
+  [data-svc-screen]{ display:none; }
+  [data-svc-screen].show{ display:flex; flex-direction:column; gap:16px; }
   .steps{ display:flex; gap:6px; flex-wrap:wrap; }
   .step-btn{ display:flex; align-items:center; gap:6px; padding:7px 12px 7px 8px; border-radius:999px; border:1px solid var(--line); background:var(--paper); color:var(--muted); font-family:'Public Sans',sans-serif; font-size:11.5px; font-weight:600; cursor:pointer; }
   .step-btn .n{ display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:50%; background:var(--line); color:var(--surface); font-size:9.5px; font-weight:700; }
@@ -170,6 +172,7 @@
   .chip-status{ display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:999px; font-size:12px; font-weight:700; width:fit-content; }
   .chip-status.good{ background:var(--good-tint); color:var(--good); }
   .chip-status.behind{ background:var(--behind-tint); color:var(--behind); }
+  .chip-status.neutral{ background:var(--surface); color:var(--muted); }
   .chip-status::before{ content:""; width:7px;height:7px;border-radius:50%; background:currentColor; }
   .meter{ display:flex; flex-direction:column; gap:6px; }
   .meter-track{ height:10px; border-radius:6px; background:var(--line); position:relative; overflow:hidden; }
@@ -698,7 +701,12 @@
           <p class="eyebrow-mini">Real-Time Pace &amp; Projected Graduation Tracker</p>
           <h2>Pace</h2>
         </div>
-        <p class="foot-note-small" style="max-width:none;">This is a planning projection, calculated from the hours, absences, holidays, and schedule you enter here &mdash; it isn't your school's official record. Your actual completion and graduation requirements are determined by your school or licensing authority.</p>
+        <p class="foot-note-small" style="max-width:none;">This is a planning projection, calculated from the hours, services, absences, holidays, and schedule you enter here &mdash; it isn't your school's official record. Your actual completion and graduation requirements are determined by your school or licensing authority.</p>
+        <div class="mode-toggle" id="pace-mode-toggle" style="margin-bottom:2px;">
+          <button type="button" class="mode-btn active" data-pace-mode="hours">Hours</button>
+          <button type="button" class="mode-btn" data-pace-mode="services">Services</button>
+        </div>
+        <div id="pace-mode-hours">
         <nav class="steps">
           <button class="step-btn active" data-goto="setup"><span class="n">1</span>Set up</button>
           <button class="step-btn" data-goto="calendar"><span class="n">2</span>Calendar</button>
@@ -850,6 +858,94 @@
           </div>
           <div class="spacer"></div>
           <button class="btn btn-primary" data-goto="dashboard">Back to overview</button>
+        </div>
+        </div>
+        <div id="pace-mode-services" style="display:none;">
+        <nav class="steps">
+          <button class="step-btn active" data-svc-goto="setup"><span class="n">1</span>Set up</button>
+          <button class="step-btn" data-svc-goto="log"><span class="n">2</span>Log</button>
+          <button class="step-btn" data-svc-goto="dashboard"><span class="n">3</span>Overview</button>
+        </nav>
+        <div class="screen-body show" data-svc-screen="setup">
+          <p class="screen-sub">Copy these numbers off your last monthly report, or start fresh.</p>
+          <div class="field">
+            <label>Total number of services required</label>
+            <div class="input-row"><input id="svc-total" type="number" placeholder="e.g. 1000"><span class="suffix">svcs</span></div>
+          </div>
+          <div class="field">
+            <label>Services completed, as of</label>
+            <div class="input-row"><input id="svc-asof" type="date"></div>
+          </div>
+          <div class="field">
+            <label>Services completed so far</label>
+            <div class="input-row"><input id="svc-earned" type="number" placeholder="e.g. 250"><span class="suffix">svcs</span></div>
+          </div>
+          <div class="field">
+            <label>Completed by</label>
+            <div class="input-row"><input id="svc-target" type="date"></div>
+            <button type="button" class="link-btn" id="btn-svc-use-grad-date" style="align-self:flex-start; padding:4px 0 0;">Use my projected graduation date</button>
+          </div>
+          <div class="spacer"></div>
+          <button class="btn btn-primary" data-svc-goto="log">Next: log services</button>
+        </div>
+        <div class="screen-body" data-svc-screen="log">
+          <p class="screen-sub">Log each day's completed services here &mdash; they add on top of the "completed so far" count above (only days after that date count, so nothing gets counted twice).</p>
+          <div class="field">
+            <label>Logged days</label>
+            <div id="svc-log-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+          </div>
+          <div class="card" style="gap:10px;">
+            <p class="eyebrow-mini2" id="svc-log-form-title">Add today's services</p>
+            <div class="input-row"><span class="suffix">Date</span><input id="svc-log-date" type="date"></div>
+            <div class="input-row"><input id="svc-log-count" type="number" min="0" step="1" placeholder="e.g. 3"><span class="suffix">svcs</span></div>
+            <button class="btn btn-primary" id="btn-add-svc-log" style="padding:10px;">+ Add entry</button>
+            <button class="btn btn-ghost" id="btn-cancel-edit-svc-log" type="button" style="display:none; padding:10px;">Cancel</button>
+          </div>
+          <div class="spacer"></div>
+          <button class="btn btn-primary" data-svc-goto="dashboard">See my pace</button>
+        </div>
+        <div class="screen-body" data-svc-screen="dashboard">
+          <div style="display:flex; align-items:center; gap:18px;">
+            <div class="pace-ring-wrap" style="position:relative; width:104px; height:104px; flex:none;">
+              <svg viewBox="0 0 120 120" width="104" height="104" style="transform:rotate(-90deg); display:block;">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="var(--line)" stroke-width="14"></circle>
+                <circle id="svc-ring-fill" cx="60" cy="60" r="50" fill="none" stroke="var(--brass)" stroke-width="14" stroke-linecap="round" stroke-dasharray="314.159" stroke-dashoffset="314.159"></circle>
+                <g stroke="var(--bg)" stroke-width="7">
+                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(0 60 60)"></line>
+                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(45 60 60)"></line>
+                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(90 60 60)"></line>
+                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(135 60 60)"></line>
+                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(180 60 60)"></line>
+                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(225 60 60)"></line>
+                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(270 60 60)"></line>
+                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(315 60 60)"></line>
+                </g>
+              </svg>
+              <div id="svc-ring-pct" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:21px; color:var(--brass); font-variant-numeric:tabular-nums;">0%</div>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <p class="eyebrow-mini2">Your pace</p>
+              <div class="big-date" id="svc-db-date" style="font-size:19px;">&nbsp;</div>
+              <span class="chip-status good" id="svc-db-chip" style="margin-top:8px;">On pace</span>
+            </div>
+          </div>
+          <p class="screen-sub" id="svc-db-note" style="margin-top:2px;">&nbsp;</p>
+          <div class="meter">
+            <div class="meter-track"><div class="meter-fill" id="svc-db-meter"></div></div>
+            <div class="meter-labels"><span id="svc-db-count">0 / 0 svcs</span><span id="svc-db-pct">0%</span></div>
+          </div>
+          <div class="card" style="flex-direction:row; align-items:center; justify-content:space-between;">
+            <div><p class="eyebrow-mini2">Services remaining</p><div class="big-date" id="svc-db-remaining" style="font-size:20px;">&nbsp;</div></div>
+            <div style="text-align:right;"><p class="eyebrow-mini2">Completed to date</p><div class="big-date" id="svc-db-earned-stat" style="font-size:20px; color:var(--muted);">&nbsp;</div></div>
+          </div>
+          <div class="card" style="flex-direction:row; align-items:center; justify-content:space-between;">
+            <div><p class="eyebrow-mini2">Your pace so far</p><div class="big-date" id="svc-db-rate" style="font-size:16px;">&nbsp;</div></div>
+            <div style="text-align:right;"><p class="eyebrow-mini2">Needed to finish on time</p><div class="big-date" id="svc-db-needed" style="font-size:16px; color:var(--muted);">&nbsp;</div></div>
+          </div>
+          <div class="spacer"></div>
+          <button class="btn btn-primary" data-svc-goto="log">Log more services</button>
+          <button class="btn btn-ghost" data-svc-goto="setup">Edit my numbers</button>
+        </div>
         </div>
       </section>
       <!-- ============ COACH ============ -->
@@ -2148,6 +2244,10 @@ function defaultProfile(name){
       schedule: {Sun:0, Mon:0, Tue:0, Wed:0, Thu:0, Fri:0, Sat:0},
       breaks: [], absences: []
     },
+    services: {
+      total: null, asOf: todayIso(), earned: null, targetDate: null,
+      log: []
+    },
     techniques: defaultTechniques(),
     publicListing: false,
     shopCode: null,
@@ -2204,6 +2304,7 @@ async function persistProfile(fields){
   if (!dbAvailable || !profileCode) return { ok:false, message: "Not connected right now. This change wasn't saved." };
   const row = { updated_at: profile.updatedAt };
   if (fields.pace) row.pace = fields.pace;
+  if (fields.services) row.services = fields.services;
   if (fields.techniques) row.techniques = fields.techniques;
   if (fields.title) row.title = fields.title;
   if (fields.studentField !== undefined) row.student_field = fields.studentField;
@@ -2714,6 +2815,235 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   root.querySelector('#in-total').addEventListener('change', window._paceSyncBeforeSave);
   root.querySelector('#in-earned').addEventListener('change', window._paceSyncBeforeSave);
   root.querySelector('#in-asof').addEventListener('change', window._paceSyncBeforeSave);
+  // Hours / Services mode toggle -- lives here since this IIFE already has
+  // "root" scoped to the whole Pace tab and runs before the Services IIFE
+  // below, so the toggle exists no matter which one someone taps first.
+  root.querySelectorAll('#pace-mode-toggle [data-pace-mode]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const mode = btn.dataset.paceMode;
+      root.querySelectorAll('#pace-mode-toggle [data-pace-mode]').forEach(b=> b.classList.toggle('active', b.dataset.paceMode===mode));
+      root.querySelector('#pace-mode-hours').style.display = mode==='hours' ? '' : 'none';
+      root.querySelector('#pace-mode-services').style.display = mode==='services' ? '' : 'none';
+      // Switching into Services might be the first time a projected graduation
+      // date exists (it's computed from Hours, which the student may have just
+      // finished filling in) -- re-check whether it's still worth auto-filling
+      // the Services target date now, same as a fresh visit to its setup step.
+      if (mode === 'services' && typeof window.__ahcRefreshServicesTarget === 'function') window.__ahcRefreshServicesTarget();
+    });
+  });
+})();
+/* =========================================================
+   PACE: SERVICES
+   A second, independent tracker alongside the hours one above -- same
+   "Real-Time Pace" spirit (total required, a periodic snapshot, a pace
+   dashboard), but services are logged day by day rather than re-synced
+   from a time-clock report, and the target is a fixed completion date
+   the student sets (defaulting to the projected graduation date from the
+   Hours tracker) rather than a date the calculator works out on its own.
+   ========================================================= */
+(function(){
+  const root = document.getElementById('tab-pace');
+  const sstate = { editingLogId: null };
+  function S(){ return profile.services; }
+  function todayIsoSvc(){ return todayIso(); }
+  function diffDaysSvc(a, b){ return Math.round((new Date(b+'T00:00:00') - new Date(a+'T00:00:00')) / 86400000); }
+  function isoDateSvc(d){ return d.toISOString().slice(0,10); }
+  function fmtDateSvc(dateStr){ return new Date(dateStr+'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }
+  function fmtSingleDateSvc(dateStr){ return new Date(dateStr+'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric'}); }
+  function newLogId(){ return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+  // "Completed to date" = the snapshot baseline plus every logged day after
+  // the snapshot's date -- entries on or before it are assumed to already be
+  // folded into the baseline, so they're left out here to avoid double-counting.
+  function completedToDate(){
+    const earned = parseFloat(root.querySelector('#svc-earned').value)||0;
+    const asOf = root.querySelector('#svc-asof').value || todayIsoSvc();
+    const added = (S().log||[]).filter(e=> e.date > asOf).reduce((sum,e)=> sum + (e.count||0), 0);
+    return earned + added;
+  }
+
+  function renderLog(){
+    const list = root.querySelector('#svc-log-list');
+    list.innerHTML = '';
+    const log = (S().log||[]).slice().sort((a,b)=> b.date.localeCompare(a.date));
+    if (log.length === 0){ list.innerHTML = '<p class="screen-sub" style="margin:0;">No services logged yet.</p>'; return; }
+    log.forEach(entry=>{
+      const el = document.createElement('div');
+      el.className = 'break-item';
+      if (entry.id === sstate.editingLogId) el.style.borderColor = 'var(--brass)';
+      el.innerHTML = `<div class="bi-text"><span class="bi-label">${fmtSingleDateSvc(entry.date)}</span><span class="bi-range">${entry.count} service${entry.count===1?'':'s'}</span></div><div class="bi-actions"><button class="bi-edit" type="button" data-id="${entry.id}" aria-label="Edit this entry">Edit</button><button class="bi-remove" type="button" data-id="${entry.id}" aria-label="Remove this entry">&times;</button></div>`;
+      list.appendChild(el);
+    });
+    list.querySelectorAll('.bi-edit').forEach(btn=> btn.addEventListener('click', e=> startEditLog(e.currentTarget.dataset.id)));
+    list.querySelectorAll('.bi-remove').forEach(btn=> btn.addEventListener('click', e=>{
+      const id = e.currentTarget.dataset.id;
+      if (sstate.editingLogId === id) exitLogEditMode();
+      S().log = (S().log||[]).filter(x=> x.id !== id);
+      renderLog();
+      persistProfile({services:S()});
+    }));
+  }
+  function startEditLog(id){
+    const entry = (S().log||[]).find(x=> x.id===id);
+    if (!entry) return;
+    sstate.editingLogId = id;
+    root.querySelector('#svc-log-date').value = entry.date;
+    root.querySelector('#svc-log-count').value = entry.count;
+    root.querySelector('#svc-log-form-title').textContent = 'Edit entry';
+    root.querySelector('#btn-add-svc-log').textContent = 'Save changes';
+    root.querySelector('#btn-cancel-edit-svc-log').style.display = '';
+    renderLog();
+  }
+  function exitLogEditMode(){
+    sstate.editingLogId = null;
+    root.querySelector('#svc-log-date').value = todayIsoSvc();
+    root.querySelector('#svc-log-count').value = '';
+    root.querySelector('#svc-log-form-title').textContent = "Add today's services";
+    root.querySelector('#btn-add-svc-log').textContent = '+ Add entry';
+    root.querySelector('#btn-cancel-edit-svc-log').style.display = 'none';
+    renderLog();
+  }
+
+  function recalcServicesDashboard(){
+    const total = parseFloat(root.querySelector('#svc-total').value)||0;
+    const asOf = root.querySelector('#svc-asof').value || todayIsoSvc();
+    const target = root.querySelector('#svc-target').value || '';
+    const earned = parseFloat(root.querySelector('#svc-earned').value)||0;
+    const toDate = completedToDate();
+    const today = todayIsoSvc();
+    const pct = total>0 ? Math.min(100, Math.round((toDate/total)*100)) : 0;
+
+    root.querySelector('#svc-db-count').textContent = `${toDate.toLocaleString()} / ${total.toLocaleString()} svcs`;
+    root.querySelector('#svc-db-pct').textContent = pct + '%';
+    root.querySelector('#svc-db-meter').style.width = pct + '%';
+    root.querySelector('#svc-db-remaining').textContent = `${Math.max(0, total-toDate).toLocaleString()} svcs`;
+    root.querySelector('#svc-db-earned-stat').textContent = `${toDate.toLocaleString()} svcs`;
+
+    const elapsedDays = Math.max(1, diffDaysSvc(asOf, today));
+    const addedSoFar = Math.max(0, toDate - earned);
+    const actualPerDay = addedSoFar>0 ? addedSoFar/elapsedDays : 0;
+    root.querySelector('#svc-db-rate').textContent = actualPerDay>0 ? `${actualPerDay.toFixed(1)} / day since your snapshot` : 'Not enough logged yet';
+
+    const remaining = Math.max(0, total-toDate);
+    const chipEl = root.querySelector('#svc-db-chip');
+    const dateEl = root.querySelector('#svc-db-date');
+    const neededEl = root.querySelector('#svc-db-needed');
+    let ringColor;
+    if (!total){
+      dateEl.textContent = 'Add your service numbers to begin';
+      neededEl.textContent = '—';
+      chipEl.textContent = 'Not set up yet'; chipEl.className = 'chip-status neutral';
+      ringColor = 'var(--line)';
+    } else if (remaining <= 0){
+      dateEl.textContent = 'All services complete';
+      neededEl.textContent = '—';
+      chipEl.textContent = 'Complete'; chipEl.className = 'chip-status good';
+      ringColor = 'var(--brass)';
+    } else if (!target){
+      dateEl.textContent = 'Set a target date to see your pace';
+      neededEl.textContent = '—';
+      chipEl.textContent = 'No target date'; chipEl.className = 'chip-status neutral';
+      ringColor = 'var(--line)';
+    } else {
+      const daysRemaining = diffDaysSvc(today, target);
+      const neededPerDay = daysRemaining>0 ? remaining/daysRemaining : Infinity;
+      neededEl.textContent = daysRemaining<=0 ? 'Target date has passed' : (isFinite(neededPerDay) ? `${neededPerDay.toFixed(1)} / day` : '—');
+      let onPace;
+      if (actualPerDay<=0){
+        // No log data yet to judge an actual rate against -- don't guess at
+        // behind/ahead, just show the target and wait for a first log entry.
+        onPace = daysRemaining > 0;
+        dateEl.textContent = daysRemaining>0 ? `Targeting ${fmtDateSvc(target)} — log a day to see your pace` : 'Target date has passed';
+      } else {
+        const daysToFinish = Math.ceil(remaining/actualPerDay);
+        const projected = new Date(today+'T00:00:00'); projected.setDate(projected.getDate()+daysToFinish);
+        const projectedStr = isoDateSvc(projected);
+        onPace = projectedStr <= target;
+        dateEl.textContent = fmtDateSvc(projectedStr) + ' projected';
+      }
+      chipEl.textContent = onPace ? 'On pace' : 'Behind pace';
+      chipEl.className = 'chip-status ' + (onPace ? 'good' : 'behind');
+      ringColor = onPace ? 'var(--brass)' : 'var(--behind)';
+    }
+    const ringFill = root.querySelector('#svc-ring-fill');
+    const ringCircumference = 2*Math.PI*50;
+    ringFill.style.strokeDashoffset = ringCircumference - (pct/100)*ringCircumference;
+    ringFill.style.stroke = ringColor;
+    const ringPctEl = root.querySelector('#svc-ring-pct');
+    ringPctEl.textContent = pct + '%';
+    ringPctEl.style.color = ringColor;
+    root.querySelector('#svc-db-note').textContent = (total && target) ? `Targeting ${fmtDateSvc(target)}` : '';
+  }
+
+  // Default the target date from the Hours tracker's projected graduation date
+  // whenever it's still empty -- checked every time the setup screen is shown
+  // (not just once at load) since a student might fill in Hours after Services,
+  // or vice versa. Never overwrites a target date the student already set.
+  function maybeAutofillTargetDate(){
+    if (root.querySelector('#svc-target').value) return;
+    const projected = (typeof window.__ahcProjectedGradDate === 'function') ? window.__ahcProjectedGradDate() : null;
+    if (!projected) return;
+    root.querySelector('#svc-target').value = projected;
+    svcSyncBeforeSave();
+    persistProfile({services:S()});
+  }
+  window.__ahcRefreshServicesTarget = maybeAutofillTargetDate;
+  function svcGoto(step){
+    root.querySelectorAll('#pace-mode-services .step-btn').forEach(b=> b.classList.toggle('active', b.dataset.svcGoto===step));
+    root.querySelectorAll('#pace-mode-services [data-svc-screen]').forEach(p=> p.classList.toggle('show', p.dataset.svcScreen===step));
+    if (step !== 'log' && sstate.editingLogId !== null) exitLogEditMode();
+    if (step === 'setup') maybeAutofillTargetDate();
+    if (step === 'dashboard') recalcServicesDashboard();
+    svcSyncBeforeSave();
+    persistProfile({services:S()});
+  }
+  root.querySelectorAll('#pace-mode-services [data-svc-goto]').forEach(el=> el.addEventListener('click', ()=> svcGoto(el.dataset.svcGoto)));
+
+  root.querySelector('#btn-svc-use-grad-date').addEventListener('click', ()=>{
+    const projected = (typeof window.__ahcProjectedGradDate === 'function') ? window.__ahcProjectedGradDate() : null;
+    if (!projected) { showToast("Add your hours on the Hours tab first"); return; }
+    root.querySelector('#svc-target').value = projected;
+    svcSyncBeforeSave();
+    persistProfile({services:S()});
+  });
+  root.querySelector('#svc-total').addEventListener('change', ()=>{ svcSyncBeforeSave(); persistProfile({services:S()}); });
+  root.querySelector('#svc-earned').addEventListener('change', ()=>{ svcSyncBeforeSave(); persistProfile({services:S()}); });
+  root.querySelector('#svc-asof').addEventListener('change', ()=>{ svcSyncBeforeSave(); persistProfile({services:S()}); });
+  root.querySelector('#svc-target').addEventListener('change', ()=>{ svcSyncBeforeSave(); persistProfile({services:S()}); });
+  root.querySelector('#btn-cancel-edit-svc-log').addEventListener('click', exitLogEditMode);
+  root.querySelector('#btn-add-svc-log').addEventListener('click', ()=>{
+    const date = root.querySelector('#svc-log-date').value || todayIsoSvc();
+    const count = parseFloat(root.querySelector('#svc-log-count').value)||0;
+    if (!date || count <= 0) return;
+    if (sstate.editingLogId){
+      const entry = (S().log||[]).find(x=> x.id===sstate.editingLogId);
+      if (entry){ entry.date = date; entry.count = count; }
+      exitLogEditMode();
+    } else {
+      S().log = S().log || [];
+      S().log.push({ id: newLogId(), date, count });
+      root.querySelector('#svc-log-count').value = '';
+    }
+    renderLog();
+    persistProfile({services:S()});
+  });
+
+  function svcSyncBeforeSave(){
+    S().total = parseFloat(root.querySelector('#svc-total').value)||0;
+    S().earned = parseFloat(root.querySelector('#svc-earned').value)||0;
+    S().asOf = root.querySelector('#svc-asof').value || todayIsoSvc();
+    S().targetDate = root.querySelector('#svc-target').value || null;
+  }
+
+  window.initServicesTab = function(){
+    root.querySelector('#svc-total').value = S().total || '';
+    root.querySelector('#svc-earned').value = S().earned || '';
+    root.querySelector('#svc-asof').value = S().asOf || todayIsoSvc();
+    root.querySelector('#svc-target').value = S().targetDate || '';
+    root.querySelector('#svc-log-date').value = todayIsoSvc();
+    renderLog();
+    svcGoto('setup');
+  };
 })();
 /* =========================================================
    COACH
@@ -6109,6 +6439,7 @@ function applyProfileRow(data){
   profile.createdAt = data.created_at || profile.createdAt;
   profile.updatedAt = data.updated_at || profile.updatedAt;
   profile.pace = Object.assign(defaultProfile().pace, data.pace||{});
+  profile.services = Object.assign(defaultProfile().services, data.services||{});
   profile.techniques = Array.isArray(data.techniques) && data.techniques.length ? data.techniques : defaultTechniques();
   profile.publicListing = !!data.public_listing;
   profile.shopCode = data.shop_code || null;
@@ -6206,6 +6537,7 @@ function enterApp(){
   document.getElementById('tb-title').textContent = tbTitleText();
   applyRoleVisibility();
   window.initPaceTab();
+  window.initServicesTab();
   window.initCoachTab();
   window.initConsultTab();
   window.initLedgerTab();
