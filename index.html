@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-24T18-08-07Z">
+<meta name="app-build" content="2026-09-24T18-13-01Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -898,6 +898,7 @@
             <p class="eyebrow-mini2" id="svc-log-form-title">Add today's services</p>
             <div class="input-row"><span class="suffix">Date</span><input id="svc-log-date" type="date"></div>
             <div class="input-row"><input id="svc-log-count" type="number" min="0" step="1" placeholder="e.g. 3"><span class="suffix">svcs</span></div>
+            <div class="input-row"><input id="svc-log-note" type="text" placeholder="e.g. Haircuts, beard trim" maxlength="120"></div>
             <button class="btn btn-primary" id="btn-add-svc-log" style="padding:10px;">+ Add entry</button>
             <button class="btn btn-ghost" id="btn-cancel-edit-svc-log" type="button" style="display:none; padding:10px;">Cancel</button>
           </div>
@@ -2869,6 +2870,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     return earned + added;
   }
 
+  function escapeHtmlSvc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function renderLog(){
     const list = root.querySelector('#svc-log-list');
     list.innerHTML = '';
@@ -2878,7 +2880,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const el = document.createElement('div');
       el.className = 'break-item';
       if (entry.id === sstate.editingLogId) el.style.borderColor = 'var(--brass)';
-      el.innerHTML = `<div class="bi-text"><span class="bi-label">${fmtSingleDateSvc(entry.date)}</span><span class="bi-range">${entry.count} service${entry.count===1?'':'s'}</span></div><div class="bi-actions"><button class="bi-edit" type="button" data-id="${entry.id}" aria-label="Edit this entry">Edit</button><button class="bi-remove" type="button" data-id="${entry.id}" aria-label="Remove this entry">&times;</button></div>`;
+      const countLabel = `${entry.count} service${entry.count===1?'':'s'}`;
+      const rangeLabel = entry.note ? `${countLabel} &middot; ${escapeHtmlSvc(entry.note)}` : countLabel;
+      el.innerHTML = `<div class="bi-text"><span class="bi-label">${fmtSingleDateSvc(entry.date)}</span><span class="bi-range">${rangeLabel}</span></div><div class="bi-actions"><button class="bi-edit" type="button" data-id="${entry.id}" aria-label="Edit this entry">Edit</button><button class="bi-remove" type="button" data-id="${entry.id}" aria-label="Remove this entry">&times;</button></div>`;
       list.appendChild(el);
     });
     list.querySelectorAll('.bi-edit').forEach(btn=> btn.addEventListener('click', e=> startEditLog(e.currentTarget.dataset.id)));
@@ -2896,6 +2900,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     sstate.editingLogId = id;
     root.querySelector('#svc-log-date').value = entry.date;
     root.querySelector('#svc-log-count').value = entry.count;
+    root.querySelector('#svc-log-note').value = entry.note || '';
     root.querySelector('#svc-log-form-title').textContent = 'Edit entry';
     root.querySelector('#btn-add-svc-log').textContent = 'Save changes';
     root.querySelector('#btn-cancel-edit-svc-log').style.display = '';
@@ -2905,6 +2910,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     sstate.editingLogId = null;
     root.querySelector('#svc-log-date').value = todayIsoSvc();
     root.querySelector('#svc-log-count').value = '';
+    root.querySelector('#svc-log-note').value = '';
     root.querySelector('#svc-log-form-title').textContent = "Add today's services";
     root.querySelector('#btn-add-svc-log').textContent = '+ Add entry';
     root.querySelector('#btn-cancel-edit-svc-log').style.display = 'none';
@@ -3021,15 +3027,17 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   root.querySelector('#btn-add-svc-log').addEventListener('click', ()=>{
     const date = root.querySelector('#svc-log-date').value || todayIsoSvc();
     const count = parseFloat(root.querySelector('#svc-log-count').value)||0;
+    const note = root.querySelector('#svc-log-note').value.trim();
     if (!date || count <= 0) return;
     if (sstate.editingLogId){
       const entry = (S().log||[]).find(x=> x.id===sstate.editingLogId);
-      if (entry){ entry.date = date; entry.count = count; }
+      if (entry){ entry.date = date; entry.count = count; entry.note = note; }
       exitLogEditMode();
     } else {
       S().log = S().log || [];
-      S().log.push({ id: newLogId(), date, count });
+      S().log.push({ id: newLogId(), date, count, note });
       root.querySelector('#svc-log-count').value = '';
+      root.querySelector('#svc-log-note').value = '';
     }
     renderLog();
     persistProfile({services:S()});
