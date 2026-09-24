@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-23T20-29-28Z">
+<meta name="app-build" content="2026-09-24T18-08-07Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -889,7 +889,7 @@
           <button class="btn btn-primary" data-svc-goto="log">Next: log services</button>
         </div>
         <div class="screen-body" data-svc-screen="log">
-          <p class="screen-sub">Log each day's completed services here &mdash; they add on top of the "completed so far" count above (only days after that date count, so nothing gets counted twice).</p>
+          <p class="screen-sub">Log each day's completed services here &mdash; every entry adds on top of the "completed so far" count above.</p>
           <div class="field">
             <label>Logged days</label>
             <div id="svc-log-list" style="display:flex; flex-direction:column; gap:8px;"></div>
@@ -2855,10 +2855,17 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   // "Completed to date" = the snapshot baseline plus every logged day after
   // the snapshot's date -- entries on or before it are assumed to already be
   // folded into the baseline, so they're left out here to avoid double-counting.
+  // "Completed to date" = the snapshot baseline plus every logged entry, full
+  // stop. Earlier this only counted entries dated strictly after the "as of"
+  // date, meant to avoid double-counting a baseline that already included
+  // that day -- but that silently dropped the single most common case: a
+  // student sets up today and logs today's count today, so the entry's date
+  // equals "as of" and got excluded, making the total look stuck. The
+  // baseline is a number the student typed in, never derived from the log,
+  // so there's no real double-counting risk here -- just add everything up.
   function completedToDate(){
     const earned = parseFloat(root.querySelector('#svc-earned').value)||0;
-    const asOf = root.querySelector('#svc-asof').value || todayIsoSvc();
-    const added = (S().log||[]).filter(e=> e.date > asOf).reduce((sum,e)=> sum + (e.count||0), 0);
+    const added = (S().log||[]).reduce((sum,e)=> sum + (e.count||0), 0);
     return earned + added;
   }
 
