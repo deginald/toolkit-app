@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-27T01-22-28Z">
+<meta name="app-build" content="2026-09-27T02-05-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -6309,7 +6309,13 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
     armedRemoveCode = null;
     try{
-      await supabaseClient.from('profiles').update({ shop_code: null, shop_role: null }).eq('code', removeCode);
+      // Removing a teammate touches THEIR profile row, not the caller's own --
+      // once profiles is locked down to "only your own row," a plain
+      // .update() here would be silently blocked. remove_shop_staff is a
+      // guarded database function that double-checks the caller is really
+      // this shop's owner before making that one cross-user change.
+      const { error } = await supabaseClient.rpc('remove_shop_staff', { target_code: removeCode });
+      if (error) throw error;
     }catch(err){ console.warn('remove team member failed', err); }
     renderTeamList();
   });
