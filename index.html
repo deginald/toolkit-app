@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-26T22-49-13Z">
+<meta name="app-build" content="2026-09-27T00-39-46Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -543,7 +543,7 @@
       </div>
       <div class="field">
         <label>Password</label>
-        <div class="input-row"><input id="auth-password" type="password" placeholder="At least 6 characters" autocomplete="new-password" minlength="6" required></div>
+        <div class="input-row"><input id="auth-password" type="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required></div>
         <p class="foot-note-small" id="auth-forgot-row" style="display:none;"><a href="#" id="auth-forgot-link" style="color:var(--brass);">Forgot password?</a></p>
       </div>
       <div class="field" id="auth-name-field">
@@ -613,11 +613,11 @@
       <form class="auth-form" id="recovery-form" style="width:100%; max-width:320px;">
         <div class="field">
           <label>New password</label>
-          <div class="input-row"><input id="recovery-password" type="password" placeholder="At least 6 characters" autocomplete="new-password" minlength="6" required></div>
+          <div class="input-row"><input id="recovery-password" type="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required></div>
         </div>
         <div class="field">
           <label>Confirm new password</label>
-          <div class="input-row"><input id="recovery-password-confirm" type="password" placeholder="Re-enter your new password" autocomplete="new-password" minlength="6" required></div>
+          <div class="input-row"><input id="recovery-password-confirm" type="password" placeholder="Re-enter your new password" autocomplete="new-password" minlength="8" required></div>
         </div>
         <button class="btn btn-primary" type="submit" id="recovery-submit-btn">Set new password</button>
         <p class="foot-note-small" id="recovery-note">&nbsp;</p>
@@ -6577,7 +6577,7 @@ document.getElementById('recovery-form').addEventListener('submit', async (e)=>{
   const submitBtn = document.getElementById('recovery-submit-btn');
   const pw = document.getElementById('recovery-password').value;
   const pwConfirm = document.getElementById('recovery-password-confirm').value;
-  if (pw.length < 6){ note.textContent = 'Use at least 6 characters.'; return; }
+  if (pw.length < 8){ note.textContent = 'Use at least 8 characters.'; return; }
   if (pw !== pwConfirm){ note.textContent = "Those passwords don't match."; return; }
   if (!dbAvailable){ note.textContent = "Live saving isn't connected right now."; return; }
   submitBtn.disabled = true;
