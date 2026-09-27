@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-27T09-38-22Z">
+<meta name="app-build" content="2026-09-27T09-52-17Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -440,33 +440,20 @@
   document.getElementById('ahc-gate-ios').addEventListener('click', function(){ setDevice('ios'); });
   document.getElementById('ahc-gate-android').addEventListener('click', function(){ setDevice('android'); });
   setDevice(/iPhone|iPad|iPod/i.test(navigator.userAgent || '') ? 'ios' : 'android');
-  // "Already have an account? Log in" -- lets someone skip straight past the
-  // install pitch into the login form. By the time someone can actually click
-  // this, the rest of the app has already loaded and run its own startup (it
-  // runs underneath this gate the whole time), so jump straight to the login
-  // form directly here rather than trying to flag it for that startup to notice --
-  // it already decided on some other screen before this click ever happened.
+  // "Already have an account? Log in" -- for someone who doesn't need the
+  // install pitch right now. This used to force the credentials form
+  // straight open, but that's not actually what "Log in" should mean here:
+  // the main app script is already running its own startup (boot ->
+  // continueBoot) underneath this gate the whole time, and that startup
+  // alone decides the right landing spot -- home/dashboard if this device
+  // already has a valid signed-in session, or the app's own home (role
+  // picker) screen if not, where a returning professional can tap
+  // "Professional" and get the ordinary login form themselves. So this link
+  // just gets out of the way and lets that happen, instead of jumping ahead
+  // of it into a screen that isn't right for either case.
   document.getElementById('ahc-gate-login-link').addEventListener('click', function(e){
     e.preventDefault();
     dismissGate();
-    try{
-      // The main app script has been running its own startup underneath this
-      // gate the whole time (continueBoot -> enterApp), so someone who's
-      // already logged in on this device may have already had their home
-      // screen loaded before they ever clicked this link -- in that case
-      // "Log in" should just reveal it, not force them through the login
-      // form again. #app-shell only ever goes from hidden to shown, inside
-      // enterApp(), once a real session + profile are confirmed.
-      var appShell = document.getElementById('app-shell');
-      if (appShell && !appShell.hidden){
-        return;
-      }
-      if (typeof window.showAuthScreen === 'function'){
-        window.showAuthScreen('returning');
-        var toggle = document.getElementById('auth-mode-toggle');
-        if (toggle) toggle.style.display = 'none';
-      }
-    }catch(err){}
   });
 })();
 </script>
