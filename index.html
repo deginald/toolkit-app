@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-27T02-13-45Z">
+<meta name="app-build" content="2026-09-27T02-39-01Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -2303,6 +2303,41 @@ async function clientCodeTaken(code){
   if (error) throw error;
   return !!data;
 }
+// Every place a professional writes to a client's record -- adding a visit,
+// saving hair notes, recording in-person photo consent -- goes through this
+// one guarded function instead of a direct table update. Stage 3 required a
+// real session for any client write; this (Stage 4) narrows the
+// professional side further, to only a real signed-in professional, and
+// only these specific fields -- closing the gap where another client's own
+// (anonymous) session could otherwise have edited a stranger's record
+// directly through the API. Pass only the fields you're changing; anything
+// left out keeps its current value.
+async function recordClientVisit(code, patch){
+  if (!dbAvailable) return null;
+  const { data, error } = await supabaseClient.rpc('record_client_visit', {
+    p_code: code,
+    p_visits: patch.visits !== undefined ? patch.visits : null,
+    p_hair_profile: patch.hairProfile !== undefined ? patch.hairProfile : null,
+    p_barber_codes: patch.barberCodes !== undefined ? patch.barberCodes : null,
+    p_photo_consent_record: patch.photoConsentRecord !== undefined ? patch.photoConsentRecord : null,
+    p_photo_consent_record_at: patch.photoConsentRecordAt !== undefined ? patch.photoConsentRecordAt : null,
+    p_photo_consent_marketing: patch.photoConsentMarketing !== undefined ? patch.photoConsentMarketing : null,
+    p_photo_consent_marketing_at: patch.photoConsentMarketingAt !== undefined ? patch.photoConsentMarketingAt : null
+  });
+  if (error) throw error;
+  return (Array.isArray(data) && data[0]) || null;
+}
+// "Hide this pro from book-again" is a low-stakes preference, not private
+// data, and it needs clearing from BOTH a professional recording a new
+// visit and a total stranger rebooking through the public directory (who
+// may not be signed in as anything but an anonymous session) -- so this
+// stays gated only on having a real session at all, same bar Stage 3 set
+// for the table in general, rather than requiring professional identity.
+async function clearHiddenBookAgain(code, barberCode){
+  if (!dbAvailable) return;
+  const { error } = await supabaseClient.rpc('clear_hidden_book_again', { p_code: code, p_barber_code: barberCode });
+  if (error) throw error;
+}
 function suggestClientCode(name){
   const first = (name||'').trim().split(/\s+/)[0] || '';
   const base = sanitizeCode(first) || 'client';
@@ -2320,11 +2355,7 @@ function toTitleCase(str){
 async function clearHiddenBookAgainForVisit(clientCode, barberCode){
   if (!dbAvailable || !clientCode || !barberCode) return;
   try{
-    const data = await getClientByCode(clientCode);
-    const hidden = Array.isArray(data && data.hidden_book_again) ? data.hidden_book_again : [];
-    if (!hidden.includes(barberCode)) return;
-    const updated = hidden.filter(c => c !== barberCode);
-    await supabaseClient.from('clients').update({ hidden_book_again: updated }).eq('code', clientCode);
+    await clearHiddenBookAgain(clientCode, barberCode);
   }catch(e){ console.warn('clear hidden book-again failed', e); }
 }
 /* =========================================================
@@ -3372,8 +3403,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         updatedVisits = (attachedClient.visits || []).concat([visit]);
         savedId = visit.id;
       }
-      const { error } = await supabaseClient.from('clients').update({ visits: updatedVisits, updated_at: new Date().toISOString() }).eq('code', attachedClient.code);
-      if (error) throw error;
+      await recordClientVisit(attachedClient.code, { visits: updatedVisits });
       attachedClient.visits = updatedVisits;
       cstate.savedVisitId = savedId;
       statusEl.textContent = 'Saved to their Hair Passport. You can still edit the notes and save again before logging out.';
@@ -3856,8 +3886,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const barberCodes = (attachedClient.barberCodes || []).includes(profileCode)
         ? attachedClient.barberCodes
         : (attachedClient.barberCodes || []).concat([profileCode]);
-      const { error } = await supabaseClient.from('clients').update({ visits: updatedVisits, hair_profile: hairProfile, barber_codes: barberCodes, updated_at: new Date().toISOString() }).eq('code', attachedClient.code);
-      if (error) throw error;
+      await recordClientVisit(attachedClient.code, { visits: updatedVisits, hairProfile: hairProfile, barberCodes: barberCodes });
       attachedClient.visits = updatedVisits;
       attachedClient.hairProfile = hairProfile;
       attachedClient.barberCodes = barberCodes;
@@ -4985,18 +5014,17 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (!dbAvailable){ saveStatus.textContent = "Live saving isn't connected right now."; return; }
     saveStatus.textContent = 'Saving…';
     const nowIso = new Date().toISOString();
-    const update = { photo_consent_record: recordChecked, photo_consent_marketing: marketingChecked };
+    const update = { photoConsentRecord: recordChecked, photoConsentMarketing: marketingChecked };
     // Only stamp a new consent date the moment it actually turns on -- unchecking
     // later doesn't erase the historical record of when it was first granted.
-    if (recordChecked && !bkLookupClient.photoConsentRecordAt) update.photo_consent_record_at = nowIso;
-    if (marketingChecked && !bkLookupClient.photoConsentMarketingAt) update.photo_consent_marketing_at = nowIso;
+    if (recordChecked && !bkLookupClient.photoConsentRecordAt) update.photoConsentRecordAt = nowIso;
+    if (marketingChecked && !bkLookupClient.photoConsentMarketingAt) update.photoConsentMarketingAt = nowIso;
     try{
-      const { error } = await supabaseClient.from('clients').update(update).eq('code', bkLookupClient.code);
-      if (error) throw error;
+      await recordClientVisit(bkLookupClient.code, update);
       bkLookupClient.photoConsentRecord = recordChecked;
       bkLookupClient.photoConsentMarketing = marketingChecked;
-      if (update.photo_consent_record_at) bkLookupClient.photoConsentRecordAt = update.photo_consent_record_at;
-      if (update.photo_consent_marketing_at) bkLookupClient.photoConsentMarketingAt = update.photo_consent_marketing_at;
+      if (update.photoConsentRecordAt) bkLookupClient.photoConsentRecordAt = update.photoConsentRecordAt;
+      if (update.photoConsentMarketingAt) bkLookupClient.photoConsentMarketingAt = update.photoConsentMarketingAt;
       root.querySelector('#bk-lookup-consent-form').style.display = 'none';
       renderBkLookupConsent();
     }catch(e){
@@ -5188,10 +5216,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         bkLookupActiveVisitId = visit.id;
       }
       const isNewVisit = !activeVisit;
-      const { error } = await supabaseClient.from('clients')
-        .update({ visits: updatedVisits, barber_codes: barberCodes, updated_at: new Date().toISOString() })
-        .eq('code', bkLookupClient.code);
-      if (error) throw error;
+      await recordClientVisit(bkLookupClient.code, { visits: updatedVisits, barberCodes: barberCodes });
       bkLookupClient.visits = updatedVisits;
       bkLookupClient.barberCodes = barberCodes;
       if (isNewVisit) clearHiddenBookAgainForVisit(bkLookupClient.code, profileCode);
