@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-27T00-39-46Z">
+<meta name="app-build" content="2026-09-27T00-54-53Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -6528,6 +6528,12 @@ function setAuthMode(mode){
     : "Enter the email and password you signed up with.";
   document.getElementById('auth-submit-btn').textContent = isNew ? 'Create my account' : 'Log in';
   document.getElementById('auth-password').setAttribute('autocomplete', isNew ? 'new-password' : 'current-password');
+  // The 8-character minimum only makes sense when someone is SETTING a
+  // password (signup). Logging in has to accept whatever password someone
+  // already has on file, including an older, shorter one from before this
+  // minimum existed -- so this field's minlength only applies in signup mode.
+  document.getElementById('auth-password').setAttribute('minlength', isNew ? '8' : '1');
+  document.getElementById('auth-password').setAttribute('placeholder', isNew ? 'At least 8 characters' : 'Your password');
   document.getElementById('auth-note').textContent = ' ';
   document.getElementById('auth-tos-note').style.display = isNew ? 'block' : 'none';
   updateAuthFieldVisibility();
