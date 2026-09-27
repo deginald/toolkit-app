@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-27T00-54-53Z">
+<meta name="app-build" content="2026-09-27T01-15-14Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -4022,7 +4022,15 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   const root = document.getElementById('tab-jobs');
   if (!root) return;
   function showScreen(name){ root.querySelectorAll('#jobs-browse-pane [data-screen]').forEach(el=> el.classList.toggle('show', el.dataset.screen===name)); }
-  root.querySelectorAll('[data-back]').forEach(btn=> btn.addEventListener('click', ()=> showScreen(btn.dataset.back)));
+  // A reply opened from the Messages tab borrows the Browse pane's detail
+  // screen (see openReplyScreen below), so its back arrow needs to return
+  // there instead of to the Browse dashboard -- everywhere else, data-back
+  // just means "show this screen in the Browse pane" as usual.
+  let replyInProgress = false;
+  root.querySelectorAll('[data-back]').forEach(btn=> btn.addEventListener('click', ()=>{
+    if (replyInProgress){ replyInProgress = false; showJobsMode('messages'); return; }
+    showScreen(btn.dataset.back);
+  }));
 
   function jobsListingId(type){ return profileCode + '::' + type; }
   function escapeHtml(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -4149,8 +4157,44 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     `;
   }
   let detailListing = null;
+  let lastLoadedMessages = [];
+  function openReplyScreen(msg){
+    // A reply re-uses the same detail screen and send-message box as a
+    // normal listing message -- btn-jobs-send-message doesn't care whether
+    // detailListing came from browsing a listing or from replying to an
+    // inbox message, only that it has an id (for listing_id) and a
+    // profile_code (who it goes to).
+    detailListing = { id: msg.listing_id, profile_code: msg.from_profile_code, type: 'reply' };
+    // The detail screen lives in the Browse pane, so switch there first --
+    // needed because Reply is launched from the Messages pane, unlike the
+    // normal listing-detail flow which is already in Browse when it opens.
+    root.querySelectorAll('.jobs-pane').forEach(p=> p.classList.toggle('show', p.dataset.jobs==='browse'));
+    root.querySelectorAll('#jobs-mode-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.jobsMode==='browse'));
+    replyInProgress = true;
+    const nameEl = root.querySelector('#jobs-detail-screen .walk-name');
+    if (nameEl) nameEl.textContent = 'Reply';
+    const body = root.querySelector('#jobs-detail-body');
+    body.innerHTML = `
+      <h2 class="screen-title" style="margin:0; text-align:center;">Reply to ${escapeHtml(msg.from_name || 'this person')}</h2>
+      <p class="screen-sub" style="text-align:center;">Their message: &ldquo;${escapeHtml(msg.message)}&rdquo;</p>
+    `;
+    const msgBox = root.querySelector('#jobs-message-box');
+    msgBox.style.display = 'flex';
+    root.querySelector('#jobs-message-text').value = '';
+    root.querySelector('#jobs-message-status').textContent = ' ';
+    showScreen('detail');
+  }
+  root.querySelector('#jobs-messages-list').addEventListener('click', (e)=>{
+    const replyId = e.target.dataset.replyId;
+    if (!replyId) return;
+    const msg = lastLoadedMessages.find(m=> m.id === replyId);
+    if (msg) openReplyScreen(msg);
+  });
   function openListingDetail(listing){
     detailListing = listing;
+    replyInProgress = false;
+    const nameEl = root.querySelector('#jobs-detail-screen .walk-name');
+    if (nameEl) nameEl.textContent = 'Listing';
     const body = root.querySelector('#jobs-detail-body');
     if (listing.type === 'looking'){
       body.innerHTML = renderLookingDetailHtml(listing);
@@ -4394,6 +4438,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const { data, error } = await supabaseClient.from('job_messages').select('*').eq('to_profile_code', profileCode);
       if (error) throw error;
       const rows = (data || []).slice().sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+      lastLoadedMessages = rows;
       if (!rows.length){
         listEl.innerHTML = '';
         emptyEl.style.display = 'block';
@@ -4403,6 +4448,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
           <strong>${escapeHtml(m.from_name || 'Someone')}</strong>
           <span style="margin:0;">${escapeHtml(m.message)}</span>
           <span class="foot-note-small" style="margin:0;">${escapeHtml(new Date(m.created_at).toLocaleDateString())}</span>
+          <button type="button" class="link-btn" data-reply-id="${escapeHtml(m.id)}" style="align-self:flex-start; padding:0; margin-top:2px;">Reply</button>
         </div>`).join('');
       }
       const unread = rows.filter(m=> !m.read);
