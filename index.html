@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-27T01-15-14Z">
+<meta name="app-build" content="2026-09-27T01-22-28Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -4184,11 +4184,31 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#jobs-message-status').textContent = ' ';
     showScreen('detail');
   }
-  root.querySelector('#jobs-messages-list').addEventListener('click', (e)=>{
+  let armedDeleteMsgId = null;
+  root.querySelector('#jobs-messages-list').addEventListener('click', async (e)=>{
     const replyId = e.target.dataset.replyId;
-    if (!replyId) return;
-    const msg = lastLoadedMessages.find(m=> m.id === replyId);
-    if (msg) openReplyScreen(msg);
+    if (replyId){
+      const msg = lastLoadedMessages.find(m=> m.id === replyId);
+      if (msg) openReplyScreen(msg);
+      return;
+    }
+    const deleteId = e.target.dataset.deleteId;
+    if (deleteId){
+      // Same "tap again to confirm" pattern used for removing a shop team
+      // member -- a plain single tap can't permanently delete something.
+      if (armedDeleteMsgId !== deleteId){
+        armedDeleteMsgId = deleteId;
+        e.target.textContent = 'Tap again to delete';
+        setTimeout(()=>{ if (armedDeleteMsgId === deleteId){ armedDeleteMsgId = null; loadMessages(); } }, 4000);
+        return;
+      }
+      armedDeleteMsgId = null;
+      try{
+        const { error } = await supabaseClient.from('job_messages').delete().eq('id', deleteId);
+        if (error) throw error;
+      }catch(err){ console.warn('delete job message failed', err); }
+      loadMessages();
+    }
   });
   function openListingDetail(listing){
     detailListing = listing;
@@ -4448,7 +4468,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
           <strong>${escapeHtml(m.from_name || 'Someone')}</strong>
           <span style="margin:0;">${escapeHtml(m.message)}</span>
           <span class="foot-note-small" style="margin:0;">${escapeHtml(new Date(m.created_at).toLocaleDateString())}</span>
-          <button type="button" class="link-btn" data-reply-id="${escapeHtml(m.id)}" style="align-self:flex-start; padding:0; margin-top:2px;">Reply</button>
+          <div style="display:flex; gap:16px; margin-top:2px;">
+            <button type="button" class="link-btn" data-reply-id="${escapeHtml(m.id)}" style="padding:0;">Reply</button>
+            <button type="button" class="link-btn" data-delete-id="${escapeHtml(m.id)}" style="padding:0; color:var(--behind);">Delete</button>
+          </div>
         </div>`).join('');
       }
       const unread = rows.filter(m=> !m.read);
