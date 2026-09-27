@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect: Find a Pro</title>
-<meta name="app-build" content="2026-09-23T17-30-47Z">
+<meta name="app-build" content="2026-09-27T02-13-45Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -331,6 +331,42 @@ try{
 }catch(e){ supabaseClient = null; }
 
 const dbAvailable = !!supabaseClient;
+// Every visitor to the public directory gets a real (if anonymous) Supabase
+// Auth session as soon as the page loads -- invisible to them, no email or
+// password -- so a booking or a passport lookup carries an actual session
+// rather than just the page's public API key. See client_login/
+// lookup_client_public in the Stage 3 RLS migration for what this unlocks.
+async function ensureAnonSession(){
+  if (!dbAvailable) return;
+  try{
+    const { data } = await supabaseClient.auth.getSession();
+    if (data && data.session) return;
+    await supabaseClient.auth.signInAnonymously();
+  }catch(e){ console.warn('anonymous sign-in failed', e); }
+}
+async function currentAuthUid(){
+  try{
+    const { data } = await supabaseClient.auth.getSession();
+    return (data && data.session && data.session.user && data.session.user.id) || null;
+  }catch(e){ return null; }
+}
+// Minimal, name-only lookup for a total stranger booking from the public
+// directory -- goes through a guarded database function rather than an open
+// "read any client row" policy, so a booking visitor can find their own
+// passport by code without that same open door letting anyone dump every
+// client's contact info and history from the database at once.
+async function lookupClientPublic(code){
+  if (!dbAvailable) return null;
+  const { data, error } = await supabaseClient.rpc('lookup_client_public', { p_code: code });
+  if (error) throw error;
+  return (Array.isArray(data) && data[0]) || null;
+}
+async function clientCodeTaken(code){
+  if (!dbAvailable) return false;
+  const { data, error } = await supabaseClient.rpc('client_code_taken', { p_code: code });
+  if (error) throw error;
+  return !!data;
+}
 const CATEGORIES = [
   { key:'professionalism', label:'Professionalism' },
   { key:'skill', label:'Skill' },
@@ -732,8 +768,7 @@ function genId(){ return Date.now().toString(36) + Math.random().toString(36).sl
 async function clearHiddenBookAgain(clientCode, barberCode){
   if (!dbAvailable || !clientCode || !barberCode) return;
   try{
-    const { data, error } = await supabaseClient.from('clients').select('hidden_book_again').eq('code', clientCode).maybeSingle();
-    if (error) throw error;
+    const data = await lookupClientPublic(clientCode);
     const hidden = Array.isArray(data && data.hidden_book_again) ? data.hidden_book_again : [];
     if (!hidden.includes(barberCode)) return;
     const updated = hidden.filter(c => c !== barberCode);
@@ -932,8 +967,7 @@ async function bkcLookupClient(){
   if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
   statusEl.textContent = 'Looking up…';
   try{
-    const { data, error } = await supabaseClient.from('clients').select('*').eq('code', code).maybeSingle();
-    if (error) throw error;
+    const data = await lookupClientPublic(code);
     if (data){
       bkc.client = { code, name: toTitleCase(data.name) || 'Client' };
       statusEl.textContent = '';
@@ -994,10 +1028,10 @@ document.getElementById('btn-bkc-client-create').addEventListener('click', async
   statusEl.textContent = 'Checking that code…';
   const titleName = toTitleCase(name);
   try{
-    const { data: existing, error: checkErr } = await supabaseClient.from('clients').select('code').eq('code', code).maybeSingle();
-    if (checkErr) throw checkErr;
-    if (existing){ statusEl.textContent = 'That code is already taken. Try another.'; return; }
-    const { error } = await supabaseClient.from('clients').insert({ code, name: titleName, visits: [], phone });
+    const taken = await clientCodeTaken(code);
+    if (taken){ statusEl.textContent = 'That code is already taken. Try another.'; return; }
+    const uid = await currentAuthUid();
+    const { error } = await supabaseClient.from('clients').insert({ code, name: titleName, visits: [], phone, user_id: uid || null });
     if (error) throw error;
   }catch(e){
     console.warn('create client failed', e);
@@ -1167,6 +1201,7 @@ document.getElementById('btn-install-nudge-dismiss').addEventListener('click', (
 
 async function boot(){
   updateInstallNudgeBanner();
+  await ensureAnonSession();
   if (!dbAvailable){
     document.getElementById('loading-screen').hidden = true;
     document.getElementById('list-screen').hidden = false;

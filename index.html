@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-27T02-05-00Z">
+<meta name="app-build" content="2026-09-27T02-13-45Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -2282,6 +2282,27 @@ function sanitizeCode(raw){
   if (c.length > 60) c = c.slice(0,60);
   return c;
 }
+// A client's passport is meant to be pulled up by any signed-in professional
+// who has their code -- that's the whole point of the code. Rather than an
+// open "read any client row" policy (which would let anyone holding the
+// public API key download every client's contact info and history at once),
+// this goes through a guarded database function that only returns a single
+// row for the exact code given, and only to a real, signed-in professional
+// (or the client's own linked session).
+async function getClientByCode(code){
+  if (!dbAvailable) return null;
+  const { data, error } = await supabaseClient.rpc('get_client_by_code', { p_code: code });
+  if (error) throw error;
+  return (Array.isArray(data) && data[0]) || null;
+}
+// Side-effect-free existence check, for picking a code for a brand-new
+// walk-in client (never claims/links anything).
+async function clientCodeTaken(code){
+  if (!dbAvailable) return false;
+  const { data, error } = await supabaseClient.rpc('client_code_taken', { p_code: code });
+  if (error) throw error;
+  return !!data;
+}
 function suggestClientCode(name){
   const first = (name||'').trim().split(/\s+/)[0] || '';
   const base = sanitizeCode(first) || 'client';
@@ -2299,8 +2320,7 @@ function toTitleCase(str){
 async function clearHiddenBookAgainForVisit(clientCode, barberCode){
   if (!dbAvailable || !clientCode || !barberCode) return;
   try{
-    const { data, error } = await supabaseClient.from('clients').select('hidden_book_again').eq('code', clientCode).maybeSingle();
-    if (error) throw error;
+    const data = await getClientByCode(clientCode);
     const hidden = Array.isArray(data && data.hidden_book_again) ? data.hidden_book_again : [];
     if (!hidden.includes(barberCode)) return;
     const updated = hidden.filter(c => c !== barberCode);
@@ -3523,8 +3543,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
     statusEl.textContent = 'Looking up…';
     try{
-      const { data, error } = await supabaseClient.from('clients').select('*').eq('code', code).maybeSingle();
-      if (error) throw error;
+      const data = await getClientByCode(code);
       if (data){
         attachedClient = { code, name: data.name || 'Client', visits: Array.isArray(data.visits) ? data.visits : [], hairProfile: data.hair_profile || null, barberCodes: Array.isArray(data.barber_codes) ? data.barber_codes : [] };
         statusEl.textContent = '';
@@ -3667,9 +3686,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (!dbAvailable){ statusEl.textContent = "Live save isn't connected right now."; return; }
     statusEl.textContent = 'Checking that code…';
     try{
-      const { data: existing, error: checkErr } = await supabaseClient.from('clients').select('code').eq('code', code).maybeSingle();
-      if (checkErr) throw checkErr;
-      if (existing){ statusEl.textContent = 'That code is already taken. Try another.'; return; }
+      const taken = await clientCodeTaken(code);
+      if (taken){ statusEl.textContent = 'That code is already taken. Try another.'; return; }
       const { error } = await supabaseClient.from('clients').insert({ code, name, visits: [] });
       if (error) throw error;
     }catch(e){
@@ -4997,8 +5015,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
     statusEl.textContent = 'Looking up…';
     try{
-      const { data, error } = await supabaseClient.from('clients').select('*').eq('code', code).maybeSingle();
-      if (error) throw error;
+      const data = await getClientByCode(code);
       if (!data){ statusEl.textContent = 'No client found with that code.'; return; }
       bkLookupClient = {
         code,
@@ -5282,8 +5299,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
     statusEl.textContent = 'Looking up…';
     try{
-      const { data, error } = await supabaseClient.from('clients').select('*').eq('code', code).maybeSingle();
-      if (error) throw error;
+      const data = await getClientByCode(code);
       if (data){
         manualClient = { code, name: toTitleCase(data.name) || 'Client' };
         statusEl.textContent = '';
@@ -5426,9 +5442,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (!dbAvailable){ statusEl.textContent = "Live save isn't connected right now."; return; }
     statusEl.textContent = 'Checking that code…';
     try{
-      const { data: existing, error: checkErr } = await supabaseClient.from('clients').select('code').eq('code', code).maybeSingle();
-      if (checkErr) throw checkErr;
-      if (existing){ statusEl.textContent = 'That code is already taken. Try another.'; return; }
+      const taken = await clientCodeTaken(code);
+      if (taken){ statusEl.textContent = 'That code is already taken. Try another.'; return; }
       const { error } = await supabaseClient.from('clients').insert({ code, name, visits: [] });
       if (error) throw error;
     }catch(e){
