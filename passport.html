@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect: Hair Passport</title>
-<meta name="app-build" content="2026-09-27T02-13-45Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -39,20 +38,15 @@
     -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; }
   .brand-name{ font-size:12px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--ink); margin:6px 0 0; }
 
-  #app-root{ max-width:460px; margin:0 auto; min-height:100vh; min-height:100svh; display:flex; flex-direction:column; background:var(--bg-gradient); box-shadow:0 0 0 1px var(--line); }
+  #app-root{ max-width:460px; margin:0 auto; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; background:var(--bg-gradient); box-shadow:0 0 0 1px var(--line); }
   .center-screen{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; gap:14px; text-align:center; }
-  .center-screen.has-float-back{ position:relative; padding-top:max(64px, calc(env(safe-area-inset-top) + 56px)); }
-  .float-back-btn{ position:absolute; top:max(16px, calc(env(safe-area-inset-top) + 12px)); left:20px; margin:0; z-index:2; }
 
   .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:16px 20px; padding-top:max(16px, calc(env(safe-area-inset-top) + 12px)); border-bottom:1px solid var(--line); }
   .topbar .tb-name{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; }
   .topbar .tb-sub{ font-size:12px; color:var(--muted); font-weight:600; }
   .link-btn{ border:none; background:transparent; color:var(--brass); font-family:'Public Sans',sans-serif; font-weight:700; font-size:12.5px; cursor:pointer; padding:6px 0; }
-  .banner{ font-size:12.5px; padding:10px 16px; text-align:center; background:var(--brass-tint); color:var(--ink); border-bottom:1px solid var(--line); }
-  .banner.action{ display:flex; align-items:center; justify-content:space-between; gap:12px; text-align:left; }
-  .banner.action .link-btn{ flex:none; white-space:nowrap; }
 
-  #passport-shell{ display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100svh; }
+  #passport-shell{ display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100dvh; }
   .content{ flex:1; overflow-y:auto; padding:20px 20px 32px; display:flex; flex-direction:column; gap:18px; }
 
   .field{ display:flex; flex-direction:column; gap:6px; min-width:0; }
@@ -106,7 +100,6 @@
   .vc-notes-preview{ font-size:12px; color:var(--muted); line-height:1.4; }
   .service-tag{ display:inline-flex; width:fit-content; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; padding:3px 8px; border-radius:999px; background:var(--brass-tint); color:var(--brass); }
 
-
   .walk-header{ display:flex; align-items:center; gap:10px; }
   .back-btn{ background:var(--paper); border:1px solid var(--line); width:32px; height:32px; border-radius:9px; font-size:16px; color:var(--ink); cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
 
@@ -137,17 +130,61 @@
 
 <div id="app-root">
 
-  <div id="update-available-banner" class="banner action" hidden style="padding-top:max(10px, calc(env(safe-area-inset-top) + 10px));">
-    <span>A new version of the app is available.</span>
-    <button type="button" class="link-btn" id="btn-update-refresh">Refresh</button>
-  </div>
-
   <div id="loading-screen" class="center-screen">
     <p class="eyebrow-mini">Loading&hellip;</p>
   </div>
 
-  <div id="auth-screen" class="center-screen has-float-back" hidden>
-    <button type="button" class="link-btn float-back-btn" id="btn-auth-back">&larr; Back</button>
+  <div id="nda-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100dvh;">
+    <header class="topbar" style="justify-content:center;">
+      <div class="tb-name">Before you continue</div>
+    </header>
+    <main class="content">
+      <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
+        <img src="logo.png" alt="All Hair Connect" style="width:76px; height:76px;">
+        <p class="brand-name">All Hair Connect</p>
+      </div>
+      <div>
+        <p class="eyebrow-mini">Beta program</p>
+        <h2 class="screen-title" style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:19px; margin:4px 0 6px;">Non-Disclosure &amp; User Agreement</h2>
+        <p class="screen-sub">This app is an early beta test. Please read and accept the agreement below before continuing. It protects both you and the real people whose information you may see while testing.</p>
+      </div>
+      <div id="nda-text" style="max-height:320px; overflow-y:auto; border:1px solid var(--line); border-radius:10px; background:var(--paper); padding:14px; font-size:12.5px; line-height:1.6; color:var(--ink); text-align:left;">
+        <p style="margin:0 0 10px;"><strong>In plain terms:</strong> by continuing, you agree to keep what you see in this beta, including its features, how it works, and any other person's private information you come across, to yourself, and to understand this is a work in progress that could have bugs or lose data. The full terms below are what actually govern your use.</p>
+        <p style="margin:0 0 10px;">This Beta Program Non-Disclosure and User Agreement ("Agreement") is between All Hair Connect ("AHC," "Company," "we," "us," or "our") and the individual accepting this Agreement to access the app ("you," "your," or "Beta Tester"). By checking the box below and continuing, you accept and agree to be bound by it.</p>
+        <p style="margin:14px 0 4px;"><strong>1. Background and purpose.</strong></p>
+        <p style="margin:0 0 10px;">All Hair Connect (the "App") is a pre-release, invitation-based beta version of a barbering and cosmetology platform, including the professional/student toolkit, the client-facing Hair Passport, and the Find a Pro public directory. It is provided solely so you may test, evaluate, and give feedback on it. It is not a finished, commercial product, and your access does not make you a customer, employee, partner, or agent of the Company.</p>
+        <p style="margin:14px 0 4px;"><strong>2. Confidential information.</strong></p>
+        <p style="margin:0 0 10px;">"Confidential Information" means any non-public information disclosed to you or that you observe through your use of the App, including: the App's existence as an unreleased or beta product and any features not yet public; business, marketing, and monetization plans; the App's underlying design, source code, database structure, and technical implementation; security practices and access credentials; and any other information a reasonable person would understand to be confidential. It does not include information that is or becomes public through no fault of yours, that you already lawfully knew, that you independently developed, or that you rightfully receive from someone else without a duty of confidentiality.</p>
+        <p style="margin:14px 0 4px;"><strong>3. Your obligations.</strong></p>
+        <p style="margin:0 0 10px;">You agree to keep Confidential Information strictly confidential; use it only to test and evaluate the App for the Company's benefit; not copy, screenshot, record, publish, or post any part of the App publicly (except to privately report a bug or feedback to the Company); not reverse engineer or extract its source code or structure; and take reasonable care to protect it, at least as much care as you'd use with your own confidential information.</p>
+        <p style="margin:14px 0 4px;"><strong>4. Other users' personal information.</strong></p>
+        <p style="margin:0 0 10px;">You may see real personal information belonging to other people, such as a client's visit history, a professional's license information, or another user's contact details. You agree to treat this as strictly confidential, access it only as needed to provide or receive an actual service through the App, and never use it for marketing or any other purpose. You agree not to attempt to identify an anonymous reviewer on Find a Pro.</p>
+        <p style="margin:14px 0 4px;"><strong>5. Feedback.</strong></p>
+        <p style="margin:0 0 10px;">Any feedback, bug reports, or suggestions you send may be used, shared, and built on by the Company for any purpose, without payment or attribution to you.</p>
+        <p style="margin:14px 0 4px;"><strong>6. Beta software; no warranty.</strong></p>
+        <p style="margin:0 0 10px;">The App is an early-stage beta provided "as is" and "as available," without warranties of any kind. It may contain bugs, be unavailable at times, or lose, corrupt, or alter data. Don't rely on it as your sole or official record of hours, licensure progress, or client history during the beta period.</p>
+        <p style="margin:14px 0 4px;"><strong>7. Limitation of liability.</strong></p>
+        <p style="margin:0 0 10px;">To the fullest extent permitted by law, the Company is not liable for indirect, incidental, special, or consequential damages, or for lost data, arising from your use of the App during the beta program.</p>
+        <p style="margin:14px 0 4px;"><strong>8. Ownership; no license.</strong></p>
+        <p style="margin:0 0 10px;">The App and all Confidential Information remain the sole property of the Company. This Agreement gives you no ownership interest, only a limited, revocable right to access the App for beta testing.</p>
+        <p style="margin:14px 0 4px;"><strong>9. Term.</strong></p>
+        <p style="margin:0 0 10px;">This Agreement takes effect when you accept it and continues for as long as you have access to the App. Your confidentiality obligations survive after your access ends or the beta concludes, for as long as the information remains confidential.</p>
+        <p style="margin:14px 0 4px;"><strong>10. Who may agree to this.</strong></p>
+        <p style="margin:0 0 10px;">By accepting, you represent you are at least 18 years old and have the legal capacity to enter into a binding agreement. If you are under 18, a parent or legal guardian must contact the Company directly to arrange your participation.</p>
+        <p style="margin:14px 0 4px;"><strong>11. Governing law.</strong></p>
+        <p style="margin:0 0 10px;">This Agreement is governed by the laws of the State of North Carolina.</p>
+        <p style="margin:14px 0 0;"><strong>12. Changes.</strong> The Company may update this Agreement as the beta evolves; you'll be asked to review and accept any updated terms the next time you access the App.</p>
+      </div>
+      <label class="check-row">
+        <input type="checkbox" id="nda-agree-checkbox">
+        <span>I have read and agree to the Beta Program Non-Disclosure &amp; User Agreement</span>
+      </label>
+      <button class="btn btn-primary" id="btn-nda-continue" type="button" disabled>Continue</button>
+    </main>
+  </div>
+
+  <div id="auth-screen" class="center-screen" hidden>
+    <button type="button" class="link-btn" id="btn-auth-back" style="align-self:flex-start; margin:-8px 0 -4px; padding:6px 0;">&larr; Back</button>
     <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:-4px;">
       <img src="logo.png" alt="All Hair Connect" style="width:90px; height:90px;">
       <p class="brand-name">All Hair Connect</p>
@@ -155,7 +192,7 @@
     <div>
       <p class="eyebrow-mini">Hair Passport</p>
       <h2 class="screen-title" id="auth-heading">First time here</h2>
-      <p class="screen-sub" style="margin-top:6px;" id="auth-subhead">Pick a name and a personal code of your own. Give that code to any barber or stylist and they can pull up your visits. Add an email below so you can always get your code back if you lose it.</p>
+      <p class="screen-sub" style="margin-top:6px;" id="auth-subhead">Pick a name and a personal code of your own. Give that code to any barber or stylist and they can pull up your visits. There's no password reset, so keep it somewhere you'll remember.</p>
     </div>
     <div class="mode-toggle" style="width:100%; max-width:320px;">
       <button type="button" class="mode-btn active" id="btn-auth-mode-new">First time</button>
@@ -170,23 +207,10 @@
         <label>Personal code</label>
         <div class="input-row"><input id="auth-code" type="text" placeholder="e.g. jordan-2026" autocomplete="off" required></div>
       </div>
-      <div class="field" id="auth-email-field">
-        <label>Email <span style="text-transform:none; font-weight:600;">(optional)</span></label>
-        <div class="input-row"><input id="auth-email" type="email" placeholder="e.g. jordan@email.com" autocomplete="email"></div>
-        <p class="foot-note-small">Lets you recover your code later if you lose it. Never shown to your barber.</p>
-      </div>
       <button class="btn btn-primary" type="submit" id="auth-submit-btn">Create my passport</button>
-      <p class="foot-note-small" id="auth-tos-note" style="text-align:center;">By creating a passport, you agree to our <a href="terms.html" target="_blank" style="color:var(--brass);">Terms of Service</a> and <a href="privacy.html" target="_blank" style="color:var(--brass);">Privacy Policy</a>.</p>
       <p class="foot-note-small" id="auth-error" style="color:var(--behind); margin:0;">&nbsp;</p>
       <p class="foot-note-small" id="auth-note">&nbsp;</p>
     </form>
-    <button type="button" class="link-btn" id="btn-forgot-code" style="display:none; margin-top:-6px;">Forgot your code?</button>
-    <div id="forgot-code-panel" style="display:none; flex-direction:column; gap:10px; width:100%; max-width:320px; text-align:left;">
-      <p class="screen-sub" style="margin:0;">If you saved a recovery email before, we'll send your code there.</p>
-      <div class="input-row"><input id="forgot-code-email" type="email" placeholder="Your email" autocomplete="email"></div>
-      <button class="btn btn-outline" id="btn-forgot-code-send" type="button">Email me my code</button>
-      <p class="foot-note-small" id="forgot-code-status">&nbsp;</p>
-    </div>
   </div>
 
   <div id="passport-shell" hidden>
@@ -201,20 +225,6 @@
         <button class="link-btn" id="btn-switch-profile">Log Out</button>
       </div>
     </header>
-    <div id="notif-nudge-banner" class="banner action" hidden>
-      <span>Turn on notifications so you don't miss a message from your barber.</span>
-      <span style="display:flex; gap:14px; flex:none;">
-        <button type="button" class="link-btn" id="btn-notif-nudge-open">Turn on</button>
-        <button type="button" class="link-btn" id="btn-notif-nudge-dismiss">Dismiss</button>
-      </span>
-    </div>
-    <div id="install-nudge-banner" class="banner action" hidden>
-      <span>Add your Hair Passport to your home screen for quick access.</span>
-      <span style="display:flex; gap:14px; flex:none;">
-        <button type="button" class="link-btn" id="btn-install-nudge-open">Add</button>
-        <button type="button" class="link-btn" id="btn-install-nudge-dismiss">Dismiss</button>
-      </span>
-    </div>
 
     <main class="content">
 
@@ -257,7 +267,7 @@
 
       <div class="screen-body" data-screen="detail">
         <div class="walk-header">
-          <button class="back-btn" id="btn-back-home" aria-label="Back">&larr;</button>
+          <button class="back-btn" id="btn-back-home">&larr;</button>
           <div><div class="vc-date" id="detail-date">&nbsp;</div></div>
         </div>
         <div class="detail-photos" id="detail-photos"></div>
@@ -317,91 +327,15 @@
 
       <div class="screen-body" data-screen="account">
         <div class="walk-header">
-          <button class="back-btn" id="btn-back-home-from-account" aria-label="Back">&larr;</button>
+          <button class="back-btn" id="btn-back-home-from-account">&larr;</button>
           <div><div class="vc-date">Account</div></div>
         </div>
-        <div id="add-home-screen-section">
-          <p class="eyebrow-mini">Quick access</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Add to Home Screen</h2>
-          <p class="screen-sub">Install your Hair Passport like an app &mdash; faster to open, and full-screen with no browser bar.</p>
-          <button type="button" class="btn btn-primary" id="btn-install-app" style="display:none; margin-top:10px; width:100%;">Install on this device</button>
-          <div class="mode-toggle" style="margin-top:10px;">
-            <button type="button" class="mode-btn" id="btn-add-home-ios">iPhone</button>
-            <button type="button" class="mode-btn" id="btn-add-home-android">Android</button>
-          </div>
-          <div id="add-home-steps-ios" style="display:none; flex-direction:column; margin-top:8px;">
-            <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the Share icon (the square with an arrow pointing up) in Safari's toolbar.<br>2. Scroll down and tap "Add to Home Screen."<br>3. Tap "Add" in the top right.</p>
-          </div>
-          <div id="add-home-steps-android" style="display:none; flex-direction:column; margin-top:8px;">
-            <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the three-dot menu in the top right of Chrome.<br>2. Tap "Add to Home screen" or "Install app."<br>3. Tap "Add" or "Install" to confirm.</p>
-          </div>
-        </div>
         <div style="border-top:1px solid var(--line); padding-top:16px;">
-          <p class="eyebrow-mini">Support</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Questions or feedback?</h2>
-          <p class="screen-sub">Found a bug or have an idea? Email <a href="mailto:allhairconnect@gmail.com" style="color:var(--brass);">allhairconnect@gmail.com</a> any time.</p>
-        </div>
-        <div style="border-top:1px solid var(--line); padding-top:16px;">
-          <p class="eyebrow-mini">Your name</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Edit your name</h2>
-          <p class="screen-sub">Fix a typo or update how your name shows to your barber.</p>
-          <div class="input-row" style="margin-top:10px;"><input id="account-name" type="text" placeholder="e.g. Jordan Smith" autocomplete="name"></div>
-          <button class="btn btn-primary" id="btn-save-name" type="button" style="margin-top:10px;">Save name</button>
-          <p class="foot-note-small" id="account-name-status">&nbsp;</p>
-        </div>
-        <div style="border-top:1px solid var(--line); padding-top:16px;">
-          <p class="eyebrow-mini">Communication preferences</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Appointment &amp; service messages</h2>
+          <p class="eyebrow-mini">Notifications</p>
+          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Quick message alerts</h2>
           <p class="screen-sub">Turn this on to get notified when your barber sends you a quick message about an appointment, and to send them one yourself. No phone number needed.</p>
-          <div id="ios-homescreen-tip" style="display:none; flex-direction:column; gap:6px; padding:12px 14px; border-radius:10px; background:var(--brass-tint); border:1px solid var(--brass);">
-            <p class="screen-sub" style="margin:0;"><strong>On an iPhone, notifications only work once this is added to your Home Screen.</strong> Safari can't turn them on from inside a regular browser tab.</p>
-            <button type="button" class="link-btn" id="btn-ios-homescreen-steps" style="padding:0; align-self:flex-start;">See how</button>
-            <div id="ios-homescreen-steps" style="display:none; flex-direction:column;">
-              <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the Share icon (the square with an arrow pointing up) in Safari's toolbar.<br>2. Scroll down and tap "Add to Home Screen."<br>3. Tap "Add" in the top right.<br>4. Open All Hair Connect from that new icon from now on, then come back here to turn notifications on.</p>
-            </div>
-          </div>
           <button class="btn btn-primary" id="btn-enable-notifications" type="button">Turn on notifications</button>
           <p class="foot-note-small" id="notifications-status-note">&nbsp;</p>
-          <p class="foot-note-small">Not seeing the message text in a notification? On iPhone, check Settings &rarr; Notifications &rarr; All Hair Connect &rarr; Show Previews, and set it to Always.</p>
-        </div>
-        <div style="border-top:1px solid var(--line); padding-top:16px;">
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Shop announcements &amp; promotions</h2>
-          <p class="screen-sub">Separate from appointment messages above, and from each other: a professional you've actually had a visit with can ask to send you these, but only once you've turned each one on. Both are off by default, and turning one on never turns on the other. Only pros you've had a real visit with can ever reach you this way, never anyone else in the app.</p>
-          <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
-            <label class="check-row">
-              <input type="checkbox" id="account-notify-announcements">
-              <span>Shop announcements <span style="text-transform:none; font-weight:600;">&mdash; hours, closures, new services</span></span>
-            </label>
-            <label class="check-row">
-              <input type="checkbox" id="account-notify-promotions">
-              <span>Promotions &amp; specials <span style="text-transform:none; font-weight:600;">&mdash; discounts and offers</span></span>
-            </label>
-          </div>
-          <p class="foot-note-small" id="notify-broadcast-status">&nbsp;</p>
-        </div>
-        <div style="border-top:1px solid var(--line); padding-top:16px;">
-          <p class="eyebrow-mini">Photo consent</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Before/after photos</h2>
-          <p class="screen-sub">Your barber may ask to take before/after photos and save them to your Hair Passport. These two permissions are separate &mdash; agreeing to one doesn't turn on the other, and you can change either any time.</p>
-          <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
-            <label class="check-row">
-              <input type="checkbox" id="account-photo-consent-record">
-              <span>Save before/after photos to my Hair Passport</span>
-            </label>
-            <label class="check-row">
-              <input type="checkbox" id="account-photo-consent-marketing">
-              <span>Also allow those photos in a professional's portfolio or marketing</span>
-            </label>
-          </div>
-          <p class="foot-note-small" id="photo-consent-status">&nbsp;</p>
-        </div>
-        <div style="border-top:1px solid var(--line); padding-top:16px; margin-top:16px;">
-          <p class="eyebrow-mini">Account recovery</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Recovery email</h2>
-          <p class="screen-sub">Add an email so you can always get your code back if you lose it. Never shown to your barber.</p>
-          <div class="input-row" style="margin-top:10px;"><input id="account-email" type="email" placeholder="e.g. jordan@email.com" autocomplete="email"></div>
-          <button class="btn btn-primary" id="btn-save-account-email" type="button" style="margin-top:10px;">Save</button>
-          <p class="foot-note-small" id="account-email-status">&nbsp;</p>
         </div>
         <div class="spacer"></div>
         <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
@@ -415,13 +349,6 @@
   </div>
 
   <div id="toast" class="toast">Saved</div>
-  <div id="quick-message-popup" style="display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; padding:20px;">
-    <div style="background:var(--paper); border-radius:16px; padding:24px; max-width:360px; width:100%; display:flex; flex-direction:column; gap:10px;">
-      <p class="eyebrow-mini" id="qm-popup-from">&nbsp;</p>
-      <p style="font-family:'Libre Franklin',sans-serif; font-weight:600; font-size:16px; line-height:1.45; margin:0;" id="qm-popup-body">&nbsp;</p>
-      <button class="btn btn-primary" id="qm-popup-clear" type="button" style="margin-top:8px;">Clear</button>
-    </div>
-  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -460,87 +387,6 @@ function urlBase64ToUint8Array(base64String){
 function pushSupported(){
   return !!(window.isSecureContext && 'serviceWorker' in navigator && 'PushManager' in window);
 }
-// Shared standalone check (running installed, not in a regular browser tab) --
-// iOS Safari sets navigator.standalone; every other installable browser reflects
-// it through the display-mode media query instead.
-function isAppStandalone(){
-  return window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-}
-// iOS Safari only allows push notifications for a site that's been added to the Home
-// Screen -- a regular Safari tab can't turn them on at all. Used to show a heads-up
-// before someone taps "Turn on notifications" and it quietly doesn't work.
-function isIosNotStandalone(){
-  const ua = navigator.userAgent || '';
-  const isIos = /iPhone|iPad|iPod/i.test(ua);
-  return isIos && !isAppStandalone();
-}
-/* =========================================================
-   INSTALL PROMPT (beforeinstallprompt)
-   Chrome/Edge on Android and desktop fire this instead of leaving the
-   person to find "Add to Home Screen" in a menu -- capture it once and
-   reuse it in the Account screen and the home-screen nudge banner. iOS
-   Safari never fires this event, so that button stays hidden there and
-   the manual steps carry the load instead.
-   ========================================================= */
-let deferredInstallPrompt = null;
-function updateInstallButtons(){
-  const show = !!deferredInstallPrompt && !isAppStandalone();
-  const btn = document.getElementById('btn-install-app');
-  if (btn) btn.style.display = show ? 'block' : 'none';
-}
-window.addEventListener('beforeinstallprompt', (e)=>{
-  e.preventDefault();
-  deferredInstallPrompt = e;
-  updateInstallButtons();
-  updateInstallNudgeBanner();
-});
-window.addEventListener('appinstalled', ()=>{
-  deferredInstallPrompt = null;
-  updateInstallButtons();
-  updateInstallNudgeBanner();
-});
-async function runInstallPrompt(){
-  if (!deferredInstallPrompt) return;
-  const promptEvent = deferredInstallPrompt;
-  deferredInstallPrompt = null;
-  updateInstallButtons();
-  try{
-    promptEvent.prompt();
-    await promptEvent.userChoice;
-  }catch(e){ /* dismissed or unsupported -- nothing to recover */ }
-  updateInstallNudgeBanner();
-}
-function setAddHomeDevice(device){
-  document.getElementById('btn-add-home-ios').classList.toggle('active', device === 'ios');
-  document.getElementById('btn-add-home-android').classList.toggle('active', device !== 'ios');
-  document.getElementById('add-home-steps-ios').style.display = device === 'ios' ? 'flex' : 'none';
-  document.getElementById('add-home-steps-android').style.display = device === 'ios' ? 'none' : 'flex';
-}
-document.getElementById('btn-add-home-ios').addEventListener('click', ()=> setAddHomeDevice('ios'));
-document.getElementById('btn-add-home-android').addEventListener('click', ()=> setAddHomeDevice('android'));
-document.getElementById('btn-install-app').addEventListener('click', runInstallPrompt);
-setAddHomeDevice(/iPhone|iPad|iPod/i.test(navigator.userAgent || '') ? 'ios' : 'android');
-updateInstallButtons();
-// A brief, dismissible nudge on the home screen pointing people at the Account > Add to
-// Home Screen section -- same pattern as the notifications nudge below. Hides itself once
-// already installed, or once dismissed (remembered per device).
-function installNudgeDismissKey(){ return 'ahcInstallNudgeDismissed_' + (clientCode || ''); }
-function updateInstallNudgeBanner(){
-  const el = document.getElementById('install-nudge-banner');
-  if (!el) return;
-  if (isAppStandalone() || viewedViaSharedCode){ el.hidden = true; return; }
-  let dismissed = false;
-  try{ dismissed = localStorage.getItem(installNudgeDismissKey()) === '1'; }catch(e){}
-  el.hidden = dismissed;
-}
-document.getElementById('btn-install-nudge-open').addEventListener('click', ()=>{
-  if (deferredInstallPrompt){ runInstallPrompt(); return; }
-  document.getElementById('btn-open-account').click();
-});
-document.getElementById('btn-install-nudge-dismiss').addEventListener('click', ()=>{
-  try{ localStorage.setItem(installNudgeDismissKey(), '1'); }catch(e){}
-  document.getElementById('install-nudge-banner').hidden = true;
-});
 let swRegistrationPromise = null;
 function registerServiceWorker(){
   if (!pushSupported()) return Promise.resolve(null);
@@ -618,7 +464,28 @@ let clientCode = null;
 // scanning device.
 let viewedViaSharedCode = false;
 
-const TOS_VERSION = 'v2';
+const NDA_VERSION = 'v1';
+function ndaAccepted(){
+  try{ return localStorage.getItem('ahcNdaAccepted') === NDA_VERSION; }catch(e){ return false; }
+}
+function markNdaAccepted(){
+  try{ localStorage.setItem('ahcNdaAccepted', NDA_VERSION); }catch(e){}
+}
+function showNdaScreen(onContinue){
+  document.getElementById('loading-screen').hidden = true;
+  document.getElementById('nda-screen').hidden = false;
+  const checkbox = document.getElementById('nda-agree-checkbox');
+  const continueBtn = document.getElementById('btn-nda-continue');
+  checkbox.checked = false;
+  continueBtn.disabled = true;
+  checkbox.onchange = function(){ continueBtn.disabled = !checkbox.checked; };
+  continueBtn.onclick = async function(){
+    if (!checkbox.checked) return;
+    markNdaAccepted();
+    document.getElementById('nda-screen').hidden = true;
+    await onContinue();
+  };
+}
 let dstate = { selectedVisitId: null, deleteArmed:false, existingReviewId:null };
 
 function todayIso(){ return new Date().toISOString().slice(0,10); }
@@ -632,7 +499,7 @@ function toTitleCase(str){
   return str.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
 }
 function defaultClient(name){
-  return { code:null, name: name || 'You', email:'', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'', hiddenBookAgain: [], notifyShopAnnouncements:false, notifyShopAnnouncementsAt:'', notifyPromotions:false, notifyPromotionsAt:'', photoConsentRecord:false, photoConsentRecordAt:'', photoConsentMarketing:false, photoConsentMarketingAt:'' };
+  return { code:null, name: name || 'You', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'' };
 }
 function showToast(msg, danger){
   const t = document.getElementById('toast');
@@ -649,66 +516,17 @@ async function fetchClientRow(code){
   return data;
 }
 
-// Every visitor gets a real (if anonymous) Supabase Auth session the moment
-// the app loads -- this is what lets the database tell "someone who knows
-// this passport code" apart from "a script with only the public API key and
-// no session at all" once Row Level Security is scoped "to authenticated".
-// No email or password involved, and it's invisible to the person using the app.
-async function ensureAnonSession(){
-  if (!dbAvailable) return;
-  try{
-    const { data } = await supabaseClient.auth.getSession();
-    if (data && data.session) return;
-    await supabaseClient.auth.signInAnonymously();
-  }catch(e){ console.warn('anonymous sign-in failed', e); }
-}
-async function currentAuthUid(){
-  try{
-    const { data } = await supabaseClient.auth.getSession();
-    return (data && data.session && data.session.user && data.session.user.id) || null;
-  }catch(e){ return null; }
-}
-// The passport code is effectively this app's "password" -- whoever enters
-// it is treated as that client. client_login links the row to whichever
-// session (real device) is asking right now, then hands back the full
-// record, so "log in with your code" and "claim this account" are the same
-// step. Runs as a guarded database function rather than a raw table read,
-// so the general clients table doesn't need an open read policy at all.
-async function clientLogin(code){
-  const { data, error } = await supabaseClient.rpc('client_login', { p_code: code });
-  if (error) throw error;
-  return (Array.isArray(data) && data[0]) || null;
-}
-// Side-effect-free existence check for the "pick a code" step of signing up
-// -- unlike clientLogin, this must NOT claim the row, since the code being
-// checked usually belongs to someone else entirely.
-async function clientCodeTaken(code){
-  const { data, error } = await supabaseClient.rpc('client_code_taken', { p_code: code });
-  if (error) throw error;
-  return !!data;
-}
-
 async function tryLoadClient(code){
   try{
-    const data = dbAvailable ? await clientLogin(code) : null;
+    const data = await fetchClientRow(code);
     if (data){
       client = defaultClient(data.name);
       client.name = toTitleCase(data.name) || client.name;
       client._nameNeedsSync = !!(data.name && data.name !== client.name);
       client.visits = Array.isArray(data.visits) ? data.visits : [];
-      client.email = data.email || '';
       client.created_at = data.created_at || client.created_at;
       client.ndaVersion = data.nda_version || '';
       client.ndaAcceptedAt = data.nda_accepted_at || '';
-      client.hiddenBookAgain = Array.isArray(data.hidden_book_again) ? data.hidden_book_again : [];
-      client.notifyShopAnnouncements = data.notify_shop_announcements === true;
-      client.notifyShopAnnouncementsAt = data.notify_shop_announcements_at || '';
-      client.notifyPromotions = data.notify_promotions === true;
-      client.notifyPromotionsAt = data.notify_promotions_at || '';
-      client.photoConsentRecord = data.photo_consent_record === true;
-      client.photoConsentRecordAt = data.photo_consent_record_at || '';
-      client.photoConsentMarketing = data.photo_consent_marketing === true;
-      client.photoConsentMarketingAt = data.photo_consent_marketing_at || '';
       clientCode = code;
       return true;
     }
@@ -716,44 +534,21 @@ async function tryLoadClient(code){
   return false;
 }
 
-async function createClientRecord(code, name, email){
+async function createClientRecord(code, name){
   client = defaultClient(name);
-  client.email = (email || '').trim();
   clientCode = code;
   if (dbAvailable){
     try{
-      const uid = await currentAuthUid();
-      const { error } = await supabaseClient.from('clients').insert({ code, name: client.name, email: client.email || null, visits: [], user_id: uid || null });
+      const { error } = await supabaseClient.from('clients').insert({ code, name: client.name, visits: [] });
       if (error) throw error;
     }catch(e){ console.warn('create failed', e); }
   }
   return true;
 }
 
-// Checkpoint photos live in the client-photos storage bucket under a folder
-// named by the client's code. When the client deletes their account, that
-// folder no longer belongs to anyone -- clean it out so it doesn't sit
-// around forever counting against storage. Best-effort: if this fails for
-// any reason, we still go ahead and delete the account itself below.
-async function deleteClientPhotos(code){
-  if (!dbAvailable || !code) return;
-  try{
-    const limit = 1000;
-    let offset = 0;
-    while (true){
-      const { data: files, error } = await supabaseClient.storage.from('client-photos').list(code, { limit, offset });
-      if (error || !files || !files.length) break;
-      const paths = files.map(f => `${code}/${f.name}`);
-      await supabaseClient.storage.from('client-photos').remove(paths);
-      if (files.length < limit) break;
-      offset += limit;
-    }
-  }catch(e){ console.warn('delete client photos failed', e); }
-}
 async function deleteClientRow(code){
   if (!dbAvailable || !code) return true;
   try{
-    await deleteClientPhotos(code);
     const { error } = await supabaseClient.from('clients').delete().eq('code', code);
     if (error) throw error;
     return true;
@@ -766,23 +561,14 @@ async function persistClient(){
     const row = { name: client.name, visits: client.visits, updated_at: new Date().toISOString() };
     if (client.ndaVersion !== undefined) row.nda_version = client.ndaVersion;
     if (client.ndaAcceptedAt !== undefined) row.nda_accepted_at = client.ndaAcceptedAt;
-    row.hidden_book_again = client.hiddenBookAgain || [];
-    row.notify_shop_announcements = client.notifyShopAnnouncements === true;
-    if (client.notifyShopAnnouncementsAt !== undefined) row.notify_shop_announcements_at = client.notifyShopAnnouncementsAt || null;
-    row.notify_promotions = client.notifyPromotions === true;
-    if (client.notifyPromotionsAt !== undefined) row.notify_promotions_at = client.notifyPromotionsAt || null;
-    row.photo_consent_record = client.photoConsentRecord === true;
-    if (client.photoConsentRecordAt !== undefined) row.photo_consent_record_at = client.photoConsentRecordAt || null;
-    row.photo_consent_marketing = client.photoConsentMarketing === true;
-    if (client.photoConsentMarketingAt !== undefined) row.photo_consent_marketing_at = client.photoConsentMarketingAt || null;
     const { error } = await supabaseClient.from('clients').update(row).eq('code', clientCode);
     if (error) throw error;
   }catch(e){ console.warn('save failed', e); showToast("Couldn't save: try again", true); }
 }
 
 function syncNdaToServer(){
-  if (client && client.ndaVersion !== TOS_VERSION){
-    client.ndaVersion = TOS_VERSION;
+  if (client && client.ndaVersion !== NDA_VERSION){
+    client.ndaVersion = NDA_VERSION;
     client.ndaAcceptedAt = new Date().toISOString();
     persistClient();
   }
@@ -848,7 +634,7 @@ function renderHome(){
           <div class="vc-date">${dateLabel}</div>
           <div class="vc-meta">${v.barberName ? v.barberName : 'Provider not noted'}</div>
         </div>
-        <button type="button" class="vc-star ${v.favorite?'on':''}" data-star="${v.id}" aria-label="${v.favorite ? 'Remove from favorites' : 'Mark as favorite'}">&#9733;</button>
+        <button type="button" class="vc-star ${v.favorite?'on':''}" data-star="${v.id}">&#9733;</button>
       </div>
       <span class="service-tag">${SERVICE_LABELS[v.serviceType] || 'Visit'}</span>
       ${photosHtml}
@@ -895,39 +681,15 @@ function uniqueBarbers(){
   return order.map(code=> seen[code]);
 }
 
-let bookAgainRemoveArmed = null;
 function renderBookAgain(){
   const section = document.getElementById('bookagain-section');
   const holder = document.getElementById('bookagain-list-holder');
-  const hidden = (client && client.hiddenBookAgain) || [];
-  const barbers = uniqueBarbers().filter(b => !hidden.includes(b.code));
+  const barbers = uniqueBarbers();
   if (!barbers.length){ section.style.display = 'none'; return; }
   section.style.display = 'flex';
   holder.innerHTML = barbers.map(b => `
-    <div style="display:flex; flex-direction:column; gap:2px;">
-      <a class="btn btn-outline" style="text-decoration:none; text-align:center;" href="directory.html?pro=${encodeURIComponent(b.code)}&client=${encodeURIComponent(clientCode)}">Book again with ${b.name}</a>
-      <button type="button" class="link-btn" data-remove-pro="${b.code}" style="align-self:center; padding:3px 0; font-size:11.5px;">Remove from suggestions</button>
-    </div>
+    <a class="btn btn-outline" style="text-decoration:none; text-align:center;" href="directory.html?pro=${encodeURIComponent(b.code)}&client=${encodeURIComponent(clientCode)}">Book again with ${b.name}</a>
   `).join('');
-  holder.querySelectorAll('[data-remove-pro]').forEach(btn=>{
-    btn.addEventListener('click', async function(){
-      const code = this.dataset.removePro;
-      if (bookAgainRemoveArmed !== code){
-        bookAgainRemoveArmed = code;
-        this.textContent = 'Tap again to confirm';
-        setTimeout(()=>{
-          if (bookAgainRemoveArmed === code){ bookAgainRemoveArmed = null; renderBookAgain(); }
-        }, 3000);
-        return;
-      }
-      bookAgainRemoveArmed = null;
-      client.hiddenBookAgain = client.hiddenBookAgain || [];
-      if (!client.hiddenBookAgain.includes(code)) client.hiddenBookAgain.push(code);
-      await persistClient();
-      showToast('Removed from suggestions');
-      renderBookAgain();
-    });
-  });
 }
 
 let upcomingAppts = [];
@@ -999,8 +761,6 @@ function renderUpcoming(list){
       try{
         const { error } = await supabaseClient.from('appointments').update({status:'cancelled'}).eq('id', a.id);
         if (error) throw error;
-        // Best-effort: let the barber know. Never blocks the cancellation itself.
-        try{ await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: a.id, event: 'cancelled' } }); }catch(e){ console.warn('cancel notification failed', e); }
         await loadUpcomingAppointments();
       }catch(e){
         console.warn('cancel failed', e);
@@ -1326,8 +1086,6 @@ function enterApp(){
   showScreen('home');
   loadUpcomingAppointments();
   loadLoyalty();
-  updateNotifNudgeBanner();
-  updateInstallNudgeBanner();
 }
 
 function setAuthMode(mode){
@@ -1336,15 +1094,10 @@ function setAuthMode(mode){
   document.getElementById('btn-auth-mode-returning').classList.toggle('active', !isNew);
   document.getElementById('auth-heading').textContent = isNew ? 'First time here' : 'Welcome back';
   document.getElementById('auth-subhead').textContent = isNew
-    ? "Pick a name and a personal code of your own. Give that code to any barber or stylist and they can pull up your visits. Add an email below so you can always get your code back if you lose it."
+    ? "Pick a name and a personal code of your own. Give that code to any barber or stylist and they can pull up your visits. There's no password reset, so keep it somewhere you'll remember."
     : 'Enter your name and the personal code you set up before.';
   document.getElementById('auth-submit-btn').textContent = isNew ? 'Create my passport' : 'Continue';
-  document.getElementById('auth-error').textContent = '\u00a0';
-  document.getElementById('auth-email-field').style.display = isNew ? '' : 'none';
-  document.getElementById('auth-tos-note').style.display = isNew ? 'block' : 'none';
-  document.getElementById('btn-forgot-code').style.display = isNew ? 'none' : '';
-  document.getElementById('forgot-code-panel').style.display = 'none';
-  document.getElementById('forgot-code-status').textContent = '\u00a0';
+  document.getElementById('auth-error').textContent = ' ';
 }
 
 document.getElementById('btn-auth-mode-new').addEventListener('click', ()=> setAuthMode('new'));
@@ -1373,11 +1126,10 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
   const name = toTitleCase(document.getElementById('auth-name').value.trim()) || 'You';
   const code = sanitizeCode(document.getElementById('auth-code').value);
   if (!code) return;
-  const email = (document.getElementById('auth-email').value || '').trim();
   const isReturning = document.getElementById('btn-auth-mode-returning').classList.contains('active');
 
   if (!dbAvailable){
-    await createClientRecord(code, name, email);
+    await createClientRecord(code, name);
     try{ localStorage.setItem('passportClientCode', code); }catch(err){}
     enterApp();
     return;
@@ -1390,44 +1142,16 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
       return;
     }
   } else {
-    let taken = false;
-    try{ taken = await clientCodeTaken(code); }catch(err){ console.warn('code check failed', err); }
-    if (taken){
+    let existing = null;
+    try{ existing = await fetchClientRow(code); }catch(err){ console.warn('code check failed', err); }
+    if (existing){
       errorEl.textContent = 'That code is already taken. Please choose a different one.';
       return;
     }
-    await createClientRecord(code, name, email);
+    await createClientRecord(code, name);
   }
   try{ localStorage.setItem('passportClientCode', code); }catch(err){}
   enterApp();
-});
-
-document.getElementById('btn-forgot-code').addEventListener('click', ()=>{
-  const panel = document.getElementById('forgot-code-panel');
-  panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
-});
-
-document.getElementById('btn-forgot-code-send').addEventListener('click', async ()=>{
-  const btn = document.getElementById('btn-forgot-code-send');
-  const status = document.getElementById('forgot-code-status');
-  const email = (document.getElementById('forgot-code-email').value || '').trim();
-  if (!email || !email.includes('@')){
-    status.textContent = 'Enter a valid email first.';
-    return;
-  }
-  if (!dbAvailable){
-    status.textContent = "Live saving isn't connected right now, so recovery can't be sent.";
-    return;
-  }
-  btn.disabled = true;
-  status.textContent = 'Sending…';
-  try{
-    await supabaseClient.functions.invoke('recover-client-code', { body: { email } });
-  }catch(e){
-    console.warn('recovery send failed', e);
-  }
-  status.textContent = "If we have an account with that email, we've sent your code to it.";
-  btn.disabled = false;
 });
 
 document.getElementById('btn-switch-profile').addEventListener('click', ()=>{
@@ -1437,111 +1161,12 @@ document.getElementById('btn-switch-profile').addEventListener('click', ()=>{
 
 document.getElementById('btn-open-account').addEventListener('click', ()=>{
   populateNotificationsStatus();
-  document.getElementById('account-email').value = (client && client.email) || '';
-  document.getElementById('account-email-status').textContent = ' ';
-  document.getElementById('account-name').value = (client && client.name) || '';
-  document.getElementById('account-name-status').textContent = ' ';
-  document.getElementById('account-notify-announcements').checked = !!(client && client.notifyShopAnnouncements);
-  document.getElementById('account-notify-promotions').checked = !!(client && client.notifyPromotions);
-  document.getElementById('notify-broadcast-status').textContent = ' ';
-  document.getElementById('account-photo-consent-record').checked = !!(client && client.photoConsentRecord);
-  document.getElementById('account-photo-consent-marketing').checked = !!(client && client.photoConsentMarketing);
-  document.getElementById('photo-consent-status').textContent = ' ';
   showScreen('account');
-});
-
-document.getElementById('account-notify-announcements').addEventListener('change', async function(){
-  const status = document.getElementById('notify-broadcast-status');
-  const on = this.checked;
-  client.notifyShopAnnouncements = on;
-  if (on && !client.notifyShopAnnouncementsAt) client.notifyShopAnnouncementsAt = new Date().toISOString();
-  status.textContent = 'Saving…';
-  await persistClient();
-  status.textContent = on ? 'Shop announcements: on.' : 'Shop announcements: off.';
-});
-
-document.getElementById('account-notify-promotions').addEventListener('change', async function(){
-  const status = document.getElementById('notify-broadcast-status');
-  const on = this.checked;
-  client.notifyPromotions = on;
-  if (on && !client.notifyPromotionsAt) client.notifyPromotionsAt = new Date().toISOString();
-  status.textContent = 'Saving…';
-  await persistClient();
-  status.textContent = on ? 'Promotions & specials: on.' : 'Promotions & specials: off.';
-});
-
-async function savePhotoConsent(){
-  const status = document.getElementById('photo-consent-status');
-  status.textContent = 'Saving…';
-  await persistClient();
-  status.textContent = 'Saved.';
-}
-document.getElementById('account-photo-consent-record').addEventListener('change', async function(){
-  const on = this.checked;
-  client.photoConsentRecord = on;
-  if (on && !client.photoConsentRecordAt) client.photoConsentRecordAt = new Date().toISOString();
-  // Marketing use of photos doesn't make sense once record consent is off --
-  // no photos are being saved for a barber to use anywhere in the first place.
-  if (!on && client.photoConsentMarketing){
-    client.photoConsentMarketing = false;
-    document.getElementById('account-photo-consent-marketing').checked = false;
-  }
-  await savePhotoConsent();
-});
-document.getElementById('account-photo-consent-marketing').addEventListener('change', async function(){
-  if (this.checked && !client.photoConsentRecord){
-    this.checked = false;
-    document.getElementById('photo-consent-status').textContent = 'Turn on the Hair Passport photo permission first.';
-    return;
-  }
-  client.photoConsentMarketing = this.checked;
-  if (this.checked && !client.photoConsentMarketingAt) client.photoConsentMarketingAt = new Date().toISOString();
-  await savePhotoConsent();
-});
-
-document.getElementById('btn-save-name').addEventListener('click', async ()=>{
-  const status = document.getElementById('account-name-status');
-  const raw = document.getElementById('account-name').value.trim();
-  if (!raw){ status.textContent = "Name can't be blank."; return; }
-  const cleaned = toTitleCase(raw);
-  document.getElementById('account-name').value = cleaned;
-  client.name = cleaned;
-  status.textContent = 'Saving…';
-  await persistClient();
-  status.textContent = 'Saved.';
-  document.getElementById('tb-name').textContent = client.name;
-});
-
-document.getElementById('btn-save-account-email').addEventListener('click', async ()=>{
-  const btn = document.getElementById('btn-save-account-email');
-  const status = document.getElementById('account-email-status');
-  const email = (document.getElementById('account-email').value || '').trim();
-  if (email && !email.includes('@')){
-    status.textContent = 'That doesn’t look like a valid email.';
-    return;
-  }
-  if (!dbAvailable){
-    status.textContent = "Live saving isn't connected right now. This won't be kept.";
-    return;
-  }
-  btn.disabled = true;
-  status.textContent = 'Saving…';
-  try{
-    const { error } = await supabaseClient.from('clients').update({ email: email || null }).eq('code', clientCode);
-    if (error) throw error;
-    if (client) client.email = email;
-    status.textContent = email ? 'Saved.' : 'Recovery email removed.';
-  }catch(e){
-    console.warn('save recovery email failed', e);
-    status.textContent = "Couldn't save that right now. Try again in a moment.";
-  }
-  btn.disabled = false;
 });
 
 async function populateNotificationsStatus(){
   const btn = document.getElementById('btn-enable-notifications');
   const note = document.getElementById('notifications-status-note');
-  document.getElementById('ios-homescreen-tip').style.display = isIosNotStandalone() ? 'flex' : 'none';
   if (!pushSupported()){
     btn.disabled = true;
     btn.textContent = 'Not supported on this device';
@@ -1563,12 +1188,6 @@ async function populateNotificationsStatus(){
     note.textContent = ' ';
   }
 }
-document.getElementById('btn-ios-homescreen-steps').addEventListener('click', function(){
-  const steps = document.getElementById('ios-homescreen-steps');
-  const showing = steps.style.display === 'flex';
-  steps.style.display = showing ? 'none' : 'flex';
-  this.textContent = showing ? 'See how' : 'Hide steps';
-});
 document.getElementById('btn-enable-notifications').addEventListener('click', async ()=>{
   const btn = document.getElementById('btn-enable-notifications');
   const note = document.getElementById('notifications-status-note');
@@ -1578,7 +1197,6 @@ document.getElementById('btn-enable-notifications').addEventListener('click', as
   if (result.ok){
     btn.textContent = 'Notifications are on';
     note.textContent = ' ';
-    updateNotifNudgeBanner();
   } else {
     btn.disabled = false;
     btn.textContent = 'Turn on notifications';
@@ -1586,27 +1204,6 @@ document.getElementById('btn-enable-notifications').addEventListener('click', as
   }
 });
 document.getElementById('btn-back-home-from-account').addEventListener('click', ()=> showScreen('home'));
-// A brief, dismissible nudge shown on the home screen (not buried in Account) so new clients
-// notice notifications exist at all. Hides itself once notifications are on, or once dismissed
-// (remembered per device so it doesn't keep reappearing).
-function notifNudgeDismissKey(){ return 'ahcNotifNudgeDismissed_' + (clientCode || ''); }
-async function updateNotifNudgeBanner(){
-  const el = document.getElementById('notif-nudge-banner');
-  if (!el) return;
-  if (!pushSupported() || !clientCode || viewedViaSharedCode){ el.hidden = true; return; }
-  let dismissed = false;
-  try{ dismissed = localStorage.getItem(notifNudgeDismissKey()) === '1'; }catch(e){}
-  if (dismissed){ el.hidden = true; return; }
-  const existing = await getExistingPushSubscription();
-  el.hidden = !!existing;
-}
-document.getElementById('btn-notif-nudge-open').addEventListener('click', ()=>{
-  document.getElementById('btn-open-account').click();
-});
-document.getElementById('btn-notif-nudge-dismiss').addEventListener('click', ()=>{
-  try{ localStorage.setItem(notifNudgeDismissKey(), '1'); }catch(e){}
-  document.getElementById('notif-nudge-banner').hidden = true;
-});
 
 let deleteAccountArmed = false;
 document.getElementById('btn-delete-account').addEventListener('click', async function(){
@@ -1632,7 +1229,12 @@ document.getElementById('btn-delete-account').addEventListener('click', async fu
 
 async function boot(){
   dbAvailable = !!supabaseClient;
-  await ensureAnonSession();
+
+  if (!ndaAccepted()){
+    showNdaScreen(continueBoot);
+    return;
+  }
+
   await continueBoot();
 }
 
@@ -1705,111 +1307,8 @@ if (window.visualViewport){
   });
 }
 
-/* ---- Quick message popup: opened either by tapping a notification (a fresh
-   window reads ?message= from the URL; an already-open tab is told via the
-   service worker's postMessage instead, since focusing a tab doesn't
-   navigate it) or by returning to a page where one was never dismissed. */
-async function showQuickMessagePopup(id){
-  if (!id || !supabaseClient) return;
-  try{
-    const { data, error } = await supabaseClient.from('quick_messages').select('id, message, sender_name').eq('id', id).maybeSingle();
-    if (error || !data) return;
-    const overlay = document.getElementById('quick-message-popup');
-    const fromEl = document.getElementById('qm-popup-from');
-    const bodyEl = document.getElementById('qm-popup-body');
-    if (fromEl) fromEl.textContent = data.sender_name ? ('From ' + data.sender_name) : 'New message';
-    if (bodyEl) bodyEl.textContent = data.message;
-    if (overlay){
-      overlay.dataset.messageId = id;
-      overlay.style.display = 'flex';
-    }
-  }catch(e){ console.warn('load quick message failed', e); }
-}
-async function clearQuickMessage(){
-  const overlay = document.getElementById('quick-message-popup');
-  const id = overlay && overlay.dataset.messageId;
-  if (overlay) overlay.style.display = 'none';
-  if (id && supabaseClient){
-    try{ await supabaseClient.from('quick_messages').delete().eq('id', id); }catch(e){ console.warn('clear quick message failed', e); }
-  }
-  try{
-    const url = new URL(window.location.href);
-    url.searchParams.delete('message');
-    window.history.replaceState({}, '', url.toString());
-  }catch(e){}
-}
-document.getElementById('qm-popup-clear').addEventListener('click', clearQuickMessage);
-function checkQuickMessageDeepLink(){
-  let id = null;
-  try{ id = new URLSearchParams(window.location.search).get('message'); }catch(e){}
-  if (id) showQuickMessagePopup(id);
-}
-try{
-  if ('serviceWorker' in navigator && navigator.serviceWorker.addEventListener){
-    navigator.serviceWorker.addEventListener('message', (event)=>{
-      if (event.data && event.data.type === 'show-quick-message' && event.data.id){
-        showQuickMessagePopup(event.data.id);
-      }
-    });
-  }
-}catch(e){ console.warn('service worker message listener failed', e); }
 boot();
 registerServiceWorker();
-checkQuickMessageDeepLink();
-
-/* =========================================================
-   UPDATE CHECK -- a Home Screen icon (especially on iOS) can keep
-   showing an old cached copy of this file indefinitely, with nothing
-   telling the person a newer version exists. This periodically
-   fetches this same page fresh (bypassing cache) and compares its
-   build id against the one this loaded copy has; if they differ, it
-   shows a "new version available" banner rather than reloading on its
-   own, since a silent reload could land mid-booking.
-   ========================================================= */
-(function(){
-  // Meaningless (and, on file:// origins as used by local dev/testing, blocked by CORS in a
-  // way that spams the console) unless this is actually being served over http(s), so skip
-  // the whole feature outside of that.
-  if (window.location.protocol !== 'http:' && window.location.protocol !== 'https:') return;
-  const CURRENT_BUILD = (document.querySelector('meta[name="app-build"]') || {}).content || '';
-  let lastCheck = 0;
-  let notified = false;
-  async function checkForUpdate(){
-    if (!CURRENT_BUILD || notified) return;
-    const now = Date.now();
-    if (now - lastCheck < 60000) return; // don't check more than once a minute
-    lastCheck = now;
-    try{
-      const url = window.location.pathname + '?_v=' + now;
-      const res = await fetch(url, { cache: 'no-store' });
-      if (!res.ok) return;
-      const html = await res.text();
-      const match = html.match(/<meta\s+name=["']app-build["']\s+content=["']([^"']+)["']/i);
-      const latestBuild = match ? match[1] : '';
-      if (latestBuild && latestBuild !== CURRENT_BUILD){
-        notified = true;
-        const banner = document.getElementById('update-available-banner');
-        if (banner) banner.hidden = false;
-      }
-    }catch(e){ /* offline, or the fetch was blocked -- just try again later */ }
-  }
-  const refreshBtn = document.getElementById('btn-update-refresh');
-  if (refreshBtn){
-    refreshBtn.addEventListener('click', ()=>{
-      window.location.href = window.location.pathname + '?_r=' + Date.now();
-    });
-  }
-  // pageshow covers the initial load itself (it fires there too, not just on a
-  // bfcache restore), so no separate delayed check is needed on top of it.
-  setInterval(checkForUpdate, 10 * 60 * 1000);
-  document.addEventListener('visibilitychange', ()=>{
-    if (document.visibilityState === 'visible') checkForUpdate();
-  });
-  // iOS often restores a Home Screen app from its bfcache snapshot on reopen
-  // rather than doing a real navigation, so this is the moment most likely
-  // to be showing someone a stale copy without them knowing it.
-  window.addEventListener('pageshow', checkForUpdate);
-})();
 </script>
 </body>
 </html>
