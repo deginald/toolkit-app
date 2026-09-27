@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>All Hair Connect</title>
-<meta name="app-build" content="2026-09-27T05-04-39Z">
+<meta name="app-build" content="2026-09-27T09-38-22Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -450,6 +450,17 @@
     e.preventDefault();
     dismissGate();
     try{
+      // The main app script has been running its own startup underneath this
+      // gate the whole time (continueBoot -> enterApp), so someone who's
+      // already logged in on this device may have already had their home
+      // screen loaded before they ever clicked this link -- in that case
+      // "Log in" should just reveal it, not force them through the login
+      // form again. #app-shell only ever goes from hidden to shown, inside
+      // enterApp(), once a real session + profile are confirmed.
+      var appShell = document.getElementById('app-shell');
+      if (appShell && !appShell.hidden){
+        return;
+      }
       if (typeof window.showAuthScreen === 'function'){
         window.showAuthScreen('returning');
         var toggle = document.getElementById('auth-mode-toggle');
