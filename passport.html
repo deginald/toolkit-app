@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>All Hair Connect: Hair Passport</title>
-<meta name="app-build" content="2026-09-27T07-13-23Z">
+<title>Vono Passport</title>
+<meta name="app-build" content="2026-09-29T17-14-56Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
 <meta name="theme-color" content="#0A1220">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Hair Passport">
+<meta name="apple-mobile-web-app-title" content="Vono Passport">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
 <style>
@@ -149,11 +149,11 @@
   <div id="auth-screen" class="center-screen has-float-back" hidden>
     <button type="button" class="link-btn float-back-btn" id="btn-auth-back">&larr; Back</button>
     <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:-4px;">
-      <img src="logo.png" alt="All Hair Connect" style="width:90px; height:90px;">
-      <p class="brand-name">All Hair Connect</p>
+      <img src="vono-mark-gold.svg" alt="Vono" style="width:90px; height:90px;">
+      <p class="brand-name">Vono</p>
     </div>
     <div>
-      <p class="eyebrow-mini">Hair Passport</p>
+      <p class="eyebrow-mini">Vono Passport</p>
       <h2 class="screen-title" id="auth-heading">First time here</h2>
       <p class="screen-sub" style="margin-top:6px;" id="auth-subhead">Pick a name and a personal code of your own. Give that code to any barber or stylist and they can pull up your visits. Add an email below so you can always get your code back if you lose it.</p>
     </div>
@@ -194,7 +194,7 @@
     <header class="topbar">
       <div>
         <div class="tb-name" id="tb-name">&nbsp;</div>
-        <div class="tb-sub">Hair Passport</div>
+        <div class="tb-sub">Vono Passport</div>
       </div>
       <div style="display:flex; align-items:center; gap:14px;">
         <button class="link-btn" id="btn-open-account">Account</button>
@@ -209,7 +209,7 @@
       </span>
     </div>
     <div id="install-nudge-banner" class="banner action" hidden>
-      <span>Add your Hair Passport to your home screen for quick access.</span>
+      <span>Add your Vono Passport to your home screen for quick access.</span>
       <span style="display:flex; gap:14px; flex:none;">
         <button type="button" class="link-btn" id="btn-install-nudge-open">Add</button>
         <button type="button" class="link-btn" id="btn-install-nudge-dismiss">Dismiss</button>
@@ -323,7 +323,7 @@
         <div id="add-home-screen-section">
           <p class="eyebrow-mini">Quick access</p>
           <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Add to Home Screen</h2>
-          <p class="screen-sub">Install your Hair Passport like an app &mdash; faster to open, and full-screen with no browser bar.</p>
+          <p class="screen-sub">Install your Vono Passport like an app &mdash; faster to open, and full-screen with no browser bar.</p>
           <button type="button" class="btn btn-primary" id="btn-install-app" style="display:none; margin-top:10px; width:100%;">Install on this device</button>
           <div class="mode-toggle" style="margin-top:10px;">
             <button type="button" class="mode-btn" id="btn-add-home-ios">iPhone</button>
@@ -339,7 +339,7 @@
         <div style="border-top:1px solid var(--line); padding-top:16px;">
           <p class="eyebrow-mini">Support</p>
           <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Questions or feedback?</h2>
-          <p class="screen-sub">Found a bug or have an idea? Email <a href="mailto:allhairconnect@gmail.com" style="color:var(--brass);">allhairconnect@gmail.com</a> any time.</p>
+          <p class="screen-sub">Found a bug or have an idea? Email <a href="mailto:vonosupport@gmail.com" style="color:var(--brass);">vonosupport@gmail.com</a> any time.</p>
         </div>
         <div style="border-top:1px solid var(--line); padding-top:16px;">
           <p class="eyebrow-mini">Your name</p>
@@ -357,12 +357,12 @@
             <p class="screen-sub" style="margin:0;"><strong>On an iPhone, notifications only work once this is added to your Home Screen.</strong> Safari can't turn them on from inside a regular browser tab.</p>
             <button type="button" class="link-btn" id="btn-ios-homescreen-steps" style="padding:0; align-self:flex-start;">See how</button>
             <div id="ios-homescreen-steps" style="display:none; flex-direction:column;">
-              <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the Share icon (the square with an arrow pointing up) in Safari's toolbar.<br>2. Scroll down and tap "Add to Home Screen."<br>3. Tap "Add" in the top right.<br>4. Open All Hair Connect from that new icon from now on, then come back here to turn notifications on.</p>
+              <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the Share icon (the square with an arrow pointing up) in Safari's toolbar.<br>2. Scroll down and tap "Add to Home Screen."<br>3. Tap "Add" in the top right.<br>4. Open Vono from that new icon from now on, then come back here to turn notifications on.</p>
             </div>
           </div>
           <button class="btn btn-primary" id="btn-enable-notifications" type="button">Turn on notifications</button>
           <p class="foot-note-small" id="notifications-status-note">&nbsp;</p>
-          <p class="foot-note-small">Not seeing the message text in a notification? On iPhone, check Settings &rarr; Notifications &rarr; All Hair Connect &rarr; Show Previews, and set it to Always.</p>
+          <p class="foot-note-small">Not seeing the message text in a notification? On iPhone, check Settings &rarr; Notifications &rarr; Vono &rarr; Show Previews, and set it to Always.</p>
         </div>
         <div style="border-top:1px solid var(--line); padding-top:16px;">
           <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Shop announcements &amp; promotions</h2>
@@ -382,11 +382,11 @@
         <div style="border-top:1px solid var(--line); padding-top:16px;">
           <p class="eyebrow-mini">Photo consent</p>
           <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Before/after photos</h2>
-          <p class="screen-sub">Your barber may ask to take before/after photos and save them to your Hair Passport. These two permissions are separate &mdash; agreeing to one doesn't turn on the other, and you can change either any time.</p>
+          <p class="screen-sub">Your barber may ask to take before/after photos and save them to your Vono Passport. These two permissions are separate &mdash; agreeing to one doesn't turn on the other, and you can change either any time.</p>
           <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
             <label class="check-row">
               <input type="checkbox" id="account-photo-consent-record">
-              <span>Save before/after photos to my Hair Passport</span>
+              <span>Save before/after photos to my Vono Passport</span>
             </label>
             <label class="check-row">
               <input type="checkbox" id="account-photo-consent-marketing">
@@ -407,7 +407,7 @@
         <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
           <p class="eyebrow-mini" style="color:var(--behind);">Danger zone</p>
           <button class="btn btn-danger" id="btn-delete-account">Delete my account</button>
-          <p class="foot-note-small">This permanently deletes your Hair Passport and frees your code for someone else to use. It can't be undone.</p>
+          <p class="foot-note-small">This permanently deletes your Vono Passport and frees your code for someone else to use. It can't be undone.</p>
         </div>
       </div>
 
@@ -1149,12 +1149,12 @@ function downloadApptIcs(appt){
   const endDT = appt.appt_date.replace(/-/g,'') + 'T' + appt.end_time.replace(':','') + '00';
   const svcNames = (appt.services||[]).map(s=>s.name).join(', ');
   const ics = [
-    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//All Hair Connect//Booking//EN','BEGIN:VEVENT',
-    'UID:' + appt.id + '@allhairconnect',
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Vono//Booking//EN','BEGIN:VEVENT',
+    'UID:' + appt.id + '@vonoapp.com',
     'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z',
     'DTSTART:' + startDT, 'DTEND:' + endDT,
     'SUMMARY:' + svcNames + ' with ' + appt.barber_name,
-    'DESCRIPTION:Booked via All Hair Connect. Total $' + appt.total_price,
+    'DESCRIPTION:Booked via Vono. Total $' + appt.total_price,
     'END:VEVENT','END:VCALENDAR'
   ].join('\r\n');
   const blob = new Blob([ics], {type:'text/calendar'});
@@ -1506,7 +1506,7 @@ document.getElementById('account-photo-consent-record').addEventListener('change
 document.getElementById('account-photo-consent-marketing').addEventListener('change', async function(){
   if (this.checked && !client.photoConsentRecord){
     this.checked = false;
-    document.getElementById('photo-consent-status').textContent = 'Turn on the Hair Passport photo permission first.';
+    document.getElementById('photo-consent-status').textContent = 'Turn on the Vono Passport photo permission first.';
     return;
   }
   client.photoConsentMarketing = this.checked;

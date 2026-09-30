@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>All Hair Connect: Find a Pro</title>
-<meta name="app-build" content="2026-09-27T02-39-01Z">
+<title>Vono: Find a Pro</title>
+<meta name="app-build" content="2026-09-29T17-14-56Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -174,11 +174,11 @@
   <div id="list-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:0;">
     <div id="pro-not-found-banner" class="banner" hidden style="padding-top:max(10px, calc(env(safe-area-inset-top) + 10px));">This professional's page is no longer available.</div>
     <header style="padding:20px 20px 4px; padding-top:max(20px, calc(env(safe-area-inset-top) + 16px));">
-      <button type="button" class="link-btn" id="btn-directory-exit" style="padding:0 0 10px;">&larr; All Hair Connect</button>
+      <button type="button" class="link-btn" id="btn-directory-exit" style="padding:0 0 10px;">&larr; Vono</button>
       <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
-        <img src="logo.png" alt="All Hair Connect" style="width:80px; height:80px;">
+        <img src="vono-mark-gold.svg" alt="Vono" style="width:80px; height:80px;">
         <p class="brand-name">Find a Pro</p>
-        <p class="screen-sub" style="margin-top:6px;">Browse barbers and stylists, see their ratings, and read real reviews from verified visits.</p>
+        <p class="screen-sub" style="margin-top:6px;">Browse beauty and wellness pros near you, and see their ratings and reviews.</p>
       </div>
     </header>
     <main class="content">
@@ -253,9 +253,9 @@
           <div class="summary-card" id="bkc-confirm-summary"></div>
 
           <div id="bkc-client-search">
-            <div class="field"><label>Your Hair Passport code</label><div class="input-row"><input id="bkc-client-code" type="text" placeholder="Your personal code" data-lookup-field="1"></div></div>
+            <div class="field"><label>Your Vono Passport code</label><div class="input-row"><input id="bkc-client-code" type="text" placeholder="Your personal code" data-lookup-field="1"></div></div>
             <button class="btn btn-outline" id="btn-bkc-client-lookup" type="button" style="width:100%; margin-top:8px;">Look up</button>
-            <button class="btn btn-ghost" id="btn-bkc-client-newclient" type="button" style="width:100%; margin-top:6px;">First time booking here? Create my Hair Passport</button>
+            <button class="btn btn-ghost" id="btn-bkc-client-newclient" type="button" style="width:100%; margin-top:6px;">First time booking here? Create my Vono Passport</button>
             <p class="screen-sub" id="bkc-client-status" style="margin-top:6px;">&nbsp;</p>
           </div>
           <div id="bkc-client-newname" style="display:none; flex-direction:column; gap:10px;">
@@ -270,7 +270,7 @@
               <div class="input-row"><input id="bkc-client-new-phone" type="tel" placeholder="e.g. (910) 555-0123" autocomplete="tel"></div>
               <p class="screen-sub" style="margin:0;">Lets you send and receive quick texts about this appointment. Your barber never sees your actual number. You can add or remove it later in Account.</p>
             </div>
-            <button class="btn btn-primary" id="btn-bkc-client-create" type="button" style="width:100%;">Create my Hair Passport</button>
+            <button class="btn btn-primary" id="btn-bkc-client-create" type="button" style="width:100%;">Create my Vono Passport</button>
             <button class="btn btn-ghost" id="btn-bkc-client-newclient-back" type="button" style="width:100%;">Back</button>
             <p class="screen-sub" id="bkc-client-create-status" style="margin:0;">&nbsp;</p>
           </div>
@@ -973,7 +973,7 @@ async function bkcLookupClient(){
       document.getElementById('bkc-client-loaded').style.display = 'block';
       document.getElementById('bkc-client-attached-summary').textContent = `Booking as: ${bkc.client.name}`;
     } else {
-      statusEl.textContent = "No Hair Passport found for that code. Create one below.";
+      statusEl.textContent = "No Vono Passport found for that code. Create one below.";
       openBkcNewClientPanel(code);
     }
   }catch(e){
@@ -1052,7 +1052,7 @@ function updateConfirmEnabled(){
 
 document.getElementById('btn-bkc-confirm').addEventListener('click', async ()=>{
   const statusEl = document.getElementById('bkc-confirm-status');
-  if (!bkc.client){ statusEl.textContent = 'Look up or create your Hair Passport first.'; return; }
+  if (!bkc.client){ statusEl.textContent = 'Look up or create your Vono Passport first.'; return; }
   const svcs = selectedServices();
   const totalPrice = svcs.reduce((a,s)=>a+Number(s.price||0),0);
   const totalMins = svcs.reduce((a,s)=>a+Number(s.duration||0),0);
@@ -1115,12 +1115,12 @@ function downloadIcs(appt, proName){
   const endDT = appt.appt_date.replace(/-/g,'') + 'T' + appt.end_time.replace(':','') + '00';
   const svcNames = appt.services.map(s=>s.name).join(', ');
   const ics = [
-    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//All Hair Connect//Booking//EN','BEGIN:VEVENT',
-    'UID:' + appt.id + '@allhairconnect',
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Vono//Booking//EN','BEGIN:VEVENT',
+    'UID:' + appt.id + '@vonoapp.com',
     'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z',
     'DTSTART:' + startDT, 'DTEND:' + endDT,
     'SUMMARY:' + svcNames + ' with ' + proName,
-    'DESCRIPTION:Booked via All Hair Connect. Total $' + appt.total_price,
+    'DESCRIPTION:Booked via Vono. Total $' + appt.total_price,
     'END:VEVENT','END:VCALENDAR'
   ].join('\r\n');
   const blob = new Blob([ics], {type:'text/calendar'});
