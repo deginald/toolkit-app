@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-09-30T18-45-42Z">
+<meta name="app-build" content="2026-09-30T20-17-46Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -253,6 +253,10 @@
   .checkpoint-photo-wrap{ position:relative; width:72px; height:72px; flex-shrink:0; }
   .checkpoint-photo{ width:100%; height:100%; border-radius:9px; object-fit:cover; display:block; cursor:pointer; background:var(--line); }
   .checkpoint-photo-remove{ position:absolute; top:-7px; right:-7px; width:24px; height:24px; border-radius:50%; border:none; background:var(--ink); color:var(--surface); font-size:15px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(0,0,0,0.3); }
+  .listing-photo-move-btn{ position:absolute; bottom:-7px; width:22px; height:22px; border-radius:50%; border:none; background:var(--ink); color:var(--surface); font-size:12px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(0,0,0,0.3); }
+  .listing-photo-move-prev{ left:-7px; }
+  .listing-photo-move-next{ right:-7px; }
+  .listing-photo-move-btn:disabled{ opacity:0.3; cursor:default; }
   .listing-avatar-preview{ width:64px; height:64px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--surface), var(--paper)); color:var(--brass); font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:24px; overflow:hidden; }
   .listing-avatar-preview img{ width:100%; height:100%; object-fit:cover; display:block; }
   .complete-wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; padding:18px 8px; }
@@ -7288,6 +7292,8 @@ function renderListingPhotos(){
     <div class="checkpoint-photo-wrap">
       <img class="checkpoint-photo" src="${p.url}" alt="Portfolio photo ${idx+1}">
       <button type="button" class="checkpoint-photo-remove" data-remove-listing-photo="${idx}" aria-label="Remove this photo">&times;</button>
+      <button type="button" class="listing-photo-move-btn listing-photo-move-prev" data-move-listing-photo="${idx}" data-move-dir="-1" aria-label="Move this photo earlier"${idx===0 ? ' disabled' : ''}>&larr;</button>
+      <button type="button" class="listing-photo-move-btn listing-photo-move-next" data-move-listing-photo="${idx}" data-move-dir="1" aria-label="Move this photo later"${idx===photos.length-1 ? ' disabled' : ''}>&rarr;</button>
     </div>`).join('');
   grid.querySelectorAll('[data-remove-listing-photo]').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
@@ -7303,6 +7309,24 @@ function renderListingPhotos(){
       profile.portfolioPhotos = photos;
       const result = await persistProfile({ portfolioPhotos: photos });
       statusEl.textContent = (result && result.ok) ? 'Photo removed.' : ("Couldn't save: " + ((result && result.message) || 'try again.'));
+      renderListingPhotos();
+    });
+  });
+  grid.querySelectorAll('[data-move-listing-photo]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const idx = parseInt(btn.dataset.moveListingPhoto, 10);
+      const dir = parseInt(btn.dataset.moveDir, 10);
+      const swapWith = idx + dir;
+      const photos = (profile.portfolioPhotos || []).slice();
+      if (swapWith < 0 || swapWith >= photos.length) return;
+      const tmp = photos[idx];
+      photos[idx] = photos[swapWith];
+      photos[swapWith] = tmp;
+      profile.portfolioPhotos = photos;
+      const statusEl = document.getElementById('listing-photos-status');
+      statusEl.textContent = 'Saving new order…';
+      const result = await persistProfile({ portfolioPhotos: photos });
+      statusEl.textContent = (result && result.ok) ? 'Order updated.' : ("Couldn't save: " + ((result && result.message) || 'try again.'));
       renderListingPhotos();
     });
   });
