@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-09-29T17-14-56Z">
+<meta name="app-build" content="2026-09-30T18-45-42Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1257,7 +1257,11 @@
                     <option value="180">3 hr</option>
                   </select>
                 </div>
-                <button class="btn btn-outline" id="btn-bk-add-service" type="button">Add service</button>
+                <p class="screen-sub" id="bk-svc-editing-note" style="margin:0; display:none;">&nbsp;</p>
+                <div style="display:flex; gap:8px;">
+                  <button class="btn btn-outline" id="btn-bk-add-service" type="button" style="flex:1;">Add service</button>
+                  <button class="btn btn-ghost" id="btn-bk-cancel-edit-service" type="button" style="display:none; flex:1;">Cancel</button>
+                </div>
               </div>
             </div>
 
@@ -1847,6 +1851,22 @@
           <span>Nudge clients who haven't booked in a while to come back</span>
         </label>
         <p class="foot-note-small">Sends a client a gentle reminder to rebook with you once it's been about 90 days since their last visit, if they have notifications turned on. Checked once a day; a client who already has an upcoming appointment with you, or who's already gotten this reminder since their last visit, won't be nudged again. Turn this off if you'd rather not.</p>
+        <label class="check-row" style="margin-top:10px;">
+          <input type="checkbox" id="notify-appt-reminder-toggle">
+          <span>Remind clients before their appointment</span>
+        </label>
+        <div id="appt-reminder-hours-row" class="field" style="margin-top:6px;">
+          <label for="appt-reminder-hours">Send the reminder</label>
+          <select class="title-select" id="appt-reminder-hours" style="width:100%;">
+            <option value="1">1 hour before</option>
+            <option value="2">2 hours before</option>
+            <option value="4">4 hours before</option>
+            <option value="12">12 hours before</option>
+            <option value="24">24 hours before</option>
+            <option value="48">48 hours before</option>
+          </select>
+        </div>
+        <p class="foot-note-small">Sends the client a push with your name, the service, the time, and your address, once per appointment, if they have notifications turned on. Turn this off if you'd rather not.</p>
       </div>
       <div id="listing-ineligible" style="display:none; border-top:1px solid var(--line); padding-top:16px;">
         <p class="eyebrow-mini">Public directory</p>
@@ -2216,7 +2236,9 @@ function defaultProfile(name){
     paymentLinks: { venmo:'', cashapp:'', zelle:'', applepay:'' },
     loyaltyTiers: [],
     notifyApptEvents: true,
-    notifyRebookNudges: true
+    notifyRebookNudges: true,
+    notifyApptReminders: true,
+    apptReminderHours: 24
   };
 }
 function defaultBookingHours(){
@@ -2280,6 +2302,8 @@ async function persistProfile(fields){
   if (fields.loyaltyTiers !== undefined) row.loyalty_tiers = fields.loyaltyTiers;
   if (fields.notifyApptEvents !== undefined) row.notify_appt_events = fields.notifyApptEvents;
   if (fields.notifyRebookNudges !== undefined) row.notify_rebook_nudges = fields.notifyRebookNudges;
+  if (fields.notifyApptReminders !== undefined) row.notify_appt_reminders = fields.notifyApptReminders;
+  if (fields.apptReminderHours !== undefined) row.appt_reminder_hours = fields.apptReminderHours;
   try{
     const { data, error } = await supabaseClient.from('profiles').update(row).eq('code', profileCode).select();
     if (error) throw error;
@@ -4582,26 +4606,62 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     return `${m} min`;
   }
   function bookingUrl(){ return window.location.href.replace(/index\.html.*$/, '').replace(/\/[^\/]*$/, '/') + 'directory.html?pro=' + encodeURIComponent(profileCode); }
+  let editingServiceId = null;
   function renderServices(){
     const list = root.querySelector('#bk-services-list');
     const svcs = profile.bookingServices || [];
-    list.innerHTML = svcs.length ? svcs.map(s=> `<div class="detail-row"><span>${s.name}: $${s.price} · ${fmtDuration(s.duration)}</span><button type="button" class="link-btn" data-remove-service="${s.id}">Remove</button></div>`).join('') : '<p class="screen-sub" style="margin:0;">No services added yet. Add at least one below so clients have something to book.</p>';
+    list.innerHTML = svcs.length ? svcs.map(s=> `<div class="detail-row"><span>${s.name}: $${s.price} &middot; ${fmtDuration(s.duration)}</span><span style="display:flex; gap:10px;"><button type="button" class="link-btn" data-edit-service="${s.id}">Edit</button><button type="button" class="link-btn" data-remove-service="${s.id}">Remove</button></span></div>`).join('') : '<p class="screen-sub" style="margin:0;">No services added yet. Add at least one below so clients have something to book.</p>';
+  }
+  function resetServiceForm(){
+    editingServiceId = null;
+    root.querySelector('#bk-svc-name').value = '';
+    root.querySelector('#bk-svc-price').value = '';
+    root.querySelector('#bk-svc-duration').value = '30';
+    root.querySelector('#btn-bk-add-service').textContent = 'Add service';
+    root.querySelector('#btn-bk-cancel-edit-service').style.display = 'none';
+    const note = root.querySelector('#bk-svc-editing-note');
+    note.style.display = 'none';
+    note.textContent = ' ';
   }
   root.querySelector('#bk-services-list').addEventListener('click', e=>{
-    const id = e.target.dataset.removeService;
-    if (!id) return;
-    profile.bookingServices = (profile.bookingServices||[]).filter(s=>s.id!==id);
-    renderServices();
+    const removeId = e.target.dataset.removeService;
+    if (removeId){
+      profile.bookingServices = (profile.bookingServices||[]).filter(s=>s.id!==removeId);
+      if (editingServiceId === removeId) resetServiceForm();
+      renderServices();
+      return;
+    }
+    const editId = e.target.dataset.editService;
+    if (editId){
+      const svc = (profile.bookingServices||[]).find(s=>s.id===editId);
+      if (!svc) return;
+      editingServiceId = editId;
+      root.querySelector('#bk-svc-name').value = svc.name;
+      root.querySelector('#bk-svc-price').value = svc.price;
+      root.querySelector('#bk-svc-duration').value = String(svc.duration);
+      root.querySelector('#btn-bk-add-service').textContent = 'Save changes';
+      root.querySelector('#btn-bk-cancel-edit-service').style.display = '';
+      const note = root.querySelector('#bk-svc-editing-note');
+      note.style.display = '';
+      note.textContent = `Editing "${svc.name}" — update the fields below, then Save changes.`;
+      root.querySelector('#bk-svc-name').focus();
+    }
   });
   root.querySelector('#btn-bk-add-service').addEventListener('click', ()=>{
     const name = root.querySelector('#bk-svc-name').value.trim();
     const price = parseFloat(root.querySelector('#bk-svc-price').value);
     const duration = parseInt(root.querySelector('#bk-svc-duration').value, 10);
     if (!name || isNaN(price) || price < 0){ return; }
-    profile.bookingServices = (profile.bookingServices||[]).concat([{ id:genId(), name, price, duration }]);
-    root.querySelector('#bk-svc-name').value = '';
-    root.querySelector('#bk-svc-price').value = '';
+    if (editingServiceId){
+      profile.bookingServices = (profile.bookingServices||[]).map(s=> s.id===editingServiceId ? { ...s, name, price, duration } : s);
+    } else {
+      profile.bookingServices = (profile.bookingServices||[]).concat([{ id:genId(), name, price, duration }]);
+    }
+    resetServiceForm();
     renderServices();
+  });
+  root.querySelector('#btn-bk-cancel-edit-service').addEventListener('click', ()=>{
+    resetServiceForm();
   });
   function renderHours(){
     const list = root.querySelector('#bk-hours-list');
@@ -6540,6 +6600,8 @@ function applyProfileRow(data){
   profile.loyaltyTiers = Array.isArray(data.loyalty_tiers) ? data.loyalty_tiers : [];
   profile.notifyApptEvents = data.notify_appt_events !== false;
   profile.notifyRebookNudges = data.notify_rebook_nudges !== false;
+  profile.notifyApptReminders = data.notify_appt_reminders !== false;
+  profile.apptReminderHours = Number(data.appt_reminder_hours) || 24;
   profileCode = data.code;
 }
 async function tryLoadProfile(code){
@@ -7059,6 +7121,9 @@ async function populateNotificationsStatus(){
   }
   document.getElementById('notify-appt-events-toggle').checked = profile.notifyApptEvents !== false;
   document.getElementById('notify-rebook-toggle').checked = profile.notifyRebookNudges !== false;
+  document.getElementById('notify-appt-reminder-toggle').checked = profile.notifyApptReminders !== false;
+  document.getElementById('appt-reminder-hours').value = String(profile.apptReminderHours || 24);
+  document.getElementById('appt-reminder-hours-row').style.display = (profile.notifyApptReminders !== false) ? '' : 'none';
 }
 document.getElementById('btn-ios-homescreen-steps').addEventListener('click', function(){
   const steps = document.getElementById('ios-homescreen-steps');
@@ -7073,6 +7138,15 @@ document.getElementById('notify-appt-events-toggle').addEventListener('change', 
 document.getElementById('notify-rebook-toggle').addEventListener('change', function(){
   profile.notifyRebookNudges = this.checked;
   persistProfile({ notifyRebookNudges: this.checked });
+});
+document.getElementById('notify-appt-reminder-toggle').addEventListener('change', function(){
+  profile.notifyApptReminders = this.checked;
+  document.getElementById('appt-reminder-hours-row').style.display = this.checked ? '' : 'none';
+  persistProfile({ notifyApptReminders: this.checked });
+});
+document.getElementById('appt-reminder-hours').addEventListener('change', function(){
+  profile.apptReminderHours = Number(this.value) || 24;
+  persistProfile({ apptReminderHours: profile.apptReminderHours });
 });
 document.getElementById('btn-enable-notifications').addEventListener('click', async ()=>{
   const btn = document.getElementById('btn-enable-notifications');
