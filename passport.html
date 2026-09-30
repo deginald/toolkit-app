@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-09-29T17-14-56Z">
+<meta name="app-build" content="2026-09-30T21-22-13Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -226,6 +226,19 @@
           <div id="qr-holder"></div>
           <span class="cc-code" id="home-code">&nbsp;</span>
           <span class="cc-hint">Show this to your barber or stylist at your next visit</span>
+        </div>
+
+        <div id="find-pro-section" style="display:flex; flex-direction:column; gap:10px;">
+          <div class="section-head">
+            <h2>Find a new pro</h2>
+          </div>
+          <a class="btn btn-outline" id="btn-browse-directory" style="text-decoration:none; text-align:center;" href="directory.html">Browse Find a Pro</a>
+          <div class="field">
+            <label for="find-pro-input">Have a pro's code or a link they sent you?</label>
+            <div class="input-row"><input id="find-pro-input" type="text" placeholder="Paste a code or link" autocapitalize="off" autocorrect="off"></div>
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-go-to-pro">Go to their profile</button>
+          <p class="foot-note-small" id="find-pro-status">&nbsp;</p>
         </div>
 
         <div id="upcoming-section" style="display:none; flex-direction:column; gap:10px;">
@@ -821,6 +834,7 @@ function renderHome(){
   document.getElementById('tb-name').textContent = client.name;
   document.getElementById('home-code').textContent = clientCode;
   renderQr();
+  document.getElementById('btn-browse-directory').href = 'directory.html?client=' + encodeURIComponent(clientCode);
 
   const holder = document.getElementById('visit-list-holder');
   const visits = sortedVisits();
@@ -1322,6 +1336,7 @@ function enterApp(){
   document.getElementById('degraded-banner').hidden = dbAvailable;
   document.getElementById('btn-open-account').style.display = viewedViaSharedCode ? 'none' : '';
   document.getElementById('btn-switch-profile').textContent = viewedViaSharedCode ? 'Done' : 'Log Out';
+  document.getElementById('find-pro-section').style.display = viewedViaSharedCode ? 'none' : 'flex';
   renderHome();
   showScreen('home');
   loadUpcomingAppointments();
@@ -1448,6 +1463,38 @@ document.getElementById('btn-forgot-code-send').addEventListener('click', async 
 document.getElementById('btn-switch-profile').addEventListener('click', ()=>{
   try{ localStorage.removeItem('passportClientCode'); }catch(e){}
   window.location.href = window.location.pathname;
+});
+
+// A client can paste either the bare code a pro gave them, or a full link the pro
+// texted/shared (e.g. ".../directory.html?pro=casey-barber") -- pull the code out
+// of a link either way, so they don't have to know which one they were given.
+function extractProCodeFromInput(raw){
+  const val = (raw || '').trim();
+  if (!val) return '';
+  if (/[?&]pro=/.test(val) || /^https?:\/\//i.test(val)){
+    try{
+      const url = new URL(val, window.location.href);
+      const fromUrl = url.searchParams.get('pro');
+      if (fromUrl) return sanitizeCode(fromUrl);
+    }catch(e){ /* not a parseable URL -- fall through to the regex below */ }
+    const m = val.match(/[?&]pro=([^&]+)/);
+    if (m) return sanitizeCode(decodeURIComponent(m[1]));
+  }
+  return sanitizeCode(val);
+}
+function goToProFromInput(){
+  const input = document.getElementById('find-pro-input');
+  const status = document.getElementById('find-pro-status');
+  const code = extractProCodeFromInput(input.value);
+  if (!code){
+    status.textContent = "Enter a pro's code, or paste the link they sent you.";
+    return;
+  }
+  window.location.href = 'directory.html?pro=' + encodeURIComponent(code) + '&client=' + encodeURIComponent(clientCode);
+}
+document.getElementById('btn-go-to-pro').addEventListener('click', goToProFromInput);
+document.getElementById('find-pro-input').addEventListener('keydown', function(e){
+  if (e.key === 'Enter'){ e.preventDefault(); goToProFromInput(); }
 });
 
 document.getElementById('btn-open-account').addEventListener('click', ()=>{
