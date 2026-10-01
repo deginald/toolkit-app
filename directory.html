@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono: Find a Pro</title>
-<meta name="app-build" content="2026-10-01T00-15-26Z">
+<meta name="app-build" content="2026-10-01T00-41-14Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -20,6 +20,7 @@
     --brass:#D9AE5E; --brass-tint:#3D2E15;
     --good:#6FBF8F; --good-tint:#142A20;
     --behind:#E2917E; --behind-tint:#301F1E;
+    --vip:#CBA6FF; --vip-tint:#2B1D4A; --vip-deep:#8B5CF6;
     --shadow: 0 24px 48px -20px rgba(0,0,0,0.6);
     --bg-gradient: linear-gradient(165deg, #182B52 0%, #0A1220 50%, #05090F 100%);
   }
@@ -93,6 +94,12 @@
   .bkc-svc-row{ display:flex; align-items:center; gap:9px; padding:11px 12px; border:1px solid var(--line); border-radius:10px; background:var(--paper); cursor:pointer; }
   .bkc-slot-btn{ border:1px solid var(--brass); background:var(--paper); color:var(--brass); border-radius:9px; padding:8px 12px; font-size:12.5px; font-weight:700; cursor:pointer; }
   .bkc-slot-btn.selected{ background:var(--brass); color:#241A0C; }
+  .bkc-slot-btn.vip{ border-color:var(--vip-deep); background:var(--vip-tint); color:var(--vip); }
+  .bkc-slot-btn.vip.selected{ background:linear-gradient(135deg, var(--vip), var(--vip-deep)); color:#1C1230; }
+  .vip-badge{ display:inline-flex; align-items:center; gap:4px; width:fit-content; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; padding:3px 9px; border-radius:999px; background:var(--vip-tint); color:var(--vip); }
+  .vip-section-head{ display:flex; align-items:center; gap:8px; }
+  .vip-section-head .eyebrow-mini{ color:var(--vip); }
+  .vip-card{ border:1px solid var(--vip-deep); border-radius:14px; padding:14px 16px; background:linear-gradient(165deg, var(--vip-tint) 0%, var(--surface) 140%); display:flex; flex-direction:column; gap:10px; box-shadow:0 0 0 1px rgba(203,166,255,0.08), 0 16px 32px -20px rgba(139,92,246,0.45); }
   .social-row{ display:flex; flex-wrap:wrap; gap:8px; }
   .social-chip{ border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:12px; font-weight:700; color:var(--ink); text-decoration:none; background:var(--surface); }
   .social-chip:hover{ border-color:var(--brass); color:var(--brass); }
@@ -257,6 +264,16 @@
         <div id="bkc-step-slots" style="display:none; flex-direction:column; gap:10px;">
           <button type="button" class="link-btn" id="btn-bkc-back-services" style="align-self:flex-start;">&larr; Back to services</button>
           <div class="field"><label>Date</label><div class="input-row"><input id="bkc-date" type="date"></div></div>
+
+          <div id="bkc-vip-slots-section" class="vip-card" style="display:none;">
+            <div class="vip-section-head">
+              <p class="eyebrow-mini" style="margin:0;">✨ VIP Hours</p>
+            </div>
+            <p class="screen-sub" style="margin:0;">A special after-hours window, open just for this date.</p>
+            <div id="bkc-vip-slots-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+          </div>
+
+          <p class="eyebrow-mini" id="bkc-standard-slots-label" style="margin:0; display:none;">Standard times</p>
           <div id="bkc-slots-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
           <p class="screen-sub" id="bkc-slots-empty" style="display:none; margin:0;">No open times that day. Try another date.</p>
         </div>
@@ -821,7 +838,7 @@ function fmtTime12(hhmm){
 }
 const DAY_KEYS = ['sun','mon','tue','wed','thu','fri','sat'];
 
-let bkc = { pro:null, selectedIds:[], date:null, startTime:null, client:null };
+let bkc = { pro:null, selectedIds:[], date:null, startTime:null, client:null, isVip:false };
 
 function initBookingFor(pro){
   const block = document.getElementById('detail-booking-block');
@@ -830,7 +847,7 @@ function initBookingFor(pro){
     return;
   }
   block.style.display = 'flex';
-  bkc = { pro, selectedIds:[], date:null, startTime:null, client:null, pendingNewCode:null };
+  bkc = { pro, selectedIds:[], date:null, startTime:null, client:null, pendingNewCode:null, isVip:false };
   renderBkcServices();
   showBkcStep('services');
   const params = new URLSearchParams(window.location.search);
@@ -859,6 +876,7 @@ function renderBkcServices(){
             <span style="color:var(--muted); font-size:11.5px; flex:none;">${fmtDuration(s.duration)}</span>
           </span>
           ${s.description ? `<span style="color:var(--muted); font-size:11.5px; font-weight:400;">${s.description}</span>` : ''}
+          ${s.vipPrice ? `<span class="vip-badge">✨ VIP $${s.vipPrice}</span>` : ''}
         </span>
       </label>
       <button type="button" class="bkc-svc-book-btn" data-book-svc="${s.id}">Book</button>
@@ -916,17 +934,50 @@ function hoursFor(dateStr){
   const dayKey = DAY_KEYS[new Date(dateStr+'T00:00:00').getDay()];
   return (bkc.pro.booking_hours || {})[dayKey] || {closed:true};
 }
+function vipWindowFor(dateStr){
+  return (bkc.pro.vip_dates||[]).find(v=>v.date===dateStr) || null;
+}
 function toMinutes(hhmm){ const [h,m] = hhmm.split(':').map(Number); return h*60+m; }
 function toHHMM(mins){ const h = Math.floor(mins/60), m = mins%60; return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'); }
+
+// Shared slot-stepping logic for both standard hours and a VIP window -- an
+// existing appointment (VIP or not) blocks both equally, since it's the same
+// pro and the same clock.
+function computeOpenSlots(openMin, closeMin, totalMins, busy, nowMin){
+  const slots = [];
+  for (let t = openMin; t + totalMins <= closeMin; t += 15){
+    if (t < nowMin) continue;
+    const overlaps = busy.some(([bs,be])=> t < be && (t+totalMins) > bs);
+    if (!overlaps) slots.push(t);
+  }
+  return slots;
+}
+
+function bindSlotButtons(listEl, isVip){
+  listEl.querySelectorAll('.bkc-slot-btn').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#bkc-vip-slots-list .bkc-slot-btn, #bkc-slots-list .bkc-slot-btn').forEach(b=>b.classList.remove('selected'));
+      this.classList.add('selected');
+      bkc.startTime = this.dataset.start;
+      bkc.isVip = isVip;
+      setTimeout(()=>{ showBkcStep('confirm'); renderBkcConfirm(); }, 150);
+    });
+  });
+}
 
 async function renderBkcSlots(){
   const listEl = document.getElementById('bkc-slots-list');
   const emptyEl = document.getElementById('bkc-slots-empty');
+  const vipSection = document.getElementById('bkc-vip-slots-section');
+  const vipListEl = document.getElementById('bkc-vip-slots-list');
+  const standardLabel = document.getElementById('bkc-standard-slots-label');
   listEl.innerHTML = '';
+  vipListEl.innerHTML = '';
+  vipSection.style.display = 'none';
+  standardLabel.style.display = 'none';
   emptyEl.style.display = 'none';
   const totalMins = selectedServices().reduce((a,s)=>a+Number(s.duration||0),0);
-  const hours = hoursFor(bkc.date);
-  if (!hours || hours.closed || !totalMins){ emptyEl.style.display = 'block'; return; }
+  if (!totalMins){ emptyEl.style.display = 'block'; return; }
 
   let existing = [];
   if (dbAvailable){
@@ -937,36 +988,42 @@ async function renderBkcSlots(){
     }catch(e){ console.warn('load existing appts failed', e); }
   }
   const busy = existing.map(a=> [toMinutes(a.start_time), toMinutes(a.end_time)]);
-
-  const openMin = toMinutes(hours.open||'09:00');
-  const closeMin = toMinutes(hours.close||'18:00');
   const nowMin = (bkc.date === todayIso()) ? (new Date().getHours()*60 + new Date().getMinutes()) : -1;
-  const slots = [];
-  for (let t = openMin; t + totalMins <= closeMin; t += 15){
-    if (t < nowMin) continue;
-    const overlaps = busy.some(([bs,be])=> t < be && (t+totalMins) > bs);
-    if (!overlaps) slots.push(t);
+
+  const hours = hoursFor(bkc.date);
+  const standardSlots = (hours && !hours.closed)
+    ? computeOpenSlots(toMinutes(hours.open||'09:00'), toMinutes(hours.close||'18:00'), totalMins, busy, nowMin)
+    : [];
+
+  const vipWindow = vipWindowFor(bkc.date);
+  const vipSlots = vipWindow
+    ? computeOpenSlots(toMinutes(vipWindow.open), toMinutes(vipWindow.close), totalMins, busy, nowMin)
+    : [];
+
+  if (vipSlots.length){
+    vipSection.style.display = 'flex';
+    vipListEl.innerHTML = vipSlots.map(t=> `<button type="button" class="bkc-slot-btn vip" data-start="${toHHMM(t)}">✨ ${fmtTime12(toHHMM(t))}</button>`).join('');
+    bindSlotButtons(vipListEl, true);
+    standardLabel.style.display = standardSlots.length ? 'block' : 'none';
   }
-  if (!slots.length){ emptyEl.style.display = 'block'; return; }
-  listEl.innerHTML = slots.map(t=> `<button type="button" class="bkc-slot-btn" data-start="${toHHMM(t)}">${fmtTime12(toHHMM(t))}</button>`).join('');
-  listEl.querySelectorAll('.bkc-slot-btn').forEach(btn=>{
-    btn.addEventListener('click', function(){
-      listEl.querySelectorAll('.bkc-slot-btn').forEach(b=>b.classList.remove('selected'));
-      this.classList.add('selected');
-      bkc.startTime = this.dataset.start;
-      setTimeout(()=>{ showBkcStep('confirm'); renderBkcConfirm(); }, 150);
-    });
-  });
+
+  if (!standardSlots.length && !vipSlots.length){ emptyEl.style.display = 'block'; return; }
+  listEl.innerHTML = standardSlots.map(t=> `<button type="button" class="bkc-slot-btn" data-start="${toHHMM(t)}">${fmtTime12(toHHMM(t))}</button>`).join('');
+  bindSlotButtons(listEl, false);
 }
 
+function effectivePrice(s){
+  return (bkc.isVip && s.vipPrice) ? Number(s.vipPrice) : Number(s.price||0);
+}
 function renderBkcConfirm(){
   const svcs = selectedServices();
-  const totalPrice = svcs.reduce((a,s)=>a+Number(s.price||0),0);
+  const totalPrice = svcs.reduce((a,s)=>a+effectivePrice(s),0);
   const totalMins = svcs.reduce((a,s)=>a+Number(s.duration||0),0);
   const endTime = toHHMM(toMinutes(bkc.startTime) + totalMins);
   bkc.endTime = endTime;
   const dateLabel = new Date(bkc.date+'T00:00:00').toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'});
   document.getElementById('bkc-confirm-summary').innerHTML = `
+    ${bkc.isVip ? `<div class="summary-row"><span>&nbsp;</span><span class="vip-badge">✨ VIP Hours</span></div>` : ''}
     <div class="summary-row"><span>With</span><span>${bkc.pro.name}</span></div>
     <div class="summary-row"><span>Services</span><span>${svcs.map(s=>s.name).join(', ')}</span></div>
     <div class="summary-row"><span>When</span><span>${dateLabel}, ${fmtTime12(bkc.startTime)}</span></div>
@@ -1094,7 +1151,7 @@ document.getElementById('btn-bkc-confirm').addEventListener('click', async ()=>{
   const statusEl = document.getElementById('bkc-confirm-status');
   if (!bkc.client){ statusEl.textContent = 'Look up or create your Vono Passport first.'; return; }
   const svcs = selectedServices();
-  const totalPrice = svcs.reduce((a,s)=>a+Number(s.price||0),0);
+  const totalPrice = svcs.reduce((a,s)=>a+effectivePrice(s),0);
   const totalMins = svcs.reduce((a,s)=>a+Number(s.duration||0),0);
   const appt = {
     id: genId(),
@@ -1102,13 +1159,14 @@ document.getElementById('btn-bkc-confirm').addEventListener('click', async ()=>{
     barber_name: bkc.pro.name,
     client_code: bkc.client.code,
     client_name: bkc.client.name,
-    services: svcs.map(s=>({name:s.name, price:s.price, duration:s.duration})),
+    services: svcs.map(s=>({name:s.name, price:effectivePrice(s), duration:s.duration})),
     total_price: totalPrice,
     total_minutes: totalMins,
     appt_date: bkc.date,
     start_time: bkc.startTime,
     end_time: bkc.endTime,
-    status: 'booked'
+    status: 'booked',
+    is_vip: !!bkc.isVip
   };
   if (!dbAvailable){ statusEl.textContent = "Live booking isn't connected right now. This wasn't saved."; return; }
   statusEl.textContent = 'Booking…';
@@ -1130,7 +1188,8 @@ document.getElementById('btn-bkc-confirm').addEventListener('click', async ()=>{
 
 function renderBkcSuccess(appt){
   const dateLabel = new Date(appt.appt_date+'T00:00:00').toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'});
-  document.getElementById('bkc-success-summary').textContent = `${appt.services.map(s=>s.name).join(', ')} with ${bkc.pro.name}, ${dateLabel}, ${fmtTime12(appt.start_time)}. Total: $${appt.total_price}.`;
+  const vipPrefix = appt.is_vip ? '<span class="vip-badge" style="margin-bottom:6px;">✨ VIP Hours</span><br>' : '';
+  document.getElementById('bkc-success-summary').innerHTML = `${vipPrefix}${appt.services.map(s=>s.name).join(', ')} with ${bkc.pro.name}, ${dateLabel}, ${fmtTime12(appt.start_time)}. Total: $${appt.total_price}.`;
 
   const pay = bkc.pro.payment_links || {};
   const payHolder = document.getElementById('bkc-pay-links');
@@ -1143,7 +1202,7 @@ function renderBkcSuccess(appt){
 
   document.getElementById('btn-bkc-add-calendar').onclick = ()=> downloadIcs(appt, bkc.pro.name);
   document.getElementById('btn-bkc-book-again').onclick = ()=>{
-    bkc.selectedIds = []; bkc.date = null; bkc.startTime = null; bkc.client = null;
+    bkc.selectedIds = []; bkc.date = null; bkc.startTime = null; bkc.client = null; bkc.isVip = false;
     document.querySelectorAll('.bkc-svc-check').forEach(cb=>cb.checked=false);
     updateBkcTotal();
     showBkcStep('services');

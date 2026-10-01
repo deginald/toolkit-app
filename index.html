@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-01T00-15-25Z">
+<meta name="app-build" content="2026-10-01T00-41-13Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -20,6 +20,7 @@
     --brass:#D9AE5E; --brass-tint:#3D2E15;
     --good:#6FBF8F; --good-tint:#142A20;
     --behind:#E2917E; --behind-tint:#301F1E;
+    --vip:#CBA6FF; --vip-tint:#2B1D4A; --vip-deep:#8B5CF6;
     --shadow: 0 24px 48px -20px rgba(0,0,0,0.6);
     --bg-gradient: linear-gradient(165deg, #182B52 0%, #0A1220 50%, #05090F 100%);
   }
@@ -145,6 +146,7 @@
   .cal-week-day{ display:flex; flex-direction:column; gap:8px; }
   .cal-week-day-head{ display:flex; align-items:baseline; gap:8px; }
   .cal-appt-row{ display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--paper); }
+  .cal-appt-row.is-vip{ border-color:var(--vip-deep); background:linear-gradient(165deg, var(--vip-tint) 0%, var(--paper) 150%); }
   .cal-appt-time{ font-size:12.5px; font-weight:700; color:var(--brass); flex:none; min-width:64px; font-variant-numeric:tabular-nums; }
   .inv-item-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--paper); }
   .inv-item-row.flash{ border-color:var(--brass); background:var(--brass-tint); }
@@ -179,6 +181,9 @@
   .meter-fill{ height:100%; border-radius:6px; background:var(--brass); }
   .meter-labels{ display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); font-weight:600; font-variant-numeric:tabular-nums; }
   .card{ border:1px solid var(--line); border-radius:14px; padding:14px 16px; background:var(--paper); display:flex; flex-direction:column; gap:8px; }
+  .vip-badge{ display:inline-flex; align-items:center; gap:4px; width:fit-content; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; padding:3px 9px; border-radius:999px; background:var(--vip-tint); color:var(--vip); }
+  .vip-card{ border:1px solid var(--vip-deep); border-radius:14px; padding:14px 16px; background:linear-gradient(165deg, var(--vip-tint) 0%, var(--surface) 140%); display:flex; flex-direction:column; gap:10px; box-shadow:0 0 0 1px rgba(203,166,255,0.08), 0 16px 32px -20px rgba(139,92,246,0.45); }
+  .vip-card .eyebrow-mini{ color:var(--vip); }
   .sched-row{ display:flex; gap:6px; flex-wrap:wrap; }
   .sched-pill{ font-size:11.5px; font-weight:700; padding:5px 9px; border-radius:8px; background:var(--surface); border:1px solid var(--line); color:var(--muted); font-variant-numeric:tabular-nums; }
   .sched-pill.active{ color:var(--brass); border-color:var(--brass); }
@@ -1262,6 +1267,7 @@
                   </select>
                 </div>
                 <div class="field"><label>Description (optional)</label><div class="input-row"><textarea id="bk-svc-description" rows="2" maxlength="140" placeholder="e.g. Includes a wash, cut, and style"></textarea></div></div>
+                <div class="field"><label style="color:var(--vip);">✨ VIP price ($, optional)</label><div class="input-row"><input id="bk-svc-vip-price" type="number" min="0" step="1" placeholder="e.g. 60"></div><p class="foot-note-small">Charged instead of the regular price when this service is booked during your VIP Hours.</p></div>
                 <p class="screen-sub" id="bk-svc-editing-note" style="margin:0; display:none;">&nbsp;</p>
                 <div style="display:flex; gap:8px;">
                   <button class="btn btn-outline" id="btn-bk-add-service" type="button" style="flex:1;">Add service</button>
@@ -1274,6 +1280,20 @@
               <div style="display:flex; flex-direction:column; gap:10px;">
                 <p class="eyebrow-mini">Weekly hours</p>
                 <div id="bk-hours-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+              </div>
+              <div class="vip-card">
+                <div>
+                  <p class="eyebrow-mini">✨ VIP Hours</p>
+                  <p class="screen-sub" style="margin:4px 0 0;">Open a specific date for premium, after-hours booking. Clients see it called out on your profile, and services with a VIP price (set under Services) charge that instead of their regular price.</p>
+                </div>
+                <div id="bk-vip-dates-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+                <div class="field"><label>Date</label><div class="input-row"><input id="bk-vip-date" type="date"></div></div>
+                <div style="display:flex; gap:8px;">
+                  <div class="field" style="flex:1;"><label>Open</label><div class="input-row"><input id="bk-vip-open" type="time" value="19:00"></div></div>
+                  <div class="field" style="flex:1;"><label>Close</label><div class="input-row"><input id="bk-vip-close" type="time" value="21:00"></div></div>
+                </div>
+                <button class="btn btn-primary" id="btn-bk-add-vip-date" type="button" style="background:var(--vip-deep); color:#fff;">✨ Add VIP date</button>
+                <p class="screen-sub" id="bk-vip-date-status" style="margin:0;">&nbsp;</p>
               </div>
               <div style="display:flex; flex-direction:column; gap:10px;">
                 <p class="eyebrow-mini">Date overrides</p>
@@ -2237,6 +2257,7 @@ function defaultProfile(name){
     bookingServices: [],
     bookingHours: defaultBookingHours(),
     bookingOverrides: [],
+    vipDates: [],
     bookingPolicy: '',
     paymentLinks: { venmo:'', cashapp:'', zelle:'', applepay:'' },
     loyaltyTiers: [],
@@ -2302,6 +2323,7 @@ async function persistProfile(fields){
   if (fields.bookingServices !== undefined) row.booking_services = fields.bookingServices;
   if (fields.bookingHours !== undefined) row.booking_hours = fields.bookingHours;
   if (fields.bookingOverrides !== undefined) row.booking_overrides = fields.bookingOverrides;
+  if (fields.vipDates !== undefined) row.vip_dates = fields.vipDates;
   if (fields.bookingPolicy !== undefined) row.booking_policy = fields.bookingPolicy;
   if (fields.paymentLinks !== undefined) row.payment_links = fields.paymentLinks;
   if (fields.loyaltyTiers !== undefined) row.loyalty_tiers = fields.loyaltyTiers;
@@ -4615,7 +4637,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   function renderServices(){
     const list = root.querySelector('#bk-services-list');
     const svcs = profile.bookingServices || [];
-    list.innerHTML = svcs.length ? svcs.map(s=> `<div class="detail-row" style="align-items:flex-start;"><span style="display:flex; flex-direction:column; gap:2px;"><span>${s.name}: $${s.price} &middot; ${fmtDuration(s.duration)}</span>${s.description ? `<span class="screen-sub" style="font-weight:400; text-align:left;">${s.description}</span>` : ''}</span><span style="display:flex; gap:10px; flex:none;"><button type="button" class="link-btn" data-edit-service="${s.id}">Edit</button><button type="button" class="link-btn" data-remove-service="${s.id}">Remove</button></span></div>`).join('') : '<p class="screen-sub" style="margin:0;">No services added yet. Add at least one below so clients have something to book.</p>';
+    list.innerHTML = svcs.length ? svcs.map(s=> `<div class="detail-row" style="align-items:flex-start;"><span style="display:flex; flex-direction:column; gap:3px;"><span>${s.name}: $${s.price} &middot; ${fmtDuration(s.duration)}</span>${s.description ? `<span class="screen-sub" style="font-weight:400; text-align:left;">${s.description}</span>` : ''}${s.vipPrice ? `<span class="vip-badge">✨ VIP $${s.vipPrice}</span>` : ''}</span><span style="display:flex; gap:10px; flex:none;"><button type="button" class="link-btn" data-edit-service="${s.id}">Edit</button><button type="button" class="link-btn" data-remove-service="${s.id}">Remove</button></span></div>`).join('') : '<p class="screen-sub" style="margin:0;">No services added yet. Add at least one below so clients have something to book.</p>';
   }
   function resetServiceForm(){
     editingServiceId = null;
@@ -4623,6 +4645,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#bk-svc-price').value = '';
     root.querySelector('#bk-svc-duration').value = '30';
     root.querySelector('#bk-svc-description').value = '';
+    root.querySelector('#bk-svc-vip-price').value = '';
     root.querySelector('#btn-bk-add-service').textContent = 'Add service';
     root.querySelector('#btn-bk-cancel-edit-service').style.display = 'none';
     const note = root.querySelector('#bk-svc-editing-note');
@@ -4646,6 +4669,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       root.querySelector('#bk-svc-price').value = svc.price;
       root.querySelector('#bk-svc-duration').value = String(svc.duration);
       root.querySelector('#bk-svc-description').value = svc.description || '';
+      root.querySelector('#bk-svc-vip-price').value = svc.vipPrice || '';
       root.querySelector('#btn-bk-add-service').textContent = 'Save changes';
       root.querySelector('#btn-bk-cancel-edit-service').style.display = '';
       const note = root.querySelector('#bk-svc-editing-note');
@@ -4659,11 +4683,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const price = parseFloat(root.querySelector('#bk-svc-price').value);
     const duration = parseInt(root.querySelector('#bk-svc-duration').value, 10);
     const description = root.querySelector('#bk-svc-description').value.trim();
+    const vipPriceRaw = root.querySelector('#bk-svc-vip-price').value.trim();
+    const vipPrice = vipPriceRaw === '' ? null : parseFloat(vipPriceRaw);
     if (!name || isNaN(price) || price < 0){ return; }
+    if (vipPrice !== null && (isNaN(vipPrice) || vipPrice < 0)){ return; }
     if (editingServiceId){
-      profile.bookingServices = (profile.bookingServices||[]).map(s=> s.id===editingServiceId ? { ...s, name, price, duration, description } : s);
+      profile.bookingServices = (profile.bookingServices||[]).map(s=> s.id===editingServiceId ? { ...s, name, price, duration, description, vipPrice } : s);
     } else {
-      profile.bookingServices = (profile.bookingServices||[]).concat([{ id:genId(), name, price, duration, description }]);
+      profile.bookingServices = (profile.bookingServices||[]).concat([{ id:genId(), name, price, duration, description, vipPrice }]);
     }
     resetServiceForm();
     renderServices();
@@ -4708,6 +4735,32 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     });
     return out;
   }
+  function renderVipDates(){
+    const list = root.querySelector('#bk-vip-dates-list');
+    const dates = profile.vipDates || [];
+    list.innerHTML = dates.length ? dates.map((v,i)=>{
+      const label = new Date(v.date+'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+      return `<div class="detail-row" style="align-items:center;"><span style="display:flex; align-items:center; gap:8px; color:var(--ink); font-weight:600;"><span class="vip-badge">✨ VIP</span>${label}, ${fmtTimeBk(v.open)}&ndash;${fmtTimeBk(v.close)}</span><button type="button" class="link-btn" data-remove-vip-date="${i}" style="color:var(--behind);">Remove</button></div>`;
+    }).join('') : '<p class="screen-sub" style="margin:0;">No VIP dates yet. Add one below to open a special after-hours booking window.</p>';
+  }
+  root.querySelector('#bk-vip-dates-list').addEventListener('click', e=>{
+    const i = e.target.dataset.removeVipDate;
+    if (i === undefined) return;
+    profile.vipDates = (profile.vipDates||[]).filter((_,idx)=> idx!==parseInt(i,10));
+    renderVipDates();
+  });
+  root.querySelector('#btn-bk-add-vip-date').addEventListener('click', ()=>{
+    const statusEl = root.querySelector('#bk-vip-date-status');
+    const date = root.querySelector('#bk-vip-date').value;
+    const open = root.querySelector('#bk-vip-open').value || '19:00';
+    const close = root.querySelector('#bk-vip-close').value || '21:00';
+    if (!date){ statusEl.textContent = 'Pick a date first.'; return; }
+    if (close <= open){ statusEl.textContent = 'Close time has to be after open time.'; return; }
+    profile.vipDates = (profile.vipDates||[]).filter(v=>v.date!==date).concat([{ date, open, close }]).sort((a,b)=> a.date<b.date?-1:1);
+    root.querySelector('#bk-vip-date').value = '';
+    statusEl.textContent = '✨ VIP date added below. Remember to Save booking setup.';
+    renderVipDates();
+  });
   function renderOverrides(){
     const list = root.querySelector('#bk-overrides-list');
     const overrides = profile.bookingOverrides || [];
@@ -4761,6 +4814,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     updateEnabledVisibility();
     renderServices();
     renderHours();
+    renderVipDates();
     renderOverrides();
     renderLinkAndQR();
     root.querySelector('#bk-policy').value = profile.bookingPolicy || '';
@@ -4789,7 +4843,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       applepay: root.querySelector('#bk-pay-applepay').value.trim()
     };
     note.textContent = 'Saving…';
-    const result = await persistProfile({ bookingEnabled: profile.bookingEnabled, bookingServices: profile.bookingServices, bookingHours: profile.bookingHours, bookingOverrides: profile.bookingOverrides, bookingPolicy: profile.bookingPolicy, paymentLinks: profile.paymentLinks });
+    const result = await persistProfile({ bookingEnabled: profile.bookingEnabled, bookingServices: profile.bookingServices, bookingHours: profile.bookingHours, bookingOverrides: profile.bookingOverrides, vipDates: profile.vipDates, bookingPolicy: profile.bookingPolicy, paymentLinks: profile.paymentLinks });
     note.textContent = result.ok ? 'Saved.' : ("Couldn't save: " + (result.message || 'try again.'));
     updateEnabledVisibility();
     if (profile.bookingEnabled) loadAppointments();
@@ -4908,10 +4962,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
   function renderCalApptRow(a){
     const svcNames = (a.services||[]).map(s=>s.name).join(', ');
-    return `<div class="cal-appt-row">
+    return `<div class="cal-appt-row${a.is_vip ? ' is-vip' : ''}">
       <span class="cal-appt-time">${fmtTimeBk(a.start_time)}</span>
       <div style="display:flex; flex-direction:column; gap:1px; min-width:0;">
-        <strong style="font-size:13.5px;">${escapeHtmlBk(a.client_name||'Client')}</strong>
+        <strong style="font-size:13.5px; display:flex; align-items:center; gap:6px;">${escapeHtmlBk(a.client_name||'Client')}${a.is_vip ? '<span class="vip-badge">✨ VIP</span>' : ''}</strong>
         <span class="screen-sub" style="margin:0;">${escapeHtmlBk(svcNames)}${a.total_price ? ' · $'+a.total_price : ''}</span>
       </div>
     </div>`;
@@ -4962,7 +5016,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const outside = d.getMonth() !== month;
       const isToday = iso === today;
       html += `<div class="cal-month-cell${outside?' outside':''}${isToday?' today':''}" data-cal-day="${iso}">
-        <span class="cal-daynum">${d.getDate()}</span>
+        <span class="cal-daynum">${d.getDate()}${appts.some(a=>a.is_vip) ? ' ✨' : ''}</span>
         ${appts.length ? `<span class="cal-count">${appts.length}</span>` : ''}
       </div>`;
     }
@@ -6603,6 +6657,7 @@ function applyProfileRow(data){
   profile.bookingServices = Array.isArray(data.booking_services) ? data.booking_services : [];
   profile.bookingHours = Object.assign(defaultBookingHours(), data.booking_hours || {});
   profile.bookingOverrides = Array.isArray(data.booking_overrides) ? data.booking_overrides : [];
+  profile.vipDates = Array.isArray(data.vip_dates) ? data.vip_dates : [];
   profile.bookingPolicy = data.booking_policy || '';
   profile.paymentLinks = Object.assign({ venmo:'', cashapp:'', zelle:'', applepay:'' }, data.payment_links || {});
   profile.loyaltyTiers = Array.isArray(data.loyalty_tiers) ? data.loyalty_tiers : [];

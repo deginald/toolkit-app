@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-09-30T21-22-13Z">
+<meta name="app-build" content="2026-10-01T00-41-15Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -20,6 +20,7 @@
     --brass:#D9AE5E; --brass-tint:#3D2E15;
     --good:#6FBF8F; --good-tint:#142A20;
     --behind:#E2917E; --behind-tint:#301F1E;
+    --vip:#CBA6FF; --vip-tint:#2B1D4A; --vip-deep:#8B5CF6;
     --shadow: 0 24px 48px -20px rgba(0,0,0,0.6);
     --bg-gradient: linear-gradient(165deg, #182B52 0%, #0A1220 50%, #05090F 100%);
   }
@@ -113,6 +114,8 @@
   .detail-photos{ display:flex; flex-direction:column; gap:10px; }
   .detail-photo{ width:100%; border-radius:14px; display:block; background:var(--line); }
   .detail-card{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+  .detail-card.is-vip{ border-color:var(--vip-deep); background:linear-gradient(165deg, var(--vip-tint) 0%, var(--paper) 150%); }
+  .vip-badge{ display:inline-flex; align-items:center; gap:4px; width:fit-content; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; padding:3px 9px; border-radius:999px; background:var(--vip-tint); color:var(--vip); }
   .rec-products{ font-size:12px; color:var(--brass); font-weight:600; }
   .detail-row{ display:flex; justify-content:space-between; gap:10px; font-size:12.5px; }
   .detail-row span:first-child{ color:var(--muted); font-weight:600; }
@@ -981,7 +984,8 @@ function renderUpcoming(list){
     const svcNames = (a.services||[]).map(s=>s.name).join(', ');
     const msgButtons = CLIENT_CANNED_MESSAGES.map((m,i)=>`<button type="button" class="btn btn-outline" data-send-msg-idx="${i}" style="text-align:left;">${m}</button>`).join('');
     return `
-      <div class="detail-card" style="gap:6px;">
+      <div class="detail-card${a.is_vip ? ' is-vip' : ''}" style="gap:6px;">
+        ${a.is_vip ? '<span class="vip-badge">✨ VIP Hours</span>' : ''}
         <strong>${dateLabel}, ${fmtTime12(a.start_time)}</strong>
         <span class="screen-sub">${a.barber_name}: ${svcNames}</span>
         <span class="screen-sub">Total: $${a.total_price}</span>
