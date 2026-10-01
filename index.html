@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-09-30T20-17-46Z">
+<meta name="app-build" content="2026-10-01T00-15-25Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1261,6 +1261,7 @@
                     <option value="180">3 hr</option>
                   </select>
                 </div>
+                <div class="field"><label>Description (optional)</label><div class="input-row"><textarea id="bk-svc-description" rows="2" maxlength="140" placeholder="e.g. Includes a wash, cut, and style"></textarea></div></div>
                 <p class="screen-sub" id="bk-svc-editing-note" style="margin:0; display:none;">&nbsp;</p>
                 <div style="display:flex; gap:8px;">
                   <button class="btn btn-outline" id="btn-bk-add-service" type="button" style="flex:1;">Add service</button>
@@ -4614,13 +4615,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   function renderServices(){
     const list = root.querySelector('#bk-services-list');
     const svcs = profile.bookingServices || [];
-    list.innerHTML = svcs.length ? svcs.map(s=> `<div class="detail-row"><span>${s.name}: $${s.price} &middot; ${fmtDuration(s.duration)}</span><span style="display:flex; gap:10px;"><button type="button" class="link-btn" data-edit-service="${s.id}">Edit</button><button type="button" class="link-btn" data-remove-service="${s.id}">Remove</button></span></div>`).join('') : '<p class="screen-sub" style="margin:0;">No services added yet. Add at least one below so clients have something to book.</p>';
+    list.innerHTML = svcs.length ? svcs.map(s=> `<div class="detail-row" style="align-items:flex-start;"><span style="display:flex; flex-direction:column; gap:2px;"><span>${s.name}: $${s.price} &middot; ${fmtDuration(s.duration)}</span>${s.description ? `<span class="screen-sub" style="font-weight:400; text-align:left;">${s.description}</span>` : ''}</span><span style="display:flex; gap:10px; flex:none;"><button type="button" class="link-btn" data-edit-service="${s.id}">Edit</button><button type="button" class="link-btn" data-remove-service="${s.id}">Remove</button></span></div>`).join('') : '<p class="screen-sub" style="margin:0;">No services added yet. Add at least one below so clients have something to book.</p>';
   }
   function resetServiceForm(){
     editingServiceId = null;
     root.querySelector('#bk-svc-name').value = '';
     root.querySelector('#bk-svc-price').value = '';
     root.querySelector('#bk-svc-duration').value = '30';
+    root.querySelector('#bk-svc-description').value = '';
     root.querySelector('#btn-bk-add-service').textContent = 'Add service';
     root.querySelector('#btn-bk-cancel-edit-service').style.display = 'none';
     const note = root.querySelector('#bk-svc-editing-note');
@@ -4643,6 +4645,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       root.querySelector('#bk-svc-name').value = svc.name;
       root.querySelector('#bk-svc-price').value = svc.price;
       root.querySelector('#bk-svc-duration').value = String(svc.duration);
+      root.querySelector('#bk-svc-description').value = svc.description || '';
       root.querySelector('#btn-bk-add-service').textContent = 'Save changes';
       root.querySelector('#btn-bk-cancel-edit-service').style.display = '';
       const note = root.querySelector('#bk-svc-editing-note');
@@ -4655,11 +4658,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const name = root.querySelector('#bk-svc-name').value.trim();
     const price = parseFloat(root.querySelector('#bk-svc-price').value);
     const duration = parseInt(root.querySelector('#bk-svc-duration').value, 10);
+    const description = root.querySelector('#bk-svc-description').value.trim();
     if (!name || isNaN(price) || price < 0){ return; }
     if (editingServiceId){
-      profile.bookingServices = (profile.bookingServices||[]).map(s=> s.id===editingServiceId ? { ...s, name, price, duration } : s);
+      profile.bookingServices = (profile.bookingServices||[]).map(s=> s.id===editingServiceId ? { ...s, name, price, duration, description } : s);
     } else {
-      profile.bookingServices = (profile.bookingServices||[]).concat([{ id:genId(), name, price, duration }]);
+      profile.bookingServices = (profile.bookingServices||[]).concat([{ id:genId(), name, price, duration, description }]);
     }
     resetServiceForm();
     renderServices();
