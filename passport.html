@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-01T00-41-15Z">
+<meta name="app-build" content="2026-10-01T03-48-18Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -114,6 +114,18 @@
   .detail-photos{ display:flex; flex-direction:column; gap:10px; }
   .detail-photo{ width:100%; border-radius:14px; display:block; background:var(--line); }
   .detail-card{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+
+  .fam-avatar{ width:64px; height:64px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:22px; overflow:hidden; }
+  .fam-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .fam-avatar--sm{ width:44px; height:44px; font-size:16px; }
+  .fam-picker-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; width:100%; max-width:340px; }
+  .fam-picker-tile{ display:flex; flex-direction:column; align-items:center; gap:8px; background:none; border:none; padding:6px; cursor:pointer; }
+  .fam-picker-tile span{ font-size:12.5px; font-weight:700; color:var(--ink); text-align:center; }
+  .fam-member-row{ display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .fam-member-row:last-child{ border-bottom:none; }
+  .fam-member-info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+  .fam-member-info strong{ font-size:13.5px; }
+  .fam-member-code{ font-size:11px; color:var(--muted); font-family:monospace; }
   .detail-card.is-vip{ border-color:var(--vip-deep); background:linear-gradient(165deg, var(--vip-tint) 0%, var(--paper) 150%); }
   .vip-badge{ display:inline-flex; align-items:center; gap:4px; width:fit-content; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; padding:3px 9px; border-radius:999px; background:var(--vip-tint); color:var(--vip); }
   .rec-products{ font-size:12px; color:var(--brass); font-weight:600; }
@@ -190,6 +202,20 @@
       <button class="btn btn-outline" id="btn-forgot-code-send" type="button">Email me my code</button>
       <p class="foot-note-small" id="forgot-code-status">&nbsp;</p>
     </div>
+  </div>
+
+  <div id="picker-screen" class="center-screen" hidden>
+    <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:-4px;">
+      <img src="vono-mark-gold.svg" alt="Vono" style="width:90px; height:90px;">
+      <p class="brand-name">Vono</p>
+    </div>
+    <div>
+      <p class="eyebrow-mini">Family account</p>
+      <h2 class="screen-title">Who's this for?</h2>
+      <p class="screen-sub" style="margin-top:6px;">Tap a profile to see their Vono Passport.</p>
+    </div>
+    <div class="fam-picker-grid" id="fam-picker-grid"></div>
+    <button type="button" class="link-btn" id="btn-picker-logout" style="margin-top:4px;">Log out</button>
   </div>
 
   <div id="passport-shell" hidden>
@@ -364,6 +390,29 @@
           <div class="input-row" style="margin-top:10px;"><input id="account-name" type="text" placeholder="e.g. Jordan Smith" autocomplete="name"></div>
           <button class="btn btn-primary" id="btn-save-name" type="button" style="margin-top:10px;">Save name</button>
           <p class="foot-note-small" id="account-name-status">&nbsp;</p>
+        </div>
+        <div style="border-top:1px solid var(--line); padding-top:16px;" id="fam-admin-section">
+          <p class="eyebrow-mini">Family account</p>
+          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Manage family profiles</h2>
+          <p class="screen-sub">Add up to <span id="fam-member-limit">6</span> family members under this account &mdash; each gets their own Vono Passport and code, and you can switch between them without logging out.</p>
+          <div id="fam-member-list" style="display:flex; flex-direction:column; margin-top:10px;"></div>
+          <p class="screen-sub" id="fam-limit-note" style="display:none; margin-top:8px;">You've reached the family limit.</p>
+          <button type="button" class="btn btn-outline" id="btn-fam-add-open" style="width:100%; margin-top:10px;">+ Add a family member</button>
+
+          <div id="fam-add-form" style="display:none; flex-direction:column; gap:10px; margin-top:12px; padding-top:12px; border-top:1px solid var(--line);">
+            <div class="field"><label>Their name</label><div class="input-row"><input id="fam-add-name" type="text" placeholder="e.g. Jamie King"></div></div>
+            <div class="field"><label>Their personal code</label><div class="input-row"><input id="fam-add-code" type="text" placeholder="e.g. jamie-king"></div></div>
+            <input type="file" accept="image/*" id="fam-add-photo-input" style="display:none;">
+            <button type="button" class="btn btn-ghost" id="btn-fam-add-photo" style="width:100%;">Add a photo (optional)</button>
+            <p class="screen-sub" id="fam-add-photo-status" style="margin:0;">&nbsp;</p>
+            <button type="button" class="btn btn-primary" id="btn-fam-add-save" style="width:100%;">Add to family</button>
+            <button type="button" class="btn btn-ghost" id="btn-fam-add-cancel" style="width:100%;">Cancel</button>
+            <p class="screen-sub" id="fam-add-status" style="margin:0;">&nbsp;</p>
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--line); padding-top:16px; display:none;" id="fam-member-note-section">
+          <p class="eyebrow-mini">Family account</p>
+          <p class="screen-sub">This Vono Passport is part of a family account. Ask whoever set it up if you need another profile added.</p>
         </div>
         <div style="border-top:1px solid var(--line); padding-top:16px;">
           <p class="eyebrow-mini">Communication preferences</p>
@@ -648,7 +697,24 @@ function toTitleCase(str){
   return str.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
 }
 function defaultClient(name){
-  return { code:null, name: name || 'You', email:'', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'', hiddenBookAgain: [], notifyShopAnnouncements:false, notifyShopAnnouncementsAt:'', notifyPromotions:false, notifyPromotionsAt:'', photoConsentRecord:false, photoConsentRecordAt:'', photoConsentMarketing:false, photoConsentMarketingAt:'' };
+  return { code:null, name: name || 'You', email:'', visits: [], created_at:new Date().toISOString(), updated_at:new Date().toISOString(), ndaVersion:'', ndaAcceptedAt:'', hiddenBookAgain: [], notifyShopAnnouncements:false, notifyShopAnnouncementsAt:'', notifyPromotions:false, notifyPromotionsAt:'', photoConsentRecord:false, photoConsentRecordAt:'', photoConsentMarketing:false, photoConsentMarketingAt:'', familyId:null, familyRole:null, avatarUrl:'', avatarPath:'', avatarColor:'' };
+}
+
+// Up to 6 distinct colors so family members read apart from one another at a
+// glance in the picker and the management list -- assigned in rotation as
+// members are added, not re-derived from the name, so a member's color stays
+// stable even if they're later renamed.
+const FAMILY_AVATAR_COLORS = ['#D9AE5E','#6FBF8F','#8FB7E2','#E2917E','#CBA6FF','#F2C572'];
+const FAMILY_MEMBER_LIMIT = 6;
+
+function famAvatarHtml(member, sizeClass){
+  const cls = 'fam-avatar' + (sizeClass ? ' ' + sizeClass : '');
+  if (member.avatarUrl){
+    return `<div class="${cls}" style="background:var(--surface);"><img src="${member.avatarUrl}" alt="${member.name ? member.name + ' photo' : 'Profile photo'}"></div>`;
+  }
+  const color = member.avatarColor || FAMILY_AVATAR_COLORS[0];
+  const initial = (member.name || '?').trim().charAt(0).toUpperCase();
+  return `<div class="${cls}" style="background:${color};">${initial}</div>`;
 }
 function showToast(msg, danger){
   const t = document.getElementById('toast');
@@ -726,6 +792,12 @@ async function tryLoadClient(code){
       client.photoConsentMarketing = data.photo_consent_marketing === true;
       client.photoConsentMarketingAt = data.photo_consent_marketing_at || '';
       clientCode = code;
+      // client_login() is a guarded RPC with its own fixed return shape (see the
+      // comment above it) -- rather than touch that function, pull the family/avatar
+      // fields with an ordinary follow-up select. It succeeds because client_login()
+      // just bound this row to our session, so the row-level security policy that
+      // scopes reads to "rows this session owns" now covers it.
+      await loadFamilyFields(code);
       return true;
     }
   }catch(e){ console.warn('load failed', e); }
@@ -794,6 +866,161 @@ async function persistClient(){
     const { error } = await supabaseClient.from('clients').update(row).eq('code', clientCode);
     if (error) throw error;
   }catch(e){ console.warn('save failed', e); showToast("Couldn't save: try again", true); }
+}
+
+/* =========================================================
+   FAMILY ACCOUNTS
+   One admin profile can gather up to FAMILY_MEMBER_LIMIT member
+   profiles under the same family_id. Each member keeps their own
+   code/login exactly like a standalone passport -- the family_id
+   just groups them for the admin's picker and the "booking for"
+   switcher in directory.html. See family_roster() in Supabase: a
+   guarded RPC so the clients table itself stays unreadable.
+   ========================================================= */
+let familyRoster = []; // cached for the currently active login, admin or member
+
+async function loadFamilyFields(code){
+  if (!dbAvailable) return;
+  try{
+    const { data, error } = await supabaseClient.from('clients')
+      .select('family_id, family_role, avatar_url, avatar_path, avatar_color')
+      .eq('code', code).maybeSingle();
+    if (error) throw error;
+    if (data){
+      client.familyId = data.family_id || null;
+      client.familyRole = data.family_role || null;
+      client.avatarUrl = data.avatar_url || '';
+      client.avatarPath = data.avatar_path || '';
+      client.avatarColor = data.avatar_color || '';
+    }
+  }catch(e){ console.warn('load family fields failed', e); }
+}
+
+async function fetchFamilyRoster(code){
+  if (!dbAvailable || !code) return [];
+  try{
+    const { data, error } = await supabaseClient.rpc('family_roster', { p_code: code });
+    if (error) throw error;
+    return (Array.isArray(data) ? data : []).map(r => ({
+      code: r.code, name: r.name, familyRole: r.family_role,
+      avatarUrl: r.avatar_url || '', avatarColor: r.avatar_color || ''
+    }));
+  }catch(e){ console.warn('family roster fetch failed', e); return []; }
+}
+
+function suggestFamilyMemberCode(name){
+  const first = (name||'').trim().split(/\s+/)[0] || '';
+  const base = sanitizeCode(first) || 'family';
+  const suffix = Math.floor(10 + Math.random()*90);
+  return `${base}-${suffix}`;
+}
+
+// Turns a standalone passport into a family admin the first time they add a
+// member -- the admin's own code doubles as the family_id, so no separate id
+// scheme is needed. A no-op if they're already an admin.
+async function ensureFamilyAdmin(){
+  if (client.familyRole === 'admin' && client.familyId) return true;
+  if (!dbAvailable) return false;
+  try{
+    const { error } = await supabaseClient.from('clients')
+      .update({ family_id: clientCode, family_role: 'admin' }).eq('code', clientCode);
+    if (error) throw error;
+    client.familyId = clientCode;
+    client.familyRole = 'admin';
+    return true;
+  }catch(e){ console.warn('ensure family admin failed', e); return false; }
+}
+
+// Adding a family member doesn't ask for their own email -- the admin's
+// account already backs the signup, same reasoning as the admin vouching for
+// a minor who has no email of their own. clientCodeTaken() keeps codes unique
+// across the whole app, family or not.
+async function addFamilyMember(name, code, avatarColor, photoFile){
+  if (!dbAvailable) return { ok:false, message:"Live saving isn't connected right now." };
+  const started = await ensureFamilyAdmin();
+  if (!started) return { ok:false, message:'Could not set up the family account. Try again.' };
+  try{
+    const taken = await clientCodeTaken(code);
+    if (taken) return { ok:false, message:'That code is already taken. Please choose a different one.' };
+  }catch(e){ console.warn('code check failed', e); }
+  try{
+    const { error } = await supabaseClient.from('clients').insert({
+      code, name: toTitleCase(name), email: client.email || null, visits: [],
+      family_id: client.familyId, family_role: 'member', avatar_color: avatarColor
+    });
+    if (error) throw error;
+    if (photoFile){
+      const uploaded = await uploadFamilyAvatar(code, photoFile);
+      if (uploaded){
+        await supabaseClient.from('clients').update({ avatar_url: uploaded.url, avatar_path: uploaded.path }).eq('code', code);
+      }
+    }
+    return { ok:true };
+  }catch(e){
+    console.warn('add family member failed', e);
+    return { ok:false, message: (e && e.message) || 'Could not add that profile. Try again.' };
+  }
+}
+
+async function removeFamilyMember(code){
+  return await deleteClientRow(code);
+}
+
+function loadImageForCompression(file){
+  return new Promise((resolve)=>{
+    if (window.createImageBitmap){
+      createImageBitmap(file).then(resolve).catch(()=> resolve(null));
+      return;
+    }
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = ()=>{ URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = ()=>{ URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+async function compressPhotoForUpload(file, maxDim, quality){
+  maxDim = maxDim || 600; // avatars render small -- no need for the 1600px ceiling used elsewhere
+  quality = quality || 0.82;
+  try{
+    if (!file || !file.type || !file.type.startsWith('image/')) return file;
+    const img = await loadImageForCompression(file);
+    if (!img) return file;
+    const srcW = img.naturalWidth || img.width;
+    const srcH = img.naturalHeight || img.height;
+    if (!srcW || !srcH) return file;
+    const scale = Math.min(1, maxDim / Math.max(srcW, srcH));
+    const outW = Math.max(1, Math.round(srcW * scale));
+    const outH = Math.max(1, Math.round(srcH * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = outW;
+    canvas.height = outH;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, outW, outH);
+    if (img.close) img.close();
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+    if (!blob) return file;
+    const newName = (file.name || 'photo.jpg').replace(/\.\w+$/, '') + '.jpg';
+    return new File([blob], newName, { type: 'image/jpeg' });
+  }catch(e){
+    console.warn('photo compression failed, uploading original', e);
+    return file;
+  }
+}
+// Uploads an avatar for the given client code to the same client-photos bucket
+// the pro's visit-photo uploads use, under an avatar/ subfolder so it's never
+// swept up by the flat per-code listing deleteClientPhotos() uses for visit
+// photos. Returns {url, path} or null on failure.
+async function uploadFamilyAvatar(code, file){
+  if (!dbAvailable || !file) return null;
+  try{
+    const compressed = await compressPhotoForUpload(file);
+    const path = `${code}/avatar/avatar-${Date.now()}.jpg`;
+    const { error: upErr } = await supabaseClient.storage.from('client-photos').upload(path, compressed, { upsert:true });
+    if (upErr) throw upErr;
+    const { data: urlData } = supabaseClient.storage.from('client-photos').getPublicUrl(path);
+    return { url: urlData.publicUrl, path };
+  }catch(e){ console.warn('avatar upload failed', e); return null; }
 }
 
 function syncNdaToServer(){
@@ -1336,10 +1563,11 @@ function enterApp(){
   }
   document.getElementById('loading-screen').hidden = true;
   document.getElementById('auth-screen').hidden = true;
+  document.getElementById('picker-screen').hidden = true;
   document.getElementById('passport-shell').hidden = false;
   document.getElementById('degraded-banner').hidden = dbAvailable;
   document.getElementById('btn-open-account').style.display = viewedViaSharedCode ? 'none' : '';
-  document.getElementById('btn-switch-profile').textContent = viewedViaSharedCode ? 'Done' : 'Log Out';
+  updateSwitchProfileLabel();
   document.getElementById('find-pro-section').style.display = viewedViaSharedCode ? 'none' : 'flex';
   renderHome();
   showScreen('home');
@@ -1347,6 +1575,10 @@ function enterApp(){
   loadLoyalty();
   updateNotifNudgeBanner();
   updateInstallNudgeBanner();
+}
+
+function updateSwitchProfileLabel(){
+  document.getElementById('btn-switch-profile').textContent = viewedViaSharedCode ? 'Done' : (familyRoster.length > 1 ? 'Switch profile' : 'Log Out');
 }
 
 function setAuthMode(mode){
@@ -1433,7 +1665,49 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
     await createClientRecord(code, name, email);
   }
   try{ localStorage.setItem('passportClientCode', code); }catch(err){}
+  await proceedPastLogin();
+});
+
+// A family admin with more than just themselves under the account lands on
+// the picker instead of going straight in; everyone else (a standalone
+// passport, or a member logging in with their own code) enters as before.
+async function proceedPastLogin(){
+  if (client.familyRole === 'admin' && client.familyId){
+    familyRoster = await fetchFamilyRoster(clientCode);
+    if (familyRoster.length > 1){
+      showFamilyPicker();
+      return;
+    }
+  }
   enterApp();
+}
+
+function showFamilyPicker(){
+  document.getElementById('loading-screen').hidden = true;
+  document.getElementById('auth-screen').hidden = true;
+  document.getElementById('passport-shell').hidden = true;
+  document.getElementById('picker-screen').hidden = false;
+  const grid = document.getElementById('fam-picker-grid');
+  grid.innerHTML = familyRoster.map(m => `
+    <button type="button" class="fam-picker-tile" data-picker-code="${m.code}">
+      ${famAvatarHtml(m)}
+      <span>${m.name}${m.code === clientCode ? ' (you)' : ''}</span>
+    </button>
+  `).join('');
+  grid.querySelectorAll('[data-picker-code]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const code = btn.dataset.pickerCode;
+      const ok = await tryLoadClient(code);
+      if (ok){
+        try{ localStorage.setItem('passportClientCode', code); }catch(e){}
+        enterApp();
+      }
+    });
+  });
+}
+document.getElementById('btn-picker-logout').addEventListener('click', ()=>{
+  try{ localStorage.removeItem('passportClientCode'); }catch(e){}
+  window.location.href = window.location.pathname;
 });
 
 document.getElementById('btn-forgot-code').addEventListener('click', ()=>{
@@ -1464,7 +1738,15 @@ document.getElementById('btn-forgot-code-send').addEventListener('click', async 
   btn.disabled = false;
 });
 
-document.getElementById('btn-switch-profile').addEventListener('click', ()=>{
+document.getElementById('btn-switch-profile').addEventListener('click', async ()=>{
+  if (!viewedViaSharedCode && familyRoster.length > 1 && client && client.familyId){
+    // Back to the family picker, not a full log out -- re-fetch in case a
+    // member was added or removed elsewhere since this session started.
+    familyRoster = await fetchFamilyRoster(clientCode);
+    document.getElementById('passport-shell').hidden = true;
+    showFamilyPicker();
+    return;
+  }
   try{ localStorage.removeItem('passportClientCode'); }catch(e){}
   window.location.href = window.location.pathname;
 });
@@ -1513,7 +1795,109 @@ document.getElementById('btn-open-account').addEventListener('click', ()=>{
   document.getElementById('account-photo-consent-record').checked = !!(client && client.photoConsentRecord);
   document.getElementById('account-photo-consent-marketing').checked = !!(client && client.photoConsentMarketing);
   document.getElementById('photo-consent-status').textContent = ' ';
+  renderFamilySection();
   showScreen('account');
+});
+
+/* ---- Family account management (admin view) ---- */
+let famPendingPhotoFile = null;
+
+async function renderFamilySection(){
+  const adminSection = document.getElementById('fam-admin-section');
+  const memberNoteSection = document.getElementById('fam-member-note-section');
+  if (client && client.familyRole === 'member'){
+    adminSection.style.display = 'none';
+    memberNoteSection.style.display = 'block';
+    return;
+  }
+  memberNoteSection.style.display = 'none';
+  adminSection.style.display = 'block';
+  closeFamAddForm();
+  const listEl = document.getElementById('fam-member-list');
+  listEl.innerHTML = '<p class="screen-sub" style="margin:0;">Loading…</p>';
+  // A standalone passport that hasn't started a family yet still shows just
+  // itself here -- fetchFamilyRoster returns nothing until ensureFamilyAdmin()
+  // runs (on the first "Add a family member"), so show the current profile only.
+  familyRoster = client.familyId ? await fetchFamilyRoster(clientCode) : [{ code: clientCode, name: client.name, familyRole: 'admin', avatarUrl: client.avatarUrl, avatarColor: client.avatarColor }];
+  updateSwitchProfileLabel();
+  listEl.innerHTML = familyRoster.map(m => `
+    <div class="fam-member-row">
+      ${famAvatarHtml(m, 'fam-avatar--sm')}
+      <div class="fam-member-info">
+        <strong>${m.name}${m.code === clientCode ? ' (you)' : ''}</strong>
+        <span class="fam-member-code">${m.code}</span>
+      </div>
+      ${m.code === clientCode ? '' : `<button type="button" class="link-btn" data-fam-remove="${m.code}" style="color:var(--behind);">Remove</button>`}
+    </div>
+  `).join('');
+  listEl.querySelectorAll('[data-fam-remove]').forEach(btn=>{
+    btn.addEventListener('click', async function(){
+      if (this.dataset.armed !== '1'){
+        this.dataset.armed = '1';
+        this.textContent = 'Tap again to confirm';
+        setTimeout(()=>{ this.dataset.armed = ''; this.textContent = 'Remove'; }, 3000);
+        return;
+      }
+      this.textContent = 'Removing…';
+      const code = this.dataset.famRemove;
+      const ok = await removeFamilyMember(code);
+      if (ok){ showToast('Removed from family'); renderFamilySection(); }
+      else { showToast("Couldn't remove: try again", true); this.dataset.armed=''; this.textContent='Remove'; }
+    });
+  });
+  const atLimit = familyRoster.length >= FAMILY_MEMBER_LIMIT;
+  document.getElementById('fam-member-limit').textContent = FAMILY_MEMBER_LIMIT;
+  document.getElementById('btn-fam-add-open').style.display = atLimit ? 'none' : 'block';
+  document.getElementById('fam-limit-note').style.display = atLimit ? 'block' : 'none';
+}
+
+function closeFamAddForm(){
+  document.getElementById('fam-add-form').style.display = 'none';
+  document.getElementById('fam-add-name').value = '';
+  document.getElementById('fam-add-code').value = '';
+  document.getElementById('fam-add-code').dataset.touched = '';
+  document.getElementById('fam-add-status').textContent = ' ';
+  document.getElementById('fam-add-photo-status').textContent = ' ';
+  document.getElementById('btn-fam-add-photo').textContent = 'Add a photo (optional)';
+  famPendingPhotoFile = null;
+}
+
+document.getElementById('btn-fam-add-open').addEventListener('click', ()=>{
+  document.getElementById('fam-add-form').style.display = 'flex';
+  document.getElementById('fam-add-name').focus();
+});
+document.getElementById('btn-fam-add-cancel').addEventListener('click', closeFamAddForm);
+document.getElementById('fam-add-name').addEventListener('input', function(){
+  const codeEl = document.getElementById('fam-add-code');
+  if (!codeEl.dataset.touched) codeEl.value = suggestFamilyMemberCode(this.value);
+});
+document.getElementById('fam-add-code').addEventListener('input', function(){ this.dataset.touched = '1'; });
+document.getElementById('btn-fam-add-photo').addEventListener('click', ()=> document.getElementById('fam-add-photo-input').click());
+document.getElementById('fam-add-photo-input').addEventListener('change', (e)=>{
+  const files = Array.from(e.target.files || []);
+  e.target.value = '';
+  if (!files.length) return;
+  famPendingPhotoFile = files[0];
+  document.getElementById('btn-fam-add-photo').textContent = 'Photo selected ✓';
+  document.getElementById('fam-add-photo-status').textContent = ' ';
+});
+document.getElementById('btn-fam-add-save').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('fam-add-status');
+  const name = document.getElementById('fam-add-name').value.trim();
+  const code = sanitizeCode(document.getElementById('fam-add-code').value);
+  if (!name){ statusEl.textContent = 'Enter their name first.'; return; }
+  if (!code){ statusEl.textContent = 'Enter a personal code for them.'; return; }
+  if (familyRoster.length >= FAMILY_MEMBER_LIMIT){ statusEl.textContent = `Family accounts are limited to ${FAMILY_MEMBER_LIMIT} profiles.`; return; }
+  statusEl.textContent = famPendingPhotoFile ? 'Adding & uploading photo…' : 'Adding…';
+  const color = FAMILY_AVATAR_COLORS[familyRoster.length % FAMILY_AVATAR_COLORS.length];
+  const result = await addFamilyMember(name, code, color, famPendingPhotoFile);
+  if (result.ok){
+    showToast(`${toTitleCase(name)} added to your family`);
+    closeFamAddForm();
+    renderFamilySection();
+  } else {
+    statusEl.textContent = result.message || "Couldn't add that profile. Try again.";
+  }
 });
 
 document.getElementById('account-notify-announcements').addEventListener('change', async function(){
@@ -1725,7 +2109,7 @@ async function continueBoot(){
 
   if (savedCode && dbAvailable){
     const ok = await tryLoadClient(savedCode);
-    if (ok){ enterApp(); return; }
+    if (ok){ await proceedPastLogin(); return; }
   }
   showAuthScreen(urlCode || savedCode);
 }

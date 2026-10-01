@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono: Find a Pro</title>
-<meta name="app-build" content="2026-10-01T00-41-14Z">
+<meta name="app-build" content="2026-10-01T03-48-17Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -72,6 +72,13 @@
   .pro-avatar{ width:52px; height:52px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--surface), var(--paper)); color:var(--brass); font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:19px; overflow:hidden; }
   .pro-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
   .pro-avatar--lg{ width:68px; height:68px; font-size:24px; }
+  .fam-avatar{ width:40px; height:40px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:15px; overflow:hidden; }
+  .fam-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .bkc-fam-picker{ display:flex; flex-direction:column; gap:8px; }
+  .bkc-fam-scroller{ display:flex; gap:10px; overflow-x:auto; padding-bottom:2px; }
+  .bkc-fam-tile{ display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:2px solid transparent; border-radius:12px; padding:4px; cursor:pointer; flex:none; width:60px; }
+  .bkc-fam-tile.selected{ border-color:var(--brass); }
+  .bkc-fam-tile span{ font-size:10.5px; font-weight:700; color:var(--ink); text-align:center; max-width:58px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .pro-avatar-rating{ font-size:10px; color:var(--muted); text-align:center; line-height:1.3; }
   .pro-avatar-rating .stars{ color:var(--brass); letter-spacing:0.5px; display:block; font-size:11px; }
   .pro-info-col{ flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
@@ -254,6 +261,11 @@
 
       <div id="detail-booking-block" style="display:none; flex-direction:column; gap:14px; border:1px solid var(--brass); background:var(--brass-tint); border-radius:14px; padding:16px;">
         <p class="eyebrow-mini" style="color:var(--brass); margin:0;">Book an appointment</p>
+
+        <div id="bkc-fam-picker" class="bkc-fam-picker" style="display:none;">
+          <p class="eyebrow-mini" style="margin:0;">Booking for</p>
+          <div class="bkc-fam-scroller" id="bkc-fam-scroller"></div>
+        </div>
 
         <div id="bkc-step-services" style="display:flex; flex-direction:column; gap:10px;">
           <div id="bkc-services-list" style="display:flex; flex-direction:column; gap:8px;"></div>
@@ -838,22 +850,77 @@ function fmtTime12(hhmm){
 }
 const DAY_KEYS = ['sun','mon','tue','wed','thu','fri','sat'];
 
-let bkc = { pro:null, selectedIds:[], date:null, startTime:null, client:null, isVip:false };
+let bkc = { pro:null, selectedIds:[], date:null, startTime:null, client:null, isVip:false, familyRoster:[], fromFamilyPicker:false };
 
-function initBookingFor(pro){
+function famAvatarHtmlDir(m){
+  if (m.avatarUrl) return `<div class="fam-avatar" style="background:var(--surface);"><img src="${m.avatarUrl}" alt=""></div>`;
+  const color = m.avatarColor || '#D9AE5E';
+  const initial = (m.name||'?').trim().charAt(0).toUpperCase();
+  return `<div class="fam-avatar" style="background:${color};">${initial}</div>`;
+}
+
+function showFamilyClientLoaded(){
+  document.getElementById('bkc-client-search').style.display = 'none';
+  document.getElementById('bkc-client-newname').style.display = 'none';
+  document.getElementById('bkc-client-loaded').style.display = 'block';
+  document.getElementById('bkc-client-attached-summary').textContent = `Booking as: ${bkc.client.name}`;
+  updateConfirmEnabled();
+}
+
+// Shown upfront, above the services list, whenever the link into this page carries
+// a client code that's part of a family account (more than one profile sharing a
+// family_id) -- lets picking who the appointment is for before anything else,
+// and switching at any point in the flow. For a standalone (non-family) client
+// code, or none at all, this never renders and booking works exactly as before.
+function renderBkcFamPicker(selectedCode){
+  const wrap = document.getElementById('bkc-fam-picker');
+  const scroller = document.getElementById('bkc-fam-scroller');
+  if (!bkc.familyRoster.length){ wrap.style.display = 'none'; return; }
+  wrap.style.display = 'flex';
+  scroller.innerHTML = bkc.familyRoster.map(m => `
+    <button type="button" class="bkc-fam-tile${m.code===selectedCode ? ' selected' : ''}" data-fam-code="${m.code}" data-fam-name="${m.name}">
+      ${famAvatarHtmlDir(m)}
+      <span>${m.name}</span>
+    </button>
+  `).join('');
+  scroller.querySelectorAll('[data-fam-code]').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      scroller.querySelectorAll('.bkc-fam-tile').forEach(b=>b.classList.remove('selected'));
+      this.classList.add('selected');
+      bkc.client = { code: this.dataset.famCode, name: this.dataset.famName };
+      bkc.fromFamilyPicker = true;
+      if (document.getElementById('bkc-step-confirm').style.display !== 'none') showFamilyClientLoaded();
+    });
+  });
+  const match = bkc.familyRoster.find(m => m.code === selectedCode) || bkc.familyRoster[0];
+  bkc.client = { code: match.code, name: match.name };
+  bkc.fromFamilyPicker = true;
+}
+
+async function initBookingFor(pro){
   const block = document.getElementById('detail-booking-block');
   if (!pro.booking_enabled || !Array.isArray(pro.booking_services) || !pro.booking_services.length){
     block.style.display = 'none';
     return;
   }
   block.style.display = 'flex';
-  bkc = { pro, selectedIds:[], date:null, startTime:null, client:null, pendingNewCode:null, isVip:false };
+  bkc = { pro, selectedIds:[], date:null, startTime:null, client:null, pendingNewCode:null, isVip:false, familyRoster:[], fromFamilyPicker:false };
+  document.getElementById('bkc-fam-picker').style.display = 'none';
   renderBkcServices();
   showBkcStep('services');
   const params = new URLSearchParams(window.location.search);
   const clientParam = sanitizeCode(params.get('client') || '');
   if (clientParam){
     document.getElementById('bkc-client-code').value = clientParam;
+    if (dbAvailable){
+      try{
+        const { data, error } = await supabaseClient.rpc('family_roster', { p_code: clientParam });
+        if (!error && Array.isArray(data) && data.length > 1){
+          bkc.familyRoster = data.map(r => ({ code:r.code, name:r.name, avatarUrl:r.avatar_url||'', avatarColor:r.avatar_color||'' }));
+          renderBkcFamPicker(clientParam);
+        }
+      }catch(e){ console.warn('family roster fetch failed', e); }
+    }
   }
 }
 
@@ -1035,7 +1102,7 @@ function renderBkcConfirm(){
   document.getElementById('bkc-client-status').textContent = ' ';
   document.getElementById('bkc-client-create-status').textContent = ' ';
   document.getElementById('bkc-client-new-code').dataset.touched = '';
-  bkc.client = null;
+  if (!bkc.fromFamilyPicker) bkc.client = null;
   const policyBlock = document.getElementById('bkc-policy-block');
   if (bkc.pro.booking_policy){
     policyBlock.style.display = 'flex';
@@ -1046,10 +1113,14 @@ function renderBkcConfirm(){
   }
   updateConfirmEnabled();
 
-  const clientParam = sanitizeCode(new URLSearchParams(window.location.search).get('client') || '');
-  if (clientParam){
-    document.getElementById('bkc-client-code').value = clientParam;
-    bkcLookupClient();
+  if (bkc.fromFamilyPicker && bkc.client){
+    showFamilyClientLoaded();
+  } else {
+    const clientParam = sanitizeCode(new URLSearchParams(window.location.search).get('client') || '');
+    if (clientParam){
+      document.getElementById('bkc-client-code').value = clientParam;
+      bkcLookupClient();
+    }
   }
 }
 document.getElementById('btn-bkc-back-slots').addEventListener('click', ()=> showBkcStep('slots'));
@@ -1202,7 +1273,8 @@ function renderBkcSuccess(appt){
 
   document.getElementById('btn-bkc-add-calendar').onclick = ()=> downloadIcs(appt, bkc.pro.name);
   document.getElementById('btn-bkc-book-again').onclick = ()=>{
-    bkc.selectedIds = []; bkc.date = null; bkc.startTime = null; bkc.client = null; bkc.isVip = false;
+    bkc.selectedIds = []; bkc.date = null; bkc.startTime = null; bkc.isVip = false;
+    if (!bkc.fromFamilyPicker) bkc.client = null; // family selection carries over to a second booking
     document.querySelectorAll('.bkc-svc-check').forEach(cb=>cb.checked=false);
     updateBkcTotal();
     showBkcStep('services');
