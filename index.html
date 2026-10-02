@@ -1372,7 +1372,7 @@
             <p class="eyebrow-mini">Rewards &amp; income</p>
             <h2>Business</h2>
           </div>
-          <p class="screen-sub">Business tools (Loyalty, Earnings, My Clients, Inventory, and Shop) are part of a paid Vono plan. Subscribe from your Account screen to unlock them.</p>
+          <p class="screen-sub">Business tools (Loyalty, Earnings, My Clients, Inventory, Shop, and Rent &amp; Commission) are part of a paid Vono plan. Subscribe from your Account screen to unlock them.</p>
           <button class="btn btn-primary" type="button" id="btn-business-paywall-account">Go to Account to subscribe</button>
         </div>
         <div id="business-real-content">
@@ -1386,6 +1386,7 @@
           <button type="button" class="mode-btn" data-biz-mode="clients">My Clients</button>
           <button type="button" class="mode-btn" data-biz-mode="inventory">Inventory</button>
           <button type="button" class="mode-btn" data-biz-mode="shop">Shop</button>
+          <button type="button" class="mode-btn" data-biz-mode="rentcomm">Rent &amp; Commission</button>
         </div>
         <div class="biz-pane show" data-biz="loyalty" id="tab-loyalty">
           <div class="screen-body show" data-screen="dashboard" style="gap:20px;">
@@ -1550,6 +1551,53 @@
               <p class="screen-sub" id="shop-leave-status" style="margin:0;">&nbsp;</p>
             </div>
 
+          </div>
+        </div>
+        <div class="biz-pane" data-biz="rentcomm" id="tab-rentcomm">
+          <div class="screen-body show" data-screen="dashboard" style="gap:16px;">
+            <p class="screen-sub" style="margin:0;">Track what you pay out for your chair, booth, or commission &mdash; to a Vono Studio owner, an independent landlord, or a shop that's never used Vono. This is your own record, separate from anything a shop owner tracks on their side.</p>
+
+            <div class="card" style="gap:12px;">
+              <p class="eyebrow-mini2" style="margin:0;">Log a payment</p>
+              <div class="field"><label>Date</label><div class="input-row"><input id="rc-entry-date" type="date"></div></div>
+              <div class="field"><label>Paid to</label><div class="input-row"><input id="rc-entry-paidto" type="text" placeholder="e.g. Fresh Cuts Barbershop"></div></div>
+              <div class="mode-toggle" id="rc-kind-toggle">
+                <button type="button" class="mode-btn active" data-rc-kind="flat">Flat rent</button>
+                <button type="button" class="mode-btn" data-rc-kind="commission">Commission</button>
+              </div>
+              <div id="rc-flat-fields">
+                <div class="field"><label>Amount ($)</label><div class="input-row"><input id="rc-flat-amount" type="number" min="0" step="0.01" placeholder="e.g. 200"></div></div>
+              </div>
+              <div id="rc-commission-fields" style="display:none; flex-direction:column; gap:12px;">
+                <div class="field"><label>What you made ($)</label><div class="input-row"><input id="rc-comm-earned" type="number" min="0" step="0.01" placeholder="e.g. 1000"></div></div>
+                <div class="field"><label>Commission rate (%)</label><div class="input-row"><input id="rc-comm-rate" type="number" min="0" max="100" step="0.1" placeholder="e.g. 40"></div></div>
+                <p class="screen-sub" id="rc-comm-calc" style="margin:0;">You pay: $0.00</p>
+              </div>
+              <div class="field"><label>Note (optional)</label><div class="input-row"><input id="rc-entry-note" type="text" placeholder="e.g. March booth rent"></div></div>
+              <button class="btn btn-primary" id="btn-rc-add" type="button">Log payment</button>
+              <p class="screen-sub" id="rc-add-status" style="margin:0;">&nbsp;</p>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px; border-top:1px solid var(--line); padding-top:16px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                <p class="eyebrow-mini" style="margin:0;">History</p>
+                <select id="rc-year-select" class="title-select" style="width:auto;"></select>
+              </div>
+              <div style="border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px; display:flex; flex-direction:column; gap:4px;">
+                <p class="eyebrow-mini2" id="rc-year-label" style="margin:0;">Year total</p>
+                <p class="screen-title" id="rc-year-total" style="margin:0;">$0.00</p>
+              </div>
+              <div id="rc-entries-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+              <p class="screen-sub" id="rc-entries-empty" style="display:none; margin:0;">No payments logged for this year yet.</p>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:8px; border-top:1px solid var(--line); padding-top:16px;">
+              <div class="btn-row" style="gap:10px;">
+                <button class="btn btn-outline" id="btn-rc-download" type="button" style="flex:1;">Download CSV</button>
+                <button class="btn btn-outline" id="btn-rc-print" type="button" style="flex:1;">Print</button>
+              </div>
+              <p class="foot-note-small" style="margin:0;">This is your own record for your taxes &mdash; Vono doesn't verify these payments or share them with any shop owner.</p>
+            </div>
           </div>
         </div>
         </div>
@@ -2547,6 +2595,7 @@ function showBusinessSubtab(mode){
   if (mode === 'clients' && window.initMyClientsTab) window.initMyClientsTab();
   if (mode === 'inventory' && window.initInventoryTab) window.initInventoryTab();
   if (mode === 'shop' && window.initShopTab) window.initShopTab();
+  if (mode === 'rentcomm' && window.initRentCommTab) window.initRentCommTab();
 }
 document.querySelectorAll('#business-mode-toggle .mode-btn').forEach(btn=>{
   btn.addEventListener('click', ()=> showBusinessSubtab(btn.dataset.bizMode));
@@ -6115,6 +6164,245 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   root.querySelector('#btn-earn-download').addEventListener('click', downloadPrevYearCsv);
   window.initEarningsTab = function(){
     renderEarnings();
+  };
+})();
+/* =========================================================
+   RENT & COMMISSION TAB (Business > Rent & Commission)
+   Personal record of what this professional pays out for their own
+   chair/booth/commission -- separate from the Studio owner-side tracker
+   (not yet built): "Paid to" is free text, not tied to a Vono shop, and
+   the two are never synced or reconciled against each other.
+   ========================================================= */
+(function(){
+  const root = document.getElementById('tab-rentcomm');
+  if (!root) return;
+  let entries = [];
+  let entriesLoaded = false;
+  let selectedYear = new Date().getFullYear();
+  function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function csvEscape(val){
+    const s = String(val);
+    if (/[",\r\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+    return s;
+  }
+  function fmtMoney(n){ return '$' + (Number(n)||0).toFixed(2); }
+  function fmtDate(iso){
+    if (!iso) return '';
+    try{ return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }catch(e){ return iso; }
+  }
+  function currentKind(){
+    const active = root.querySelector('#rc-kind-toggle .mode-btn.active');
+    return (active && active.dataset.rcKind) || 'flat';
+  }
+  function updateCommissionCalc(){
+    const earned = parseFloat(root.querySelector('#rc-comm-earned').value) || 0;
+    const rate = parseFloat(root.querySelector('#rc-comm-rate').value) || 0;
+    const owed = earned * (rate / 100);
+    root.querySelector('#rc-comm-calc').textContent = 'You pay: ' + fmtMoney(owed);
+  }
+  root.querySelectorAll('#rc-kind-toggle .mode-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      root.querySelectorAll('#rc-kind-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b===btn));
+      const kind = btn.dataset.rcKind;
+      root.querySelector('#rc-flat-fields').style.display = kind === 'flat' ? 'flex' : 'none';
+      root.querySelector('#rc-commission-fields').style.display = kind === 'commission' ? 'flex' : 'none';
+    });
+  });
+  root.querySelector('#rc-comm-earned').addEventListener('input', updateCommissionCalc);
+  root.querySelector('#rc-comm-rate').addEventListener('input', updateCommissionCalc);
+  function availableYears(){
+    const years = new Set(entries.map(e => parseInt(String(e.entry_date).slice(0,4), 10)).filter(y => !isNaN(y)));
+    years.add(new Date().getFullYear());
+    return Array.from(years).sort((a,b)=> b - a);
+  }
+  function renderYearSelect(){
+    const sel = root.querySelector('#rc-year-select');
+    const years = availableYears();
+    if (!years.includes(selectedYear)) selectedYear = years[0];
+    sel.innerHTML = years.map(y => `<option value="${y}" ${y===selectedYear?'selected':''}>${y}</option>`).join('');
+  }
+  function renderYearView(){
+    const yearLabelEl = root.querySelector('#rc-year-label');
+    const totalEl = root.querySelector('#rc-year-total');
+    const listEl = root.querySelector('#rc-entries-list');
+    const emptyEl = root.querySelector('#rc-entries-empty');
+    yearLabelEl.textContent = selectedYear + ' total';
+    const yearEntries = entries
+      .filter(e => String(e.entry_date).slice(0,4) === String(selectedYear))
+      .sort((a,b)=> (b.entry_date||'').localeCompare(a.entry_date||''));
+    const total = yearEntries.reduce((s,e)=> s + (Number(e.amount)||0), 0);
+    totalEl.textContent = fmtMoney(total);
+    if (!yearEntries.length){
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    listEl.innerHTML = yearEntries.map(e=>{
+      const detail = e.kind === 'commission'
+        ? `Commission: ${fmtMoney(e.earned_amount)} at ${Number(e.rate)}% &mdash; ${fmtMoney(e.amount)}`
+        : `Flat rent &mdash; ${fmtMoney(e.amount)}`;
+      return `<div class="detail-card" style="gap:4px;">
+        <div class="detail-row" style="align-items:center;">
+          <strong>${fmtDate(e.entry_date)} &mdash; ${e.paid_to}</strong>
+          <button type="button" class="link-btn" data-rc-remove="${e.id}">Remove</button>
+        </div>
+        <span class="screen-sub" style="margin:0;">${detail}${e.note ? ' &middot; ' + e.note : ''}</span>
+      </div>`;
+    }).join('');
+  }
+  async function loadEntries(){
+    if (!dbAvailable || !profileCode){
+      entries = [];
+      entriesLoaded = true;
+      renderYearSelect();
+      renderYearView();
+      return;
+    }
+    try{
+      const { data, error } = await supabaseClient.from('rent_commission_entries').select('*').eq('barber_code', profileCode);
+      if (error) throw error;
+      entries = data || [];
+      entriesLoaded = true;
+      renderYearSelect();
+      renderYearView();
+    }catch(e){
+      console.warn('load rent/commission entries failed', e);
+      entries = [];
+      entriesLoaded = true;
+      renderYearSelect();
+      renderYearView();
+    }
+  }
+  root.querySelector('#rc-year-select').addEventListener('change', function(){
+    selectedYear = parseInt(this.value, 10);
+    renderYearView();
+  });
+  root.querySelector('#rc-entries-list').addEventListener('click', async e=>{
+    const id = e.target.dataset.rcRemove;
+    if (!id) return;
+    e.target.disabled = true;
+    e.target.textContent = 'Removing…';
+    try{
+      const { error } = await supabaseClient.from('rent_commission_entries').delete().eq('id', id);
+      if (error) throw error;
+      entries = entries.filter(x => x.id !== id);
+      renderYearSelect();
+      renderYearView();
+    }catch(err){
+      console.warn('remove rent/commission entry failed', err);
+      e.target.disabled = false;
+      e.target.textContent = 'Remove';
+    }
+  });
+  root.querySelector('#btn-rc-add').addEventListener('click', async ()=>{
+    const statusEl = root.querySelector('#rc-add-status');
+    const addBtn = root.querySelector('#btn-rc-add');
+    const date = root.querySelector('#rc-entry-date').value;
+    const paidTo = root.querySelector('#rc-entry-paidto').value.trim();
+    const note = root.querySelector('#rc-entry-note').value.trim();
+    const kind = currentKind();
+    if (!date){ statusEl.textContent = 'Pick a date first.'; return; }
+    if (!paidTo){ statusEl.textContent = 'Enter who you paid.'; return; }
+    let amount, earnedAmount = null, rate = null;
+    if (kind === 'flat'){
+      amount = parseFloat(root.querySelector('#rc-flat-amount').value);
+      if (!amount || amount <= 0){ statusEl.textContent = 'Enter an amount.'; return; }
+    } else {
+      earnedAmount = parseFloat(root.querySelector('#rc-comm-earned').value);
+      rate = parseFloat(root.querySelector('#rc-comm-rate').value);
+      if (!earnedAmount || earnedAmount <= 0){ statusEl.textContent = 'Enter what you made.'; return; }
+      if (!rate || rate <= 0){ statusEl.textContent = 'Enter a commission rate.'; return; }
+      amount = earnedAmount * (rate / 100);
+    }
+    if (!dbAvailable){ statusEl.textContent = "Live saving isn't connected right now."; return; }
+    addBtn.disabled = true;
+    statusEl.textContent = 'Saving…';
+    try{
+      const row = {
+        id: genId(), barber_code: profileCode, entry_date: date, kind, paid_to: paidTo,
+        amount, earned_amount: earnedAmount, rate, note: note || null
+      };
+      const { error } = await supabaseClient.from('rent_commission_entries').insert(row);
+      if (error) throw error;
+      entries.push(row);
+      selectedYear = parseInt(date.slice(0,4), 10);
+      renderYearSelect();
+      renderYearView();
+      root.querySelector('#rc-entry-paidto').value = '';
+      root.querySelector('#rc-entry-note').value = '';
+      root.querySelector('#rc-flat-amount').value = '';
+      root.querySelector('#rc-comm-earned').value = '';
+      root.querySelector('#rc-comm-rate').value = '';
+      updateCommissionCalc();
+      statusEl.textContent = 'Logged.';
+    }catch(err){
+      console.warn('add rent/commission entry failed', err);
+      statusEl.textContent = "Couldn't save. Try again.";
+    }
+    addBtn.disabled = false;
+  });
+  function currentYearEntries(){
+    return entries
+      .filter(e => String(e.entry_date).slice(0,4) === String(selectedYear))
+      .sort((a,b)=> (a.entry_date||'').localeCompare(b.entry_date||''));
+  }
+  root.querySelector('#btn-rc-download').addEventListener('click', ()=>{
+    const rows = [['Date','Paid To','Type','Amount','Earned','Rate (%)','Note']];
+    currentYearEntries().forEach(e=>{
+      rows.push([
+        e.entry_date,
+        e.paid_to,
+        e.kind === 'commission' ? 'Commission' : 'Flat rent',
+        (Number(e.amount)||0).toFixed(2),
+        e.earned_amount != null ? Number(e.earned_amount).toFixed(2) : '',
+        e.rate != null ? Number(e.rate) : '',
+        e.note || ''
+      ]);
+    });
+    const total = currentYearEntries().reduce((s,e)=> s + (Number(e.amount)||0), 0);
+    rows.push(['', '', '', '', '', 'Year Total', total.toFixed(2)]);
+    const csv = rows.map(r=> r.map(csvEscape).join(',')).join('\r\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'rent-commission-' + selectedYear + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  root.querySelector('#btn-rc-print').addEventListener('click', ()=>{
+    const rowsHtml = currentYearEntries().map(e=>{
+      const type = e.kind === 'commission' ? `Commission (${Number(e.rate)}% of ${fmtMoney(e.earned_amount)})` : 'Flat rent';
+      return `<tr><td>${fmtDate(e.entry_date)}</td><td>${e.paid_to}</td><td>${type}</td><td style="text-align:right;">${fmtMoney(e.amount)}</td><td>${e.note || ''}</td></tr>`;
+    }).join('');
+    const total = currentYearEntries().reduce((s,e)=> s + (Number(e.amount)||0), 0);
+    const proName = (profile && profile.name) ? profile.name : '';
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Rent &amp; Commission -- ${selectedYear}</title>
+      <style>
+        body{ font-family: Georgia, 'Times New Roman', serif; color:#1a1a1a; padding:32px; max-width:720px; margin:0 auto; }
+        h1{ font-size:20px; margin:0 0 2px; }
+        p.sub{ color:#555; margin:0 0 24px; font-size:13px; }
+        table{ width:100%; border-collapse:collapse; font-size:13px; }
+        th, td{ text-align:left; padding:8px 6px; border-bottom:1px solid #ddd; }
+        th{ font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:#555; }
+        tfoot td{ font-weight:bold; border-top:2px solid #1a1a1a; border-bottom:none; }
+        @media print{ body{ padding:0; } }
+      </style></head><body>
+      <h1>Rent &amp; Commission &mdash; ${selectedYear}</h1>
+      <p class="sub">${proName ? proName + ' &middot; ' : ''}Personal record, prepared via Vono. Not verified payment data.</p>
+      <table><thead><tr><th>Date</th><th>Paid To</th><th>Type</th><th style="text-align:right;">Amount</th><th>Note</th></tr></thead>
+      <tbody>${rowsHtml || '<tr><td colspan="5">No payments logged for this year.</td></tr>'}</tbody>
+      <tfoot><tr><td colspan="3"></td><td style="text-align:right;">${fmtMoney(total)}</td><td></td></tr></tfoot>
+      </table>
+      </body></html>`);
+    win.document.close();
+    win.focus();
+    setTimeout(()=> win.print(), 200);
+  });
+  window.initRentCommTab = function(){
+    loadEntries();
   };
 })();
 /* =========================================================
