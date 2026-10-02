@@ -505,12 +505,22 @@ document.getElementById('photo-lightbox').addEventListener('touchend', (e)=>{
   if (dx < 0) lightboxShowNext(); else lightboxShowPrev();
 }, { passive: true });
 
+// A Find a Pro listing (and the booking flow below) is part of a paid Vono
+// plan -- trialing/active/past_due all still count (past_due keeps access
+// for now, same grace-period logic as index.html's gating), but a pro whose
+// subscription lapses to 'none' or 'canceled' drops out of the public
+// directory and can no longer take bookings, even if public_listing/
+// booking_enabled are still true on their row from before they lapsed.
+function hasActiveSubscription(p){
+  return !!p && ['trialing', 'active', 'past_due'].includes(p.subscription_status);
+}
 async function fetchPublicPros(){
   const { data, error } = await supabaseClient.from('profiles').select('*').eq('public_listing', true);
   if (error) throw error;
   const rows = Array.isArray(data) ? data : [];
-  rows.forEach(p=>{ if (p.name) p.name = toTitleCase(p.name); });
-  return rows;
+  const subscribed = rows.filter(hasActiveSubscription);
+  subscribed.forEach(p=>{ if (p.name) p.name = toTitleCase(p.name); });
+  return subscribed;
 }
 
 async function fetchReviewsFor(code){
@@ -633,7 +643,7 @@ async function showDetail(code){
     try{
       const { data, error } = await supabaseClient.from('profiles').select('*').eq('code', code).maybeSingle();
       if (error) throw error;
-      if (data){
+      if (data && hasActiveSubscription(data)){
         if (data.name) data.name = toTitleCase(data.name);
         p = data;
       }
