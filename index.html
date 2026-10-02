@@ -1538,6 +1538,76 @@
                 <p class="eyebrow-mini">Invites sent, not yet answered</p>
                 <div id="shop-pending-invites-list" style="display:flex; flex-direction:column; gap:8px;"></div>
               </div>
+
+              <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:16px;">
+                <div>
+                  <p class="eyebrow-mini" style="margin:0;">Rent &amp; Commission</p>
+                  <p class="screen-sub" style="margin:4px 0 0;">Set up what each team member owes and log their payments. This is your own record for your taxes &mdash; Vono doesn't process these payments or verify they happened, and staff don't need to confirm their side.</p>
+                </div>
+
+                <div class="card" id="shop-rent-form-card" style="gap:12px;">
+                  <p class="eyebrow-mini2" id="shop-rent-form-heading" style="margin:0;">Set up an arrangement</p>
+                  <div class="field"><label>Team member</label><div class="input-row"><select id="shop-rent-staff-select" class="title-select" style="width:100%;"></select></div></div>
+                  <div class="mode-toggle" id="shop-rent-kind-toggle">
+                    <button type="button" class="mode-btn active" data-rent-kind="flat">Flat rent</button>
+                    <button type="button" class="mode-btn" data-rent-kind="commission">Commission</button>
+                  </div>
+                  <div id="shop-rent-flat-fields">
+                    <div class="field"><label>Rent per period ($)</label><div class="input-row"><input id="shop-rent-amount" type="number" min="0" step="0.01" placeholder="e.g. 200"></div></div>
+                  </div>
+                  <div id="shop-rent-commission-fields" style="display:none; flex-direction:column; gap:12px;">
+                    <div class="field"><label>Commission rate (%)</label><div class="input-row"><input id="shop-rent-rate" type="number" min="0" max="100" step="0.1" placeholder="e.g. 40"></div></div>
+                  </div>
+                  <div class="field"><label>How often</label><div class="input-row"><select id="shop-rent-cadence" class="title-select" style="width:100%;">
+                    <option value="weekly">Weekly</option>
+                    <option value="biweekly">Every 2 weeks</option>
+                    <option value="monthly">Monthly</option>
+                  </select></div></div>
+                  <div class="field"><label>First period starts</label><div class="input-row"><input id="shop-rent-anchor" type="date"></div></div>
+                  <div class="btn-row" style="gap:10px;">
+                    <button class="btn btn-primary" id="btn-shop-rent-save" type="button" style="flex:1;">Save arrangement</button>
+                    <button class="btn btn-ghost" id="btn-shop-rent-cancel" type="button" style="flex:1; display:none;">Cancel edit</button>
+                  </div>
+                  <p class="screen-sub" id="shop-rent-form-status" style="margin:0;">&nbsp;</p>
+                </div>
+
+                <div class="card" id="shop-rent-log-card" style="display:none; gap:12px;">
+                  <p class="eyebrow-mini2" id="shop-rent-log-heading" style="margin:0;">Log a payment</p>
+                  <p class="screen-sub" id="shop-rent-log-period" style="margin:0;">&nbsp;</p>
+                  <div id="shop-rent-log-flat-fields">
+                    <div class="field"><label>Amount ($)</label><div class="input-row"><input id="shop-rent-log-amount" type="number" min="0" step="0.01"></div></div>
+                  </div>
+                  <div id="shop-rent-log-commission-fields" style="display:none; flex-direction:column; gap:12px;">
+                    <div class="field"><label>What they made ($)</label><div class="input-row"><input id="shop-rent-log-earned" type="number" min="0" step="0.01"></div></div>
+                    <div class="field"><label>Commission rate (%)</label><div class="input-row"><input id="shop-rent-log-rate" type="number" min="0" max="100" step="0.1"></div></div>
+                    <p class="screen-sub" id="shop-rent-log-calc" style="margin:0;">Studio's cut: $0.00</p>
+                  </div>
+                  <div class="field"><label>Note (optional)</label><div class="input-row"><input id="shop-rent-log-note" type="text" placeholder="e.g. Week of March 3"></div></div>
+                  <div class="btn-row" style="gap:10px;">
+                    <button class="btn btn-primary" id="btn-shop-rent-log-save" type="button" style="flex:1;">Save payment</button>
+                    <button class="btn btn-ghost" id="btn-shop-rent-log-cancel" type="button" style="flex:1;">Cancel</button>
+                  </div>
+                  <p class="screen-sub" id="shop-rent-log-status" style="margin:0;">&nbsp;</p>
+                </div>
+
+                <div id="shop-rent-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+                <p class="screen-sub" id="shop-rent-empty" style="display:none; margin:0;">Invite a team member above to start setting up rent or commission for them.</p>
+
+                <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                    <p class="eyebrow-mini" style="margin:0;">Shop records</p>
+                    <select id="shop-rent-year-select" class="title-select" style="width:auto;"></select>
+                  </div>
+                  <div style="border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px; display:flex; flex-direction:column; gap:4px;">
+                    <p class="eyebrow-mini2" id="shop-rent-year-label" style="margin:0;">Year total</p>
+                    <p class="screen-title" id="shop-rent-year-total" style="margin:0;">$0.00</p>
+                  </div>
+                  <div class="btn-row" style="gap:10px;">
+                    <button class="btn btn-outline" id="btn-shop-rent-download" type="button" style="flex:1;">Download CSV</button>
+                    <button class="btn btn-outline" id="btn-shop-rent-print" type="button" style="flex:1;">Print</button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Part of a shop, as staff -->
@@ -6784,6 +6854,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   let myShop = null; // the shops row, when I'm a member (owner or staff)
   let armedRemoveCode = null; // "tap again to remove" for team members
   let armedLeave = false; // "tap again to confirm" for leaving a shop
+  let teamMembers = []; // set by renderTeamList(), reused by the Rent & Commission section below
 
   function escapeHtmlShop(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function genShopInviteId(){ return 'invite_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
@@ -6903,14 +6974,16 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#shop-owner-address').innerHTML = shopAddressLine(myShop) || '&nbsp;';
     await renderTeamList();
     await loadSentInvites();
+    await renderRentSection();
   }
   async function renderTeamList(){
     const listEl = root.querySelector('#shop-team-list');
-    if (!dbAvailable || !profile.shopCode){ listEl.innerHTML = ''; return; }
+    if (!dbAvailable || !profile.shopCode){ listEl.innerHTML = ''; teamMembers = []; return; }
     try{
       const { data, error } = await supabaseClient.from('profiles').select('code, name, title, shop_role').eq('shop_code', profile.shopCode);
       if (error) throw error;
       const team = (data || []).slice().sort((a,b)=> (a.shop_role==='owner'?-1:0) - (b.shop_role==='owner'?-1:0));
+      teamMembers = team;
       listEl.innerHTML = team.map(m => `
         <div class="detail-card" style="flex-direction:row; align-items:center; gap:10px;" data-member-code="${m.code}">
           <div style="flex:1; min-width:0;">
@@ -6922,7 +6995,412 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }catch(e){
       console.warn('load team failed', e);
       listEl.innerHTML = '';
+      teamMembers = [];
     }
+  }
+  /* ---- Rent & Commission (owner view): per-staff arrangements, period
+     paid/unpaid status, payment logging, and a shop-wide yearly export. A
+     "period" is computed client-side from each arrangement's cadence +
+     anchor date -- nothing is pre-generated in the database, so this never
+     needs a scheduled job and just recomputes "now" on every load. ---- */
+  let rentArrangements = []; // one row per staff member who has an arrangement set up
+  let rentPayments = []; // every logged payment for this shop, across all staff/years
+  let rentEditingCode = null; // staff code currently loaded into the arrangement form, if editing
+  let rentLoggingCode = null; // staff code currently loaded into the log-payment form, if open
+  let rentSelectedYear = new Date().getFullYear();
+  function genRentId(prefix){ return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function rentFmtMoney(n){ return '$' + (Number(n)||0).toFixed(2); }
+  function rentFmtDate(iso){
+    if (!iso) return '';
+    try{ return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }catch(e){ return iso; }
+  }
+  function rentIso(d){ return d.toISOString().slice(0,10); }
+  function rentAddDays(iso, days){ const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate()+days); return rentIso(d); }
+  function rentAddMonths(iso, months){ const d = new Date(iso + 'T00:00:00'); d.setMonth(d.getMonth()+months); return rentIso(d); }
+  // The period that contains `todayIso`, given a cadence + anchor date. Walks
+  // forward from the anchor one period at a time -- arrangements are
+  // long-lived but this is cheap (a few hundred iterations at most even for
+  // a years-old weekly anchor) and needs no stored period history.
+  function currentRentPeriod(anchorDate, cadence, todayStr){
+    let start = anchorDate;
+    let guard = 0;
+    while (guard < 2000){
+      const end = cadence === 'monthly' ? rentAddDays(rentAddMonths(start, 1), -1)
+        : rentAddDays(start, (cadence === 'biweekly' ? 14 : 7) - 1);
+      if (end >= todayStr) return { start, end };
+      start = cadence === 'monthly' ? rentAddMonths(start, 1) : rentAddDays(start, cadence === 'biweekly' ? 14 : 7);
+      guard++;
+    }
+    return { start: todayStr, end: todayStr };
+  }
+  function rentCadenceLabel(cadence){
+    return cadence === 'weekly' ? 'week' : cadence === 'biweekly' ? '2 weeks' : 'month';
+  }
+  function rentArrangementSummary(a){
+    return a.kind === 'commission'
+      ? `${Number(a.rate)}% commission, every ${rentCadenceLabel(a.cadence)}`
+      : `${rentFmtMoney(a.amount)} flat, every ${rentCadenceLabel(a.cadence)}`;
+  }
+  async function loadRentData(){
+    if (!dbAvailable || !profile.shopCode){ rentArrangements = []; rentPayments = []; return; }
+    try{
+      const [arrRes, payRes] = await Promise.all([
+        supabaseClient.from('shop_rent_arrangements').select('*').eq('shop_code', profile.shopCode),
+        supabaseClient.from('shop_rent_payments').select('*').eq('shop_code', profile.shopCode)
+      ]);
+      if (arrRes.error) throw arrRes.error;
+      if (payRes.error) throw payRes.error;
+      rentArrangements = arrRes.data || [];
+      rentPayments = payRes.data || [];
+    }catch(e){
+      console.warn('load rent/commission data failed', e);
+      rentArrangements = [];
+      rentPayments = [];
+    }
+  }
+  function populateRentStaffSelect(){
+    const sel = root.querySelector('#shop-rent-staff-select');
+    const staff = teamMembers.filter(m => m.code !== profileCode);
+    sel.innerHTML = staff.map(m => `<option value="${m.code}">${escapeHtmlShop(m.name || m.code)}</option>`).join('');
+  }
+  function resetRentForm(){
+    rentEditingCode = null;
+    root.querySelector('#shop-rent-form-heading').textContent = 'Set up an arrangement';
+    root.querySelector('#btn-shop-rent-cancel').style.display = 'none';
+    root.querySelector('#shop-rent-staff-select').disabled = false;
+    root.querySelectorAll('#shop-rent-kind-toggle .mode-btn').forEach((b,i)=> b.classList.toggle('active', i===0));
+    root.querySelector('#shop-rent-flat-fields').style.display = '';
+    root.querySelector('#shop-rent-commission-fields').style.display = 'none';
+    root.querySelector('#shop-rent-amount').value = '';
+    root.querySelector('#shop-rent-rate').value = '';
+    root.querySelector('#shop-rent-cadence').value = 'weekly';
+    root.querySelector('#shop-rent-anchor').value = todayIso();
+    root.querySelector('#shop-rent-form-status').textContent = ' ';
+  }
+  root.querySelectorAll('#shop-rent-kind-toggle .mode-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      root.querySelectorAll('#shop-rent-kind-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b===btn));
+      const kind = btn.dataset.rentKind;
+      root.querySelector('#shop-rent-flat-fields').style.display = kind === 'flat' ? 'flex' : 'none';
+      root.querySelector('#shop-rent-commission-fields').style.display = kind === 'commission' ? 'flex' : 'none';
+    });
+  });
+  root.querySelector('#btn-shop-rent-cancel').addEventListener('click', resetRentForm);
+  root.querySelector('#btn-shop-rent-save').addEventListener('click', async ()=>{
+    const statusEl = root.querySelector('#shop-rent-form-status');
+    const staffCode = root.querySelector('#shop-rent-staff-select').value;
+    const kind = (root.querySelector('#shop-rent-kind-toggle .mode-btn.active')||{}).dataset.rentKind || 'flat';
+    const cadence = root.querySelector('#shop-rent-cadence').value;
+    const anchor = root.querySelector('#shop-rent-anchor').value;
+    if (!staffCode){ statusEl.textContent = 'Invite a team member first.'; return; }
+    if (!anchor){ statusEl.textContent = 'Pick a start date.'; return; }
+    let amount = null, rate = null;
+    if (kind === 'flat'){
+      amount = parseFloat(root.querySelector('#shop-rent-amount').value);
+      if (!amount || amount <= 0){ statusEl.textContent = 'Enter a rent amount.'; return; }
+    } else {
+      rate = parseFloat(root.querySelector('#shop-rent-rate').value);
+      if (!rate || rate <= 0){ statusEl.textContent = 'Enter a commission rate.'; return; }
+    }
+    if (!dbAvailable){ statusEl.textContent = "Live saving isn't connected right now."; return; }
+    statusEl.textContent = 'Saving…';
+    try{
+      const existing = rentArrangements.find(a => a.staff_code === staffCode);
+      const row = {
+        id: existing ? existing.id : genRentId('rent'),
+        shop_code: profile.shopCode, staff_code: staffCode, kind, amount, rate, cadence,
+        anchor_date: anchor, updated_at: new Date().toISOString()
+      };
+      const { error } = await supabaseClient.from('shop_rent_arrangements').upsert(row, { onConflict: 'shop_code,staff_code' });
+      if (error) throw error;
+      await loadRentData();
+      resetRentForm();
+      renderRentList();
+      statusEl.textContent = 'Saved.';
+    }catch(e){
+      console.warn('save rent arrangement failed', e);
+      statusEl.textContent = "Couldn't save. Try again.";
+    }
+  });
+  function openRentEdit(staffCode){
+    const a = rentArrangements.find(x => x.staff_code === staffCode);
+    if (!a) return;
+    rentEditingCode = staffCode;
+    const member = teamMembers.find(m => m.code === staffCode);
+    root.querySelector('#shop-rent-form-heading').textContent = 'Edit arrangement for ' + (member ? (member.name||member.code) : staffCode);
+    root.querySelector('#btn-shop-rent-cancel').style.display = 'inline-block';
+    const sel = root.querySelector('#shop-rent-staff-select');
+    sel.value = staffCode;
+    sel.disabled = true;
+    root.querySelectorAll('#shop-rent-kind-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.rentKind===a.kind));
+    root.querySelector('#shop-rent-flat-fields').style.display = a.kind === 'flat' ? 'flex' : 'none';
+    root.querySelector('#shop-rent-commission-fields').style.display = a.kind === 'commission' ? 'flex' : 'none';
+    root.querySelector('#shop-rent-amount').value = a.amount || '';
+    root.querySelector('#shop-rent-rate').value = a.rate || '';
+    root.querySelector('#shop-rent-cadence').value = a.cadence;
+    root.querySelector('#shop-rent-anchor').value = a.anchor_date;
+    root.querySelector('#shop-rent-form-status').textContent = ' ';
+    root.querySelector('#shop-rent-form-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+  async function removeRentArrangement(staffCode){
+    try{
+      await supabaseClient.from('shop_rent_arrangements').delete().eq('shop_code', profile.shopCode).eq('staff_code', staffCode);
+    }catch(e){ console.warn('remove rent arrangement failed', e); }
+    await loadRentData();
+    if (rentEditingCode === staffCode) resetRentForm();
+    renderRentList();
+  }
+  function closeRentLogForm(){
+    rentLoggingCode = null;
+    root.querySelector('#shop-rent-log-card').style.display = 'none';
+  }
+  function openRentLogForm(staffCode){
+    const a = rentArrangements.find(x => x.staff_code === staffCode);
+    if (!a) return;
+    rentLoggingCode = staffCode;
+    const member = teamMembers.find(m => m.code === staffCode);
+    const period = currentRentPeriod(a.anchor_date, a.cadence, todayIso());
+    root.querySelector('#shop-rent-log-heading').textContent = 'Log a payment for ' + (member ? (member.name||member.code) : staffCode);
+    root.querySelector('#shop-rent-log-period').textContent = 'For ' + rentFmtDate(period.start) + ' – ' + rentFmtDate(period.end);
+    root.querySelector('#shop-rent-log-flat-fields').style.display = a.kind === 'flat' ? 'flex' : 'none';
+    root.querySelector('#shop-rent-log-commission-fields').style.display = a.kind === 'commission' ? 'flex' : 'none';
+    root.querySelector('#shop-rent-log-amount').value = a.kind === 'flat' ? (a.amount || '') : '';
+    root.querySelector('#shop-rent-log-earned').value = '';
+    root.querySelector('#shop-rent-log-rate').value = a.kind === 'commission' ? (a.rate || '') : '';
+    root.querySelector('#shop-rent-log-note').value = '';
+    root.querySelector('#shop-rent-log-status').textContent = ' ';
+    updateRentLogCalc();
+    root.querySelector('#shop-rent-log-card').style.display = 'flex';
+    root.querySelector('#shop-rent-log-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+  function updateRentLogCalc(){
+    const earned = parseFloat(root.querySelector('#shop-rent-log-earned').value) || 0;
+    const rate = parseFloat(root.querySelector('#shop-rent-log-rate').value) || 0;
+    root.querySelector('#shop-rent-log-calc').textContent = "Studio's cut: " + rentFmtMoney(earned * (rate/100));
+  }
+  root.querySelector('#shop-rent-log-earned').addEventListener('input', updateRentLogCalc);
+  root.querySelector('#shop-rent-log-rate').addEventListener('input', updateRentLogCalc);
+  root.querySelector('#btn-shop-rent-log-cancel').addEventListener('click', closeRentLogForm);
+  root.querySelector('#btn-shop-rent-log-save').addEventListener('click', async ()=>{
+    const statusEl = root.querySelector('#shop-rent-log-status');
+    const saveBtn = root.querySelector('#btn-shop-rent-log-save');
+    const staffCode = rentLoggingCode;
+    const a = rentArrangements.find(x => x.staff_code === staffCode);
+    if (!staffCode || !a) return;
+    const period = currentRentPeriod(a.anchor_date, a.cadence, todayIso());
+    const note = root.querySelector('#shop-rent-log-note').value.trim();
+    let amount, earnedAmount = null, rate = null;
+    if (a.kind === 'flat'){
+      amount = parseFloat(root.querySelector('#shop-rent-log-amount').value);
+      if (!amount || amount <= 0){ statusEl.textContent = 'Enter an amount.'; return; }
+    } else {
+      earnedAmount = parseFloat(root.querySelector('#shop-rent-log-earned').value);
+      rate = parseFloat(root.querySelector('#shop-rent-log-rate').value);
+      if (!earnedAmount || earnedAmount <= 0){ statusEl.textContent = 'Enter what they made.'; return; }
+      if (!rate || rate <= 0){ statusEl.textContent = 'Enter a commission rate.'; return; }
+      amount = earnedAmount * (rate/100);
+    }
+    if (!dbAvailable){ statusEl.textContent = "Live saving isn't connected right now."; return; }
+    saveBtn.disabled = true;
+    statusEl.textContent = 'Saving…';
+    try{
+      const row = {
+        id: genRentId('pay'), shop_code: profile.shopCode, staff_code: staffCode,
+        period_start: period.start, period_end: period.end, kind: a.kind,
+        amount, earned_amount: earnedAmount, rate, note: note || null, receipt_sent: false,
+        paid_at: new Date().toISOString()
+      };
+      const { error } = await supabaseClient.from('shop_rent_payments').insert(row);
+      if (error) throw error;
+      rentPayments.push(row);
+      closeRentLogForm();
+      renderRentList();
+      renderRentYearView();
+      // Best-effort receipt email -- never blocks on this, the payment is
+      // already saved above whether or not it sends.
+      if (profile.shopCode){
+        supabaseClient.auth.getSession().then(({ data })=>{
+          const token = data?.session?.access_token;
+          if (!token) return;
+          return supabaseClient.functions.invoke('send-rent-receipt', {
+            body: {
+              shopCode: profile.shopCode, staffCode, periodStart: period.start, periodEnd: period.end,
+              kind: a.kind, amount, earnedAmount, rate, note: note || null
+            },
+            headers: { Authorization: 'Bearer ' + token }
+          });
+        }).catch(err => console.warn('send-rent-receipt failed', err));
+      }
+    }catch(e){
+      console.warn('log rent payment failed', e);
+      if (e && e.code === '23505'){ statusEl.textContent = 'Already logged for this period.'; }
+      else { statusEl.textContent = "Couldn't save. Try again."; }
+      saveBtn.disabled = false;
+      return;
+    }
+    saveBtn.disabled = false;
+  });
+  async function undoRentPayment(paymentId){
+    try{
+      await supabaseClient.from('shop_rent_payments').delete().eq('id', paymentId);
+    }catch(e){ console.warn('undo rent payment failed', e); }
+    rentPayments = rentPayments.filter(p => p.id !== paymentId);
+    renderRentList();
+    renderRentYearView();
+  }
+  function renderRentList(){
+    const listEl = root.querySelector('#shop-rent-list');
+    const emptyEl = root.querySelector('#shop-rent-empty');
+    const staff = teamMembers.filter(m => m.code !== profileCode);
+    if (!staff.length){
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    const today = todayIso();
+    listEl.innerHTML = staff.map(m=>{
+      const a = rentArrangements.find(x => x.staff_code === m.code);
+      if (!a){
+        return `<div class="detail-card" style="gap:6px;">
+          <strong>${escapeHtmlShop(m.name || m.code)}</strong>
+          <span class="screen-sub" style="margin:0;">No arrangement set up yet.</span>
+          <button type="button" class="link-btn" data-rent-edit="${m.code}" style="padding:0; align-self:flex-start;">Set up</button>
+        </div>`;
+      }
+      const period = currentRentPeriod(a.anchor_date, a.cadence, today);
+      const paid = rentPayments.find(p => p.staff_code === m.code && p.period_start === period.start);
+      const statusHtml = paid
+        ? `<span class="screen-sub" style="margin:0; color:var(--ink);">Paid ${rentFmtDate(paid.paid_at ? paid.paid_at.slice(0,10) : period.start)} &middot; ${rentFmtMoney(paid.amount)} <button type="button" class="link-btn" data-rent-undo="${paid.id}" style="padding:0;">Undo</button></span>`
+        : `<button type="button" class="btn btn-outline" data-rent-log="${m.code}" style="flex:none; padding:6px 12px;">Log payment</button>`;
+      return `<div class="detail-card" style="gap:6px;">
+        <div class="detail-row" style="align-items:center;">
+          <strong>${escapeHtmlShop(m.name || m.code)}</strong>
+          <span class="screen-sub" style="margin:0;">${rentArrangementSummary(a)}</span>
+        </div>
+        <div class="detail-row" style="align-items:center;">
+          <span class="screen-sub" style="margin:0;">${rentFmtDate(period.start)} &ndash; ${rentFmtDate(period.end)}</span>
+          ${statusHtml}
+        </div>
+        <div class="btn-row" style="gap:14px;">
+          <button type="button" class="link-btn" data-rent-edit="${m.code}" style="padding:0;">Edit</button>
+          <button type="button" class="link-btn" data-rent-remove="${m.code}" style="padding:0; color:var(--behind);">Remove</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  root.querySelector('#shop-rent-list').addEventListener('click', e=>{
+    const editCode = e.target.dataset.rentEdit;
+    const removeCode = e.target.dataset.rentRemove;
+    const logCode = e.target.dataset.rentLog;
+    const undoId = e.target.dataset.rentUndo;
+    if (editCode) openRentEdit(editCode);
+    else if (logCode) openRentLogForm(logCode);
+    else if (undoId) undoRentPayment(undoId);
+    else if (removeCode){
+      if (armedRemoveCode !== 'rent_' + removeCode){
+        armedRemoveCode = 'rent_' + removeCode;
+        e.target.textContent = 'Tap again to remove';
+        setTimeout(()=>{ if (armedRemoveCode === 'rent_' + removeCode){ armedRemoveCode = null; renderRentList(); } }, 4000);
+        return;
+      }
+      armedRemoveCode = null;
+      removeRentArrangement(removeCode);
+    }
+  });
+  function rentAvailableYears(){
+    const years = new Set(rentPayments.map(p => parseInt(String(p.period_start).slice(0,4), 10)).filter(y => !isNaN(y)));
+    years.add(new Date().getFullYear());
+    return Array.from(years).sort((a,b)=> b - a);
+  }
+  function rentYearPayments(){
+    return rentPayments
+      .filter(p => String(p.period_start).slice(0,4) === String(rentSelectedYear))
+      .sort((a,b)=> (a.period_start||'').localeCompare(b.period_start||''));
+  }
+  function renderRentYearSelect(){
+    const sel = root.querySelector('#shop-rent-year-select');
+    const years = rentAvailableYears();
+    if (!years.includes(rentSelectedYear)) rentSelectedYear = years[0];
+    sel.innerHTML = years.map(y => `<option value="${y}" ${y===rentSelectedYear?'selected':''}>${y}</option>`).join('');
+  }
+  function renderRentYearView(){
+    renderRentYearSelect();
+    const total = rentYearPayments().reduce((s,p)=> s + (Number(p.amount)||0), 0);
+    root.querySelector('#shop-rent-year-label').textContent = rentSelectedYear + ' total';
+    root.querySelector('#shop-rent-year-total').textContent = rentFmtMoney(total);
+  }
+  root.querySelector('#shop-rent-year-select').addEventListener('change', function(){
+    rentSelectedYear = parseInt(this.value, 10);
+    renderRentYearView();
+  });
+  function rentCsvEscape(val){
+    const s = String(val);
+    if (/[",\r\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+    return s;
+  }
+  root.querySelector('#btn-shop-rent-download').addEventListener('click', ()=>{
+    const rows = [['Period Start','Period End','Staff','Type','Amount','Earned','Rate (%)','Note']];
+    rentYearPayments().forEach(p=>{
+      const member = teamMembers.find(m => m.code === p.staff_code);
+      rows.push([
+        p.period_start, p.period_end, (member ? (member.name||member.code) : p.staff_code),
+        p.kind === 'commission' ? 'Commission' : 'Flat rent',
+        (Number(p.amount)||0).toFixed(2),
+        p.earned_amount != null ? Number(p.earned_amount).toFixed(2) : '',
+        p.rate != null ? Number(p.rate) : '',
+        p.note || ''
+      ]);
+    });
+    const total = rentYearPayments().reduce((s,p)=> s + (Number(p.amount)||0), 0);
+    rows.push(['', '', '', '', '', '', 'Year Total', total.toFixed(2)]);
+    const csv = rows.map(r=> r.map(rentCsvEscape).join(',')).join('\r\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'shop-rent-commission-' + rentSelectedYear + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  root.querySelector('#btn-shop-rent-print').addEventListener('click', ()=>{
+    const rowsHtml = rentYearPayments().map(p=>{
+      const member = teamMembers.find(m => m.code === p.staff_code);
+      const type = p.kind === 'commission' ? `Commission (${Number(p.rate)}% of ${rentFmtMoney(p.earned_amount)})` : 'Flat rent';
+      return `<tr><td>${rentFmtDate(p.period_start)} – ${rentFmtDate(p.period_end)}</td><td>${escapeHtmlShop(member ? (member.name||member.code) : p.staff_code)}</td><td>${type}</td><td style="text-align:right;">${rentFmtMoney(p.amount)}</td><td>${p.note || ''}</td></tr>`;
+    }).join('');
+    const total = rentYearPayments().reduce((s,p)=> s + (Number(p.amount)||0), 0);
+    const shopName = myShop ? myShop.name : '';
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Rent &amp; Commission -- ${rentSelectedYear}</title>
+      <style>
+        body{ font-family: Georgia, 'Times New Roman', serif; color:#1a1a1a; padding:32px; max-width:800px; margin:0 auto; }
+        h1{ font-size:20px; margin:0 0 2px; }
+        p.sub{ color:#555; margin:0 0 24px; font-size:13px; }
+        table{ width:100%; border-collapse:collapse; font-size:13px; }
+        th, td{ text-align:left; padding:8px 6px; border-bottom:1px solid #ddd; }
+        th{ font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:#555; }
+        tfoot td{ font-weight:bold; border-top:2px solid #1a1a1a; border-bottom:none; }
+        @media print{ body{ padding:0; } }
+      </style></head><body>
+      <h1>Rent &amp; Commission &mdash; ${rentSelectedYear}</h1>
+      <p class="sub">${shopName ? escapeHtmlShop(shopName) + ' &middot; ' : ''}Shop record, prepared via Vono. Not verified payment data.</p>
+      <table><thead><tr><th>Period</th><th>Staff</th><th>Type</th><th style="text-align:right;">Amount</th><th>Note</th></tr></thead>
+      <tbody>${rowsHtml || '<tr><td colspan="5">No payments logged for this year.</td></tr>'}</tbody>
+      <tfoot><tr><td colspan="3"></td><td style="text-align:right;">${rentFmtMoney(total)}</td><td></td></tr></tfoot>
+      </table>
+      </body></html>`);
+    win.document.close();
+    win.focus();
+    setTimeout(()=> win.print(), 200);
+  });
+  async function renderRentSection(){
+    if (!profile.shopCode || profile.shopRole !== 'owner') return;
+    await loadRentData();
+    populateRentStaffSelect();
+    if (!rentEditingCode) resetRentForm();
+    renderRentList();
+    renderRentYearView();
   }
   root.querySelector('#shop-team-list').addEventListener('click', async (e)=>{
     const removeCode = e.target.dataset.teamRemove;
