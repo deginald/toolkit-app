@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-05T02-43-55Z">
+<meta name="app-build" content="2026-10-05T04-11-15Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -1649,7 +1649,8 @@ function enterApp(){
   loadLoyalty();
   updateNotifNudgeBanner();
   updateInstallNudgeBanner();
-  maybeShowInstallReminder();
+  // loadQuickMessageQueue() decides when to also show the install reminder
+  // -- any waiting message takes priority over that nag (see its comment).
   loadQuickMessageQueue();
 }
 
@@ -2240,10 +2241,18 @@ if (window.visualViewport){
    the service worker's postMessage, since focusing a tab doesn't navigate
    it) just jumps that one message to the front of the queue. Skipped
    entirely for a shared read-only link -- that's not this client's own
-   account, so it shouldn't surface their messages. */
+   account, so it shouldn't surface their messages.
+
+   This takes priority over the recurring install reminder: a real message
+   is more useful than a nag to add the app to the Home Screen, so the
+   install reminder is only shown once the inbox is actually empty -- right
+   away if there was nothing waiting, or as soon as the last message here
+   gets cleared. See maybeShowInstallReminder() calls below. */
 let quickMessageQueue = [];
+let quickMessagePollTimer = null;
 async function loadQuickMessageQueue(){
-  if (!supabaseClient || !clientCode || viewedViaSharedCode) return;
+  if (viewedViaSharedCode){ maybeShowInstallReminder(); return; }
+  if (!supabaseClient || !clientCode){ maybeShowInstallReminder(); return; }
   let deepLinkId = null;
   try{ deepLinkId = new URLSearchParams(window.location.search).get('message'); }catch(e){}
   try{
@@ -2253,7 +2262,7 @@ async function loadQuickMessageQueue(){
       .eq('recipient_role', 'client')
       .in('status', ['sent','failed_not_subscribed','failed_error'])
       .order('created_at', { ascending: true });
-    if (error || !data) return;
+    if (error || !data){ maybeShowInstallReminder(); return; }
     quickMessageQueue = data;
     if (deepLinkId){
       const idx = quickMessageQueue.findIndex(m => m.id === deepLinkId);
@@ -2263,11 +2272,47 @@ async function loadQuickMessageQueue(){
       }
     }
     showNextQueuedMessage();
-  }catch(e){ console.warn('load quick message queue failed', e); }
+    if (quickMessageQueue.length === 0) maybeShowInstallReminder();
+    startQuickMessagePolling();
+  }catch(e){ console.warn('load quick message queue failed', e); maybeShowInstallReminder(); }
+}
+// Keeps catching new messages for as long as the app stays open in one
+// sitting, for someone without push notifications on -- otherwise a
+// message sent after they opened the app would only ever show up the next
+// time they fully closed and reopened it. Re-checks periodically, plus
+// whenever the tab/app comes back to the foreground (covers an iPhone
+// restoring a Home Screen app from its bfcache snapshot, same as the
+// update-check below). Merges in anything new rather than replacing the
+// queue outright, so it never disturbs a message already on screen.
+function startQuickMessagePolling(){
+  if (quickMessagePollTimer) return; // already running
+  quickMessagePollTimer = setInterval(pollQuickMessageQueue, 2 * 60 * 1000);
+  document.addEventListener('visibilitychange', ()=>{
+    if (document.visibilityState === 'visible') pollQuickMessageQueue();
+  });
+  window.addEventListener('pageshow', pollQuickMessageQueue);
+}
+async function pollQuickMessageQueue(){
+  if (!supabaseClient || !clientCode || viewedViaSharedCode) return;
+  try{
+    const { data, error } = await supabaseClient.from('quick_messages')
+      .select('id, message, sender_name, created_at')
+      .eq('recipient_code', clientCode)
+      .eq('recipient_role', 'client')
+      .in('status', ['sent','failed_not_subscribed','failed_error'])
+      .order('created_at', { ascending: true });
+    if (error || !data) return;
+    const freshIds = new Set(data.map(m => m.id));
+    const existingIds = new Set(quickMessageQueue.map(m => m.id));
+    quickMessageQueue = quickMessageQueue.filter(m => freshIds.has(m.id)); // drop any cleared elsewhere
+    const newOnes = data.filter(m => !existingIds.has(m.id));
+    if (newOnes.length) quickMessageQueue = quickMessageQueue.concat(newOnes);
+    showNextQueuedMessage();
+  }catch(e){ console.warn('quick message poll failed', e); }
 }
 // Used when a push arrives (or is tapped) while the queue is already loaded
 // -- pulls that one message to the front and shows it right away, rather
-// than waiting for the next full reload.
+// than waiting for the next poll or a full reload.
 async function pushQuickMessageToFront(id){
   if (!id || !supabaseClient) return;
   try{
@@ -2312,6 +2357,9 @@ async function clearCurrentQuickMessage(){
     try{ await supabaseClient.from('quick_messages').delete().eq('id', id); }catch(e){ console.warn('clear quick message failed', e); }
   }
   showNextQueuedMessage();
+  // The inbox just emptied out -- this is the deferred moment for the
+  // install reminder, which was held back while a real message was waiting.
+  if (quickMessageQueue.length === 0) maybeShowInstallReminder();
 }
 document.getElementById('qm-popup-clear').addEventListener('click', clearCurrentQuickMessage);
 try{
