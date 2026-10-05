@@ -362,7 +362,7 @@
       <button type="button" id="ahc-gate-ios" style="flex:1;border:none;background:transparent;color:#A9B2C3;font-size:0.8rem;font-weight:700;padding:8px 6px;border-radius:7px;cursor:pointer;transition:background 0.15s,color 0.15s;">iPhone</button>
       <button type="button" id="ahc-gate-android" style="flex:1;border:none;background:transparent;color:#A9B2C3;font-size:0.8rem;font-weight:700;padding:8px 6px;border-radius:7px;cursor:pointer;transition:background 0.15s,color 0.15s;">Android</button>
     </div>
-    <p id="ahc-gate-steps-ios" style="display:none;color:#A9B2C3;font-size:0.82rem;line-height:1.5;text-align:left;margin:0 0 18px;">1. Tap the Share icon (the square with an arrow pointing up) in Safari's toolbar.<br>2. Scroll down and tap "Add to Home Screen."<br>3. Tap "Add" in the top right.<br>4. Open Vono from that new icon.</p>
+    <p id="ahc-gate-steps-ios" style="display:none;color:#A9B2C3;font-size:0.82rem;line-height:1.5;text-align:left;margin:0 0 18px;">1. Tap the &bull;&bull;&bull; icon in Safari's toolbar.<br>2. Tap the Share icon (the square with an arrow pointing up).<br>3. Scroll down and tap "Add to Home Screen."<br>4. Tap "Add" in the top right.<br>5. Open Vono from that new icon.</p>
     <p id="ahc-gate-steps-android" style="display:none;color:#A9B2C3;font-size:0.82rem;line-height:1.5;text-align:left;margin:0 0 18px;">1. Tap the three-dot menu in Chrome's toolbar.<br>2. Tap "Add to Home screen" or "Install app."<br>3. Tap "Add" or "Install" to confirm.</p>
     <p style="color:#7C879C;font-size:0.78rem;margin:0;">Already have an account? <a href="#" id="ahc-gate-login-link" style="color:#D4AF6A;">Log in</a></p>
   </div>
@@ -476,6 +476,30 @@
 })();
 </script>
 <!-- End Install Intro -->
+<!-- Recurring install reminder: the one-time "Get the Full Experience" gate
+     above only ever shows once, often before someone even has an account --
+     this catches a returning, already-logged-in professional who's still
+     using a regular browser tab weeks later. Shown after every app open
+     (enterApp()) for as long as they haven't installed, not just once;
+     "Maybe later" only closes it for this visit -- nothing is stored to
+     suppress it, so it comes back next time they open the app. -->
+<div id="install-reminder-modal" style="display:none; position:fixed; inset:0; z-index:9000; background:rgba(5,9,15,0.82); align-items:center; justify-content:center; padding:20px; overflow-y:auto;">
+  <div class="card" style="max-width:360px; width:100%; margin:auto; text-align:center; gap:14px; padding:28px 24px;">
+    <img src="icon-192.png" alt="Vono" style="width:56px; height:56px; border-radius:50%; margin:0 auto;" onerror="this.style.display='none'">
+    <div>
+      <h2 style="margin:0 0 6px; font-size:1.05rem;">Add Vono to your Home Screen</h2>
+      <p class="screen-sub" style="margin:0;">We noticed you still haven't added the app to your Home Screen. For a better experience &mdash; faster to open, full-screen, and how you'll get appointment and message notifications &mdash; add it now.</p>
+    </div>
+    <button type="button" class="btn btn-primary" id="install-reminder-install-btn" style="display:none; width:100%;">Install Now</button>
+    <div class="mode-toggle">
+      <button type="button" class="mode-btn active" id="install-reminder-ios-btn">iPhone</button>
+      <button type="button" class="mode-btn" id="install-reminder-android-btn">Android</button>
+    </div>
+    <p id="install-reminder-steps-ios" class="screen-sub" style="margin:0; text-align:left;">1. Tap the &bull;&bull;&bull; icon in Safari's toolbar.<br>2. Tap the Share icon (the square with an arrow pointing up).<br>3. Scroll down and tap "Add to Home Screen."<br>4. Tap "Add" in the top right.</p>
+    <p id="install-reminder-steps-android" class="screen-sub" style="display:none; margin:0; text-align:left;">1. Tap the three-dot menu in Chrome's toolbar.<br>2. Tap "Add to Home screen" or "Install app."<br>3. Tap "Add" or "Install" to confirm.</p>
+    <button type="button" class="link-btn" id="btn-install-reminder-later" style="padding:2px 0 0; align-self:center;">Maybe later</button>
+  </div>
+</div>
 <div id="app-root">
   <div id="update-available-banner" class="banner action" hidden style="padding-top:max(10px, calc(env(safe-area-inset-top) + 10px));">
     <span>A new version of the app is available.</span>
@@ -541,7 +565,7 @@
           <button type="button" class="mode-btn" id="btn-share-app-android">Android</button>
         </div>
         <div id="share-app-steps-ios" style="display:none; flex-direction:column;">
-          <p class="screen-sub" style="margin:0; text-align:left;">1. Open the link in Safari.<br>2. Tap the Share icon (the square with an arrow pointing up) in the toolbar.<br>3. Scroll down and tap "Add to Home Screen."<br>4. Tap "Add" in the top right.</p>
+          <p class="screen-sub" style="margin:0; text-align:left;">1. Open the link in Safari.<br>2. Tap the &bull;&bull;&bull; icon in the toolbar.<br>3. Tap the Share icon (the square with an arrow pointing up).<br>4. Scroll down and tap "Add to Home Screen."<br>5. Tap "Add" in the top right.</p>
         </div>
         <div id="share-app-steps-android" style="display:none; flex-direction:column;">
           <p class="screen-sub" style="margin:0; text-align:left;">1. Open the link in Chrome.<br>2. Tap the three-dot menu in the top right.<br>3. Tap "Add to Home screen" or "Install app."<br>4. Tap "Add" or "Install" to confirm.</p>
@@ -2074,7 +2098,7 @@
           <p class="screen-sub" style="margin:0;"><strong>On an iPhone, notifications only work once this is added to your Home Screen.</strong> Safari can't turn them on from inside a regular browser tab.</p>
           <button type="button" class="link-btn" id="btn-ios-homescreen-steps" style="padding:0; align-self:flex-start;">See how</button>
           <div id="ios-homescreen-steps" style="display:none; flex-direction:column;">
-            <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the Share icon (the square with an arrow pointing up) in Safari's toolbar.<br>2. Scroll down and tap "Add to Home Screen."<br>3. Tap "Add" in the top right.<br>4. Open Vono from that new icon from now on, then come back here to turn notifications on.</p>
+            <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the &bull;&bull;&bull; icon in Safari's toolbar.<br>2. Tap the Share icon (the square with an arrow pointing up).<br>3. Scroll down and tap "Add to Home Screen."<br>4. Tap "Add" in the top right.<br>5. Open Vono from that new icon from now on, then come back here to turn notifications on.</p>
           </div>
         </div>
         <div id="notifications-locked-note" class="card tip" style="display:none; gap:6px;">
@@ -2329,6 +2353,8 @@ window.addEventListener('beforeinstallprompt', (e)=>{
 window.addEventListener('appinstalled', ()=>{
   deferredInstallPrompt = null;
   updateInstallButtons();
+  const modal = document.getElementById('install-reminder-modal');
+  if (modal) modal.style.display = 'none';
 });
 async function runInstallPrompt(){
   if (!deferredInstallPrompt) return;
@@ -2340,6 +2366,50 @@ async function runInstallPrompt(){
     await promptEvent.userChoice;
   }catch(e){ /* dismissed or unsupported -- nothing to recover */ }
 }
+/* =========================================================
+   RECURRING INSTALL REMINDER
+   The one-time "Get the Full Experience" gate (#ahc-gate, top of this
+   file) only ever shows once, and often before someone even has an
+   account. This catches a returning, already-logged-in professional
+   who's still opening Vono in a regular browser tab -- shown every time
+   they open the app (from enterApp()) for as long as they haven't
+   installed it, not just once. "Maybe later" only dismisses it for this
+   visit; nothing is stored, so it returns next time they open the app.
+   ========================================================= */
+function maybeShowInstallReminder(){
+  const modal = document.getElementById('install-reminder-modal');
+  if (!modal) return;
+  if (isAppStandalone()){ modal.style.display = 'none'; return; }
+  const installBtn = document.getElementById('install-reminder-install-btn');
+  if (installBtn) installBtn.style.display = deferredInstallPrompt ? 'block' : 'none';
+  modal.style.display = 'flex';
+}
+function setInstallReminderDevice(device){
+  const iosBtn = document.getElementById('install-reminder-ios-btn');
+  const androidBtn = document.getElementById('install-reminder-android-btn');
+  const iosSteps = document.getElementById('install-reminder-steps-ios');
+  const androidSteps = document.getElementById('install-reminder-steps-android');
+  if (!iosBtn || !androidBtn || !iosSteps || !androidSteps) return;
+  const iosActive = device === 'ios';
+  iosBtn.classList.toggle('active', iosActive);
+  androidBtn.classList.toggle('active', !iosActive);
+  iosSteps.style.display = iosActive ? 'block' : 'none';
+  androidSteps.style.display = iosActive ? 'none' : 'block';
+}
+(function(){
+  const modal = document.getElementById('install-reminder-modal');
+  if (!modal) return;
+  setInstallReminderDevice(/iPhone|iPad|iPod/i.test(navigator.userAgent || '') ? 'ios' : 'android');
+  document.getElementById('install-reminder-ios-btn').addEventListener('click', ()=> setInstallReminderDevice('ios'));
+  document.getElementById('install-reminder-android-btn').addEventListener('click', ()=> setInstallReminderDevice('android'));
+  document.getElementById('install-reminder-install-btn').addEventListener('click', async ()=>{
+    await runInstallPrompt();
+    modal.style.display = 'none';
+  });
+  document.getElementById('btn-install-reminder-later').addEventListener('click', ()=>{
+    modal.style.display = 'none';
+  });
+})();
 let swRegistrationPromise = null;
 function registerServiceWorker(){
   if (!pushSupported()) return Promise.resolve(null);
@@ -8021,6 +8091,7 @@ function enterApp(){
   }
   updateNotifNudgeBanner();
   handleBillingReturn();
+  maybeShowInstallReminder();
 }
 // Stripe Checkout and the billing portal both redirect back here with a
 // ?billing= param. Thank/confirm, clean the URL, then re-fetch the profile

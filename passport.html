@@ -150,6 +150,33 @@
 </head>
 <body>
 
+<!-- Recurring install reminder: the dismissible nudge banner lower on the
+     home screen is easy to miss and only ever shown once (permanently
+     dismissible) -- this catches a returning, already-logged-in client
+     who's still opening Vono in a regular browser tab. Shown every time
+     they open the app (from enterApp()) for as long as they haven't
+     installed it; "Maybe later" only closes it for this visit -- nothing
+     is stored, so it returns next time they open the app. Skipped
+     entirely for a shared read-only Ledger-style view (no account of
+     their own to install anything for). -->
+<div id="install-reminder-modal" style="display:none; position:fixed; inset:0; z-index:9000; background:rgba(5,9,15,0.82); align-items:center; justify-content:center; padding:20px; overflow-y:auto;">
+  <div class="detail-card" style="max-width:360px; width:100%; margin:auto; text-align:center; gap:14px; padding:28px 24px;">
+    <img src="icon-192.png" alt="Vono" style="width:56px; height:56px; border-radius:50%; margin:0 auto;" onerror="this.style.display='none'">
+    <div>
+      <h2 style="margin:0 0 6px; font-size:1.05rem;">Add Vono to your Home Screen</h2>
+      <p class="screen-sub" style="margin:0;">We noticed you still haven't added the app to your Home Screen. For a better experience &mdash; faster to open, full-screen, and how you'll get appointment reminders &mdash; add it now.</p>
+    </div>
+    <button type="button" class="btn btn-primary" id="install-reminder-install-btn" style="display:none; width:100%;">Install Now</button>
+    <div class="mode-toggle">
+      <button type="button" class="mode-btn active" id="install-reminder-ios-btn">iPhone</button>
+      <button type="button" class="mode-btn" id="install-reminder-android-btn">Android</button>
+    </div>
+    <p id="install-reminder-steps-ios" class="screen-sub" style="margin:0; text-align:left;">1. Tap the &bull;&bull;&bull; icon in Safari's toolbar.<br>2. Tap the Share icon (the square with an arrow pointing up).<br>3. Scroll down and tap "Add to Home Screen."<br>4. Tap "Add" in the top right.</p>
+    <p id="install-reminder-steps-android" class="screen-sub" style="display:none; margin:0; text-align:left;">1. Tap the three-dot menu in Chrome's toolbar.<br>2. Tap "Add to Home screen" or "Install app."<br>3. Tap "Add" or "Install" to confirm.</p>
+    <button type="button" class="link-btn" id="btn-install-reminder-later" style="padding:2px 0 0; align-self:center;">Maybe later</button>
+  </div>
+</div>
+
 <div id="app-root">
 
   <div id="update-available-banner" class="banner action" hidden style="padding-top:max(10px, calc(env(safe-area-inset-top) + 10px));">
@@ -372,7 +399,7 @@
             <button type="button" class="mode-btn" id="btn-add-home-android">Android</button>
           </div>
           <div id="add-home-steps-ios" style="display:none; flex-direction:column; margin-top:8px;">
-            <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the Share icon (the square with an arrow pointing up) in Safari's toolbar.<br>2. Scroll down and tap "Add to Home Screen."<br>3. Tap "Add" in the top right.</p>
+            <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the &bull;&bull;&bull; icon in Safari's toolbar.<br>2. Tap the Share icon (the square with an arrow pointing up).<br>3. Scroll down and tap "Add to Home Screen."<br>4. Tap "Add" in the top right.</p>
           </div>
           <div id="add-home-steps-android" style="display:none; flex-direction:column; margin-top:8px;">
             <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the three-dot menu in the top right of Chrome.<br>2. Tap "Add to Home screen" or "Install app."<br>3. Tap "Add" or "Install" to confirm.</p>
@@ -422,7 +449,7 @@
             <p class="screen-sub" style="margin:0;"><strong>On an iPhone, notifications only work once this is added to your Home Screen.</strong> Safari can't turn them on from inside a regular browser tab.</p>
             <button type="button" class="link-btn" id="btn-ios-homescreen-steps" style="padding:0; align-self:flex-start;">See how</button>
             <div id="ios-homescreen-steps" style="display:none; flex-direction:column;">
-              <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the Share icon (the square with an arrow pointing up) in Safari's toolbar.<br>2. Scroll down and tap "Add to Home Screen."<br>3. Tap "Add" in the top right.<br>4. Open Vono from that new icon from now on, then come back here to turn notifications on.</p>
+              <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the &bull;&bull;&bull; icon in Safari's toolbar.<br>2. Tap the Share icon (the square with an arrow pointing up).<br>3. Scroll down and tap "Add to Home Screen."<br>4. Tap "Add" in the top right.<br>5. Open Vono from that new icon from now on, then come back here to turn notifications on.</p>
             </div>
           </div>
           <button class="btn btn-primary" id="btn-enable-notifications" type="button">Turn on notifications</button>
@@ -563,6 +590,8 @@ window.addEventListener('appinstalled', ()=>{
   deferredInstallPrompt = null;
   updateInstallButtons();
   updateInstallNudgeBanner();
+  const modal = document.getElementById('install-reminder-modal');
+  if (modal) modal.style.display = 'none';
 });
 async function runInstallPrompt(){
   if (!deferredInstallPrompt) return;
@@ -575,6 +604,50 @@ async function runInstallPrompt(){
   }catch(e){ /* dismissed or unsupported -- nothing to recover */ }
   updateInstallNudgeBanner();
 }
+/* =========================================================
+   RECURRING INSTALL REMINDER
+   The dismissible nudge banner lower on the home screen only ever shows
+   once (permanently dismissible) and is easy to miss. This catches a
+   returning, already-logged-in client who's still opening Vono in a
+   regular browser tab -- shown every time they open the app (from
+   enterApp()) for as long as they haven't installed it. "Maybe later"
+   only dismisses it for this visit; nothing is stored, so it returns
+   next time they open the app.
+   ========================================================= */
+function maybeShowInstallReminder(){
+  const modal = document.getElementById('install-reminder-modal');
+  if (!modal) return;
+  if (viewedViaSharedCode || isAppStandalone()){ modal.style.display = 'none'; return; }
+  const installBtn = document.getElementById('install-reminder-install-btn');
+  if (installBtn) installBtn.style.display = deferredInstallPrompt ? 'block' : 'none';
+  modal.style.display = 'flex';
+}
+function setInstallReminderDevice(device){
+  const iosBtn = document.getElementById('install-reminder-ios-btn');
+  const androidBtn = document.getElementById('install-reminder-android-btn');
+  const iosSteps = document.getElementById('install-reminder-steps-ios');
+  const androidSteps = document.getElementById('install-reminder-steps-android');
+  if (!iosBtn || !androidBtn || !iosSteps || !androidSteps) return;
+  const iosActive = device === 'ios';
+  iosBtn.classList.toggle('active', iosActive);
+  androidBtn.classList.toggle('active', !iosActive);
+  iosSteps.style.display = iosActive ? 'block' : 'none';
+  androidSteps.style.display = iosActive ? 'none' : 'block';
+}
+(function(){
+  const modal = document.getElementById('install-reminder-modal');
+  if (!modal) return;
+  setInstallReminderDevice(/iPhone|iPad|iPod/i.test(navigator.userAgent || '') ? 'ios' : 'android');
+  document.getElementById('install-reminder-ios-btn').addEventListener('click', ()=> setInstallReminderDevice('ios'));
+  document.getElementById('install-reminder-android-btn').addEventListener('click', ()=> setInstallReminderDevice('android'));
+  document.getElementById('install-reminder-install-btn').addEventListener('click', async ()=>{
+    await runInstallPrompt();
+    modal.style.display = 'none';
+  });
+  document.getElementById('btn-install-reminder-later').addEventListener('click', ()=>{
+    modal.style.display = 'none';
+  });
+})();
 function setAddHomeDevice(device){
   document.getElementById('btn-add-home-ios').classList.toggle('active', device === 'ios');
   document.getElementById('btn-add-home-android').classList.toggle('active', device !== 'ios');
@@ -1575,6 +1648,7 @@ function enterApp(){
   loadLoyalty();
   updateNotifNudgeBanner();
   updateInstallNudgeBanner();
+  maybeShowInstallReminder();
 }
 
 function updateSwitchProfileLabel(){
