@@ -1381,7 +1381,7 @@
             <p class="eyebrow-mini">Rewards &amp; income</p>
             <h2>Business</h2>
           </div>
-          <p class="screen-sub">Business tools (Loyalty, Earnings, My Clients, Inventory, Shop, and Rent &amp; Commission) are part of a paid Vono plan. Subscribe from your Account screen to unlock them.</p>
+          <p class="screen-sub">Business tools (Loyalty, Earnings, Walk-ins, My Clients, Inventory, Shop, and Rent &amp; Commission) are part of a paid Vono plan. Subscribe from your Account screen to unlock them.</p>
           <button class="btn btn-primary" type="button" id="btn-business-paywall-account">Go to Account to subscribe</button>
         </div>
         <div id="business-real-content">
@@ -1393,6 +1393,7 @@
           <div class="mode-toggle" id="business-mode-toggle">
             <button type="button" class="mode-btn active" data-biz-mode="loyalty">Loyalty</button>
             <button type="button" class="mode-btn" data-biz-mode="earnings">Earnings</button>
+            <button type="button" class="mode-btn" data-biz-mode="walkins">Walk-ins</button>
             <button type="button" class="mode-btn" data-biz-mode="clients">My Clients</button>
             <button type="button" class="mode-btn" data-biz-mode="inventory">Inventory</button>
             <button type="button" class="mode-btn" data-biz-mode="shop">Shop</button>
@@ -1426,12 +1427,54 @@
             <div style="border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px; display:flex; flex-direction:column; gap:4px;">
               <p class="eyebrow-mini2" id="earn-year-label" style="margin:0;">Year to date</p>
               <p class="screen-title" id="earn-ytd-total" style="margin:0;">$0</p>
+              <p class="screen-sub" id="earn-ytd-split" style="display:none; margin:0;">&nbsp;</p>
             </div>
             <div id="earn-month-list" style="display:flex; flex-direction:column; gap:2px;"></div>
             <p class="screen-sub" id="earn-empty-note" style="display:none; margin:0;">No completed appointments yet this year.</p>
-            <p class="foot-note-small">Counts appointments saved in Vono once their date has passed, whether the client booked online or you added it for them. Cancelled appointments aren't counted, and this can't see payments made outside the app.</p>
+            <p class="foot-note-small">Appointments counts bookings saved in Vono once their date has passed (cancelled ones don't count); Walk-ins adds in whatever you've logged on the Walk-ins tab. Neither can see payments made outside the app that aren't logged one of those two ways.</p>
             <div id="earn-download-row" style="display:none; flex-direction:column; gap:8px; border-top:1px solid var(--line); padding-top:16px;">
               <button class="btn btn-outline" id="btn-earn-download" type="button">Download <span id="earn-download-year">last year's</span> totals (CSV)</button>
+            </div>
+          </div>
+        </div>
+        <div class="biz-pane" data-biz="walkins" id="tab-walkins">
+          <div class="screen-body show" data-screen="dashboard" style="gap:16px;">
+            <p class="screen-sub" style="margin:0;">Log walk-in clients you took payment from outside the app &mdash; pulls your services and prices straight from Booking &gt; Services.</p>
+
+            <div id="wi-no-services" style="display:none; flex-direction:column; gap:10px; border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px;">
+              <p class="screen-sub" style="margin:0;">You haven't set up any services yet, so there's nothing to log walk-ins against.</p>
+              <button class="btn btn-outline" id="btn-wi-go-services" type="button">Set up services</button>
+            </div>
+
+            <div id="wi-entry-section" style="display:none; flex-direction:column; gap:14px;">
+              <div class="field">
+                <label>Logging for</label>
+                <div class="input-row"><input id="wi-entry-date" type="date"></div>
+              </div>
+              <div id="wi-service-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+              <div style="border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px; display:flex; flex-direction:column; gap:4px;">
+                <p class="eyebrow-mini2" id="wi-day-label" style="margin:0;">Today's walk-in total</p>
+                <p class="screen-title" id="wi-day-total" style="margin:0;">$0.00</p>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:6px; border-top:1px solid var(--line); padding-top:16px;">
+                <p class="eyebrow-mini" style="margin:0;">Totals</p>
+                <div class="summary-row"><span>This week</span><span id="wi-total-week">$0.00</span></div>
+                <div class="summary-row"><span>This month</span><span id="wi-total-month">$0.00</span></div>
+                <div class="summary-row"><span>This year</span><span id="wi-total-year">$0.00</span></div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:10px; border-top:1px solid var(--line); padding-top:16px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                  <p class="eyebrow-mini" style="margin:0;">Yearly record</p>
+                  <select id="wi-year-select" class="title-select" style="width:auto;"></select>
+                </div>
+                <div class="btn-row" style="gap:10px;">
+                  <button class="btn btn-outline" id="btn-wi-download" type="button" style="flex:1;">Download CSV</button>
+                  <button class="btn btn-outline" id="btn-wi-print" type="button" style="flex:1;">Print</button>
+                </div>
+                <p class="foot-note-small" style="margin:0;">This is your own record for your taxes &mdash; Vono doesn't verify these payments actually happened. If a service's price changes later, days already logged keep the price they were logged at.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -2672,6 +2715,7 @@ function showBusinessSubtab(mode){
   document.querySelectorAll('.biz-pane').forEach(p=> p.classList.toggle('show', p.dataset.biz===mode));
   document.querySelectorAll('#business-mode-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.bizMode===mode));
   if (mode === 'earnings' && window.initEarningsTab) window.initEarningsTab();
+  if (mode === 'walkins' && window.initWalkinsTab) window.initWalkinsTab();
   if (mode === 'loyalty' && window.initLoyaltyTab) window.initLoyaltyTab();
   if (mode === 'clients' && window.initMyClientsTab) window.initMyClientsTab();
   if (mode === 'inventory' && window.initInventoryTab) window.initInventoryTab();
@@ -6185,22 +6229,43 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     try{
       const appts = await fetchBookedAppointments();
       const today = todayIso();
-      const monthTotals = Array(12).fill(0);
+      const apptMonthTotals = Array(12).fill(0);
       let prevYearHasData = false;
       appts.forEach(a=>{
         if (!a.appt_date || a.appt_date > today) return;
         const y = parseInt(a.appt_date.slice(0,4), 10);
         const m = parseInt(a.appt_date.slice(5,7), 10) - 1;
-        if (y === year) monthTotals[m] += Number(a.total_price) || 0;
+        if (y === year) apptMonthTotals[m] += Number(a.total_price) || 0;
         else if (y === year - 1) prevYearHasData = true;
       });
-      const ytd = monthTotals.reduce((s,v)=> s+v, 0);
-      ytdEl.textContent = '$' + ytd;
+      // Walk-ins (logged on the separate Walk-ins tab) merge in here so this
+      // tab shows one full income picture for pros who use both. Pulled from
+      // a shared helper (defined in the Walk-ins section below) rather than
+      // querying walkin_logs twice, so the two tabs can never disagree on
+      // how a month's walk-in total is computed.
+      const walkinLogs = window.fetchAllWalkinLogsForBarber ? await window.fetchAllWalkinLogsForBarber() : [];
+      const walkinMonthTotals = window.walkinMonthTotalsForYear ? window.walkinMonthTotalsForYear(walkinLogs, year) : Array(12).fill(0);
+      const walkinPrevMonthTotals = window.walkinMonthTotalsForYear ? window.walkinMonthTotalsForYear(walkinLogs, year - 1) : Array(12).fill(0);
+      const walkinYtd = walkinMonthTotals.reduce((s,v)=> s+v, 0);
+      if (walkinPrevMonthTotals.reduce((s,v)=> s+v, 0) > 0) prevYearHasData = true;
+      const apptYtd = apptMonthTotals.reduce((s,v)=> s+v, 0);
+      const combinedYtd = apptYtd + walkinYtd;
+      ytdEl.textContent = '$' + combinedYtd;
+      const splitEl = root.querySelector('#earn-ytd-split');
+      if (walkinYtd > 0){
+        splitEl.style.display = 'block';
+        splitEl.textContent = '$' + apptYtd + ' appointments + $' + walkinYtd + ' walk-ins';
+      } else {
+        splitEl.style.display = 'none';
+      }
       listEl.innerHTML = MONTH_NAMES.map((name, idx)=>{
-        const val = idx > currentMonthIdx ? '-' : ('$' + monthTotals[idx]);
+        if (idx > currentMonthIdx) return `<div class="summary-row"><span>${name}</span><span>-</span></div>`;
+        const apptVal = apptMonthTotals[idx], wiVal = walkinMonthTotals[idx];
+        const combined = apptVal + wiVal;
+        const val = wiVal > 0 ? `$${combined} <span style="opacity:0.6; font-weight:400;">($${apptVal} + $${wiVal})</span>` : ('$' + combined);
         return `<div class="summary-row"><span>${name}</span><span>${val}</span></div>`;
       }).join('');
-      emptyEl.style.display = (ytd === 0) ? 'block' : 'none';
+      emptyEl.style.display = (combinedYtd === 0) ? 'block' : 'none';
       if (prevYearHasData){
         downloadRow.style.display = 'flex';
         downloadYearEl.textContent = String(year - 1);
@@ -6219,18 +6284,24 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const targetYear = new Date().getFullYear() - 1;
     try{
       const appts = await fetchBookedAppointments();
-      const monthTotals = Array(12).fill(0);
+      const apptMonthTotals = Array(12).fill(0);
       appts.forEach(a=>{
         if (!a.appt_date) return;
         const y = parseInt(a.appt_date.slice(0,4), 10);
         if (y !== targetYear) return;
         const m = parseInt(a.appt_date.slice(5,7), 10) - 1;
-        monthTotals[m] += Number(a.total_price) || 0;
+        apptMonthTotals[m] += Number(a.total_price) || 0;
       });
-      const yearTotal = monthTotals.reduce((s,v)=> s+v, 0);
-      const rows = [['Month','Total Earned']];
-      MONTH_NAMES.forEach((name, idx)=> rows.push([name, '$' + monthTotals[idx]]));
-      rows.push(['Year Total', '$' + yearTotal]);
+      const walkinLogs = window.fetchAllWalkinLogsForBarber ? await window.fetchAllWalkinLogsForBarber() : [];
+      const walkinMonthTotals = window.walkinMonthTotalsForYear ? window.walkinMonthTotalsForYear(walkinLogs, targetYear) : Array(12).fill(0);
+      const rows = [['Month','Appointments','Walk-ins','Combined']];
+      MONTH_NAMES.forEach((name, idx)=>{
+        const a = apptMonthTotals[idx], w = walkinMonthTotals[idx];
+        rows.push([name, '$' + a, '$' + w, '$' + (a+w)]);
+      });
+      const apptTotal = apptMonthTotals.reduce((s,v)=> s+v, 0);
+      const walkinTotal = walkinMonthTotals.reduce((s,v)=> s+v, 0);
+      rows.push(['Year Total', '$' + apptTotal, '$' + walkinTotal, '$' + (apptTotal+walkinTotal)]);
       const csv = rows.map(r=> r.map(csvEscape).join(',')).join('\r\n');
       const blob = new Blob([csv], {type:'text/csv'});
       const url = URL.createObjectURL(blob);
@@ -6245,6 +6316,259 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   root.querySelector('#btn-earn-download').addEventListener('click', downloadPrevYearCsv);
   window.initEarningsTab = function(){
     renderEarnings();
+  };
+})();
+/* =========================================================
+   WALK-INS TAB (Business > Walk-ins)
+   For literal walk-in clients a professional took payment from outside
+   the app -- flat per-day counts against their existing Services list
+   (Booking > Services), not tied to an appointment. Independent of
+   whether online booking is turned on at all: bookingServices exists on
+   every paying profile regardless, so a pro who never accepts online
+   bookings still has a priced services list to log walk-ins against.
+   Each logged day's rows snapshot the service's name/price at the time
+   they were tapped, so a later price change in Setup never rewrites a
+   day already logged -- only today (and any day still being edited)
+   picks up a new price on its next tap. window.fetchAllWalkinLogsForBarber
+   and window.walkinMonthTotalsForYear are exposed for the Earnings tab
+   above to merge in, so both tabs always agree on the same numbers.
+   ========================================================= */
+(function(){
+  const root = document.getElementById('tab-walkins');
+  let wiLogs = []; // every walkin_logs row for this barber, loaded once per tab visit
+  let wiSelectedDate = todayIso();
+  let wiSelectedYear = new Date().getFullYear();
+  function genWiId(){ return 'wi_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function escapeHtmlWi(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function wiFmtMoney(n){ return '$' + (Number(n)||0).toFixed(2); }
+  function wiFmtDate(iso){
+    if (!iso) return '';
+    try{ return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }catch(e){ return iso; }
+  }
+  function csvEscapeWi(val){
+    const s = String(val);
+    if (/[",\r\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+    return s;
+  }
+  const MONTH_NAMES_WI = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  // Sunday-start week, matching the day order already used for weekly hours elsewhere in the app.
+  function weekRangeContaining(dateStr){
+    const d = new Date(dateStr + 'T00:00:00');
+    const start = new Date(d); start.setDate(d.getDate() - d.getDay());
+    const end = new Date(start); end.setDate(start.getDate() + 6);
+    const iso = x => x.toISOString().slice(0,10);
+    return { start: iso(start), end: iso(end) };
+  }
+  async function loadWalkinLogs(){
+    if (!dbAvailable || !profileCode){ wiLogs = []; return; }
+    try{
+      const { data, error } = await supabaseClient.from('walkin_logs').select('*').eq('barber_code', profileCode);
+      if (error) throw error;
+      wiLogs = data || [];
+    }catch(e){
+      console.warn('load walkin logs failed', e);
+      wiLogs = [];
+    }
+  }
+  // Shared with the Earnings tab above so the two never compute a month
+  // total two slightly different ways.
+  window.fetchAllWalkinLogsForBarber = async function(){
+    if (!dbAvailable || !profileCode) return [];
+    try{
+      const { data, error } = await supabaseClient.from('walkin_logs').select('entry_date, count, price').eq('barber_code', profileCode);
+      if (error) throw error;
+      return data || [];
+    }catch(e){ console.warn('load walkin logs failed', e); return []; }
+  };
+  window.walkinMonthTotalsForYear = function(logs, year){
+    const monthTotals = Array(12).fill(0);
+    (logs || []).forEach(r=>{
+      if (!r.entry_date) return;
+      const y = parseInt(String(r.entry_date).slice(0,4), 10);
+      if (y !== year) return;
+      const m = parseInt(String(r.entry_date).slice(5,7), 10) - 1;
+      monthTotals[m] += (Number(r.count)||0) * (Number(r.price)||0);
+    });
+    return monthTotals;
+  };
+  function rowsForDate(dateStr){ return wiLogs.filter(r => r.entry_date === dateStr); }
+  function totalForRows(rows){ return rows.reduce((s,r)=> s + (Number(r.count)||0) * (Number(r.price)||0), 0); }
+  function totalForRange(startIso, endIso){ return totalForRows(wiLogs.filter(r => r.entry_date >= startIso && r.entry_date <= endIso)); }
+  function renderServiceList(){
+    const listEl = root.querySelector('#wi-service-list');
+    const noServicesEl = root.querySelector('#wi-no-services');
+    const entrySection = root.querySelector('#wi-entry-section');
+    const services = profile.bookingServices || [];
+    if (!services.length){
+      noServicesEl.style.display = 'flex';
+      entrySection.style.display = 'none';
+      return;
+    }
+    noServicesEl.style.display = 'none';
+    entrySection.style.display = 'flex';
+    const todaysRows = rowsForDate(wiSelectedDate);
+    listEl.innerHTML = services.map(svc=>{
+      const row = todaysRows.find(r => r.service_id === svc.id);
+      const count = row ? (Number(row.count)||0) : 0;
+      return `<div class="inv-item-row" data-wi-service="${svc.id}">
+        <div style="min-width:0; flex:1;">
+          <div class="inv-item-name">${escapeHtmlWi(svc.name)}</div>
+          <div class="inv-item-sub">${wiFmtMoney(svc.price)} each</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button type="button" class="inv-qty-btn" data-wi-minus="${svc.id}" aria-label="Decrease ${escapeHtmlWi(svc.name)} count" ${count<=0 ? 'disabled' : ''}>&minus;</button>
+          <span class="inv-qty-num">${count}</span>
+          <button type="button" class="inv-qty-btn" data-wi-plus="${svc.id}" aria-label="Increase ${escapeHtmlWi(svc.name)} count">&plus;</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  function renderDayTotal(){
+    const labelEl = root.querySelector('#wi-day-label');
+    const totalEl = root.querySelector('#wi-day-total');
+    labelEl.textContent = (wiSelectedDate === todayIso() ? "Today's" : wiFmtDate(wiSelectedDate) + "'s") + ' walk-in total';
+    totalEl.textContent = wiFmtMoney(totalForRows(rowsForDate(wiSelectedDate)));
+  }
+  function renderTotalsSummary(){
+    const today = todayIso();
+    const week = weekRangeContaining(today);
+    const monthStart = today.slice(0,7) + '-01';
+    const yearStart = today.slice(0,4) + '-01-01';
+    root.querySelector('#wi-total-week').textContent = wiFmtMoney(totalForRange(week.start, week.end));
+    root.querySelector('#wi-total-month').textContent = wiFmtMoney(totalForRange(monthStart, today));
+    root.querySelector('#wi-total-year').textContent = wiFmtMoney(totalForRange(yearStart, today));
+  }
+  async function adjustWalkinCount(serviceId, delta){
+    const svc = (profile.bookingServices || []).find(s => s.id === serviceId);
+    if (!svc) return;
+    const existing = wiLogs.find(r => r.entry_date === wiSelectedDate && r.service_id === serviceId);
+    const prevCount = existing ? (Number(existing.count)||0) : 0;
+    const nextCount = Math.max(0, prevCount + delta);
+    if (nextCount === prevCount) return;
+    const nowIso = new Date().toISOString();
+    const row = {
+      id: existing ? existing.id : genWiId(),
+      barber_code: profileCode, entry_date: wiSelectedDate, service_id: serviceId,
+      service_name: svc.name, price: svc.price, count: nextCount, updated_at: nowIso
+    };
+    if (existing){ Object.assign(existing, row); } else { wiLogs.push(row); }
+    renderServiceList();
+    renderDayTotal();
+    renderTotalsSummary();
+    if (!dbAvailable) return;
+    try{
+      const { error } = await supabaseClient.from('walkin_logs').upsert(row, { onConflict: 'barber_code,entry_date,service_id' });
+      if (error) throw error;
+    }catch(e){ console.warn('save walkin count failed', e); }
+  }
+  root.querySelector('#wi-service-list').addEventListener('click', e=>{
+    const plusId = e.target.dataset.wiPlus;
+    const minusId = e.target.dataset.wiMinus;
+    if (plusId) adjustWalkinCount(plusId, 1);
+    else if (minusId) adjustWalkinCount(minusId, -1);
+  });
+  root.querySelector('#wi-entry-date').addEventListener('change', function(){
+    wiSelectedDate = this.value || todayIso();
+    renderServiceList();
+    renderDayTotal();
+  });
+  root.querySelector('#btn-wi-go-services').addEventListener('click', ()=>{
+    showTab('booking');
+    showBookingSubtab('services');
+  });
+  // ---- Yearly record: per-service breakdown by month, CSV + print ----
+  function wiAvailableYears(){
+    const years = new Set(wiLogs.map(r => parseInt(String(r.entry_date).slice(0,4), 10)).filter(y => !isNaN(y)));
+    years.add(new Date().getFullYear());
+    return Array.from(years).sort((a,b)=> b - a);
+  }
+  function wiYearBreakdown(year){
+    // { months: [{ name, rows:[{name,count,amount}], total }], yearTotal }
+    const services = {}; // service_id -> display name (most recent logged name wins)
+    wiLogs.forEach(r=>{ if (String(r.entry_date).slice(0,4) === String(year)) services[r.service_id] = r.service_name; });
+    const months = MONTH_NAMES_WI.map((name, idx)=>{
+      const monthKey = String(year) + '-' + String(idx+1).padStart(2,'0');
+      const monthRows = wiLogs.filter(r => String(r.entry_date).slice(0,7) === monthKey && (Number(r.count)||0) > 0);
+      const bySvc = {};
+      monthRows.forEach(r=>{
+        const key = r.service_id;
+        if (!bySvc[key]) bySvc[key] = { name: r.service_name, count: 0, amount: 0 };
+        bySvc[key].count += Number(r.count)||0;
+        bySvc[key].amount += (Number(r.count)||0) * (Number(r.price)||0);
+      });
+      const rows = Object.values(bySvc).sort((a,b)=> a.name.localeCompare(b.name));
+      const total = rows.reduce((s,r)=> s + r.amount, 0);
+      return { name, rows, total };
+    });
+    const yearTotal = months.reduce((s,m)=> s + m.total, 0);
+    return { months, yearTotal };
+  }
+  function renderWiYearSelect(){
+    const sel = root.querySelector('#wi-year-select');
+    const years = wiAvailableYears();
+    if (!years.includes(wiSelectedYear)) wiSelectedYear = years[0];
+    sel.innerHTML = years.map(y => `<option value="${y}" ${y===wiSelectedYear?'selected':''}>${y}</option>`).join('');
+  }
+  root.querySelector('#wi-year-select').addEventListener('change', function(){
+    wiSelectedYear = parseInt(this.value, 10);
+  });
+  root.querySelector('#btn-wi-download').addEventListener('click', ()=>{
+    const { months, yearTotal } = wiYearBreakdown(wiSelectedYear);
+    const rows = [['Month','Service','Count','Amount']];
+    months.forEach(m=>{
+      if (!m.rows.length) return;
+      m.rows.forEach(r=> rows.push([m.name, r.name, r.count, '$' + r.amount.toFixed(2)]));
+      rows.push([m.name, 'Month Total', '', '$' + m.total.toFixed(2)]);
+    });
+    rows.push(['Year Total', '', '', '$' + yearTotal.toFixed(2)]);
+    const csv = rows.map(r=> r.map(csvEscapeWi).join(',')).join('\r\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'walkins-' + wiSelectedYear + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  root.querySelector('#btn-wi-print').addEventListener('click', ()=>{
+    const { months, yearTotal } = wiYearBreakdown(wiSelectedYear);
+    const monthsHtml = months.filter(m=> m.rows.length).map(m=> `
+      <h2>${m.name}</h2>
+      <table><thead><tr><th>Service</th><th style="text-align:right;">Count</th><th style="text-align:right;">Amount</th></tr></thead>
+      <tbody>${m.rows.map(r=> `<tr><td>${escapeHtmlWi(r.name)}</td><td style="text-align:right;">${r.count}</td><td style="text-align:right;">${wiFmtMoney(r.amount)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>Month Total</td><td></td><td style="text-align:right;">${wiFmtMoney(m.total)}</td></tr></tfoot>
+      </table>`).join('');
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Walk-ins -- ${wiSelectedYear}</title>
+      <style>
+        body{ font-family: Georgia, 'Times New Roman', serif; color:#1a1a1a; padding:32px; max-width:800px; margin:0 auto; }
+        h1{ font-size:20px; margin:0 0 2px; }
+        h2{ font-size:14px; margin:20px 0 4px; }
+        p.sub{ color:#555; margin:0 0 24px; font-size:13px; }
+        table{ width:100%; border-collapse:collapse; font-size:13px; margin-bottom:4px; }
+        th, td{ text-align:left; padding:6px; border-bottom:1px solid #ddd; }
+        th{ font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:#555; }
+        tfoot td{ font-weight:bold; border-top:1px solid #1a1a1a; border-bottom:none; }
+        .year-total{ margin-top:24px; font-size:16px; font-weight:bold; text-align:right; border-top:2px solid #1a1a1a; padding-top:10px; }
+        @media print{ body{ padding:0; } }
+      </style></head><body>
+      <h1>Walk-ins &mdash; ${wiSelectedYear}</h1>
+      <p class="sub">Personal record, prepared via Vono. Not verified payment data.</p>
+      ${monthsHtml || '<p>No walk-ins logged for this year.</p>'}
+      <div class="year-total">Year Total: ${wiFmtMoney(yearTotal)}</div>
+      </body></html>`);
+    win.document.close();
+    win.focus();
+    setTimeout(()=> win.print(), 200);
+  });
+  window.initWalkinsTab = async function(){
+    wiSelectedDate = todayIso();
+    root.querySelector('#wi-entry-date').value = wiSelectedDate;
+    await loadWalkinLogs();
+    renderServiceList();
+    renderDayTotal();
+    renderTotalsSummary();
+    renderWiYearSelect();
   };
 })();
 /* =========================================================
