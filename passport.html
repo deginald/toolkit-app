@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-05T02-21-44Z">
+<meta name="app-build" content="2026-10-05T02-43-55Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -510,6 +510,7 @@
   <div id="quick-message-popup" style="display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; padding:20px;">
     <div style="background:var(--paper); border-radius:16px; padding:24px; max-width:360px; width:100%; display:flex; flex-direction:column; gap:10px;">
       <p class="eyebrow-mini" id="qm-popup-from">&nbsp;</p>
+      <p class="foot-note-small" id="qm-popup-count" style="margin:-6px 0 0;" hidden>&nbsp;</p>
       <p style="font-family:'Libre Franklin',sans-serif; font-weight:600; font-size:16px; line-height:1.45; margin:0;" id="qm-popup-body">&nbsp;</p>
       <button class="btn btn-primary" id="qm-popup-clear" type="button" style="margin-top:8px;">Clear</button>
     </div>
@@ -1649,6 +1650,7 @@ function enterApp(){
   updateNotifNudgeBanner();
   updateInstallNudgeBanner();
   maybeShowInstallReminder();
+  loadQuickMessageQueue();
 }
 
 function updateSwitchProfileLabel(){
@@ -2229,57 +2231,100 @@ if (window.visualViewport){
   });
 }
 
-/* ---- Quick message popup: opened either by tapping a notification (a fresh
-   window reads ?message= from the URL; an already-open tab is told via the
-   service worker's postMessage instead, since focusing a tab doesn't
-   navigate it) or by returning to a page where one was never dismissed. */
-async function showQuickMessagePopup(id){
+/* ---- Quick message inbox: a queue of this client's own not-yet-cleared
+   messages, loaded fresh every time the app opens -- not just when a
+   notification is tapped. This is the fallback for someone who never
+   turned notifications on (or missed one): the message is still sitting
+   here waiting, with a count if more than one piled up, and clearing one
+   reveals the next. Tapping an actual notification (deep-link ?message= or
+   the service worker's postMessage, since focusing a tab doesn't navigate
+   it) just jumps that one message to the front of the queue. Skipped
+   entirely for a shared read-only link -- that's not this client's own
+   account, so it shouldn't surface their messages. */
+let quickMessageQueue = [];
+async function loadQuickMessageQueue(){
+  if (!supabaseClient || !clientCode || viewedViaSharedCode) return;
+  let deepLinkId = null;
+  try{ deepLinkId = new URLSearchParams(window.location.search).get('message'); }catch(e){}
+  try{
+    const { data, error } = await supabaseClient.from('quick_messages')
+      .select('id, message, sender_name, created_at')
+      .eq('recipient_code', clientCode)
+      .eq('recipient_role', 'client')
+      .in('status', ['sent','failed_not_subscribed','failed_error'])
+      .order('created_at', { ascending: true });
+    if (error || !data) return;
+    quickMessageQueue = data;
+    if (deepLinkId){
+      const idx = quickMessageQueue.findIndex(m => m.id === deepLinkId);
+      if (idx > 0){
+        const [m] = quickMessageQueue.splice(idx, 1);
+        quickMessageQueue.unshift(m);
+      }
+    }
+    showNextQueuedMessage();
+  }catch(e){ console.warn('load quick message queue failed', e); }
+}
+// Used when a push arrives (or is tapped) while the queue is already loaded
+// -- pulls that one message to the front and shows it right away, rather
+// than waiting for the next full reload.
+async function pushQuickMessageToFront(id){
   if (!id || !supabaseClient) return;
   try{
-    const { data, error } = await supabaseClient.from('quick_messages').select('id, message, sender_name').eq('id', id).maybeSingle();
+    const { data, error } = await supabaseClient.from('quick_messages').select('id, message, sender_name, created_at').eq('id', id).maybeSingle();
     if (error || !data) return;
-    const overlay = document.getElementById('quick-message-popup');
-    const fromEl = document.getElementById('qm-popup-from');
-    const bodyEl = document.getElementById('qm-popup-body');
-    if (fromEl) fromEl.textContent = data.sender_name ? ('From ' + data.sender_name) : 'New message';
-    if (bodyEl) bodyEl.textContent = data.message;
-    if (overlay){
-      overlay.dataset.messageId = id;
-      overlay.style.display = 'flex';
-    }
+    quickMessageQueue = quickMessageQueue.filter(m => m.id !== id);
+    quickMessageQueue.unshift(data);
+    showNextQueuedMessage();
   }catch(e){ console.warn('load quick message failed', e); }
 }
-async function clearQuickMessage(){
+function showNextQueuedMessage(){
   const overlay = document.getElementById('quick-message-popup');
-  const id = overlay && overlay.dataset.messageId;
-  if (overlay) overlay.style.display = 'none';
-  if (id && supabaseClient){
-    try{ await supabaseClient.from('quick_messages').delete().eq('id', id); }catch(e){ console.warn('clear quick message failed', e); }
-  }
+  if (!overlay) return;
   try{
     const url = new URL(window.location.href);
     url.searchParams.delete('message');
     window.history.replaceState({}, '', url.toString());
   }catch(e){}
+  if (!quickMessageQueue.length){
+    overlay.style.display = 'none';
+    delete overlay.dataset.messageId;
+    return;
+  }
+  const current = quickMessageQueue[0];
+  const fromEl = document.getElementById('qm-popup-from');
+  const countEl = document.getElementById('qm-popup-count');
+  const bodyEl = document.getElementById('qm-popup-body');
+  if (fromEl) fromEl.textContent = current.sender_name ? ('From ' + current.sender_name) : 'New message';
+  if (bodyEl) bodyEl.textContent = current.message;
+  if (countEl){
+    countEl.hidden = quickMessageQueue.length <= 1;
+    countEl.textContent = quickMessageQueue.length + ' unread messages';
+  }
+  overlay.dataset.messageId = current.id;
+  overlay.style.display = 'flex';
 }
-document.getElementById('qm-popup-clear').addEventListener('click', clearQuickMessage);
-function checkQuickMessageDeepLink(){
-  let id = null;
-  try{ id = new URLSearchParams(window.location.search).get('message'); }catch(e){}
-  if (id) showQuickMessagePopup(id);
+async function clearCurrentQuickMessage(){
+  const overlay = document.getElementById('quick-message-popup');
+  const id = overlay && overlay.dataset.messageId;
+  quickMessageQueue = quickMessageQueue.filter(m => m.id !== id);
+  if (id && supabaseClient){
+    try{ await supabaseClient.from('quick_messages').delete().eq('id', id); }catch(e){ console.warn('clear quick message failed', e); }
+  }
+  showNextQueuedMessage();
 }
+document.getElementById('qm-popup-clear').addEventListener('click', clearCurrentQuickMessage);
 try{
   if ('serviceWorker' in navigator && navigator.serviceWorker.addEventListener){
     navigator.serviceWorker.addEventListener('message', (event)=>{
       if (event.data && event.data.type === 'show-quick-message' && event.data.id){
-        showQuickMessagePopup(event.data.id);
+        pushQuickMessageToFront(event.data.id);
       }
     });
   }
 }catch(e){ console.warn('service worker message listener failed', e); }
 boot();
 registerServiceWorker();
-checkQuickMessageDeepLink();
 
 /* =========================================================
    UPDATE CHECK -- a Home Screen icon (especially on iOS) can keep
