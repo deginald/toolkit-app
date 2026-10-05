@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-05T19-42-00Z">
+<meta name="app-build" content="2026-10-05T20-15-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1586,7 +1586,7 @@
             <!-- Shop management is a Vono Studio feature -- shown instead of the sections
                  below for anyone on Basic or Vono Pro. -->
             <div id="shop-studio-paywall" style="display:none; flex-direction:column; gap:14px;">
-              <p class="screen-sub" style="margin:0;">Shop management (creating a shop, inviting a team, and tracking what they owe you) is part of Vono Studio ($30/month). Try it free: you won't be charged until the trial ends.</p>
+              <p class="screen-sub" id="shop-studio-paywall-copy" style="margin:0;">Shop management (creating a shop, inviting a team, and tracking what they owe you) is part of Vono Studio ($30/month). Try it free: you won't be charged until the trial ends.</p>
               <button class="btn btn-primary" type="button" id="btn-shop-studio-account">Start free trial</button>
             </div>
 
@@ -2994,11 +2994,13 @@ async function startCheckout(tier, triggerBtn){
     if (btn) btn.disabled = false;
   }
 }
-async function openBillingPortal(){
-  const btn = document.getElementById('btn-manage-subscription');
-  const note = document.getElementById('account-plan-manage-note');
+async function openBillingPortal(triggerBtn){
+  const defaultBtn = document.getElementById('btn-manage-subscription');
+  const btn = triggerBtn || defaultBtn;
+  const usingAccountNote = (btn === defaultBtn);
+  const note = usingAccountNote ? document.getElementById('account-plan-manage-note') : null;
   if (btn) btn.disabled = true;
-  if (note) note.textContent = 'Opening billing portal…';
+  if (note) note.textContent = 'Opening billing portal…'; else showToast('Opening billing portal…');
   try{
     const { data, error } = await supabaseClient.functions.invoke('create-portal-session', { body: {} });
     if (error) throw error;
@@ -3006,13 +3008,14 @@ async function openBillingPortal(){
     window.location.href = data.url;
   }catch(e){
     console.warn('openBillingPortal failed', e);
-    if (note) note.textContent = "Couldn't open billing. Try again.";
+    const msg = "Couldn't open billing. Try again.";
+    if (note) note.textContent = msg; else showToast(msg);
     if (btn) btn.disabled = false;
   }
 }
 document.getElementById('btn-subscribe-pro').addEventListener('click', (e)=> startCheckout('pro', e.currentTarget));
 document.getElementById('btn-subscribe-studio').addEventListener('click', (e)=> startCheckout('studio', e.currentTarget));
-document.getElementById('btn-manage-subscription').addEventListener('click', openBillingPortal);
+document.getElementById('btn-manage-subscription').addEventListener('click', (e)=> openBillingPortal(e.currentTarget));
 document.getElementById('btn-booking-paywall-account').addEventListener('click', showAccountScreen);
 document.getElementById('btn-business-paywall-account').addEventListener('click', (e)=> startCheckout('pro', e.currentTarget));
 document.getElementById('btn-bk-payment-paywall-trial').addEventListener('click', (e)=> startCheckout('pro', e.currentTarget));
@@ -7363,12 +7366,34 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
 
   function showSection(which){
+    if (which === 'locked') renderShopStudioPaywall();
     root.querySelector('#shop-studio-paywall').style.display = which === 'locked' ? 'flex' : 'none';
     root.querySelector('#shop-none-section').style.display = which === 'none' ? 'flex' : 'none';
     root.querySelector('#shop-owner-section').style.display = which === 'owner' ? 'flex' : 'none';
     root.querySelector('#shop-staff-section').style.display = which === 'staff' ? 'flex' : 'none';
   }
-  root.querySelector('#btn-shop-studio-account').addEventListener('click', (e)=> startCheckout('studio', e.currentTarget));
+  // Anyone on Basic (no subscription) or Vono Pro lands on this paywall --
+  // but a Pro subscriber already has an active Stripe subscription, so
+  // sending them through startCheckout() here would create a SECOND
+  // subscription (double-billed) instead of upgrading the one they have.
+  // Route by whether they already have active paid access: no subscription
+  // yet -> normal Studio trial checkout; already on Pro -> billing portal,
+  // where Stripe's own plan-switch flow upgrades/prorates in place.
+  function renderShopStudioPaywall(){
+    const copyEl = root.querySelector('#shop-studio-paywall-copy');
+    const btn = root.querySelector('#btn-shop-studio-account');
+    if (hasActiveAccess()){
+      if (copyEl) copyEl.textContent = `Shop management (creating a shop, inviting a team, and tracking what they owe you) is part of Vono Studio ($30/month). You're on ${planTierLabel(profile.planTier)} -- upgrade from your billing page.`;
+      if (btn) btn.textContent = 'Upgrade to Studio';
+    } else {
+      if (copyEl) copyEl.textContent = "Shop management (creating a shop, inviting a team, and tracking what they owe you) is part of Vono Studio ($30/month). Try it free: you won't be charged until the trial ends.";
+      if (btn) btn.textContent = 'Start free trial';
+    }
+  }
+  root.querySelector('#btn-shop-studio-account').addEventListener('click', (e)=>{
+    if (hasActiveAccess()) openBillingPortal(e.currentTarget);
+    else startCheckout('studio', e.currentTarget);
+  });
 
   // ---- Not in a shop: invites addressed to me ----
   async function loadMyPendingInvites(){
