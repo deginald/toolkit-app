@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-05T05-58-24Z">
+<meta name="app-build" content="2026-10-05T13-18-47Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -694,6 +694,13 @@
       <span style="display:flex; gap:14px; flex:none;">
         <button type="button" class="link-btn" id="btn-notif-nudge-open">Turn on</button>
         <button type="button" class="link-btn" id="btn-notif-nudge-dismiss">Dismiss</button>
+      </span>
+    </div>
+    <div id="trial-nudge-banner" class="banner action" hidden>
+      <span>You're on Vono Basic. Try Vono Pro free to message clients and unlock Business.</span>
+      <span style="display:flex; gap:14px; flex:none;">
+        <button type="button" class="link-btn" id="btn-trial-nudge-start">Start free trial</button>
+        <button type="button" class="link-btn" id="btn-trial-nudge-dismiss">Dismiss</button>
       </span>
     </div>
     <main class="tab-content">
@@ -1405,8 +1412,8 @@
             <p class="eyebrow-mini">Rewards &amp; income</p>
             <h2>Business</h2>
           </div>
-          <p class="screen-sub">Business tools (Loyalty, Earnings, Walk-ins, My Clients, Inventory, Shop, and Rent &amp; Commission) are part of a paid Vono plan. Subscribe from your Account screen to unlock them.</p>
-          <button class="btn btn-primary" type="button" id="btn-business-paywall-account">Go to Account to subscribe</button>
+          <p class="screen-sub">Business tools (Loyalty, Earnings, Walk-ins, My Clients, Inventory, Shop, and Rent &amp; Commission) are part of a paid Vono plan. Try Vono Pro free &mdash; you won't be charged until the trial ends.</p>
+          <button class="btn btn-primary" type="button" id="btn-business-paywall-account">Start free trial</button>
         </div>
         <div id="business-real-content">
         <div class="tab-head">
@@ -1567,8 +1574,8 @@
             <!-- Shop management is a Vono Studio feature -- shown instead of the sections
                  below for anyone on Basic or Vono Pro. -->
             <div id="shop-studio-paywall" style="display:none; flex-direction:column; gap:14px;">
-              <p class="screen-sub" style="margin:0;">Shop management -- creating a shop, inviting a team, and tracking what they owe you -- is part of Vono Studio ($30/month). Upgrade from your Account screen to unlock it.</p>
-              <button class="btn btn-primary" type="button" id="btn-shop-studio-account">Go to Account to upgrade</button>
+              <p class="screen-sub" style="margin:0;">Shop management -- creating a shop, inviting a team, and tracking what they owe you -- is part of Vono Studio ($30/month). Try it free &mdash; you won't be charged until the trial ends.</p>
+              <button class="btn btn-primary" type="button" id="btn-shop-studio-account">Start free trial</button>
             </div>
 
             <!-- Not part of a shop: create one, or respond to an invite -->
@@ -2020,16 +2027,17 @@
         <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Your Vono subscription</h2>
         <p class="screen-sub" id="account-plan-status">&nbsp;</p>
         <div id="account-plan-offer" style="display:none; flex-direction:column; gap:10px; margin-top:10px;">
+          <p class="screen-sub" style="margin:0; font-weight:700; color:var(--ink);">Try either plan free &mdash; you won't be charged until your trial ends, and you can cancel any time before that.</p>
           <div class="card" style="gap:6px;">
             <strong>Vono Pro &mdash; $20/month</strong>
             <span class="screen-sub" style="margin:0;">Messaging clients, Business tools, your Find a Pro listing, and notifications. Booking itself is free on every plan.</span>
           </div>
-          <button class="btn btn-primary" id="btn-subscribe-pro" type="button">Start Vono Pro</button>
+          <button class="btn btn-primary" id="btn-subscribe-pro" type="button">Start free trial &mdash; Vono Pro</button>
           <div class="card" style="gap:6px;">
             <strong>Vono Studio &mdash; $30/month</strong>
             <span class="screen-sub" style="margin:0;">Everything in Pro, plus shop management for a team of stylists or barbers.</span>
           </div>
-          <button class="btn btn-primary" id="btn-subscribe-studio" type="button">Start Vono Studio</button>
+          <button class="btn btn-primary" id="btn-subscribe-studio" type="button">Start free trial &mdash; Vono Studio</button>
           <p class="foot-note-small" id="account-plan-offer-note">&nbsp;</p>
         </div>
         <div id="account-plan-manage" style="display:none; flex-direction:column; gap:10px; margin-top:10px;">
@@ -2907,6 +2915,7 @@ function renderPlanStatus(){
   if (!profile || isStudent()){
     section.style.display = 'none';
     applyAccessGating();
+    updateTrialNudgeBanner();
     return;
   }
   section.style.display = '';
@@ -2933,6 +2942,7 @@ function renderPlanStatus(){
   if (offerEl) offerEl.style.display = showOffer ? 'flex' : 'none';
   if (manageEl) manageEl.style.display = showOffer ? 'none' : 'flex';
   applyAccessGating();
+  updateTrialNudgeBanner();
 }
 async function startCheckout(tier){
   const btn = document.getElementById(tier === 'studio' ? 'btn-subscribe-studio' : 'btn-subscribe-pro');
@@ -2970,7 +2980,7 @@ document.getElementById('btn-subscribe-pro').addEventListener('click', ()=> star
 document.getElementById('btn-subscribe-studio').addEventListener('click', ()=> startCheckout('studio'));
 document.getElementById('btn-manage-subscription').addEventListener('click', openBillingPortal);
 document.getElementById('btn-booking-paywall-account').addEventListener('click', showAccountScreen);
-document.getElementById('btn-business-paywall-account').addEventListener('click', showAccountScreen);
+document.getElementById('btn-business-paywall-account').addEventListener('click', ()=> startCheckout('pro'));
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', ()=> showTab(btn.dataset.tabbtn));
 });
@@ -5292,7 +5302,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
             <p class="screen-sub" style="margin:0;">Send a quick notification to ${a.client_name} about this appointment.</p>
             ${msgButtons}
             <p class="screen-sub" data-msg-status="${a.id}" style="margin:0;">&nbsp;</p>
-          </div>` : `</div>`;
+          </div>` : `
+          <button type="button" class="link-btn" data-notify-locked="${a.id}" style="padding:0; color:var(--muted);">Notify client</button>
+          </div>
+          <p class="screen-sub" data-notify-locked-note="${a.id}" style="display:none; margin-top:6px;">Messaging clients needs Vono Pro or Studio. <button type="button" class="link-btn" data-notify-locked-cta="${a.id}" style="padding:0;">Try it free</button></p>`;
         return `<div class="detail-card" style="gap:4px;">
           <strong>${dateLabel}, ${a.start_time}</strong>
           <span class="screen-sub" style="margin:0;">${a.client_name}: ${svcNames}, $${a.total_price}</span>
@@ -5311,6 +5324,17 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const cancelId = e.target.dataset.cancelAppt;
     const toggleId = e.target.dataset.textToggle;
     const sendId = e.target.dataset.sendMsg;
+    const lockedToggleId = e.target.dataset.notifyLocked;
+    const lockedCtaId = e.target.dataset.notifyLockedCta;
+    if (lockedToggleId){
+      const note = root.querySelector(`[data-notify-locked-note="${lockedToggleId}"]`);
+      if (note) note.style.display = (note.style.display === 'none' || !note.style.display) ? 'block' : 'none';
+      return;
+    }
+    if (lockedCtaId){
+      startCheckout('pro');
+      return;
+    }
     if (cancelId){
       try{
         await supabaseClient.from('appointments').update({ status:'cancelled' }).eq('id', cancelId);
@@ -7308,7 +7332,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#shop-owner-section').style.display = which === 'owner' ? 'flex' : 'none';
     root.querySelector('#shop-staff-section').style.display = which === 'staff' ? 'flex' : 'none';
   }
-  root.querySelector('#btn-shop-studio-account').addEventListener('click', showAccountScreen);
+  root.querySelector('#btn-shop-studio-account').addEventListener('click', ()=> startCheckout('studio'));
 
   // ---- Not in a shop: invites addressed to me ----
   async function loadMyPendingInvites(){
@@ -8120,6 +8144,7 @@ function enterApp(){
     }catch(e){}
   }
   updateNotifNudgeBanner();
+  updateTrialNudgeBanner();
   handleBillingReturn();
   // loadQuickMessageQueue() decides when to also show the install reminder
   // -- any waiting message takes priority over that nag (see its comment).
@@ -8667,6 +8692,25 @@ document.getElementById('btn-notif-nudge-open').addEventListener('click', ()=>{
 document.getElementById('btn-notif-nudge-dismiss').addEventListener('click', ()=>{
   try{ localStorage.setItem(notifNudgeDismissKey(), '1'); }catch(e){}
   document.getElementById('notif-nudge-banner').hidden = true;
+});
+// Global, dismissible nudge toward the free trial for anyone still on Vono
+// Basic -- shown on every tab (it sits outside the tab panes), not just
+// inside Account, since Account is easy to never visit on your own. Hides
+// itself once someone's on a paid plan (trialing counts), or once dismissed
+// (remembered per device, same pattern as the notifications nudge above).
+function trialNudgeDismissKey(){ return 'ahcTrialNudgeDismissed_' + (profileCode || ''); }
+function updateTrialNudgeBanner(){
+  const el = document.getElementById('trial-nudge-banner');
+  if (!el) return;
+  if (!profile || isStudent() || hasActiveAccess()){ el.hidden = true; return; }
+  let dismissed = false;
+  try{ dismissed = localStorage.getItem(trialNudgeDismissKey()) === '1'; }catch(e){}
+  el.hidden = dismissed;
+}
+document.getElementById('btn-trial-nudge-start').addEventListener('click', ()=> startCheckout('pro'));
+document.getElementById('btn-trial-nudge-dismiss').addEventListener('click', ()=>{
+  try{ localStorage.setItem(trialNudgeDismissKey(), '1'); }catch(e){}
+  document.getElementById('trial-nudge-banner').hidden = true;
 });
 function updateListingViewLink(){
   const link = document.getElementById('btn-view-listing');
