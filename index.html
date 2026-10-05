@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-05T04-11-15Z">
+<meta name="app-build" content="2026-10-05T05-58-24Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1564,6 +1564,13 @@
         <div class="biz-pane" data-biz="shop" id="tab-shop">
           <div class="screen-body show" data-screen="dashboard" style="gap:16px;">
 
+            <!-- Shop management is a Vono Studio feature -- shown instead of the sections
+                 below for anyone on Basic or Vono Pro. -->
+            <div id="shop-studio-paywall" style="display:none; flex-direction:column; gap:14px;">
+              <p class="screen-sub" style="margin:0;">Shop management -- creating a shop, inviting a team, and tracking what they owe you -- is part of Vono Studio ($30/month). Upgrade from your Account screen to unlock it.</p>
+              <button class="btn btn-primary" type="button" id="btn-shop-studio-account">Go to Account to upgrade</button>
+            </div>
+
             <!-- Not part of a shop: create one, or respond to an invite -->
             <div id="shop-none-section" style="display:none; flex-direction:column; gap:16px;">
               <p class="screen-sub" style="margin:0;">You're not part of a shop yet. Create one to manage multiple barbers under one account, or accept an invite below if a shop owner has sent you one.</p>
@@ -2015,7 +2022,7 @@
         <div id="account-plan-offer" style="display:none; flex-direction:column; gap:10px; margin-top:10px;">
           <div class="card" style="gap:6px;">
             <strong>Vono Pro &mdash; $20/month</strong>
-            <span class="screen-sub" style="margin:0;">Booking, Business tools, your Find a Pro listing, and notifications.</span>
+            <span class="screen-sub" style="margin:0;">Messaging clients, Business tools, your Find a Pro listing, and notifications. Booking itself is free on every plan.</span>
           </div>
           <button class="btn btn-primary" id="btn-subscribe-pro" type="button">Start Vono Pro</button>
           <div class="card" style="gap:6px;">
@@ -2817,7 +2824,7 @@ function showTab(name){
   document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tabbtn===name));
   if (name === 'ledger') enterLedgerTab();
   if (name === 'booking' || name === 'business') applyAccessGating();
-  if (name === 'booking' && hasActiveAccess()){
+  if (name === 'booking'){
     if (window.initBookingTab) window.initBookingTab();
     updateBookingLandingNote();
   }
@@ -2860,16 +2867,23 @@ function applyRoleVisibility(){
 }
 /* =========================================================
    SUBSCRIPTION / PLAN GATING
-   Booking, Business, the Find a Pro public listing, and notifications
-   all require an active paid plan (trialing/active/past_due all count --
-   past_due still has access, just with a payment-issue nudge, so a single
-   failed card charge doesn't instantly lock someone out). Students never
-   see these tabs at all (existing role gating), so none of this applies
-   to them.
+   Booking is free on every professional plan, including Basic (no
+   subscription at all) -- Business (Loyalty/Earnings/Walk-ins/My
+   Clients/Inventory/Shop/Rent & Commission), the Find a Pro public
+   listing, and notifications all require an active paid plan
+   (trialing/active/past_due all count -- past_due still has access, just
+   with a payment-issue nudge, so a single failed card charge doesn't
+   instantly lock someone out). Within Business, Shop specifically also
+   requires the Studio tier on top of that -- see hasStudioAccess() and
+   its use in the Shop tab's own code. Students never see Booking/Business
+   at all (existing role gating), so none of this applies to them.
    ========================================================= */
 function hasActiveAccess(){
   if (!profile) return false;
   return ['trialing', 'active', 'past_due'].includes(profile.subscriptionStatus);
+}
+function hasStudioAccess(){
+  return hasActiveAccess() && profile.planTier === 'studio';
 }
 function planTierLabel(tier){
   if (tier === 'studio') return 'Vono Studio';
@@ -2877,11 +2891,8 @@ function planTierLabel(tier){
   return 'Vono';
 }
 function applyAccessGating(){
+  // Booking has no plan gate -- every professional, including Basic, gets it.
   const locked = !isStudent() && !hasActiveAccess();
-  const bookingReal = document.getElementById('booking-real-content');
-  const bookingPaywall = document.getElementById('booking-paywall');
-  if (bookingReal) bookingReal.style.display = locked ? 'none' : '';
-  if (bookingPaywall) bookingPaywall.style.display = locked ? 'flex' : 'none';
   const businessReal = document.getElementById('business-real-content');
   const businessPaywall = document.getElementById('business-paywall');
   if (businessReal) businessReal.style.display = locked ? 'none' : '';
@@ -2901,7 +2912,7 @@ function renderPlanStatus(){
   section.style.display = '';
   const status = profile.subscriptionStatus || 'none';
   const tier = planTierLabel(profile.planTier);
-  let text = "You don't have an active plan yet. Subscribe below to unlock Booking, Business, your Find a Pro listing, and notifications.";
+  let text = "You're on Vono Basic -- Booking, Consult, and Refresher are yours free. Subscribe below to also message clients, unlock Business, your Find a Pro listing, and notifications.";
   if (status === 'trialing'){
     let daysLeft = '';
     if (profile.trialEndsAt){
@@ -5272,18 +5283,22 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         const dateLabel = new Date(a.appt_date+'T00:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
         const svcNames = (a.services||[]).map(s=>s.name).join(', ');
         const msgButtons = BARBER_CANNED_MESSAGES.map((m,i)=>`<button type="button" class="btn btn-outline" data-send-msg="${a.id}" data-msg-idx="${i}" style="text-align:left;">${m}</button>`).join('');
-        return `<div class="detail-card" style="gap:4px;">
-          <strong>${dateLabel}, ${a.start_time}</strong>
-          <span class="screen-sub" style="margin:0;">${a.client_name}: ${svcNames}, $${a.total_price}</span>
-          <div class="btn-row" style="gap:14px; margin-top:2px;">
-            <button type="button" class="link-btn" data-cancel-appt="${a.id}" style="color:var(--behind); padding:0;">Cancel appointment</button>
-            <button type="button" class="link-btn" data-text-toggle="${a.id}" style="padding:0;">Notify client</button>
+        // Messaging a client is a paid-plan feature (Vono Pro and above) -- Basic
+        // can book and manage appointments, just not send/receive client messages.
+        const notifyClientMarkup = hasActiveAccess() ? `
+          <button type="button" class="link-btn" data-text-toggle="${a.id}" style="padding:0;">Notify client</button>
           </div>
           <div data-msg-panel="${a.id}" style="display:none; flex-direction:column; gap:6px; margin-top:6px; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--paper);">
             <p class="screen-sub" style="margin:0;">Send a quick notification to ${a.client_name} about this appointment.</p>
             ${msgButtons}
             <p class="screen-sub" data-msg-status="${a.id}" style="margin:0;">&nbsp;</p>
-          </div>
+          </div>` : `</div>`;
+        return `<div class="detail-card" style="gap:4px;">
+          <strong>${dateLabel}, ${a.start_time}</strong>
+          <span class="screen-sub" style="margin:0;">${a.client_name}: ${svcNames}, $${a.total_price}</span>
+          <div class="btn-row" style="gap:14px; margin-top:2px;">
+            <button type="button" class="link-btn" data-cancel-appt="${a.id}" style="color:var(--behind); padding:0;">Cancel appointment</button>
+            ${notifyClientMarkup}
         </div>`;
       }).join('');
     }catch(e){
@@ -5325,6 +5340,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
           if (statusEl) statusEl.textContent = 'Sent.';
         } else if (data && data.reason === 'not_subscribed'){
           if (statusEl) statusEl.textContent = "This client hasn't turned on notifications yet, so this can't be sent.";
+        } else if (data && data.reason === 'messaging_locked'){
+          if (statusEl) statusEl.textContent = "Messaging clients needs a Vono Pro or Studio plan.";
         } else {
           if (statusEl) statusEl.textContent = "Couldn't send. Try again.";
         }
@@ -6115,14 +6132,20 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
       return;
     }
-    try{
-      const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
-      const svcNames = svcs.map(s=>s.name).join(', ');
-      await supabaseClient.functions.invoke('send-quick-message', { body: {
-        appointment_id: appt.id, sender_role: 'barber',
-        message: `I booked an appointment for you: ${dateLabel} at ${time} for ${svcNames}. It's saved in your Vono Passport.`
-      }});
-    }catch(e){ console.warn('appointment notification text failed (non-blocking)', e); }
+    // Messaging a client is a paid-plan feature -- Basic can still manually add an
+    // appointment, it just doesn't notify the client about it (they'd need to be
+    // told some other way, or see it themselves if they ever log into their own
+    // Vono Passport with this code).
+    if (hasActiveAccess()){
+      try{
+        const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+        const svcNames = svcs.map(s=>s.name).join(', ');
+        await supabaseClient.functions.invoke('send-quick-message', { body: {
+          appointment_id: appt.id, sender_role: 'barber',
+          message: `I booked an appointment for you: ${dateLabel} at ${time} for ${svcNames}. It's saved in your Vono Passport.`
+        }});
+      }catch(e){ console.warn('appointment notification text failed (non-blocking)', e); }
+    }
     resetManualCard();
     loadAppointments();
   });
@@ -7280,10 +7303,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
 
   function showSection(which){
+    root.querySelector('#shop-studio-paywall').style.display = which === 'locked' ? 'flex' : 'none';
     root.querySelector('#shop-none-section').style.display = which === 'none' ? 'flex' : 'none';
     root.querySelector('#shop-owner-section').style.display = which === 'owner' ? 'flex' : 'none';
     root.querySelector('#shop-staff-section').style.display = which === 'staff' ? 'flex' : 'none';
   }
+  root.querySelector('#btn-shop-studio-account').addEventListener('click', showAccountScreen);
 
   // ---- Not in a shop: invites addressed to me ----
   async function loadMyPendingInvites(){
@@ -7919,6 +7944,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
   // ---- Entry point ----
   async function loadShopState(){
+    if (!hasStudioAccess()){
+      showSection('locked');
+      return;
+    }
     // Re-check my own shop link fresh, in case an owner removed me (or I
     // accepted/left elsewhere) since this tab was last open.
     if (dbAvailable && profileCode){

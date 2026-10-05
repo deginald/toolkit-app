@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-05T04-11-15Z">
+<meta name="app-build" content="2026-10-05T05-58-24Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -1353,6 +1353,8 @@ function renderUpcoming(list){
             if (statusEl) statusEl.textContent = 'Sent.';
           } else if (data && data.reason === 'not_subscribed'){
             if (statusEl) statusEl.textContent = "Your barber hasn't turned on notifications yet, so this can't be sent.";
+          } else if (data && data.reason === 'messaging_locked'){
+            if (statusEl) statusEl.textContent = "This professional's plan doesn't include messaging right now.";
           } else {
             if (statusEl) statusEl.textContent = "Couldn't send. Try again.";
           }
