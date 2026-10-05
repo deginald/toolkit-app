@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-05T15-12-56Z">
+<meta name="app-build" content="2026-10-05T15-30-11Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1172,7 +1172,12 @@
             </div>
 
             <div class="bk-pane show" data-bk="upcoming" id="bk-appts-section" style="gap:16px;">
-              <div style="display:flex; flex-direction:column; gap:8px; align-items:center; border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--surface);">
+              <div id="bk-link-paywall" style="display:none; flex-direction:column; gap:10px; align-items:center; border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--surface); text-align:center;">
+                <p class="eyebrow-mini2" style="margin:0;">Your booking link</p>
+                <p class="screen-sub" style="margin:0;">Letting clients open this link and book you online is part of a paid Vono plan &mdash; on Basic, appointments still work, but the page this link leads to won't load for them. Try it free to turn it on.</p>
+                <button class="btn btn-primary" type="button" id="btn-bk-link-paywall-trial">Start free trial</button>
+              </div>
+              <div id="bk-link-real" style="display:flex; flex-direction:column; gap:8px; align-items:center; border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--surface);">
                 <p class="eyebrow-mini2" style="margin:0;">Your booking link</p>
                 <canvas id="bk-qr-canvas" width="220" height="220" style="border-radius:8px; max-width:100%; height:auto;"></canvas>
                 <div class="link-row" style="width:100%;">
@@ -2164,7 +2169,7 @@
       <div id="listing-locked" style="display:none; border-top:1px solid var(--line); padding-top:16px;">
         <p class="eyebrow-mini">Public directory</p>
         <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Your public listing</h2>
-        <p class="screen-sub">Your Find a Pro listing is part of a paid Vono plan. Subscribe above to turn it on.</p>
+        <p class="screen-sub">Your Find a Pro listing &mdash; and clients being able to open your booking link or QR code at all &mdash; is part of a paid Vono plan. Subscribe above to turn it on.</p>
       </div>
       <div id="listing-eligible" style="display:none; border-top:1px solid var(--line); padding-top:16px; flex-direction:column; gap:14px;">
         <div>
@@ -2922,6 +2927,15 @@ function applyAccessGating(){
   const payPaywall = document.getElementById('bk-payment-paywall');
   if (payReal) payReal.style.display = locked ? 'none' : 'flex';
   if (payPaywall) payPaywall.style.display = locked ? 'flex' : 'none';
+  // Same story for the booking-link QR/card at the top of Upcoming -- it
+  // points straight at directory.html?pro=<code>, which won't load at all
+  // for a Basic pro (see hasActiveSubscription() there), so showing a live
+  // QR code here would just hand Basic professionals a broken link to
+  // share. Lock the card itself instead of letting that happen silently.
+  const linkReal = document.getElementById('bk-link-real');
+  const linkPaywall = document.getElementById('bk-link-paywall');
+  if (linkReal) linkReal.style.display = locked ? 'none' : 'flex';
+  if (linkPaywall) linkPaywall.style.display = locked ? 'flex' : 'none';
 }
 function renderPlanStatus(){
   const section = document.getElementById('account-plan-section');
@@ -2999,6 +3013,7 @@ document.getElementById('btn-manage-subscription').addEventListener('click', ope
 document.getElementById('btn-booking-paywall-account').addEventListener('click', showAccountScreen);
 document.getElementById('btn-business-paywall-account').addEventListener('click', ()=> startCheckout('pro'));
 document.getElementById('btn-bk-payment-paywall-trial').addEventListener('click', ()=> startCheckout('pro'));
+document.getElementById('btn-bk-link-paywall-trial').addEventListener('click', ()=> startCheckout('pro'));
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', ()=> showTab(btn.dataset.tabbtn));
 });
