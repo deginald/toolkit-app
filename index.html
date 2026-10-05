@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-05T19-05-00Z">
+<meta name="app-build" content="2026-10-05T19-42-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -2975,11 +2975,13 @@ function renderPlanStatus(){
   applyAccessGating();
   updateTrialNudgeBanner();
 }
-async function startCheckout(tier){
-  const btn = document.getElementById(tier === 'studio' ? 'btn-subscribe-studio' : 'btn-subscribe-pro');
-  const note = document.getElementById('account-plan-offer-note');
+async function startCheckout(tier, triggerBtn){
+  const defaultBtn = document.getElementById(tier === 'studio' ? 'btn-subscribe-studio' : 'btn-subscribe-pro');
+  const btn = triggerBtn || defaultBtn;
+  const usingAccountNote = (btn === defaultBtn);
+  const note = usingAccountNote ? document.getElementById('account-plan-offer-note') : null;
   if (btn) btn.disabled = true;
-  if (note) note.textContent = 'Opening secure checkout…';
+  if (note) note.textContent = 'Opening secure checkout…'; else showToast('Opening secure checkout…');
   try{
     const { data, error } = await supabaseClient.functions.invoke('create-checkout-session', { body: { planTier: tier } });
     if (error) throw error;
@@ -2987,7 +2989,8 @@ async function startCheckout(tier){
     window.location.href = data.url;
   }catch(e){
     console.warn('startCheckout failed', e);
-    if (note) note.textContent = "Couldn't start checkout. Try again.";
+    const msg = "Couldn't start checkout. Try again.";
+    if (note) note.textContent = msg; else showToast(msg);
     if (btn) btn.disabled = false;
   }
 }
@@ -3007,13 +3010,13 @@ async function openBillingPortal(){
     if (btn) btn.disabled = false;
   }
 }
-document.getElementById('btn-subscribe-pro').addEventListener('click', ()=> startCheckout('pro'));
-document.getElementById('btn-subscribe-studio').addEventListener('click', ()=> startCheckout('studio'));
+document.getElementById('btn-subscribe-pro').addEventListener('click', (e)=> startCheckout('pro', e.currentTarget));
+document.getElementById('btn-subscribe-studio').addEventListener('click', (e)=> startCheckout('studio', e.currentTarget));
 document.getElementById('btn-manage-subscription').addEventListener('click', openBillingPortal);
 document.getElementById('btn-booking-paywall-account').addEventListener('click', showAccountScreen);
-document.getElementById('btn-business-paywall-account').addEventListener('click', ()=> startCheckout('pro'));
-document.getElementById('btn-bk-payment-paywall-trial').addEventListener('click', ()=> startCheckout('pro'));
-document.getElementById('btn-bk-link-paywall-trial').addEventListener('click', ()=> startCheckout('pro'));
+document.getElementById('btn-business-paywall-account').addEventListener('click', (e)=> startCheckout('pro', e.currentTarget));
+document.getElementById('btn-bk-payment-paywall-trial').addEventListener('click', (e)=> startCheckout('pro', e.currentTarget));
+document.getElementById('btn-bk-link-paywall-trial').addEventListener('click', (e)=> startCheckout('pro', e.currentTarget));
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', ()=> showTab(btn.dataset.tabbtn));
 });
@@ -7365,7 +7368,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#shop-owner-section').style.display = which === 'owner' ? 'flex' : 'none';
     root.querySelector('#shop-staff-section').style.display = which === 'staff' ? 'flex' : 'none';
   }
-  root.querySelector('#btn-shop-studio-account').addEventListener('click', ()=> startCheckout('studio'));
+  root.querySelector('#btn-shop-studio-account').addEventListener('click', (e)=> startCheckout('studio', e.currentTarget));
 
   // ---- Not in a shop: invites addressed to me ----
   async function loadMyPendingInvites(){
@@ -8740,7 +8743,7 @@ function updateTrialNudgeBanner(){
   try{ dismissed = localStorage.getItem(trialNudgeDismissKey()) === '1'; }catch(e){}
   el.hidden = dismissed;
 }
-document.getElementById('btn-trial-nudge-start').addEventListener('click', ()=> startCheckout('pro'));
+document.getElementById('btn-trial-nudge-start').addEventListener('click', (e)=> startCheckout('pro', e.currentTarget));
 document.getElementById('btn-trial-nudge-dismiss').addEventListener('click', ()=>{
   try{ localStorage.setItem(trialNudgeDismissKey(), '1'); }catch(e){}
   document.getElementById('trial-nudge-banner').hidden = true;
