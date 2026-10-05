@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-05T13-18-47Z">
+<meta name="app-build" content="2026-10-05T15-12-56Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1365,11 +1365,18 @@
             </div>
 
             <div class="bk-pane" data-bk="payment" id="bk-payment-section" style="gap:10px;">
-              <p class="eyebrow-mini">Payment links <span style="text-transform:none; font-weight:600;">(optional)</span></p>
-              <div class="field"><label>Venmo username</label><div class="input-row"><input id="bk-pay-venmo" type="text" placeholder="e.g. your-venmo-username"></div></div>
-              <div class="field"><label>Cash App $cashtag</label><div class="input-row"><input id="bk-pay-cashapp" type="text" placeholder="e.g. $yourcashtag"></div></div>
-              <div class="field"><label>Zelle <span style="text-transform:none; font-weight:600;">(phone or email, no direct link, shown as text)</span></label><div class="input-row"><input id="bk-pay-zelle" type="text" placeholder="e.g. (910) 555-0123"></div></div>
-              <div class="field"><label>Apple Pay / Apple Cash <span style="text-transform:none; font-weight:600;">(phone or email, no direct link, shown as text)</span></label><div class="input-row"><input id="bk-pay-applepay" type="text" placeholder="e.g. (910) 555-0123"></div></div>
+              <div id="bk-payment-paywall" style="display:none; flex-direction:column; gap:14px;">
+                <p class="eyebrow-mini">Payment links <span style="text-transform:none; font-weight:600;">(optional)</span></p>
+                <p class="screen-sub" style="margin:0;">Letting clients pay you with Venmo, Cash App, Zelle, or Apple Pay is part of a paid Vono plan. Try it free &mdash; you won't be charged until the trial ends.</p>
+                <button class="btn btn-primary" type="button" id="btn-bk-payment-paywall-trial">Start free trial</button>
+              </div>
+              <div id="bk-payment-real-content" style="display:flex; flex-direction:column; gap:10px;">
+                <p class="eyebrow-mini">Payment links <span style="text-transform:none; font-weight:600;">(optional)</span></p>
+                <div class="field"><label>Venmo username</label><div class="input-row"><input id="bk-pay-venmo" type="text" placeholder="e.g. your-venmo-username"></div></div>
+                <div class="field"><label>Cash App $cashtag</label><div class="input-row"><input id="bk-pay-cashapp" type="text" placeholder="e.g. $yourcashtag"></div></div>
+                <div class="field"><label>Zelle <span style="text-transform:none; font-weight:600;">(phone or email, no direct link, shown as text)</span></label><div class="input-row"><input id="bk-pay-zelle" type="text" placeholder="e.g. (910) 555-0123"></div></div>
+                <div class="field"><label>Apple Pay / Apple Cash <span style="text-transform:none; font-weight:600;">(phone or email, no direct link, shown as text)</span></label><div class="input-row"><input id="bk-pay-applepay" type="text" placeholder="e.g. (910) 555-0123"></div></div>
+              </div>
             </div>
 
             <div id="bk-save-row" style="display:flex; flex-direction:column; gap:6px;">
@@ -2905,6 +2912,16 @@ function applyAccessGating(){
   const businessPaywall = document.getElementById('business-paywall');
   if (businessReal) businessReal.style.display = locked ? 'none' : '';
   if (businessPaywall) businessPaywall.style.display = locked ? 'flex' : 'none';
+  // Payment links (within the otherwise-free Booking tab) are a paid-plan
+  // perk -- a Basic pro can't be found or booked through the public Find a
+  // Pro directory at all (directory.html requires an active subscription
+  // before it'll even load a booking page), so these links would never
+  // actually reach a client of theirs anyway. Locking the editor here just
+  // makes that plain instead of letting them fill in fields that go unused.
+  const payReal = document.getElementById('bk-payment-real-content');
+  const payPaywall = document.getElementById('bk-payment-paywall');
+  if (payReal) payReal.style.display = locked ? 'none' : 'flex';
+  if (payPaywall) payPaywall.style.display = locked ? 'flex' : 'none';
 }
 function renderPlanStatus(){
   const section = document.getElementById('account-plan-section');
@@ -2981,6 +2998,7 @@ document.getElementById('btn-subscribe-studio').addEventListener('click', ()=> s
 document.getElementById('btn-manage-subscription').addEventListener('click', openBillingPortal);
 document.getElementById('btn-booking-paywall-account').addEventListener('click', showAccountScreen);
 document.getElementById('btn-business-paywall-account').addEventListener('click', ()=> startCheckout('pro'));
+document.getElementById('btn-bk-payment-paywall-trial').addEventListener('click', ()=> startCheckout('pro'));
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', ()=> showTab(btn.dataset.tabbtn));
 });
