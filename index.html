@@ -107,6 +107,15 @@
   .mode-btn{ flex:1; display:flex; align-items:center; justify-content:center; gap:5px; border:none; background:transparent; color:var(--muted); font-family:'Public Sans',sans-serif; font-size:12.5px; font-weight:700; padding:9px 6px; border-radius:7px; cursor:pointer; }
   .mode-btn svg{ width:15px; height:15px; flex:none; }
   .mode-btn.active{ background:var(--surface); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+  /* Business sub-tab bar: 6 destinations is too many to squeeze into one
+     equal-width row (that's the default .mode-toggle behavior, fine for
+     2-4 items elsewhere like Booking). Scoped to #business-mode-toggle
+     only -- Booking's toggle and the small 2-way toggles stay as-is. */
+  .mode-toggle-scroll-wrap{ position:relative; }
+  .mode-toggle-scroll-wrap::after{ content:''; position:absolute; top:3px; right:3px; bottom:3px; width:26px; pointer-events:none; border-radius:0 7px 7px 0; background:linear-gradient(to right, transparent, var(--paper) 70%); }
+  #business-mode-toggle{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; scroll-snap-type:x proximity; }
+  #business-mode-toggle::-webkit-scrollbar{ display:none; }
+  #business-mode-toggle .mode-btn{ flex:none; white-space:nowrap; padding:9px 14px; scroll-snap-align:start; }
   .pv-card{ border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:12px; display:flex; flex-direction:column; gap:8px; }
   .pv-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
   .pv-date{ font-family:'Libre Franklin',sans-serif; font-weight:700; font-size:13.5px; }
@@ -1380,13 +1389,15 @@
           <p class="eyebrow-mini">Rewards &amp; income</p>
           <h2>Business</h2>
         </div>
-        <div class="mode-toggle" id="business-mode-toggle">
-          <button type="button" class="mode-btn active" data-biz-mode="loyalty">Loyalty</button>
-          <button type="button" class="mode-btn" data-biz-mode="earnings">Earnings</button>
-          <button type="button" class="mode-btn" data-biz-mode="clients">My Clients</button>
-          <button type="button" class="mode-btn" data-biz-mode="inventory">Inventory</button>
-          <button type="button" class="mode-btn" data-biz-mode="shop">Shop</button>
-          <button type="button" class="mode-btn" data-biz-mode="rentcomm">Rent &amp; Commission</button>
+        <div class="mode-toggle-scroll-wrap">
+          <div class="mode-toggle" id="business-mode-toggle">
+            <button type="button" class="mode-btn active" data-biz-mode="loyalty">Loyalty</button>
+            <button type="button" class="mode-btn" data-biz-mode="earnings">Earnings</button>
+            <button type="button" class="mode-btn" data-biz-mode="clients">My Clients</button>
+            <button type="button" class="mode-btn" data-biz-mode="inventory">Inventory</button>
+            <button type="button" class="mode-btn" data-biz-mode="shop">Shop</button>
+            <button type="button" class="mode-btn" data-biz-mode="rentcomm">Rent &amp; Commission</button>
+          </div>
         </div>
         <div class="biz-pane show" data-biz="loyalty" id="tab-loyalty">
           <div class="screen-body show" data-screen="dashboard" style="gap:20px;">
