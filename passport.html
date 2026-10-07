@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-08T02-00-00Z">
+<meta name="app-build" content="2026-10-08T03-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -545,6 +545,7 @@
       <div><p class="eyebrow-mini" style="margin-bottom:8px;">Open times</p><div class="cs-chips" id="cs-times"></div></div>
       <p class="screen-sub" id="cs-rule" style="font-size:12.5px;">&nbsp;</p>
       <p class="screen-sub" id="cs-status" style="margin:0;" aria-live="polite"></p>
+      <p class="build-tag" style="margin:8px 0 0;font-size:11px;opacity:.5;text-align:center;"></p>
       <div class="cs-actions"><button type="button" class="btn btn-primary" id="cs-save" disabled>Confirm new time</button><button type="button" class="btn btn-outline" id="cs-back">Back</button></div>
     </div>
   </div>
@@ -1331,6 +1332,26 @@ async function loadUpcomingAppointments(){
    times (their hours, date overrides, and VIP windows), minus every other
    booked appointment, and none closer than the cutoff below. Saving tells the
    professional right away (push + a message on their screen). ---- */
+
+// Saves changes to one appointment and PROVES they landed. A database that quietly refuses a
+// change (for example a login that isn't allowed to touch that row) answers with "no error,
+// zero rows" -- so this asks for the changed row back and treats an empty answer as a failure.
+// Also never waits forever: after 15 seconds it reports the save as not finished.
+function withDeadline(p, ms, msg){
+  return Promise.race([p, new Promise((_, rej)=> setTimeout(()=> rej(new Error(msg)), ms))]);
+}
+async function saveAppointmentChange(id, core, extras){
+  const run = payload => withDeadline(
+    supabaseClient.from('appointments').update(payload).eq('id', id).select('id'),
+    15000, "The save didn't finish. Check your connection and try again."
+  );
+  let res = await run({ ...core, ...extras });
+  // If the optional tracking columns haven't been added yet, still save the change itself.
+  if (res.error && /column|schema cache/i.test(res.error.message||'')) res = await run(core);
+  if (res.error) throw res.error;
+  if (!res.data || !res.data.length) throw new Error("Nothing was changed. This login may not be allowed to change that appointment. Log out, log back in, and try again.");
+  return true;
+}
 const CLIENT_CHANGE_CUTOFF_HOURS = 24;
 const CS_DAY_KEYS = ['sun','mon','tue','wed','thu','fri','sat'];
 const CS_RANGE_DAYS = 14;
@@ -1458,24 +1479,23 @@ csEl('cs-save').addEventListener('click', async ()=>{
   csEl('cs-save').disabled = true;
   statusEl.textContent = 'Saving…';
   try{
-    let res = await supabaseClient.from('appointments').update({ ...core, ...extras }).eq('id', a.id);
-    if (res.error && /column|schema cache/i.test(res.error.message||'')){
-      res = await supabaseClient.from('appointments').update(core).eq('id', a.id);
-    }
-    if (res.error) throw res.error;
+    await saveAppointmentChange(a.id, core, extras);
   }catch(err){
     console.warn('appointment change failed', err);
     statusEl.textContent = "Couldn't change it: " + ((err && err.message) || 'try again.');
     csEl('cs-save').disabled = false;
     return;
   }
+  // The change is saved: show it right away, then send the notification.
+  statusEl.textContent = 'Changed. Telling ' + a.barber_name + '…';
+  loadUpcomingAppointments();
   let told = `Changed. ${a.barber_name} has been notified.`;
   try{
     const { data } = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: a.id, event: 'changed', changed_by: 'client', previous: prev } });
     if (!(data && data.ok)) told = `Changed. ${a.barber_name} will see it next time they open Vono.`;
   }catch(err){ console.warn('change notification failed', err); told = 'Changed. We could not notify them right now, so consider sending a quick note.'; }
   statusEl.textContent = told;
-  setTimeout(closeApptChange, 1100);
+  setTimeout(closeApptChange, 1400);
   loadUpcomingAppointments();
 });
 
@@ -2649,5 +2669,6 @@ registerServiceWorker();
   window.addEventListener('pageshow', checkForUpdate);
 })();
 </script>
+<script>document.querySelectorAll('.build-tag').forEach(function(e){var m=document.querySelector('meta[name="app-build"]');e.textContent='Version '+(m?m.content.replace(/^\d{4}-/,'').replace(/-00Z$/,'').replace('T',' '):'?');});</script>
 </body>
 </html>

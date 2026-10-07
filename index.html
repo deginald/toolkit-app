@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-08T02-00-00Z">
+<meta name="app-build" content="2026-10-08T03-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -2616,6 +2616,7 @@
       <p class="aes-note" id="aes-conflict" hidden></p>
       <div class="aes-notice"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10.3 20a2 2 0 0 0 3.4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div id="aes-notice-text">Your client gets a notification and a message on screen when you save.</div></div>
       <p class="screen-sub" id="aes-status" style="margin:0;" aria-live="polite"></p>
+      <p class="build-tag" style="margin:8px 0 0;font-size:11px;opacity:.5;text-align:center;"></p>
       <div class="aes-actions"><button type="button" class="btn btn-primary" id="aes-save">Save changes</button><button type="button" class="btn btn-outline" id="aes-cancel">Cancel</button></div>
     </div>
   </div>
@@ -6156,6 +6157,26 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     "I have to cancel your appointment. Sorry for the short notice.",
     "Just confirming I'll see you at your scheduled time."
   ];
+
+// Saves changes to one appointment and PROVES they landed. A database that quietly refuses a
+// change (for example a login that isn't allowed to touch that row) answers with "no error,
+// zero rows" -- so this asks for the changed row back and treats an empty answer as a failure.
+// Also never waits forever: after 15 seconds it reports the save as not finished.
+function withDeadline(p, ms, msg){
+  return Promise.race([p, new Promise((_, rej)=> setTimeout(()=> rej(new Error(msg)), ms))]);
+}
+async function saveAppointmentChange(id, core, extras){
+  const run = payload => withDeadline(
+    supabaseClient.from('appointments').update(payload).eq('id', id).select('id'),
+    15000, "The save didn't finish. Check your connection and try again."
+  );
+  let res = await run({ ...core, ...extras });
+  // If the optional tracking columns haven't been added yet, still save the change itself.
+  if (res.error && /column|schema cache/i.test(res.error.message||'')) res = await run(core);
+  if (res.error) throw res.error;
+  if (!res.data || !res.data.length) throw new Error("Nothing was changed. This login may not be allowed to change that appointment. Log out, log back in, and try again.");
+  return true;
+}
   let bkApptCache = [];
   function bkEsc(v){ return String(v==null?'':v).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function bkTimeParts(hhmm){
@@ -6490,18 +6511,17 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     statusEl.textContent = 'Saving…';
     aesEl('aes-save').disabled = true;
     try{
-      let res = await supabaseClient.from('appointments').update({ ...core, ...extras }).eq('id', a.id);
-      // If the optional tracking columns haven't been added yet, still save the change itself.
-      if (res.error && /column|schema cache/i.test(res.error.message||'')){
-        res = await supabaseClient.from('appointments').update(core).eq('id', a.id);
-      }
-      if (res.error) throw res.error;
+      await saveAppointmentChange(a.id, core, extras);
     }catch(err){
       console.warn('appointment edit failed', err);
       statusEl.textContent = "Couldn't save: " + ((err && err.message) || 'try again.');
       aesEl('aes-save').disabled = false;
       return;
     }
+    // Saved: show it in the list right away, then send the notification.
+    statusEl.textContent = 'Saved. Telling ' + ((a.client_name||'your client').split(' ')[0]) + '…';
+    loadAppointments();
+    loadCalendarAppointments().catch(()=>{});
     let told = 'Saved.';
     try{
       const { data } = await supabaseClient.functions.invoke('send-quick-message', { body: {
@@ -6514,9 +6534,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }catch(err){ console.warn('change notification failed', err); told = 'Saved. The client could not be notified right now.'; }
     statusEl.textContent = told;
     aesEl('aes-save').disabled = false;
-    setTimeout(()=>{ closeApptEdit(); }, 900);
-    loadAppointments();
-    try{ await loadCalendarAppointments(); }catch(e){}
+    setTimeout(()=>{ closeApptEdit(); }, 1200);
   });
   /* ---- View calendar: day/week/month forecast of booked appointments ---- */
   let calendarAppts = [];
@@ -7344,7 +7362,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     };
     statusEl.textContent = 'Saving…';
     try{
-      const { error } = await supabaseClient.from('appointments').insert(appt);
+      const { error } = await withDeadline(supabaseClient.from('appointments').insert(appt), 15000, "The save didn't finish. Check your connection and try again.");
       if (error) throw error;
     }catch(e){
       console.warn('manual appointment save failed', e);
@@ -10646,5 +10664,6 @@ registerServiceWorker();
   window.addEventListener('pageshow', checkForUpdate);
 })();
 </script>
+<script>document.querySelectorAll('.build-tag').forEach(function(e){var m=document.querySelector('meta[name="app-build"]');e.textContent='Version '+(m?m.content.replace(/^\d{4}-/,'').replace(/-00Z$/,'').replace('T',' '):'?');});</script>
 </body>
 </html>
