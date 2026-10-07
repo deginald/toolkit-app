@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-07T19-45-00Z">
+<meta name="app-build" content="2026-10-07T20-30-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -5842,13 +5842,30 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   function calApptsOnDate(iso){
     return calendarAppts.filter(a=> a.appt_date === iso).sort((a,b)=> (a.start_time||'') < (b.start_time||'') ? -1 : 1);
   }
+  // Past (and today's) appointments can have their price corrected: tap "Edit price" on the row.
+  // Earnings and the Home "This Month" card read this same total_price, so they follow the fix.
+  let calEditingPriceId = null;
+  let calPriceError = '';
   function renderCalApptRow(a){
     const svcNames = (a.services||[]).map(s=>s.name).join(', ');
+    const canEditPrice = !!a.appt_date && a.appt_date <= todayIso();
+    const editing = canEditPrice && calEditingPriceId !== null && String(calEditingPriceId) === String(a.id);
+    const priceLine = escapeHtmlBk(svcNames) + (a.total_price ? ' · $'+a.total_price : '');
+    const editArea = editing ? `
+        <div style="display:flex; align-items:center; gap:6px; margin-top:6px; flex-wrap:wrap;">
+          <span style="font-weight:600;">$</span>
+          <input type="number" inputmode="decimal" min="0" max="100000" step="0.01" id="cal-price-input" data-cal-price-input="${escapeHtmlBk(a.id)}" value="${a.total_price != null ? escapeHtmlBk(a.total_price) : ''}" style="width:96px; padding:6px 8px;" aria-label="Price for ${escapeHtmlBk(a.client_name||'client')}">
+          <button type="button" class="btn btn-primary" data-cal-price-save="${escapeHtmlBk(a.id)}" style="padding:6px 12px;">Save</button>
+          <button type="button" class="link-btn" data-cal-price-cancel="1" style="padding:0;">Cancel</button>
+        </div>
+        ${calPriceError ? `<span class="screen-sub" style="margin:4px 0 0; color:var(--behind);">${escapeHtmlBk(calPriceError)}</span>` : ''}` :
+      (canEditPrice ? `<button type="button" class="link-btn" data-cal-price-edit="${escapeHtmlBk(a.id)}" style="padding:0; align-self:flex-start; font-size:12.5px;">Edit price</button>` : '');
     return `<div class="cal-appt-row${a.is_vip ? ' is-vip' : ''}">
       <span class="cal-appt-time">${fmtTimeBk(a.start_time)}</span>
       <div style="display:flex; flex-direction:column; gap:1px; min-width:0;">
         <strong style="font-size:13.5px; display:flex; align-items:center; gap:6px;">${escapeHtmlBk(a.client_name||'Client')}${a.is_vip ? '<span class="vip-badge">✨ VIP</span>' : ''}</strong>
-        <span class="screen-sub" style="margin:0;">${escapeHtmlBk(svcNames)}${a.total_price ? ' · $'+a.total_price : ''}</span>
+        <span class="screen-sub" style="margin:0;">${priceLine}</span>
+        ${editArea}
       </div>
     </div>`;
   }
@@ -5940,7 +5957,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     await loadCalendarAppointments();
     renderCalendar();
   }
-  function closeCalendarModal(){ root.querySelector('#bk-calendar-modal').hidden = true; }
+  function closeCalendarModal(){ calEditingPriceId = null; calPriceError = ''; root.querySelector('#bk-calendar-modal').hidden = true; }
   root.querySelector('#btn-bk-view-calendar').addEventListener('click', openCalendarModal);
   root.querySelector('#btn-calendar-close').addEventListener('click', closeCalendarModal);
   root.querySelector('#btn-calendar-prev').addEventListener('click', ()=> calendarStep(-1));
@@ -5949,7 +5966,42 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   root.querySelectorAll('#calendar-view-toggle .mode-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{ calendarView = btn.dataset.calView; renderCalendar(); });
   });
-  root.querySelector('#calendar-body').addEventListener('click', (e)=>{
+  root.querySelector('#calendar-body').addEventListener('click', async (e)=>{
+    const editBtn = e.target.closest('[data-cal-price-edit]');
+    if (editBtn){
+      calEditingPriceId = editBtn.dataset.calPriceEdit; calPriceError = '';
+      renderCalendar();
+      const inp = root.querySelector('#cal-price-input'); if (inp){ inp.focus(); inp.select(); }
+      return;
+    }
+    if (e.target.closest('[data-cal-price-cancel]')){ calEditingPriceId = null; calPriceError = ''; renderCalendar(); return; }
+    const saveBtn = e.target.closest('[data-cal-price-save]');
+    if (saveBtn){
+      const id = saveBtn.dataset.calPriceSave;
+      const inp = root.querySelector('#cal-price-input');
+      const raw = inp ? inp.value.trim() : '';
+      const value = Number(raw);
+      if (raw === '' || !isFinite(value) || value < 0 || value > 100000){
+        calPriceError = 'Enter a price from 0 to 100,000.'; renderCalendar(); return;
+      }
+      const price = Math.round(value * 100) / 100;
+      saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
+      try{
+        const { data, error } = await supabaseClient.from('appointments').update({ total_price: price }).eq('id', id).eq('barber_code', profileCode).select();
+        if (error) throw error;
+        if (!data || !data.length) throw new Error('not updated');
+        const row = calendarAppts.find(x=> String(x.id) === String(id));
+        if (row) row.total_price = price;
+        calEditingPriceId = null; calPriceError = '';
+        renderCalendar();
+        showToast('Price updated');
+      }catch(err){
+        console.warn('price update failed', err);
+        calPriceError = "Couldn't save that price. Check your connection and try again.";
+        renderCalendar();
+      }
+      return;
+    }
     const dayCell = e.target.closest('[data-cal-day]');
     if (dayCell){
       calendarAnchor = calParseDate(dayCell.dataset.calDay);
