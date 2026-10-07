@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-07T20-30-00Z">
+<meta name="app-build" content="2026-10-07T21-15-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -683,31 +683,35 @@
       </form>
     </main>
   </div>
-  <div id="recovery-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100svh;">
-    <header class="topbar">
-      <div style="width:40px;"></div>
-      <div class="tb-name">Reset password</div>
-      <div style="width:40px;"></div>
-    </header>
-    <main class="tab-content" style="display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center;">
-      <div>
-        <p class="eyebrow-mini">Vono</p>
-        <p class="screen-sub" style="margin-top:6px;">Choose a new password for your account.</p>
+  <div id="recovery-screen" hidden role="dialog" aria-modal="true" aria-labelledby="recovery-title" style="position:fixed; inset:0; z-index:9600; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(5,9,15,0.86); overflow-y:auto;">
+    <div style="width:100%; max-width:360px; background:var(--surface); border:1px solid var(--brass); border-radius:18px; padding:22px 20px 18px; box-shadow:0 24px 60px -20px rgba(0,0,0,0.7); display:flex; flex-direction:column; gap:14px; margin:auto;">
+      <div id="recovery-form-view" style="display:flex; flex-direction:column; gap:14px;">
+        <div style="text-align:center;">
+          <p class="eyebrow-mini">Vono</p>
+          <h2 id="recovery-title" style="margin:6px 0 0; font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:22px;">Set a new password</h2>
+          <p class="screen-sub" style="margin:6px 0 0;">Choose a new password for your account.</p>
+        </div>
+        <form class="auth-form" id="recovery-form" style="width:100%; display:flex; flex-direction:column; gap:12px;">
+          <div class="field">
+            <label for="recovery-password">New password</label>
+            <div class="input-row"><input id="recovery-password" type="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required><button type="button" class="link-btn" data-recovery-toggle="recovery-password" style="padding:0 0 0 8px; font-size:13px;">Show</button></div>
+          </div>
+          <div class="field">
+            <label for="recovery-password-confirm">Confirm new password</label>
+            <div class="input-row"><input id="recovery-password-confirm" type="password" placeholder="Re-enter your new password" autocomplete="new-password" minlength="8" required><button type="button" class="link-btn" data-recovery-toggle="recovery-password-confirm" style="padding:0 0 0 8px; font-size:13px;">Show</button></div>
+          </div>
+          <p class="foot-note-small" id="recovery-note" role="status" aria-live="polite" style="min-height:1.2em; text-align:center; margin:0;">&nbsp;</p>
+          <button class="btn btn-primary" type="submit" id="recovery-submit-btn">Set new password</button>
+          <button type="button" class="link-btn" id="btn-recovery-cancel" style="align-self:center;">Cancel</button>
+        </form>
       </div>
-      <form class="auth-form" id="recovery-form" style="width:100%; max-width:320px;">
-        <div class="field">
-          <label>New password</label>
-          <div class="input-row"><input id="recovery-password" type="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required></div>
-        </div>
-        <div class="field">
-          <label>Confirm new password</label>
-          <div class="input-row"><input id="recovery-password-confirm" type="password" placeholder="Re-enter your new password" autocomplete="new-password" minlength="8" required></div>
-        </div>
-        <button class="btn btn-primary" type="submit" id="recovery-submit-btn">Set new password</button>
-        <p class="foot-note-small" id="recovery-note">&nbsp;</p>
-        <button type="button" class="link-btn" id="btn-recovery-cancel">Cancel</button>
-      </form>
-    </main>
+      <div id="recovery-done-view" hidden style="flex-direction:column; align-items:center; gap:12px; text-align:center;">
+        <div style="width:52px; height:52px; border-radius:50%; background:var(--good-tint, #142A20); border:1px solid var(--good); display:flex; align-items:center; justify-content:center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="var(--good)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h2 style="margin:0; font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:22px;">Password updated</h2>
+        <p class="screen-sub" style="margin:0;">Your new password is saved. Log in with it to continue.</p>
+        <button type="button" class="btn btn-primary" id="btn-recovery-done" style="width:100%; flex:none;">Log in</button>
+      </div>
+    </div>
   </div>
   <div id="app-shell" hidden>
     <div id="degraded-banner" class="banner warn" hidden>Live saving isn't connected right now. Your changes here won't be kept. Everything still works to try out.</div>
@@ -8775,18 +8779,34 @@ function showAuthScreen(forceMode){
   }
 }
 function showRecoveryScreen(){
+  // The reset form is a popup over the log-in screen, so it's always centered in view
+  // with nothing to scroll to.
   document.getElementById('loading-screen').hidden = true;
   document.getElementById('role-screen').hidden = true;
-  document.getElementById('auth-screen').hidden = true;
   document.getElementById('app-shell').hidden = true;
+  showAuthScreen('returning');
+  document.getElementById('auth-note').textContent = ' ';
   document.getElementById('recovery-screen').hidden = false;
-  document.getElementById('recovery-password').value = '';
-  document.getElementById('recovery-password-confirm').value = '';
-  document.getElementById('recovery-note').textContent = ' ';
+  document.getElementById('recovery-form-view').hidden = false;
+  document.getElementById('recovery-done-view').hidden = true;
+  ['recovery-password','recovery-password-confirm'].forEach(id=>{ const el = document.getElementById(id); el.value = ''; el.type = 'password'; });
+  document.querySelectorAll('[data-recovery-toggle]').forEach(b=>{ b.textContent = 'Show'; });
+  document.getElementById('recovery-submit-btn').disabled = false;
+  document.getElementById('recovery-note').textContent = ' ';
+  try{ window.scrollTo(0, 0); }catch(e){}
+  setTimeout(()=>{ try{ document.getElementById('recovery-password').focus(); }catch(e){} }, 50);
   // Tidy the reset token out of the address bar now that it's done its job -- leaving it
   // there would re-trigger this screen (or confuse things) on a later reload or share.
   try{ window.history.replaceState({}, '', window.location.pathname); }catch(e){}
 }
+document.querySelectorAll('[data-recovery-toggle]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const input = document.getElementById(btn.dataset.recoveryToggle);
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.textContent = show ? 'Hide' : 'Show';
+  });
+});
 document.getElementById('recovery-form').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const note = document.getElementById('recovery-note');
@@ -8806,14 +8826,21 @@ document.getElementById('recovery-form').addEventListener('submit', async (e)=>{
     // the app from it -- asking them to log in fresh with the new password confirms it
     // actually took, the same way most password-reset flows close the loop.
     try{ await supabaseClient.auth.signOut(); }catch(err){}
-    document.getElementById('recovery-screen').hidden = true;
-    showAuthScreen('returning');
-    document.getElementById('auth-note').textContent = 'Password updated. Log in with your new password.';
+    // Show a clear confirmation inside the same popup; "Log in" then closes it.
+    document.getElementById('recovery-form-view').hidden = true;
+    document.getElementById('recovery-done-view').hidden = false;
+    document.getElementById('recovery-done-view').style.display = 'flex';
+    setTimeout(()=>{ try{ document.getElementById('btn-recovery-done').focus(); }catch(e){} }, 50);
   }catch(err){
     console.warn('password update failed', err);
     note.textContent = (err && err.message) ? err.message : "Couldn't update your password. The reset link may have expired -- request a new one.";
     submitBtn.disabled = false;
   }
+});
+document.getElementById('btn-recovery-done').addEventListener('click', ()=>{
+  document.getElementById('recovery-screen').hidden = true;
+  showAuthScreen('returning');
+  document.getElementById('auth-note').textContent = 'Password updated. Log in with your new password.';
 });
 document.getElementById('btn-recovery-cancel').addEventListener('click', async ()=>{
   try{ if (dbAvailable) await supabaseClient.auth.signOut(); }catch(e){}
