@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-07T21-15-00Z">
+<meta name="app-build" content="2026-10-07T23-30-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -70,7 +70,7 @@
   .tab-btn[data-tabbtn="business"]{ order:5; }
   .tab-btn[data-tabbtn="ledger"]{ order:6; }
   .tab-btn[data-tabbtn="jobs"]{ order:7; }
-  .tabbar.role-student .tab-btn[data-tabbtn="pace"]{ order:1; }
+  .tabbar.role-student .tab-btn[data-tabbtn="home"]{ order:0; }
   .tabbar.role-student .tab-btn[data-tabbtn="coach"]{ order:2; }
   .tabbar.role-student .tab-btn[data-tabbtn="consult"]{ order:3; }
   .tabbar.role-student .tab-btn[data-tabbtn="ledger"]{ order:4; }
@@ -100,6 +100,25 @@
   .home-bar{ width:100%; border-radius:4px 4px 2px 2px; background:rgba(217,174,94,0.5); min-height:3px; }
   .home-bar.current{ background:var(--brass); }
   .home-bar-lbl{ font-size:9.5px; font-weight:600; color:var(--muted); letter-spacing:0.02em; }
+  /* ---- Student Home ---- */
+  .shome-grid2{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; }
+  .shome-stat{ gap:4px; padding:12px; }
+  .shome-stat .big{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:19px; margin:0; font-variant-numeric:tabular-nums; }
+  .shome-stat .big small{ font-size:12px; color:var(--muted); font-weight:600; }
+  .shome-bar{ height:6px; border-radius:3px; background:var(--line); overflow:hidden; margin-top:6px; }
+  .shome-bar > span{ display:block; height:100%; background:var(--brass); border-radius:3px; }
+  .shome-tile{ display:flex; align-items:center; gap:10px; padding:12px; border:1px solid var(--line); border-radius:14px; background:var(--paper); color:var(--ink); font-family:'Public Sans',sans-serif; text-align:left; cursor:pointer; min-width:0; }
+  .shome-tile svg{ width:26px; height:26px; color:var(--brass); flex:none; }
+  .shome-tile strong{ display:block; font-size:14px; }
+  .shome-tile span{ display:block; font-size:12px; color:var(--muted); margin-top:1px; font-weight:500; }
+  .shome-tile:active{ background:var(--surface); }
+  .shome-tile:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .shome-step{ display:flex; align-items:center; gap:12px; }
+  .shome-step-dot{ width:30px; height:30px; border-radius:50%; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:var(--muted); flex:none; }
+  .shome-step.next .shome-step-dot{ border-color:var(--brass); color:var(--brass); }
+  .shome-step.done .shome-step-dot{ background:var(--good-tint); border-color:var(--good); color:var(--good); }
+  .shome-step strong{ display:block; font-size:15px; }
+  .shome-step span.sub{ display:block; font-size:12.5px; color:var(--muted); margin-top:1px; }
   .home-more-overlay{ position:fixed; inset:0; z-index:460; background:rgba(5,9,15,0.62); display:flex; align-items:flex-end; justify-content:center; }
   .home-more-overlay[hidden]{ display:none; }
   .home-more-sheet{ width:100%; max-width:480px; background:var(--surface); border:1px solid var(--line); border-bottom:none; border-radius:18px 18px 0 0; padding:18px 18px calc(18px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:6px; }
@@ -113,6 +132,70 @@
   .jobs-pane.show{ display:flex; }
   .jobs-listing-card{ display:flex; flex-direction:column; gap:6px; border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:12px 14px; cursor:pointer; }
   .jobs-listing-card:hover{ border-color:var(--brass); }
+  /* ---- Booking tab (redesign) ---- */
+  #booking-real-content{ display:flex; flex-direction:column; gap:16px; }
+  #booking-mode-toggle .mode-btn svg{ display:none; }
+  #booking-mode-toggle .mode-btn{ font-size:13px; padding:9px 4px; }
+  .bk-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; }
+  .bk-switch{ position:relative; display:inline-flex; align-items:center; gap:8px; cursor:pointer; padding-bottom:4px; flex:none; }
+  .bk-switch input{ position:absolute; inset:0; width:100%; height:100%; opacity:0; margin:0; cursor:pointer; }
+  .bk-switch-label{ font-size:12.5px; font-weight:600; color:var(--muted); }
+  .bk-switch.on .bk-switch-label{ color:var(--good); }
+  .bk-switch-track{ width:42px; height:24px; border-radius:12px; background:var(--line); position:relative; transition:background .15s; flex:none; }
+  .bk-switch-track::after{ content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:var(--bg); transition:transform .15s; }
+  .bk-switch.on .bk-switch-track{ background:var(--good); }
+  .bk-switch.on .bk-switch-track::after{ transform:translateX(18px); }
+  .bk-switch:focus-within .bk-switch-track{ outline:2px solid var(--brass); outline-offset:2px; }
+  .bk-linkcard{ display:flex; gap:14px; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:12px; }
+  .bk-qr-btn{ flex:none; width:76px; height:76px; padding:0; border:none; border-radius:10px; background:#fff; cursor:pointer; overflow:hidden; display:block; }
+  .bk-qr-btn canvas{ width:76px; height:76px; display:block; }
+  .bk-linkcard-body{ flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
+  .bk-linkcard-title{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:15px; margin:0; }
+  .bk-link-text{ width:100%; border:none; background:transparent; color:var(--muted); font-family:'Public Sans',sans-serif; font-size:12.5px; padding:0; margin-top:2px; text-overflow:ellipsis; }
+  .bk-linkcard-actions{ display:flex; gap:8px; }
+  .bk-linkcard-actions .btn{ flex:1; padding:8px 0; font-size:13px; }
+  .bk-copy-note{ margin:0; }
+  .bk-copy-note:empty{ display:none; }
+  .bk-add-btn{ display:flex; align-items:center; justify-content:center; gap:8px; }
+  .bk-day{ display:flex; flex-direction:column; gap:8px; }
+  .bk-day-head{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-top:4px; }
+  .bk-day-head strong{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:15px; }
+  .bk-day-head span{ font-size:12.5px; color:var(--muted); }
+  .bk-appt{ display:flex; gap:14px; background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:12px 14px; }
+  .bk-appt.now{ border-color:var(--brass); }
+  .bk-appt-time{ width:62px; flex:none; }
+  .bk-appt-time b{ display:block; font-weight:800; font-size:15px; color:var(--brass); font-variant-numeric:tabular-nums; }
+  .bk-appt-time i{ display:block; font-style:normal; font-size:11px; font-weight:700; letter-spacing:0.08em; color:var(--muted); margin-top:2px; }
+  .bk-appt.now .bk-appt-time i{ color:var(--good); }
+  .bk-appt-main{ flex:1; min-width:0; }
+  .bk-appt-name{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-weight:700; font-size:15px; }
+  .bk-tag{ font-size:10.5px; font-weight:700; letter-spacing:0.06em; color:var(--brass); border:1px solid var(--brass); border-radius:6px; padding:1px 6px; }
+  .bk-appt-svc{ font-size:13px; color:var(--muted); margin-top:1px; overflow-wrap:anywhere; }
+  .bk-appt-actions{ display:flex; gap:18px; margin-top:8px; flex-wrap:wrap; }
+  .bk-appt-actions .link-btn{ padding:0; font-size:13px; }
+  .bk-appt-actions .link-btn.danger{ color:var(--behind); }
+  .bk-appt-actions .link-btn.muted{ color:var(--muted); }
+  .bk-confirm{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:8px; font-size:13px; }
+  .bk-confirm .link-btn{ padding:0; font-size:13px; }
+  .bk-msg-panel{ display:none; flex-direction:column; gap:6px; margin-top:8px; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--bg); }
+  .bk-more{ border:1px solid var(--line); border-radius:14px; background:var(--paper); }
+  .bk-more > summary{ list-style:none; cursor:pointer; padding:13px 14px; font-weight:700; font-size:14px; color:var(--brass); display:flex; justify-content:space-between; align-items:center; }
+  .bk-more > summary::-webkit-details-marker{ display:none; }
+  .bk-more > summary::after{ content:'+'; font-size:18px; line-height:1; }
+  .bk-more[open] > summary::after{ content:'\2212'; }
+  .bk-more > .card{ border:none; border-top:1px solid var(--line); border-radius:0 0 14px 14px; background:transparent; }
+  .bk-qr-lightbox{ position:fixed; inset:0; z-index:300; background:rgba(5,9,15,0.82); display:flex; align-items:center; justify-content:center; padding:24px; }
+  .bk-qr-lightbox div{ background:#fff; border-radius:16px; padding:14px; max-width:100%; text-align:center; color:#0A1220; font-size:13px; font-weight:700; }
+  .bk-qr-lightbox img{ display:block; width:min(280px,70vw); height:auto; margin:0 auto 8px; }
+  .bk-svc{ display:flex; align-items:center; gap:12px; background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:14px; }
+  .bk-svc-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; align-items:flex-start; }
+  .bk-svc-name{ font-weight:700; font-size:16px; }
+  .bk-svc-meta{ font-size:13px; color:var(--muted); overflow-wrap:anywhere; }
+  .bk-svc-side{ text-align:right; flex:none; }
+  .bk-svc-price{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:20px; color:var(--brass); }
+  .bk-svc-actions{ display:flex; gap:12px; justify-content:flex-end; margin-top:4px; }
+  .bk-svc-actions .link-btn{ padding:0; font-size:12.5px; }
+  .bk-svc-actions .link-btn.muted{ color:var(--muted); }
   .bk-pane{ display:none; flex-direction:column; gap:16px; }
   .bk-pane.show{ display:flex; }
   [data-screen]{ display:none; }
@@ -800,6 +883,78 @@
           </div>
         </div>
       </section>
+      <!-- ============ STUDENT HOME ============ -->
+      <section class="tab-pane" data-tab="shome" id="tab-shome">
+        <div class="home-hero">
+          <p class="home-greet" id="shome-greet">Welcome</p>
+          <h2 class="home-headline" id="shome-headline">Let's make today count.</h2>
+          <p class="screen-sub" id="shome-sub" hidden style="margin:6px 0 0;">Three quick steps and your graduation date is on the board.</p>
+        </div>
+        <div class="card" id="shome-setup" hidden style="border-color:var(--brass); gap:14px;">
+          <div class="home-section-head">
+            <p class="eyebrow-mini">Get set up</p>
+            <span id="shome-setup-count" style="font-size:12.5px; font-weight:700; color:var(--brass);">0 of 3 done</span>
+          </div>
+          <div class="shome-bar" aria-hidden="true"><span id="shome-setup-bar" style="width:4%;"></span></div>
+          <div id="shome-steps" style="display:flex; flex-direction:column; gap:14px;"></div>
+          <button type="button" class="btn btn-primary" id="btn-shome-setup-cta">Add my hours</button>
+        </div>
+        <div class="card" id="shome-pace" hidden style="gap:14px;">
+          <div class="home-section-head">
+            <p class="eyebrow-mini">Your pace</p>
+            <span class="chip-status good" id="shome-chip">On pace</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:18px;">
+            <div style="position:relative; width:104px; height:104px; flex:none;">
+              <svg width="104" height="104" viewBox="0 0 120 120" aria-hidden="true">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="var(--line)" stroke-width="12"/>
+                <circle id="shome-ring" cx="60" cy="60" r="50" fill="none" stroke="var(--brass)" stroke-width="12" stroke-linecap="round" stroke-dasharray="314.16" stroke-dashoffset="314.16" transform="rotate(-90 60 60)"/>
+              </svg>
+              <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <span id="shome-pct" style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:24px;">0%</span>
+                <span style="font-size:10.5px; color:var(--muted);">hours</span>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px; min-width:0;">
+              <p id="shome-hours" style="margin:0; font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:19px;"></p>
+              <div>
+                <p class="eyebrow-mini" style="margin:0;">Projected graduation</p>
+                <p id="shome-grad" style="margin:2px 0 0; font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:18px; color:var(--brass);"></p>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; border-top:1px solid var(--line); padding-top:12px;">
+            <span class="screen-sub" id="shome-asof" style="margin:0;"></span>
+            <button type="button" class="btn btn-primary" id="btn-shome-update" style="flex:none; padding:9px 14px; font-size:13px;">Update hours</button>
+          </div>
+        </div>
+        <div class="shome-grid2" id="shome-stats" hidden>
+          <div class="card shome-stat" id="shome-svc-card">
+            <p class="eyebrow-mini">Services</p>
+            <p class="big" id="shome-svc-big"></p>
+            <div class="shome-bar" id="shome-svc-bar-wrap"><span id="shome-svc-bar" style="width:0%;"></span></div>
+            <button type="button" class="link-btn" id="btn-shome-svc-add" style="padding:0; align-self:flex-start; display:none;">Add my services</button>
+          </div>
+          <div class="card shome-stat">
+            <p class="eyebrow-mini">This week</p>
+            <p class="big" id="shome-week-big"></p>
+            <p class="screen-sub" id="shome-week-note" style="margin:6px 0 0; font-size:12px;"></p>
+          </div>
+        </div>
+        <div class="shome-grid2" id="shome-tiles">
+          <button type="button" class="shome-tile" data-shome-go="coach"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6.5c2-1 5-1.3 8 0v11c-3-1.3-6-1-8 0v-11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 6.5c-2-1-5-1.3-8 0v11c3-1.3 6-1 8 0v-11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><div><strong>Refresher</strong><span>Practice a cut</span></div></button>
+          <button type="button" class="shome-tile" data-shome-go="consult"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 6.5A2.5 2.5 0 0 1 7 4h10a2.5 2.5 0 0 1 2.5 2.5v6A2.5 2.5 0 0 1 17 15H10l-4 3.5V15a2.5 2.5 0 0 1-1.5-2.3v-6.2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><div><strong>Consult</strong><span>Practice a talk</span></div></button>
+          <button type="button" class="shome-tile" data-shome-go="ledger"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 19V10M12 19V5M19 19v-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><div><strong>Ledger</strong><span id="shome-ledger-sub">Rate your skills</span></div></button>
+          <button type="button" class="shome-tile" data-shome-go="jobs"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="8" width="17" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M9 8V6.5A1.5 1.5 0 0 1 10.5 5h3A1.5 1.5 0 0 1 15 6.5V8" stroke="currentColor" stroke-width="1.6"/></svg><div><strong>Jobs</strong><span>Who's hiring</span></div></button>
+        </div>
+        <div class="card" style="border-color:var(--brass); flex-direction:row; align-items:center; gap:12px;">
+          <div style="flex:1; min-width:0;">
+            <p style="margin:0; font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:15px;">Bring your classmates</p>
+            <p class="screen-sub" style="margin:3px 0 0;">Vono is free for every student. Send them the link.</p>
+          </div>
+          <button type="button" class="btn btn-outline" id="btn-shome-share" style="flex:none; padding:9px 14px; font-size:13px;">Share Vono</button>
+        </div>
+      </section>
       <!-- ============ PACE ============ -->
       <section class="tab-pane" data-tab="pace" id="tab-pace">
         <div class="tab-head">
@@ -1233,19 +1388,22 @@
           <button class="btn btn-primary" type="button" id="btn-booking-paywall-account">Go to Account to subscribe</button>
         </div>
         <div id="booking-real-content">
-        <div class="tab-head">
-          <p class="eyebrow-mini">Appointments</p>
-          <h2>Booking</h2>
+        <div class="bk-head">
+          <div class="tab-head">
+            <p class="eyebrow-mini">Appointments</p>
+            <h2>Booking</h2>
+          </div>
+          <label class="bk-switch" for="bk-enable-toggle">
+            <span class="bk-switch-label" id="bk-switch-label">Booking is off</span>
+            <input type="checkbox" id="bk-enable-toggle">
+            <span class="bk-switch-track" aria-hidden="true"></span>
+          </label>
         </div>
         <div class="card tip" id="bk-landing-note" hidden>
           <p class="screen-sub" style="margin:0; color:var(--ink);">Your Home tab now shows today's appointments and your month at a glance. Booking is where you set up services and hours and manage appointments.</p>
           <button type="button" class="link-btn" id="btn-bk-landing-dismiss" style="align-self:flex-end; padding:0;">Got it</button>
         </div>
         <div class="screen-body show" data-screen="setup" style="gap:16px;">
-          <label class="check-row">
-            <input type="checkbox" id="bk-enable-toggle">
-            <span>Turn on appointment booking</span>
-          </label>
           <p class="screen-sub" id="bk-enable-hint">Off. Clients can't book with you yet. Turn this on to set up your services, hours, and get your booking link.</p>
           <div id="bk-setup-body" style="display:none; flex-direction:column; gap:16px;">
             <div class="mode-toggle" id="booking-mode-toggle">
@@ -1273,15 +1431,76 @@
                 <p class="screen-sub" style="margin:0;">Letting clients open this link and book you online is part of a paid Vono plan. On Basic, appointments still work, but the page this link leads to won't load for them. Try it free: you won't be charged until the trial ends.</p>
                 <button class="btn btn-primary" type="button" id="btn-bk-link-paywall-trial">Start free trial</button>
               </div>
-              <div id="bk-link-real" style="display:flex; flex-direction:column; gap:8px; align-items:center; border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--surface);">
-                <p class="eyebrow-mini2" style="margin:0;">Your booking link</p>
-                <canvas id="bk-qr-canvas" width="220" height="220" style="border-radius:8px; max-width:100%; height:auto;"></canvas>
-                <div class="link-row" style="width:100%;">
-                  <input type="text" class="link-input" id="bk-link-input" readonly>
-                  <button class="btn btn-outline" id="btn-bk-copy-link" style="flex:none; padding:9px 14px;">Copy</button>
+              <div id="bk-link-real" class="bk-linkcard">
+                <button type="button" class="bk-qr-btn" id="btn-bk-qr-enlarge" aria-label="Enlarge QR code"><canvas id="bk-qr-canvas" width="220" height="220"></canvas></button>
+                <div class="bk-linkcard-body">
+                  <div class="bk-linkcard-top">
+                    <p class="bk-linkcard-title">Your booking link</p>
+                    <input type="text" class="bk-link-text" id="bk-link-input" readonly aria-label="Your booking link">
+                  </div>
+                  <div class="bk-linkcard-actions">
+                    <button class="btn btn-outline" id="btn-bk-copy-link" type="button">Copy</button>
+                    <button class="btn btn-outline" id="btn-bk-share-link" type="button">Share</button>
+                  </div>
+                  <p class="foot-note-small bk-copy-note" id="bk-copy-note"></p>
                 </div>
-                <p class="foot-note-small" id="bk-copy-note">&nbsp;</p>
               </div>
+              <button class="btn btn-primary bk-add-btn" id="btn-bk-manual-open" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>Add an appointment</span></button>
+              <div class="card" id="bk-manual-card" style="display:none; flex-direction:column; gap:14px;">
+              <div>
+                <p class="eyebrow-mini2" style="margin:0;">Add an appointment</p>
+                <p class="screen-sub" style="margin:4px 0 0;">For a client booking in person, by phone, or whose phone's lost or broken. Saved the same as an online booking.</p>
+              </div>
+              <div id="bk-manual-client-search">
+                <button class="btn btn-primary" id="btn-bk-manual-client-scan" type="button" style="width:100%;">Scan their QR code</button>
+                <div class="field" style="margin-top:12px;"><label>Or type their passport code</label><div class="input-row"><input id="bk-manual-client-code" type="text" placeholder="Their personal code" data-lookup-field="1"></div></div>
+                <button class="btn btn-outline" id="btn-bk-manual-client-lookup" type="button" style="margin-top:8px; width:100%;">Look up</button>
+                <button class="btn btn-ghost" id="btn-bk-manual-client-newclient" type="button" style="margin-top:6px; width:100%;">First visit? Start their Vono Passport</button>
+                <p class="screen-sub" id="bk-manual-client-status" style="margin-top:6px;">&nbsp;</p>
+              </div>
+              <div id="bk-manual-client-scanpanel" style="display:none; flex-direction:column; gap:10px;">
+                <div style="position:relative; border-radius:12px; overflow:hidden; background:#000; aspect-ratio:1/1; max-width:280px; margin:0 auto; width:100%;">
+                  <video id="bk-manual-scan-video" playsinline autoplay muted style="width:100%; height:100%; object-fit:cover; display:block;"></video>
+                </div>
+                <p class="screen-sub" id="bk-manual-scan-status" style="margin:0; text-align:center;">Point the camera at their Vono Passport QR code.</p>
+                <button class="btn btn-ghost" id="btn-bk-manual-scan-cancel" type="button" style="width:100%;">Enter their code manually instead</button>
+              </div>
+              <div id="bk-manual-client-newname" style="display:none; flex-direction:column; gap:10px;">
+                <div class="field"><label>Client's name</label><div class="input-row"><input id="bk-manual-client-new-name" type="text" placeholder="e.g. Jordan Smith"></div></div>
+                <div class="field"><label>Their passport code</label><div class="input-row"><input id="bk-manual-client-new-code" type="text" placeholder="e.g. jordan-47"></div></div>
+                <p class="screen-sub" style="margin:0;">This is what they'll use to log into their own Vono Passport later.</p>
+                <button class="btn btn-primary" id="btn-bk-manual-client-create" type="button" style="width:100%;">Start their Vono Passport</button>
+                <button class="btn btn-ghost" id="btn-bk-manual-client-newclient-back" type="button" style="width:100%;">Back</button>
+                <p class="screen-sub" id="bk-manual-client-create-status" style="margin:0;">&nbsp;</p>
+              </div>
+              <div id="bk-manual-client-loaded" style="display:none; flex-direction:column; gap:8px;">
+                <p class="screen-sub" id="bk-manual-client-summary" style="margin:0;">&nbsp;</p>
+                <button class="btn btn-ghost" id="btn-bk-manual-client-clear" type="button" style="width:100%;">Remove</button>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <p class="eyebrow-mini">Services</p>
+                <div id="bk-manual-services-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <div class="field" style="flex:1;"><label>Date</label><div class="input-row"><input id="bk-manual-date" type="date"></div></div>
+                <div class="field" style="flex:1;"><label>Start time</label><div class="input-row"><input id="bk-manual-time" type="time"></div></div>
+              </div>
+              <p class="screen-sub" id="bk-manual-conflict-note" style="margin:0; display:none; color:var(--behind);"></p>
+              <p class="screen-sub" id="bk-manual-total" style="margin:0;">&nbsp;</p>
+              <button class="btn btn-primary" id="btn-bk-manual-save" type="button">Save appointment</button>
+              <button class="btn btn-ghost" id="btn-bk-manual-cancel" type="button">Cancel</button>
+              <p class="screen-sub" id="bk-manual-save-status" style="margin:0;">&nbsp;</p>
+            </div>
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                  <p class="eyebrow-mini" style="margin:0;">Upcoming appointments</p>
+                  <button type="button" class="link-btn" id="btn-bk-view-calendar" style="padding:0;">View calendar</button>
+                </div>
+                <div id="bk-appts-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+                <p class="screen-sub" id="bk-appts-empty" style="display:none;">Nothing booked yet.</p>
+              </div>
+              <details class="bk-more" id="bk-lookup-details">
+                <summary>Look up a client</summary>
               <div class="card" id="bk-lookup-card" style="display:flex; flex-direction:column; gap:12px;">
                 <div>
                   <p class="eyebrow-mini2" style="margin:0;">Look up a client</p>
@@ -1339,60 +1558,7 @@
                   <button class="btn btn-ghost" id="btn-bk-lookup-clear" type="button" style="width:100%;">Remove</button>
                 </div>
               </div>
-              <button class="btn btn-outline" id="btn-bk-manual-open" type="button">Add an appointment</button>
-              <div style="display:flex; flex-direction:column; gap:10px;">
-                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                  <p class="eyebrow-mini" style="margin:0;">Upcoming appointments</p>
-                  <button type="button" class="link-btn" id="btn-bk-view-calendar" style="padding:0;">View calendar</button>
-                </div>
-                <div id="bk-appts-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-                <p class="screen-sub" id="bk-appts-empty" style="display:none;">Nothing booked yet.</p>
-              </div>
-              <div class="card" id="bk-manual-card" style="display:none; flex-direction:column; gap:14px;">
-              <div>
-                <p class="eyebrow-mini2" style="margin:0;">Add an appointment</p>
-                <p class="screen-sub" style="margin:4px 0 0;">For a client booking in person, by phone, or whose phone's lost or broken. Saved the same as an online booking.</p>
-              </div>
-              <div id="bk-manual-client-search">
-                <button class="btn btn-primary" id="btn-bk-manual-client-scan" type="button" style="width:100%;">Scan their QR code</button>
-                <div class="field" style="margin-top:12px;"><label>Or type their passport code</label><div class="input-row"><input id="bk-manual-client-code" type="text" placeholder="Their personal code" data-lookup-field="1"></div></div>
-                <button class="btn btn-outline" id="btn-bk-manual-client-lookup" type="button" style="margin-top:8px; width:100%;">Look up</button>
-                <button class="btn btn-ghost" id="btn-bk-manual-client-newclient" type="button" style="margin-top:6px; width:100%;">First visit? Start their Vono Passport</button>
-                <p class="screen-sub" id="bk-manual-client-status" style="margin-top:6px;">&nbsp;</p>
-              </div>
-              <div id="bk-manual-client-scanpanel" style="display:none; flex-direction:column; gap:10px;">
-                <div style="position:relative; border-radius:12px; overflow:hidden; background:#000; aspect-ratio:1/1; max-width:280px; margin:0 auto; width:100%;">
-                  <video id="bk-manual-scan-video" playsinline autoplay muted style="width:100%; height:100%; object-fit:cover; display:block;"></video>
-                </div>
-                <p class="screen-sub" id="bk-manual-scan-status" style="margin:0; text-align:center;">Point the camera at their Vono Passport QR code.</p>
-                <button class="btn btn-ghost" id="btn-bk-manual-scan-cancel" type="button" style="width:100%;">Enter their code manually instead</button>
-              </div>
-              <div id="bk-manual-client-newname" style="display:none; flex-direction:column; gap:10px;">
-                <div class="field"><label>Client's name</label><div class="input-row"><input id="bk-manual-client-new-name" type="text" placeholder="e.g. Jordan Smith"></div></div>
-                <div class="field"><label>Their passport code</label><div class="input-row"><input id="bk-manual-client-new-code" type="text" placeholder="e.g. jordan-47"></div></div>
-                <p class="screen-sub" style="margin:0;">This is what they'll use to log into their own Vono Passport later.</p>
-                <button class="btn btn-primary" id="btn-bk-manual-client-create" type="button" style="width:100%;">Start their Vono Passport</button>
-                <button class="btn btn-ghost" id="btn-bk-manual-client-newclient-back" type="button" style="width:100%;">Back</button>
-                <p class="screen-sub" id="bk-manual-client-create-status" style="margin:0;">&nbsp;</p>
-              </div>
-              <div id="bk-manual-client-loaded" style="display:none; flex-direction:column; gap:8px;">
-                <p class="screen-sub" id="bk-manual-client-summary" style="margin:0;">&nbsp;</p>
-                <button class="btn btn-ghost" id="btn-bk-manual-client-clear" type="button" style="width:100%;">Remove</button>
-              </div>
-              <div style="display:flex; flex-direction:column; gap:8px;">
-                <p class="eyebrow-mini">Services</p>
-                <div id="bk-manual-services-list" style="display:flex; flex-direction:column; gap:6px;"></div>
-              </div>
-              <div style="display:flex; gap:8px;">
-                <div class="field" style="flex:1;"><label>Date</label><div class="input-row"><input id="bk-manual-date" type="date"></div></div>
-                <div class="field" style="flex:1;"><label>Start time</label><div class="input-row"><input id="bk-manual-time" type="time"></div></div>
-              </div>
-              <p class="screen-sub" id="bk-manual-conflict-note" style="margin:0; display:none; color:var(--behind);"></p>
-              <p class="screen-sub" id="bk-manual-total" style="margin:0;">&nbsp;</p>
-              <button class="btn btn-primary" id="btn-bk-manual-save" type="button">Save appointment</button>
-              <button class="btn btn-ghost" id="btn-bk-manual-cancel" type="button">Cancel</button>
-              <p class="screen-sub" id="bk-manual-save-status" style="margin:0;">&nbsp;</p>
-            </div>
+              </details>
             </div>
 
             <div class="bk-pane" data-bk="services" id="bk-services-section" style="gap:10px;">
@@ -2092,7 +2258,7 @@
         <svg viewBox="0 0 24 24" fill="none"><path d="M4 11.2 12 4.5l8 6.7V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1v-7.8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
         <span>Home</span>
       </button>
-      <button class="tab-btn active" data-tabbtn="pace">
+      <button class="tab-btn" data-tabbtn="pace">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Pace</span>
       </button>
@@ -2976,12 +3142,19 @@ document.querySelectorAll('#booking-mode-toggle .mode-btn').forEach(btn=>{
 });
 function showTab(name){
   window.__activeScanStoppers.forEach(fn => { try{ fn(); }catch(e){} });
-  if (!isStudent() && (name === 'pace' || name === 'ledger')) name = 'home';
-  if (isStudent() && name === 'home') name = 'pace';
+  if (!isStudent() && (name === 'pace' || name === 'ledger' || name === 'shome')) name = 'home';
+  if (isStudent() && name === 'shome') name = 'home';
   if (isStudent() && (name === 'booking' || name === 'business')) name = 'coach';
-  document.querySelectorAll('.tab-pane').forEach(p=> p.classList.toggle('show', p.dataset.tab===name));
-  document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tabbtn===name));
-  if (name === 'home' && window.initHomeTab) window.initHomeTab();
+  // Students see their own Home pane under the shared Home tab button, and Pace (opened from
+  // that Home) keeps the Home button lit.
+  const paneName = (isStudent() && name === 'home') ? 'shome' : name;
+  const btnName = (isStudent() && name === 'pace') ? 'home' : name;
+  document.querySelectorAll('.tab-pane').forEach(p=> p.classList.toggle('show', p.dataset.tab===paneName));
+  document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tabbtn===btnName));
+  if (name === 'home'){
+    if (isStudent()){ if (window.initStudentHome) window.initStudentHome(); }
+    else if (window.initHomeTab) window.initHomeTab();
+  }
   if (name === 'ledger') enterLedgerTab();
   if (name === 'booking' || name === 'business') applyAccessGating();
   if (name === 'booking'){
@@ -3267,6 +3440,147 @@ document.getElementById('btn-bk-landing-dismiss').addEventListener('click', ()=>
     if (Date.now() - lastInitAt > 30000) window.initHomeTab();
   });
 })();
+/* =========================================================
+   STUDENT HOME TAB (students only)
+   First tab for a student. Reads what Pace and Ledger already hold -- saved
+   hours, services, weekly schedule, breaks, technique ratings -- and shows it
+   in one place. Before any hours are entered it shows a three-step setup
+   checklist instead. Greeting uses the phone's own clock/time zone, same
+   rules as the professional Home.
+   ========================================================= */
+(function(){
+  const root = document.getElementById('tab-shome');
+  function greetingFor(d){ const h = d.getHours(); if (h >= 5 && h < 12) return 'Good morning'; if (h >= 12 && h < 17) return 'Good afternoon'; return 'Good evening'; }
+  function firstName(){ const n = ((profile && profile.name) || '').trim(); return n ? n.split(/\s+/)[0] : ''; }
+  function fmtLong(iso){ try{ return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }catch(e){ return iso; } }
+  function fmtShort(iso){ try{ return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric'}); }catch(e){ return iso; } }
+  function daysBetweenIso(a, b){ return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000); }
+  const SETUP_STEPS = [
+    { key:'hours', title:'Add your hours', sub:'Copy them from your school report.', cta:'Add my hours' },
+    { key:'services', title:'Add your services', sub:'Track what your program requires.', cta:'Add my services' },
+    { key:'rate', title:'Rate your first skill', sub:'Start your Ledger. It stays yours.', cta:'Rate my first skill' }
+  ];
+  let nextStepKey = 'hours';
+  function render(){
+    if (!profile) return;
+    const now = new Date();
+    const first = firstName();
+    root.querySelector('#shome-greet').textContent = greetingFor(now) + (first ? ', ' + first : '');
+    const pace = window.__ahcPaceSummary ? window.__ahcPaceSummary() : { total:0 };
+    const svc = window.__ahcServicesSummary ? window.__ahcServicesSummary() : { total:0, done:0 };
+    const techs = Array.isArray(profile.techniques) ? profile.techniques : [];
+    const rated = techs.filter(t=> t && t.rated).length;
+    const unrated = techs.length - rated;
+    const done = { hours: pace.total > 0, services: svc.total > 0, rate: rated > 0 };
+    const doneCount = Object.keys(done).filter(k=> done[k]).length;
+    const nothingDone = doneCount === 0;
+    root.querySelector('#shome-headline').textContent = nothingDone ? 'Welcome to Vono.' : "Let's make today count.";
+    root.querySelector('#shome-sub').hidden = !nothingDone;
+
+    // Setup checklist: shown until hours are in, so a new student has one obvious next step.
+    const setupCard = root.querySelector('#shome-setup');
+    setupCard.hidden = done.hours;
+    if (!done.hours){
+      const firstUndone = SETUP_STEPS.find(st=> !done[st.key]);
+      nextStepKey = firstUndone ? firstUndone.key : 'hours';
+      root.querySelector('#shome-setup-count').textContent = doneCount + ' of 3 done';
+      root.querySelector('#shome-setup-bar').style.width = Math.max(4, Math.round(doneCount / 3 * 100)) + '%';
+      const stepsEl = root.querySelector('#shome-steps');
+      stepsEl.innerHTML = '';
+      SETUP_STEPS.forEach((st, i)=>{
+        const row = document.createElement('div');
+        row.className = 'shome-step' + (done[st.key] ? ' done' : (st.key === nextStepKey ? ' next' : ''));
+        const dot = document.createElement('div'); dot.className = 'shome-step-dot'; dot.textContent = done[st.key] ? '\u2713' : String(i + 1);
+        const text = document.createElement('div');
+        const t = document.createElement('strong'); t.textContent = st.title;
+        const sub = document.createElement('span'); sub.className = 'sub'; sub.textContent = st.sub;
+        text.appendChild(t); text.appendChild(sub);
+        row.appendChild(dot); row.appendChild(text);
+        stepsEl.appendChild(row);
+      });
+      root.querySelector('#btn-shome-setup-cta').textContent = (SETUP_STEPS.find(st=> st.key === nextStepKey) || SETUP_STEPS[0]).cta;
+    }
+
+    // Pace card
+    const paceCard = root.querySelector('#shome-pace');
+    paceCard.hidden = !done.hours;
+    root.querySelector('#shome-stats').hidden = !done.hours;
+    if (done.hours){
+      const pct = Math.min(100, Math.round((pace.earned / pace.total) * 100));
+      const color = pace.behind ? 'var(--behind)' : 'var(--brass)';
+      const ring = root.querySelector('#shome-ring');
+      ring.style.strokeDashoffset = (2 * Math.PI * 50) * (1 - pct / 100);
+      ring.style.stroke = color;
+      const pctEl = root.querySelector('#shome-pct'); pctEl.textContent = pct + '%'; pctEl.style.color = color;
+      const chip = root.querySelector('#shome-chip');
+      chip.textContent = pace.behind ? 'Behind pace' : 'On pace';
+      chip.className = 'chip-status ' + (pace.behind ? 'behind' : 'good');
+      root.querySelector('#shome-hours').innerHTML = '';
+      const hrsEl = root.querySelector('#shome-hours');
+      hrsEl.appendChild(document.createTextNode(Math.round(pace.earned).toLocaleString() + ' '));
+      const small = document.createElement('span'); small.style.cssText = 'font-size:13px; color:var(--muted); font-weight:600;';
+      small.textContent = 'of ' + Math.round(pace.total).toLocaleString() + ' hrs'; hrsEl.appendChild(small);
+      const gradEl = root.querySelector('#shome-grad');
+      gradEl.textContent = pace.projected ? fmtLong(pace.projected) : '-';
+      gradEl.style.color = color;
+      const age = pace.asOf ? daysBetweenIso(pace.asOf, localIsoDate(now)) : 0;
+      const asofEl = root.querySelector('#shome-asof');
+      asofEl.textContent = age > 14 ? ('Your hours are ' + age + ' days old. Update them from your latest report.') : ('Hours as of ' + fmtShort(pace.asOf));
+      asofEl.style.color = age > 14 ? 'var(--brass)' : '';
+
+      // Services + this-week cards
+      const big = root.querySelector('#shome-svc-big'); big.innerHTML = '';
+      const barWrap = root.querySelector('#shome-svc-bar-wrap');
+      const addBtn = root.querySelector('#btn-shome-svc-add');
+      if (svc.total > 0){
+        big.appendChild(document.createTextNode(Math.round(svc.done).toLocaleString() + ' '));
+        const sm = document.createElement('small'); sm.textContent = 'of ' + Math.round(svc.total).toLocaleString(); big.appendChild(sm);
+        root.querySelector('#shome-svc-bar').style.width = Math.min(100, Math.round(svc.done / svc.total * 100)) + '%';
+        barWrap.style.display = ''; addBtn.style.display = 'none';
+      } else {
+        big.textContent = 'Not set up';
+        barWrap.style.display = 'none'; addBtn.style.display = '';
+      }
+      const wk = root.querySelector('#shome-week-big'); wk.innerHTML = '';
+      wk.appendChild(document.createTextNode(String(Math.round(pace.weekly * 10) / 10) + ' '));
+      const wsm = document.createElement('small'); wsm.textContent = 'hrs scheduled'; wk.appendChild(wsm);
+      root.querySelector('#shome-week-note').textContent = pace.nextBreak ? ('Next break: ' + pace.nextBreak.label + ', ' + fmtShort(pace.nextBreak.start)) : 'No breaks added';
+    }
+    root.querySelector('#shome-ledger-sub').textContent = !techs.length ? 'Rate your skills' : (rated === 0 ? 'Rate your first skill' : (unrated > 0 ? (unrated + (unrated === 1 ? ' skill' : ' skills') + ' to rate') : 'All skills rated'));
+  }
+  window.initStudentHome = function(){ render(); };
+  function setupCta(){
+    if (nextStepKey === 'rate'){ showTab('ledger'); return; }
+    showTab('pace');
+    if (nextStepKey === 'services'){
+      const b = document.querySelector('#pace-mode-toggle [data-pace-mode="services"]'); if (b) b.click();
+    }
+  }
+  root.querySelector('#btn-shome-setup-cta').addEventListener('click', setupCta);
+  root.querySelector('#btn-shome-update').addEventListener('click', ()=>{ showTab('pace'); });
+  root.querySelector('#btn-shome-svc-add').addEventListener('click', ()=>{
+    showTab('pace');
+    const b = document.querySelector('#pace-mode-toggle [data-pace-mode="services"]'); if (b) b.click();
+  });
+  root.addEventListener('click', e=>{
+    const el = e.target.closest('[data-shome-go]');
+    if (el) showTab(el.dataset.shomeGo);
+  });
+  root.querySelector('#btn-shome-share').addEventListener('click', async ()=>{
+    const url = 'https://vonoapp.com';
+    const text = 'Vono is free for every barbering and cosmetology student. Track your hours, practice, and build your skills.';
+    try{
+      if (navigator.share){ await navigator.share({ title: 'Vono', text, url }); return; }
+    }catch(e){ if (e && e.name === 'AbortError') return; }
+    try{
+      await navigator.clipboard.writeText(text + ' ' + url);
+      showToast('Link copied. Paste it to a classmate.');
+    }catch(e){ showToast('Send them to vonoapp.com'); }
+  });
+  document.addEventListener('visibilitychange', ()=>{
+    if (!document.hidden && root.classList.contains('show')) render();
+  });
+})();
 function applyRoleVisibility(){
   const show = isStudent();
   const paceBtn = document.querySelector('.tab-btn[data-tabbtn="pace"]');
@@ -3274,8 +3588,8 @@ function applyRoleVisibility(){
   const bookingBtn = document.querySelector('.tab-btn[data-tabbtn="booking"]');
   const businessBtn = document.querySelector('.tab-btn[data-tabbtn="business"]');
   const homeBtn = document.querySelector('.tab-btn[data-tabbtn="home"]');
-  if (homeBtn) homeBtn.style.display = show ? 'none' : '';
-  if (paceBtn) paceBtn.style.display = show ? '' : 'none';
+  if (homeBtn) homeBtn.style.display = '';
+  if (paceBtn) paceBtn.style.display = 'none';
   if (ledgerBtn) ledgerBtn.style.display = show ? '' : 'none';
   if (bookingBtn) bookingBtn.style.display = show ? 'none' : '';
   if (businessBtn) businessBtn.style.display = show ? 'none' : '';
@@ -3712,6 +4026,29 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const currentDate = simulate(asOf, earned, total, P().schedule, blocked, partials, null, 0);
     return isoDate(currentDate);
   };
+  // Read-only snapshot for the student Home screen (uses the saved Hours numbers, so it
+  // works before the Pace tab itself has ever been opened this session).
+  window.__ahcPaceSummary = function(){
+    const total = parseFloat(P().total)||0;
+    const earned = parseFloat(P().earned)||0;
+    const asOf = P().asOf || todayIso();
+    const sched = P().schedule || {};
+    const weekly = DAYS.reduce((sum,d)=> sum + (Number(sched[d])||0), 0);
+    let projected = null, behind = false;
+    if (total > 0){
+      const breaks = P().breaks || [];
+      const absences = P().absences || [];
+      const blocked = breaks.concat(absences.filter(a=>a.type==='full').map(a=>({start:a.start, end:a.end})));
+      const partials = absences.filter(a=>a.type==='partial').map(a=>({date:a.date, amount:a.amount}));
+      const baseline = simulate(asOf, earned, total, sched, breaks, [], null, 0);
+      const current = simulate(asOf, earned, total, sched, blocked, partials, null, 0);
+      projected = isoDate(current);
+      behind = current > baseline;
+    }
+    const today = todayIso();
+    const nextBreak = (P().breaks || []).filter(b=> b.end >= today).sort((a,b)=> a.start < b.start ? -1 : 1)[0] || null;
+    return { total, earned, asOf, weekly, projected, behind, nextBreak };
+  };
   window.initPaceTab = function(){
     root.querySelector('#in-total').value = P().total || '';
     root.querySelector('#in-earned').value = P().earned || '';
@@ -3778,6 +4115,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   // equals "as of" and got excluded, making the total look stuck. The
   // baseline is a number the student typed in, never derived from the log,
   // so there's no real double-counting risk here -- just add everything up.
+  window.__ahcServicesSummary = function(){
+    const total = parseFloat(S().total)||0;
+    const earned = parseFloat(S().earned)||0;
+    const added = (S().log||[]).reduce((sum,e)=> sum + (e.count||0), 0);
+    return { total, done: earned + added };
+  };
   function completedToDate(){
     const earned = parseFloat(root.querySelector('#svc-earned').value)||0;
     const added = (S().log||[]).reduce((sum,e)=> sum + (e.count||0), 0);
@@ -5503,7 +5846,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   function renderServices(){
     const list = root.querySelector('#bk-services-list');
     const svcs = profile.bookingServices || [];
-    list.innerHTML = svcs.length ? svcs.map(s=> `<div class="detail-row" style="align-items:flex-start;"><span style="display:flex; flex-direction:column; gap:3px;"><span>${s.name}: $${s.price} &middot; ${fmtDuration(s.duration)}</span>${s.description ? `<span class="screen-sub" style="font-weight:400; text-align:left;">${s.description}</span>` : ''}${s.vipPrice ? `<span class="vip-badge">✨ VIP $${s.vipPrice}</span>` : ''}</span><span style="display:flex; gap:10px; flex:none;"><button type="button" class="link-btn" data-edit-service="${s.id}">Edit</button><button type="button" class="link-btn" data-remove-service="${s.id}">Remove</button></span></div>`).join('') : '<p class="screen-sub" style="margin:0;">No services added yet. Add at least one below so clients have something to book.</p>';
+    list.innerHTML = svcs.length ? svcs.map(s=> `<div class="bk-svc"><div class="bk-svc-main"><div class="bk-svc-name">${bkEsc(s.name)}</div><div class="bk-svc-meta">${bkEsc(fmtDuration(s.duration))}${s.description ? ' \u00b7 '+bkEsc(s.description) : ''}</div>${s.vipPrice ? `<span class="vip-badge">\u2728 VIP $${bkEsc(s.vipPrice)}</span>` : ''}</div><div class="bk-svc-side"><div class="bk-svc-price">$${bkEsc(s.price)}</div><div class="bk-svc-actions"><button type="button" class="link-btn" data-edit-service="${bkEsc(s.id)}">Edit</button><button type="button" class="link-btn muted" data-remove-service="${bkEsc(s.id)}">Remove</button></div></div></div>`).join('') : '<p class="screen-sub" style="margin:0;">No services added yet. Add at least one below so clients have something to book.</p>';
   }
   function resetServiceForm(){
     editingServiceId = null;
@@ -5675,6 +6018,34 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       note.textContent = 'Select and copy the link above.';
     }
   });
+  root.querySelector('#btn-bk-share-link').addEventListener('click', async ()=>{
+    const note = root.querySelector('#bk-copy-note');
+    const url = root.querySelector('#bk-link-input').value;
+    if (!url) return;
+    if (navigator.share){
+      try{ await navigator.share({ title: 'Book with me on Vono', text: 'Book your next appointment with me:', url }); return; }
+      catch(e){ if (e && e.name === 'AbortError') return; }
+    }
+    try{ await navigator.clipboard.writeText(url); note.textContent = 'Link copied. Paste it into a text or post.'; }
+    catch(e){ root.querySelector('#bk-link-input').select(); note.textContent = 'Select and copy the link above.'; }
+  });
+  root.querySelector('#btn-bk-qr-enlarge').addEventListener('click', ()=>{
+    const canvas = root.querySelector('#bk-qr-canvas');
+    if (!canvas || !profileCode) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'bk-qr-lightbox';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-label', 'Booking QR code');
+    const box = document.createElement('div');
+    const img = document.createElement('img');
+    img.alt = 'Your booking QR code';
+    img.src = canvas.toDataURL('image/png');
+    const cap = document.createElement('span');
+    cap.textContent = 'Tap anywhere to close';
+    box.appendChild(img); box.appendChild(cap); overlay.appendChild(box);
+    overlay.addEventListener('click', ()=> overlay.remove());
+    document.body.appendChild(overlay);
+  });
   function renderSetupFromProfile(){
     root.querySelector('#bk-enable-toggle').checked = !!profile.bookingEnabled;
     updateEnabledVisibility();
@@ -5694,6 +6065,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const on = root.querySelector('#bk-enable-toggle').checked;
     root.querySelector('#bk-setup-body').style.display = on ? 'flex' : 'none';
     root.querySelector('#bk-enable-hint').style.display = on ? 'none' : 'block';
+    const sw = root.querySelector('.bk-switch');
+    if (sw) sw.classList.toggle('on', on);
+    const swl = root.querySelector('#bk-switch-label');
+    if (swl) swl.textContent = on ? 'Booking is on' : 'Booking is off';
     if (on) showBookingSubtab(getActiveBookingMode());
   }
   root.querySelector('#bk-enable-toggle').addEventListener('change', updateEnabledVisibility);
@@ -5720,6 +6095,58 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     "I have to cancel your appointment. Sorry for the short notice.",
     "Just confirming I'll see you at your scheduled time."
   ];
+  function bkEsc(v){ return String(v==null?'':v).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function bkTimeParts(hhmm){
+    const t = fmtTimeBk(hhmm); // "9:00 AM"
+    const m = /^(\d+:\d+)\s*(AM|PM)$/.exec(t);
+    return m ? { clock:m[1], period:m[2] } : { clock:t, period:'' };
+  }
+  function bkMinutes(hhmm){ const p = String(hhmm||'0:0').split(':').map(Number); return (p[0]||0)*60 + (p[1]||0); }
+  function bkDayLabel(iso, today){
+    const d = new Date(iso+'T00:00:00');
+    const label = d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+    if (iso === today) return { title:'Today', sub:label };
+    const tm = new Date(today+'T00:00:00'); tm.setDate(tm.getDate()+1);
+    if (iso === localIsoDate(tm)) return { title:'Tomorrow', sub:label };
+    return { title:label, sub:'' };
+  }
+  function renderBkAppt(a, today, nowMin){
+    const svcNames = (a.services||[]).map(s=>s.name).join(' + ');
+    const mins = a.end_time ? bkMinutes(a.end_time) - bkMinutes(a.start_time) : 0;
+    const detail = [svcNames, '$'+a.total_price, mins>0 ? mins+' min' : ''].filter(Boolean).join(' \u00b7 ');
+    const tp = bkTimeParts(a.start_time);
+    const isNow = a.appt_date === today && nowMin >= bkMinutes(a.start_time) && nowMin < (a.end_time ? bkMinutes(a.end_time) : bkMinutes(a.start_time)+30);
+    const id = bkEsc(a.id);
+    const msgButtons = BARBER_CANNED_MESSAGES.map((m,i)=>`<button type="button" class="btn btn-outline" data-send-msg="${id}" data-msg-idx="${i}" style="text-align:left;">${bkEsc(m)}</button>`).join('');
+    // Messaging a client is a paid-plan feature (Vono Pro and above) -- Basic
+    // can book and manage appointments, just not send/receive client messages.
+    const notifyMarkup = hasActiveAccess() ? `
+        <button type="button" class="link-btn" data-text-toggle="${id}">Notify</button>` : `
+        <button type="button" class="link-btn muted" data-notify-locked="${id}">Notify</button>`;
+    const notifyPanel = hasActiveAccess() ? `
+      <div class="bk-msg-panel" data-msg-panel="${id}">
+        <p class="screen-sub" style="margin:0;">Send a quick notification to ${bkEsc(a.client_name)} about this appointment.</p>
+        ${msgButtons}
+        <p class="screen-sub" data-msg-status="${id}" style="margin:0;">&nbsp;</p>
+      </div>` : `
+      <p class="screen-sub" data-notify-locked-note="${id}" style="display:none; margin-top:8px;">Messaging clients needs Vono Pro or Studio. <button type="button" class="link-btn" data-notify-locked-cta="${id}" style="padding:0;">Try it free</button></p>`;
+    return `<div class="bk-appt${isNow?' now':''}" data-appt-row="${id}">
+      <div class="bk-appt-time"><b>${bkEsc(tp.clock)}</b><i>${isNow ? 'NOW' : bkEsc(tp.period)}</i></div>
+      <div class="bk-appt-main">
+        <div class="bk-appt-name"><span>${bkEsc(a.client_name)}</span>${a.changed_by === 'client' ? '<span class="bk-tag">CHANGED BY CLIENT</span>' : ''}</div>
+        <div class="bk-appt-svc">${bkEsc(detail)}</div>
+        <div class="bk-appt-actions" data-appt-actions="${id}">${notifyMarkup}
+          <button type="button" class="link-btn danger" data-cancel-appt="${id}">Cancel</button>
+        </div>
+        <div class="bk-confirm" data-cancel-confirm="${id}" style="display:none;">
+          <span>Cancel this appointment?</span>
+          <button type="button" class="link-btn danger" data-cancel-yes="${id}">Yes, cancel it</button>
+          <button type="button" class="link-btn" data-cancel-no="${id}">Keep it</button>
+        </div>
+        ${notifyPanel}
+      </div>
+    </div>`;
+  }
   async function loadAppointments(){
     const listEl = root.querySelector('#bk-appts-list');
     const emptyEl = root.querySelector('#bk-appts-empty');
@@ -5728,32 +6155,20 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const { data, error } = await supabaseClient.from('appointments').select('*').eq('barber_code', profileCode).eq('status','booked');
       if (error) throw error;
       const today = todayIso();
+      const now = new Date();
+      const nowMin = now.getHours()*60 + now.getMinutes();
       const appts = (data || []).filter(a=> a.appt_date >= today).sort((a,b)=> (a.appt_date+a.start_time) < (b.appt_date+b.start_time) ? -1 : 1);
       emptyEl.style.display = appts.length ? 'none' : 'block';
-      listEl.innerHTML = appts.map(a=>{
-        const dateLabel = new Date(a.appt_date+'T00:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
-        const svcNames = (a.services||[]).map(s=>s.name).join(', ');
-        const msgButtons = BARBER_CANNED_MESSAGES.map((m,i)=>`<button type="button" class="btn btn-outline" data-send-msg="${a.id}" data-msg-idx="${i}" style="text-align:left;">${m}</button>`).join('');
-        // Messaging a client is a paid-plan feature (Vono Pro and above) -- Basic
-        // can book and manage appointments, just not send/receive client messages.
-        const notifyClientMarkup = hasActiveAccess() ? `
-          <button type="button" class="link-btn" data-text-toggle="${a.id}" style="padding:0;">Notify client</button>
-          </div>
-          <div data-msg-panel="${a.id}" style="display:none; flex-direction:column; gap:6px; margin-top:6px; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--paper);">
-            <p class="screen-sub" style="margin:0;">Send a quick notification to ${a.client_name} about this appointment.</p>
-            ${msgButtons}
-            <p class="screen-sub" data-msg-status="${a.id}" style="margin:0;">&nbsp;</p>
-          </div>` : `
-          <button type="button" class="link-btn" data-notify-locked="${a.id}" style="padding:0; color:var(--muted);">Notify client</button>
-          </div>
-          <p class="screen-sub" data-notify-locked-note="${a.id}" style="display:none; margin-top:6px;">Messaging clients needs Vono Pro or Studio. <button type="button" class="link-btn" data-notify-locked-cta="${a.id}" style="padding:0;">Try it free</button></p>`;
-        return `<div class="detail-card" style="gap:4px;">
-          <strong>${dateLabel}, ${a.start_time}</strong>
-          <span class="screen-sub" style="margin:0;">${a.client_name}: ${svcNames}, $${a.total_price}</span>
-          <div class="btn-row" style="gap:14px; margin-top:2px;">
-            <button type="button" class="link-btn" data-cancel-appt="${a.id}" style="color:var(--behind); padding:0;">Cancel appointment</button>
-            ${notifyClientMarkup}
-        </div>`;
+      const days = [];
+      appts.forEach(a=>{
+        let d = days[days.length-1];
+        if (!d || d.date !== a.appt_date){ d = { date:a.appt_date, items:[] }; days.push(d); }
+        d.items.push(a);
+      });
+      listEl.innerHTML = days.map(d=>{
+        const lab = bkDayLabel(d.date, today);
+        const count = d.items.length + ' booked';
+        return `<div class="bk-day"><div class="bk-day-head"><strong>${bkEsc(lab.title)}</strong><span>${bkEsc((lab.sub ? lab.sub+' \u00b7 ' : '') + count)}</span></div>${d.items.map(a=>renderBkAppt(a, today, nowMin)).join('')}</div>`;
       }).join('');
     }catch(e){
       console.warn('load appointments failed', e);
@@ -5777,8 +6192,24 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       return;
     }
     if (cancelId){
+      const conf = root.querySelector(`[data-cancel-confirm="${cancelId}"]`);
+      const acts = root.querySelector(`[data-appt-actions="${cancelId}"]`);
+      if (conf) conf.style.display = 'flex';
+      if (acts) acts.style.display = 'none';
+      return;
+    }
+    const cancelNoId = e.target.dataset.cancelNo;
+    if (cancelNoId){
+      const conf = root.querySelector(`[data-cancel-confirm="${cancelNoId}"]`);
+      const acts = root.querySelector(`[data-appt-actions="${cancelNoId}"]`);
+      if (conf) conf.style.display = 'none';
+      if (acts) acts.style.display = 'flex';
+      return;
+    }
+    const cancelYesId = e.target.dataset.cancelYes;
+    if (cancelYesId){
       try{
-        await supabaseClient.from('appointments').update({ status:'cancelled' }).eq('id', cancelId);
+        await supabaseClient.from('appointments').update({ status:'cancelled' }).eq('id', cancelYesId);
       }catch(err){ console.warn('cancel failed', err); }
       loadAppointments();
       return;
@@ -6365,6 +6796,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   root.querySelector('#btn-bk-manual-open').addEventListener('click', async ()=>{
     resetManualCard();
     root.querySelector('#bk-manual-card').style.display = 'flex';
+    try{ root.querySelector('#bk-manual-card').scrollIntoView({ behavior:'smooth', block:'nearest' }); }catch(e){}
     root.querySelector('#bk-manual-date').value = todayIso();
     await loadManualExistingAppts();
   });
@@ -8649,7 +9081,7 @@ function enterApp(){
   window.__ahcLandingIntent = null;
   let jumpToJobMessages = false;
   try{ jumpToJobMessages = !!new URLSearchParams(window.location.search).get('jobmessage'); }catch(e){}
-  showTab((landingIntent === 'jobs' || jumpToJobMessages) ? 'jobs' : (isStudent() ? 'pace' : 'home'));
+  showTab((landingIntent === 'jobs' || jumpToJobMessages) ? 'jobs' : 'home');
   if (jumpToJobMessages){
     if (window.__ahcShowJobsMessages) window.__ahcShowJobsMessages();
     try{
