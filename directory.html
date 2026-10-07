@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono: Find a Pro</title>
-<meta name="app-build" content="2026-10-01T03-48-17Z">
+<meta name="app-build" content="2026-10-08T01-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -1058,11 +1058,21 @@ async function renderBkcSlots(){
 
   let existing = [];
   if (dbAvailable){
+    // Preferred: the get_busy_slots helper returns every booked time for this pro (and only
+    // the times, no names or prices), so the page sees everyone's bookings, not just the
+    // visitor's own. Falls back to the direct lookup if the helper isn't installed yet.
+    let viaRpc = false;
     try{
-      const { data, error } = await supabaseClient.from('appointments').select('*').eq('barber_code', bkc.pro.code).eq('status','booked');
-      if (error) throw error;
-      existing = (data||[]).filter(a=> a.appt_date === bkc.date);
-    }catch(e){ console.warn('load existing appts failed', e); }
+      const { data, error } = await supabaseClient.rpc('get_busy_slots', { p_barber_code: bkc.pro.code, p_from: bkc.date, p_to: bkc.date, p_exclude_id: null });
+      if (!error && Array.isArray(data)){ existing = data; viaRpc = true; }
+    }catch(e){ /* fall through to the direct lookup */ }
+    if (!viaRpc){
+      try{
+        const { data, error } = await supabaseClient.from('appointments').select('*').eq('barber_code', bkc.pro.code).eq('status','booked');
+        if (error) throw error;
+        existing = (data||[]).filter(a=> a.appt_date === bkc.date);
+      }catch(e){ console.warn('load existing appts failed', e); }
+    }
   }
   const busy = existing.map(a=> [toMinutes(a.start_time), toMinutes(a.end_time)]);
   const nowMin = (bkc.date === todayIso()) ? (new Date().getHours()*60 + new Date().getMinutes()) : -1;

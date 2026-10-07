@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-07T23-30-00Z">
+<meta name="app-build" content="2026-10-08T01-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -132,6 +132,28 @@
   .jobs-pane.show{ display:flex; }
   .jobs-listing-card{ display:flex; flex-direction:column; gap:6px; border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:12px 14px; cursor:pointer; }
   .jobs-listing-card:hover{ border-color:var(--brass); }
+  /* ---- Appointment edit sheet (pro) ---- */
+  .sheet-overlay{ position:fixed; inset:0; z-index:400; background:rgba(5,9,15,0.72); display:flex; align-items:flex-end; justify-content:center; }
+  .sheet-overlay[hidden]{ display:none; }
+  .sheet{ width:100%; max-width:460px; max-height:92vh; max-height:92dvh; overflow-y:auto; background:var(--surface); border-top:1px solid var(--brass); border-radius:22px 22px 0 0; padding:10px 20px calc(24px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:14px; }
+  .sheet-grab{ width:44px; height:4px; border-radius:2px; background:var(--line); align-self:center; flex:none; }
+  .sheet-head{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+  .sheet-head h3{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:22px; margin:0; }
+  .aes-client{ display:flex; align-items:center; gap:12px; background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
+  .aes-avatar{ width:38px; height:38px; border-radius:50%; background:var(--line); display:flex; align-items:center; justify-content:center; font-weight:800; flex:none; }
+  .aes-client b{ display:block; font-size:15px; }
+  .aes-client small{ display:block; font-size:12.5px; color:var(--muted); }
+  .aes-chips{ display:flex; gap:8px; flex-wrap:wrap; }
+  .aes-chip{ border:1px solid var(--line); background:transparent; color:var(--ink); font-family:'Public Sans',sans-serif; font-weight:600; font-size:13.5px; padding:8px 14px; border-radius:999px; cursor:pointer; }
+  .aes-chip.time{ border-radius:10px; padding:7px 10px; font-size:13px; font-variant-numeric:tabular-nums; }
+  .aes-chip.on{ background:var(--brass); border-color:var(--brass); color:#241A0C; font-weight:700; }
+  .aes-row{ display:flex; gap:10px; }
+  .aes-row .field{ flex:1; }
+  .aes-note{ font-size:13px; color:var(--behind); margin:0; }
+  .aes-notice{ display:flex; gap:10px; align-items:flex-start; background:var(--good-tint); border:1px solid rgba(111,191,143,0.4); border-radius:12px; padding:10px 12px; font-size:13px; line-height:1.4; }
+  .aes-notice svg{ flex:none; width:18px; height:18px; margin-top:1px; color:var(--good); }
+  .aes-actions{ display:flex; gap:10px; }
+  .aes-actions .btn-outline{ flex:none; padding:14px 20px; }
   /* ---- Booking tab (redesign) ---- */
   #booking-real-content{ display:flex; flex-direction:column; gap:16px; }
   #booking-mode-toggle .mode-btn svg{ display:none; }
@@ -2436,7 +2458,7 @@
         <p class="foot-note-small">Not seeing the message text in a notification? On iPhone, check Settings &rarr; Notifications &rarr; Vono &rarr; Show Previews, and set it to Always.</p>
         <label class="check-row" style="margin-top:10px;">
           <input type="checkbox" id="notify-appt-events-toggle">
-          <span>Notify me when a client books or cancels an appointment</span>
+          <span>Notify me when a client books, changes or cancels an appointment</span>
         </label>
         <p class="foot-note-small">Turn this off if you'd rather not be pinged for these, like after hours. Your other notifications (quick messages) aren't affected.</p>
         <label class="check-row" style="margin-top:10px;">
@@ -2576,11 +2598,33 @@
     <button class="lightbox-nav lightbox-next" id="btn-lightbox-next" type="button" aria-label="Next photo" hidden>&rarr;</button>
     <div class="lightbox-counter" id="lightbox-counter" hidden></div>
   </div>
+  <div id="appt-edit-sheet" class="sheet-overlay" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="aes-title">
+      <div class="sheet-grab"></div>
+      <div class="sheet-head"><h3 id="aes-title">Edit appointment</h3><button type="button" class="link-btn" id="aes-close">Close</button></div>
+      <div class="aes-client"><span class="aes-avatar" id="aes-avatar">?</span><div><b id="aes-client-name">&nbsp;</b><small id="aes-client-meta">&nbsp;</small></div></div>
+      <div><p class="eyebrow-mini" style="margin-bottom:8px;">Services</p><div class="aes-chips" id="aes-services"></div></div>
+      <div class="aes-row">
+        <div class="field"><label for="aes-date">Date</label><div class="input-row"><input id="aes-date" type="date"></div></div>
+        <div class="field"><label for="aes-price">Price ($)</label><div class="input-row"><input id="aes-price" type="number" min="0" step="1" inputmode="decimal"></div></div>
+      </div>
+      <div>
+        <p class="eyebrow-mini" style="margin-bottom:8px;">Time <span style="text-transform:none; letter-spacing:0; font-weight:600;">&middot; open times</span></p>
+        <div class="aes-chips" id="aes-times"></div>
+        <div class="field" style="margin-top:10px;"><label for="aes-time-custom">Or set any time</label><div class="input-row"><input id="aes-time-custom" type="time"></div></div>
+      </div>
+      <p class="aes-note" id="aes-conflict" hidden></p>
+      <div class="aes-notice"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10.3 20a2 2 0 0 0 3.4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div id="aes-notice-text">Your client gets a notification and a message on screen when you save.</div></div>
+      <p class="screen-sub" id="aes-status" style="margin:0;" aria-live="polite"></p>
+      <div class="aes-actions"><button type="button" class="btn btn-primary" id="aes-save">Save changes</button><button type="button" class="btn btn-outline" id="aes-cancel">Cancel</button></div>
+    </div>
+  </div>
   <div id="quick-message-popup" class="lightbox-overlay" style="background:rgba(0,0,0,0.6);" hidden>
     <div style="background:var(--paper); border-radius:16px; padding:24px; max-width:360px; width:100%; display:flex; flex-direction:column; gap:10px;">
       <p class="eyebrow-mini" id="qm-popup-from">&nbsp;</p>
       <p class="foot-note-small" id="qm-popup-count" style="margin:-6px 0 0;" hidden>&nbsp;</p>
-      <p style="font-family:'Libre Franklin',sans-serif; font-weight:600; font-size:16px; line-height:1.45; margin:0;" id="qm-popup-body">&nbsp;</p>
+      <p style="font-family:'Libre Franklin',sans-serif; font-weight:600; font-size:16px; line-height:1.45; margin:0; white-space:pre-line;" id="qm-popup-body">&nbsp;</p>
+      <button class="btn btn-primary" id="qm-popup-view" type="button" style="margin-top:8px;" hidden>View in Booking</button>
       <button class="btn btn-primary" id="qm-popup-clear" type="button" style="margin-top:8px;">Clear</button>
     </div>
   </div>
@@ -6095,6 +6139,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     "I have to cancel your appointment. Sorry for the short notice.",
     "Just confirming I'll see you at your scheduled time."
   ];
+  let bkApptCache = [];
   function bkEsc(v){ return String(v==null?'':v).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function bkTimeParts(hhmm){
     const t = fmtTimeBk(hhmm); // "9:00 AM"
@@ -6133,9 +6178,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     return `<div class="bk-appt${isNow?' now':''}" data-appt-row="${id}">
       <div class="bk-appt-time"><b>${bkEsc(tp.clock)}</b><i>${isNow ? 'NOW' : bkEsc(tp.period)}</i></div>
       <div class="bk-appt-main">
-        <div class="bk-appt-name"><span>${bkEsc(a.client_name)}</span>${a.changed_by === 'client' ? '<span class="bk-tag">CHANGED BY CLIENT</span>' : ''}</div>
+        <div class="bk-appt-name"><span>${bkEsc(a.client_name)}</span>${(a.changed_by === 'client' && a.changed_at && (Date.now() - new Date(a.changed_at).getTime()) < 3*86400000) ? '<span class="bk-tag">CHANGED BY CLIENT</span>' : ''}</div>
         <div class="bk-appt-svc">${bkEsc(detail)}</div>
-        <div class="bk-appt-actions" data-appt-actions="${id}">${notifyMarkup}
+        <div class="bk-appt-actions" data-appt-actions="${id}"><button type="button" class="link-btn" data-edit-appt="${id}">Edit</button>${notifyMarkup}
           <button type="button" class="link-btn danger" data-cancel-appt="${id}">Cancel</button>
         </div>
         <div class="bk-confirm" data-cancel-confirm="${id}" style="display:none;">
@@ -6158,6 +6203,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const now = new Date();
       const nowMin = now.getHours()*60 + now.getMinutes();
       const appts = (data || []).filter(a=> a.appt_date >= today).sort((a,b)=> (a.appt_date+a.start_time) < (b.appt_date+b.start_time) ? -1 : 1);
+      bkApptCache = appts;
       emptyEl.style.display = appts.length ? 'none' : 'block';
       const days = [];
       appts.forEach(a=>{
@@ -6208,10 +6254,24 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
     const cancelYesId = e.target.dataset.cancelYes;
     if (cancelYesId){
+      let cancelled = false;
       try{
-        await supabaseClient.from('appointments').update({ status:'cancelled' }).eq('id', cancelYesId);
+        const { error } = await supabaseClient.from('appointments').update({ status:'cancelled' }).eq('id', cancelYesId);
+        if (error) throw error;
+        cancelled = true;
       }catch(err){ console.warn('cancel failed', err); }
+      // Best-effort: tell the client. Never blocks or undoes the cancellation.
+      if (cancelled){
+        try{ await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: cancelYesId, event: 'cancelled', cancelled_by: 'barber' } }); }
+        catch(err){ console.warn('cancel notification failed', err); }
+      }
       loadAppointments();
+      return;
+    }
+    const editId = e.target.dataset.editAppt;
+    if (editId){
+      const a = bkApptCache.find(x=> String(x.id) === String(editId));
+      if (a) openApptEdit(a);
       return;
     }
     if (toggleId){
@@ -6247,6 +6307,199 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       }
       e.target.disabled = false;
     }
+  });
+  /* ---- Edit an upcoming appointment (pro). Changing the time, services or
+     price saves straight to the appointment and tells the client: a push if
+     they have notifications on, plus a message waiting on screen the next
+     time they open Vono. Times offered are this pro's open times for the
+     chosen day (hours, date overrides, VIP windows), minus every other
+     booked appointment -- this appointment's own slot counts as free. ---- */
+  const aes = { appt:null, chosen:{}, options:[], time:'', customTime:false, busy:[], priceTouched:false, busyDate:null };
+  const aesEl = id => document.getElementById(id);
+  const AES_DAY_KEYS = ['sun','mon','tue','wed','thu','fri','sat'];
+  function aesHoursFor(dateStr){
+    const ov = (profile.bookingOverrides||[]).find(o=>o.date===dateStr);
+    if (ov) return ov;
+    const k = AES_DAY_KEYS[new Date(dateStr+'T00:00:00').getDay()];
+    return (profile.bookingHours||{})[k] || { closed:true };
+  }
+  function aesChosenList(){ return aes.options.filter(o=> aes.chosen[o.name]); }
+  function aesTotals(){
+    const list = aesChosenList();
+    return { price: list.reduce((a,o)=>a+Number(o.price||0),0), mins: list.reduce((a,o)=>a+Number(o.duration||0),0) };
+  }
+  async function aesLoadBusy(date){
+    aes.busy = []; aes.busyDate = date;
+    if (!dbAvailable || !profileCode || !date) return;
+    try{
+      const { data, error } = await supabaseClient.from('appointments').select('*').eq('barber_code', profileCode).eq('status','booked');
+      if (error) throw error;
+      aes.busy = (data||[]).filter(a=> a.appt_date === date && String(a.id) !== String(aes.appt.id));
+    }catch(e){ console.warn('edit: load busy failed', e); }
+  }
+  function aesOverlap(startMin, mins){
+    return aes.busy.find(b=> startMin < toMinutesBk(b.end_time) && (startMin+mins) > toMinutesBk(b.start_time)) || null;
+  }
+  function aesRenderServices(){
+    aesEl('aes-services').innerHTML = aes.options.map(o=>`<button type="button" class="aes-chip${aes.chosen[o.name]?' on':''}" data-aes-svc="${bkEsc(o.name)}">${bkEsc(o.name)} &middot; $${bkEsc(o.price)}</button>`).join('');
+  }
+  function aesRenderTimes(){
+    const date = aesEl('aes-date').value;
+    const box = aesEl('aes-times');
+    const { mins } = aesTotals();
+    if (!date || !mins){ box.innerHTML = '<span class="screen-sub">Pick at least one service.</span>'; return; }
+    const hrs = aesHoursFor(date);
+    const slots = new Set();
+    const addWindow = (open, close)=>{
+      for (let t = toMinutesBk(open); t + mins <= toMinutesBk(close); t += 15){
+        if (!aesOverlap(t, mins)) slots.add(t);
+      }
+    };
+    if (hrs && !hrs.closed) addWindow(hrs.open||'09:00', hrs.close||'18:00');
+    const vip = (profile.vipDates||[]).find(v=>v.date===date);
+    if (vip) addWindow(vip.open, vip.close);
+    const now = new Date();
+    const isToday = date === todayIso();
+    const nowMin = now.getHours()*60 + now.getMinutes();
+    // Keep the appointment's current time on offer when editing the same day.
+    const origMin = toMinutesBk(aes.appt.start_time);
+    if (date === aes.appt.appt_date && !aesOverlap(origMin, mins)) slots.add(origMin);
+    if (aes.customTime && aes.time && !aesOverlap(toMinutesBk(aes.time), mins)) slots.add(toMinutesBk(aes.time));
+    const sorted = [...slots].filter(t=> !isToday || t >= nowMin || t === origMin).sort((a,b)=>a-b);
+    if (aes.time && !aes.customTime && !sorted.includes(toMinutesBk(aes.time))) aes.time = '';
+    box.innerHTML = sorted.length
+      ? sorted.map(t=>{ const hh = toHHMMBk(t); return `<button type="button" class="aes-chip time${aes.time===hh?' on':''}" data-aes-time="${hh}">${bkEsc(fmtTimeBk(hh))}</button>`; }).join('')
+      : '<span class="screen-sub">No open times that day. Pick another day, or set a time below.</span>';
+    aesCheckConflict();
+  }
+  function aesCheckConflict(){
+    const note = aesEl('aes-conflict');
+    const { mins } = aesTotals();
+    note.hidden = true; note.textContent = '';
+    if (!aes.time || !mins) return;
+    const clash = aesOverlap(toMinutesBk(aes.time), mins);
+    if (clash){
+      note.hidden = false;
+      note.textContent = `That time overlaps ${clash.client_name}'s appointment (${fmtTimeBk(clash.start_time)}).`;
+    }
+  }
+  function aesSyncPrice(){
+    if (!aes.priceTouched) aesEl('aes-price').value = String(aesTotals().price);
+  }
+  async function openApptEdit(a){
+    aes.appt = a; aes.priceTouched = false; aes.customTime = false; aes.time = String(a.start_time||'').slice(0,5);
+    const stored = (a.services||[]);
+    const opts = [];
+    stored.forEach(s=> opts.push({ name:s.name, price:Number(s.price||0), duration:Number(s.duration||0) }));
+    (profile.bookingServices||[]).forEach(s=>{
+      if (opts.some(o=>o.name===s.name)) return;
+      const price = (a.is_vip && s.vipPrice) ? Number(s.vipPrice) : Number(s.price||0);
+      opts.push({ name:s.name, price, duration:Number(s.duration||0) });
+    });
+    aes.options = opts;
+    aes.chosen = {}; stored.forEach(s=>{ aes.chosen[s.name] = true; });
+    const first = (a.client_name||'?').trim();
+    aesEl('aes-avatar').textContent = first.charAt(0).toUpperCase() || '?';
+    aesEl('aes-client-name').textContent = a.client_name || 'Client';
+    const booked = a.created_at ? new Date(a.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+    aesEl('aes-client-meta').textContent = booked ? `Booked ${booked}` : 'Booked appointment';
+    aesEl('aes-notice-text').textContent = `${first.split(' ')[0]} gets a notification and a message on screen when you save.`;
+    aesEl('aes-date').value = a.appt_date;
+    aesEl('aes-date').min = todayIso();
+    aesEl('aes-price').value = String(a.total_price == null ? aesTotals().price : a.total_price);
+    aesEl('aes-time-custom').value = '';
+    aesEl('aes-status').textContent = '';
+    aesEl('aes-save').disabled = false;
+    aesRenderServices();
+    aesEl('appt-edit-sheet').hidden = false;
+    await aesLoadBusy(a.appt_date);
+    aesRenderTimes();
+  }
+  function closeApptEdit(){ aesEl('appt-edit-sheet').hidden = true; aes.appt = null; }
+  aesEl('aes-close').addEventListener('click', closeApptEdit);
+  aesEl('aes-cancel').addEventListener('click', closeApptEdit);
+  aesEl('appt-edit-sheet').addEventListener('click', e=>{ if (e.target === aesEl('appt-edit-sheet')) closeApptEdit(); });
+  aesEl('aes-services').addEventListener('click', e=>{
+    const name = e.target.dataset && e.target.dataset.aesSvc;
+    if (name === undefined) return;
+    aes.chosen[name] = !aes.chosen[name];
+    aesRenderServices(); aesSyncPrice(); aesRenderTimes();
+  });
+  aesEl('aes-times').addEventListener('click', e=>{
+    const t = e.target.dataset && e.target.dataset.aesTime;
+    if (!t) return;
+    aes.time = t; aes.customTime = false; aesEl('aes-time-custom').value = '';
+    aesRenderTimes();
+  });
+  aesEl('aes-time-custom').addEventListener('change', function(){
+    if (!this.value) return;
+    aes.time = this.value; aes.customTime = true; aesRenderTimes();
+  });
+  aesEl('aes-price').addEventListener('input', ()=>{ aes.priceTouched = true; });
+  aesEl('aes-date').addEventListener('change', async function(){
+    if (!this.value || !aes.appt) return;
+    await aesLoadBusy(this.value);
+    // Moving to another day: keep the same clock time if it still fits, else clear it.
+    aesRenderTimes();
+  });
+  aesEl('aes-save').addEventListener('click', async ()=>{
+    const a = aes.appt; if (!a) return;
+    const statusEl = aesEl('aes-status');
+    const chosen = aesChosenList();
+    if (!chosen.length){ statusEl.textContent = 'Pick at least one service.'; return; }
+    const date = aesEl('aes-date').value;
+    if (!date){ statusEl.textContent = 'Pick a date.'; return; }
+    if (!aes.time){ statusEl.textContent = 'Pick a time.'; return; }
+    const priceRaw = aesEl('aes-price').value.trim();
+    const price = Number(priceRaw);
+    if (priceRaw === '' || !isFinite(price) || price < 0){ statusEl.textContent = 'Enter a price of $0 or more.'; return; }
+    const { mins } = aesTotals();
+    if (aesOverlap(toMinutesBk(aes.time), mins)){ statusEl.textContent = 'That time overlaps another appointment. Pick a different time.'; return; }
+    if (!dbAvailable){ statusEl.textContent = "Live saving isn't connected right now."; return; }
+    const startTime = aes.time;
+    const endTime = toHHMMBk(toMinutesBk(startTime) + mins);
+    const prev = { appt_date:a.appt_date, start_time:String(a.start_time||'').slice(0,5), total_price:Number(a.total_price), services:(a.services||[]).map(s=>s.name) };
+    const prevNames = prev.services;
+    const newNames = chosen.map(o=>o.name);
+    const changed = date !== a.appt_date || startTime !== String(a.start_time||'').slice(0,5) ||
+      prevNames.join('|') !== newNames.join('|') || Number(a.total_price) !== price;
+    if (!changed){ statusEl.textContent = 'Nothing has changed yet.'; return; }
+    const core = {
+      services: chosen.map(o=>({ name:o.name, price:o.price, duration:o.duration })),
+      total_price: price, total_minutes: mins,
+      appt_date: date, start_time: startTime, end_time: endTime
+    };
+    const extras = { changed_by:'barber', changed_at:new Date().toISOString(), reminder_sent_at:null };
+    statusEl.textContent = 'Saving…';
+    aesEl('aes-save').disabled = true;
+    try{
+      let res = await supabaseClient.from('appointments').update({ ...core, ...extras }).eq('id', a.id);
+      // If the optional tracking columns haven't been added yet, still save the change itself.
+      if (res.error && /column|schema cache/i.test(res.error.message||'')){
+        res = await supabaseClient.from('appointments').update(core).eq('id', a.id);
+      }
+      if (res.error) throw res.error;
+    }catch(err){
+      console.warn('appointment edit failed', err);
+      statusEl.textContent = "Couldn't save: " + ((err && err.message) || 'try again.');
+      aesEl('aes-save').disabled = false;
+      return;
+    }
+    let told = 'Saved.';
+    try{
+      const { data } = await supabaseClient.functions.invoke('send-quick-message', { body: {
+        appointment_id: a.id, event: 'changed', changed_by: 'barber',
+        previous: prev
+      }});
+      const first = (a.client_name||'Your client').split(' ')[0];
+      if (data && data.ok) told = `Saved. ${first} has been notified.`;
+      else told = `Saved. ${first} will see the change next time they open Vono.`;
+    }catch(err){ console.warn('change notification failed', err); told = 'Saved. The client could not be notified right now.'; }
+    statusEl.textContent = told;
+    aesEl('aes-save').disabled = false;
+    setTimeout(()=>{ closeApptEdit(); }, 900);
+    loadAppointments();
+    try{ await loadCalendarAppointments(); }catch(e){}
   });
   /* ---- View calendar: day/week/month forecast of booked appointments ---- */
   let calendarAppts = [];
@@ -10190,7 +10443,7 @@ async function loadQuickMessageQueue(){
   try{ deepLinkId = new URLSearchParams(window.location.search).get('message'); }catch(e){}
   try{
     const { data, error } = await supabaseClient.from('quick_messages')
-      .select('id, message, sender_name, created_at')
+      .select('id, message, sender_name, created_at, appointment_id')
       .eq('recipient_code', profileCode)
       .eq('recipient_role', 'professional')
       .in('status', ['sent','failed_not_subscribed','failed_error'])
@@ -10229,7 +10482,7 @@ async function pollQuickMessageQueue(){
   if (!supabaseClient || !profileCode) return;
   try{
     const { data, error } = await supabaseClient.from('quick_messages')
-      .select('id, message, sender_name, created_at')
+      .select('id, message, sender_name, created_at, appointment_id')
       .eq('recipient_code', profileCode)
       .eq('recipient_role', 'professional')
       .in('status', ['sent','failed_not_subscribed','failed_error'])
@@ -10249,7 +10502,7 @@ async function pollQuickMessageQueue(){
 async function pushQuickMessageToFront(id){
   if (!id || !supabaseClient) return;
   try{
-    const { data, error } = await supabaseClient.from('quick_messages').select('id, message, sender_name, created_at').eq('id', id).maybeSingle();
+    const { data, error } = await supabaseClient.from('quick_messages').select('id, message, sender_name, created_at, appointment_id').eq('id', id).maybeSingle();
     if (error || !data) return;
     quickMessageQueue = quickMessageQueue.filter(m => m.id !== id);
     quickMessageQueue.unshift(data);
@@ -10279,6 +10532,14 @@ function showNextQueuedMessage(){
     countEl.hidden = quickMessageQueue.length <= 1;
     countEl.textContent = quickMessageQueue.length + ' unread messages';
   }
+  const viewBtn = document.getElementById('qm-popup-view');
+  if (viewBtn){
+    const isChange = !!current.appointment_id && /changed their appointment|cancelled their|New booking/.test(current.message || '');
+    viewBtn.hidden = !isChange;
+    // When there is a second button, "Clear" becomes the quieter of the two.
+    const clearBtn = document.getElementById('qm-popup-clear');
+    if (clearBtn){ clearBtn.className = isChange ? 'btn btn-outline' : 'btn btn-primary'; clearBtn.style.marginTop = isChange ? '0' : '8px'; }
+  }
   overlay.dataset.messageId = current.id;
   overlay.hidden = false;
 }
@@ -10295,6 +10556,10 @@ async function clearCurrentQuickMessage(){
   if (quickMessageQueue.length === 0) maybeShowInstallReminder();
 }
 document.getElementById('qm-popup-clear').addEventListener('click', clearCurrentQuickMessage);
+document.getElementById('qm-popup-view').addEventListener('click', async ()=>{
+  await clearCurrentQuickMessage();
+  try{ showTab('booking'); }catch(e){}
+});
 try{
   if ('serviceWorker' in navigator && navigator.serviceWorker.addEventListener){
     navigator.serviceWorker.addEventListener('message', (event)=>{

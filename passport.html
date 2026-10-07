@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-07T18-30-00Z">
+<meta name="app-build" content="2026-10-08T01-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -68,6 +68,31 @@
   .btn-primary:disabled{ background:var(--line); color:var(--muted); cursor:not-allowed; filter:none; }
   .btn-ghost{ background:var(--paper); color:var(--ink); border:1px solid var(--line); }
   .btn-outline{ background:transparent; color:var(--brass); border:1px solid var(--brass); }
+  /* ---- Change-an-appointment sheet ---- */
+  .sheet-overlay{ position:fixed; inset:0; z-index:400; background:rgba(5,9,15,0.72); display:flex; align-items:flex-end; justify-content:center; }
+  .sheet{ width:100%; max-width:460px; max-height:92vh; max-height:92dvh; overflow-y:auto; background:var(--surface); border-top:1px solid var(--brass); border-radius:22px 22px 0 0; padding:10px 20px calc(24px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:14px; }
+  .sheet-grab{ width:44px; height:4px; border-radius:2px; background:var(--line); align-self:center; flex:none; }
+  .sheet-head{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+  .sheet-head h3{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:22px; margin:0; }
+  .cs-compare{ background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .cs-compare small{ display:block; font-size:12px; color:var(--muted); }
+  .cs-compare b{ font-size:13px; display:block; font-variant-numeric:tabular-nums; }
+  .cs-compare .was b{ text-decoration:line-through; color:var(--muted); }
+  .cs-compare svg{ flex:none; width:22px; height:22px; color:var(--brass); }
+  .cs-days{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scroll-snap-type:x proximity; }
+  .cs-day{ flex:none; width:54px; text-align:center; padding:9px 0; border-radius:12px; border:1px solid var(--line); background:transparent; color:var(--ink); font-family:'Public Sans',sans-serif; cursor:pointer; scroll-snap-align:start; }
+  .cs-day small{ display:block; font-size:11px; color:var(--muted); font-weight:600; }
+  .cs-day b{ display:block; font-size:16px; font-weight:700; }
+  .cs-day.on{ background:var(--brass); border-color:var(--brass); color:#241A0C; }
+  .cs-day.on small{ color:#241A0C; font-weight:700; }
+  .cs-day:disabled{ opacity:0.4; cursor:default; }
+  .cs-chips{ display:flex; gap:8px; flex-wrap:wrap; }
+  .cs-chip{ border:1px solid var(--line); background:transparent; color:var(--ink); font-family:'Public Sans',sans-serif; font-weight:600; font-size:13.5px; padding:8px 12px; border-radius:10px; cursor:pointer; font-variant-numeric:tabular-nums; }
+  .cs-chip.on{ background:var(--brass); border-color:var(--brass); color:#241A0C; font-weight:700; }
+  .cs-actions{ display:flex; gap:10px; }
+  .cs-actions .btn-primary{ flex:1; }
+  .cs-actions .btn-outline{ flex:none; padding:14px 20px; }
+  .cs-locked{ font-size:12.5px; color:var(--muted); margin:0; line-height:1.45; }
   .btn-danger{ background:transparent; color:var(--behind); border:1px solid var(--behind); }
   .spacer{ flex:1; }
   .btn-row{ display:flex; gap:8px; }
@@ -507,11 +532,27 @@
   </div>
 
   <div id="toast" class="toast">Saved</div>
+  <div id="appt-change-sheet" class="sheet-overlay" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="cs-title">
+      <div class="sheet-grab"></div>
+      <div class="sheet-head"><h3 id="cs-title">Change your appointment</h3></div>
+      <div class="cs-compare">
+        <div class="was"><small>Now</small><b id="cs-was">&nbsp;</b></div>
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="text-align:right;"><small>New</small><b id="cs-new">Pick a time</b></div>
+      </div>
+      <div><p class="eyebrow-mini" style="margin-bottom:8px;">Pick a day</p><div class="cs-days" id="cs-days"></div></div>
+      <div><p class="eyebrow-mini" style="margin-bottom:8px;">Open times</p><div class="cs-chips" id="cs-times"></div></div>
+      <p class="screen-sub" id="cs-rule" style="font-size:12.5px;">&nbsp;</p>
+      <p class="screen-sub" id="cs-status" style="margin:0;" aria-live="polite"></p>
+      <div class="cs-actions"><button type="button" class="btn btn-primary" id="cs-save" disabled>Confirm new time</button><button type="button" class="btn btn-outline" id="cs-back">Back</button></div>
+    </div>
+  </div>
   <div id="quick-message-popup" style="display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; padding:20px;">
     <div style="background:var(--paper); border-radius:16px; padding:24px; max-width:360px; width:100%; display:flex; flex-direction:column; gap:10px;">
       <p class="eyebrow-mini" id="qm-popup-from">&nbsp;</p>
       <p class="foot-note-small" id="qm-popup-count" style="margin:-6px 0 0;" hidden>&nbsp;</p>
-      <p style="font-family:'Libre Franklin',sans-serif; font-weight:600; font-size:16px; line-height:1.45; margin:0;" id="qm-popup-body">&nbsp;</p>
+      <p style="font-family:'Libre Franklin',sans-serif; font-weight:600; font-size:16px; line-height:1.45; margin:0; white-space:pre-line;" id="qm-popup-body">&nbsp;</p>
       <button class="btn btn-primary" id="qm-popup-clear" type="button" style="margin-top:8px;">Clear</button>
     </div>
   </div>
@@ -1268,6 +1309,159 @@ async function loadUpcomingAppointments(){
   }
 }
 
+/* ---- Change an upcoming appointment (client). Same services and length --
+   only the day and time move. Offered times are the professional's real open
+   times (their hours, date overrides, and VIP windows), minus every other
+   booked appointment, and none closer than the cutoff below. Saving tells the
+   professional right away (push + a message on their screen). ---- */
+const CLIENT_CHANGE_CUTOFF_HOURS = 24;
+const CS_DAY_KEYS = ['sun','mon','tue','wed','thu','fri','sat'];
+const CS_RANGE_DAYS = 14;
+function apptStartDate(a){ return new Date(a.appt_date + 'T' + String(a.start_time||'00:00').slice(0,5) + ':00'); }
+function canChangeAppt(a){
+  return (apptStartDate(a).getTime() - Date.now()) >= CLIENT_CHANGE_CUTOFF_HOURS * 3600 * 1000;
+}
+const cs = { appt:null, pro:null, busyByDate:{}, date:'', time:'', mins:0 };
+const csEl = id => document.getElementById(id);
+function csToMin(hhmm){ const p = String(hhmm||'0:0').split(':').map(Number); return (p[0]||0)*60 + (p[1]||0); }
+function csToHHMM(m){ return String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0'); }
+function csIsoOffset(n){ const d = new Date(); d.setDate(d.getDate()+n); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function csHoursFor(dateStr){
+  const pro = cs.pro || {};
+  const ov = (pro.booking_overrides||[]).find(o=>o.date===dateStr);
+  if (ov) return ov;
+  return (pro.booking_hours||{})[CS_DAY_KEYS[new Date(dateStr+'T00:00:00').getDay()]] || { closed:true };
+}
+function csSlotsFor(dateStr){
+  const a = cs.appt, mins = cs.mins;
+  const busy = (cs.busyByDate[dateStr] || []).map(b=>[csToMin(b.start_time), csToMin(b.end_time)]);
+  const out = new Set();
+  const addWindow = (open, close)=>{
+    for (let t = csToMin(open); t + mins <= csToMin(close); t += 15){
+      if (busy.some(([bs,be])=> t < be && (t+mins) > bs)) continue;
+      const startsAt = new Date(dateStr + 'T' + csToHHMM(t) + ':00').getTime();
+      if (startsAt - Date.now() < CLIENT_CHANGE_CUTOFF_HOURS*3600*1000) continue;
+      out.add(t);
+    }
+  };
+  if (a.is_vip){
+    const v = (cs.pro.vip_dates||[]).find(x=>x.date===dateStr);
+    if (v) addWindow(v.open, v.close);
+  } else {
+    const h = csHoursFor(dateStr);
+    if (h && !h.closed) addWindow(h.open||'09:00', h.close||'18:00');
+  }
+  return [...out].sort((x,y)=>x-y);
+}
+async function csLoadBusy(){
+  const from = csIsoOffset(0), to = csIsoOffset(CS_RANGE_DAYS);
+  cs.busyByDate = {};
+  if (!dbAvailable) return;
+  let rows = null;
+  try{
+    const { data, error } = await supabaseClient.rpc('get_busy_slots', { p_barber_code: cs.appt.barber_code, p_from: from, p_to: to, p_exclude_id: String(cs.appt.id) });
+    if (!error && Array.isArray(data)) rows = data;
+  }catch(e){ /* helper not installed yet -- fall back below */ }
+  if (rows === null){
+    try{
+      const { data } = await supabaseClient.from('appointments').select('*').eq('barber_code', cs.appt.barber_code).eq('status','booked');
+      rows = (data||[]).filter(r=> String(r.id) !== String(cs.appt.id) && r.appt_date >= from && r.appt_date <= to);
+    }catch(e){ rows = []; }
+  }
+  rows.forEach(r=>{ (cs.busyByDate[r.appt_date] = cs.busyByDate[r.appt_date] || []).push({ start_time:String(r.start_time).slice(0,5), end_time:String(r.end_time).slice(0,5) }); });
+}
+function csRenderDays(){
+  const box = csEl('cs-days');
+  let html = '';
+  for (let i = 0; i <= CS_RANGE_DAYS; i++){
+    const iso = csIsoOffset(i);
+    const d = new Date(iso+'T00:00:00');
+    const has = csSlotsFor(iso).length > 0;
+    html += `<button type="button" class="cs-day${cs.date===iso?' on':''}" data-cs-day="${iso}"${has?'':' disabled'} aria-label="${d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}${has?'':', no open times'}"><small>${d.toLocaleDateString('en-US',{weekday:'short'})}</small><b>${d.getDate()}</b></button>`;
+  }
+  box.innerHTML = html;
+}
+function csRenderTimes(){
+  const box = csEl('cs-times');
+  if (!cs.date){ box.innerHTML = '<span class="screen-sub">Pick a day first.</span>'; return; }
+  const slots = csSlotsFor(cs.date);
+  box.innerHTML = slots.length
+    ? slots.map(t=>{ const hh = csToHHMM(t); return `<button type="button" class="cs-chip${cs.time===hh?' on':''}" data-cs-time="${hh}">${fmtTime12(hh)}</button>`; }).join('')
+    : '<span class="screen-sub">No open times that day.</span>';
+}
+function csFmtWhen(date, time){
+  const d = new Date(date+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  return `${d} · ${fmtTime12(time)}`;
+}
+function csRenderSummary(){
+  csEl('cs-new').textContent = (cs.date && cs.time) ? csFmtWhen(cs.date, cs.time) : 'Pick a time';
+  csEl('cs-save').disabled = !(cs.date && cs.time);
+}
+async function openApptChange(a){
+  cs.appt = a; cs.date = ''; cs.time = '';
+  cs.mins = Number(a.total_minutes) || Math.max(15, csToMin(a.end_time) - csToMin(a.start_time));
+  csEl('cs-was').textContent = csFmtWhen(a.appt_date, String(a.start_time).slice(0,5));
+  csEl('cs-status').textContent = 'Loading open times…';
+  csEl('cs-rule').textContent = `You can change this up to ${CLIENT_CHANGE_CUTOFF_HOURS} hours before your appointment. ${a.barber_name} will be notified right away.`;
+  csEl('cs-days').innerHTML = ''; csEl('cs-times').innerHTML = '';
+  csRenderSummary();
+  csEl('appt-change-sheet').hidden = false;
+  try{
+    const { data } = await supabaseClient.from('profiles').select('*').eq('code', a.barber_code).maybeSingle();
+    cs.pro = data || {};
+  }catch(e){ cs.pro = {}; }
+  await csLoadBusy();
+  csEl('cs-status').textContent = '';
+  csRenderDays(); csRenderTimes();
+  if (!csEl('cs-days').querySelector('.cs-day:not(:disabled)')) csEl('cs-status').textContent = `${a.barber_name} has no open times in the next two weeks. Send them a note to arrange a time.`;
+}
+function closeApptChange(){ csEl('appt-change-sheet').hidden = true; cs.appt = null; }
+csEl('cs-back').addEventListener('click', closeApptChange);
+csEl('appt-change-sheet').addEventListener('click', e=>{ if (e.target === csEl('appt-change-sheet')) closeApptChange(); });
+csEl('cs-days').addEventListener('click', e=>{
+  const b = e.target.closest('[data-cs-day]'); if (!b || b.disabled) return;
+  cs.date = b.dataset.csDay; cs.time = '';
+  csRenderDays(); csRenderTimes(); csRenderSummary();
+});
+csEl('cs-times').addEventListener('click', e=>{
+  const b = e.target.closest('[data-cs-time]'); if (!b) return;
+  cs.time = b.dataset.csTime; csRenderTimes(); csRenderSummary();
+});
+csEl('cs-save').addEventListener('click', async ()=>{
+  const a = cs.appt; if (!a || !cs.date || !cs.time) return;
+  const statusEl = csEl('cs-status');
+  if (!dbAvailable){ statusEl.textContent = "Live saving isn't connected right now."; return; }
+  // Re-check the cutoff at the moment of saving, in case the sheet sat open.
+  if (((new Date(cs.date + 'T' + cs.time + ':00').getTime()) - Date.now()) < CLIENT_CHANGE_CUTOFF_HOURS*3600*1000 || !canChangeAppt(a)){
+    statusEl.textContent = `Changes close ${CLIENT_CHANGE_CUTOFF_HOURS} hours before an appointment.`; return;
+  }
+  const prev = { appt_date:a.appt_date, start_time:String(a.start_time).slice(0,5), total_price:Number(a.total_price), services:(a.services||[]).map(s=>s.name) };
+  const core = { appt_date: cs.date, start_time: cs.time, end_time: csToHHMM(csToMin(cs.time) + cs.mins) };
+  const extras = { changed_by:'client', changed_at:new Date().toISOString(), reminder_sent_at:null };
+  csEl('cs-save').disabled = true;
+  statusEl.textContent = 'Saving…';
+  try{
+    let res = await supabaseClient.from('appointments').update({ ...core, ...extras }).eq('id', a.id);
+    if (res.error && /column|schema cache/i.test(res.error.message||'')){
+      res = await supabaseClient.from('appointments').update(core).eq('id', a.id);
+    }
+    if (res.error) throw res.error;
+  }catch(err){
+    console.warn('appointment change failed', err);
+    statusEl.textContent = "Couldn't change it: " + ((err && err.message) || 'try again.');
+    csEl('cs-save').disabled = false;
+    return;
+  }
+  let told = `Changed. ${a.barber_name} has been notified.`;
+  try{
+    const { data } = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: a.id, event: 'changed', changed_by: 'client', previous: prev } });
+    if (!(data && data.ok)) told = `Changed. ${a.barber_name} will see it next time they open Vono.`;
+  }catch(err){ console.warn('change notification failed', err); told = 'Changed. We could not notify them right now, so consider sending a quick note.'; }
+  statusEl.textContent = told;
+  setTimeout(closeApptChange, 1100);
+  loadUpcomingAppointments();
+});
+
 const CLIENT_CANNED_MESSAGES = [
   "I'm running a few minutes late.",
   "I need to reschedule this appointment.",
@@ -1291,9 +1485,11 @@ function renderUpcoming(list){
         <span class="screen-sub">${a.barber_name}: ${svcNames}</span>
         <span class="screen-sub">Total: $${a.total_price}</span>
         <div class="btn-row" style="margin-top:4px;">
+          ${canChangeAppt(a) ? `<button type="button" class="btn btn-primary" style="flex:1;" data-change-appt="${a.id}">Change</button>` : ''}
           <button type="button" class="btn btn-outline" style="flex:1;" data-ics="${a.id}">Add to calendar</button>
           <button type="button" class="btn btn-danger" style="flex:1;" data-cancel-appt="${a.id}">Cancel</button>
         </div>
+        ${canChangeAppt(a) ? '' : `<p class="cs-locked">It's within ${CLIENT_CHANGE_CUTOFF_HOURS} hours of your appointment, so it can't be changed here. Send ${a.barber_name} a quick note below.</p>`}
         <button type="button" class="link-btn" data-text-toggle="${a.id}" style="align-self:flex-start; padding:0;">Notify your barber</button>
         <div data-msg-panel="${a.id}" style="display:none; flex-direction:column; gap:6px; margin-top:2px; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--paper);">
           <p class="screen-sub" style="margin:0;">Send a quick notification to ${a.barber_name} about this appointment.</p>
@@ -1303,6 +1499,12 @@ function renderUpcoming(list){
       </div>
     `;
   }).join('');
+  holder.querySelectorAll('[data-change-appt]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const a = list.find(x=>String(x.id) === String(btn.dataset.changeAppt));
+      if (a) openApptChange(a);
+    });
+  });
   holder.querySelectorAll('[data-ics]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const a = list.find(x=>x.id === btn.dataset.ics);
