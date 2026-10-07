@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-07T18-30-00Z">
+<meta name="app-build" content="2026-10-07T19-10-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -3087,7 +3087,10 @@ document.getElementById('btn-bk-landing-dismiss').addEventListener('click', ()=>
     root.querySelector('#home-today-date').textContent = now.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
     const list = (appts || []).filter(a=> a.appt_date === todayStr).sort((a,b)=> minutesOf(a.start_time) - minutesOf(b.start_time));
     const nowMin = now.getHours() * 60 + now.getMinutes();
-    const next = list.find(a=> minutesOf(a.start_time) >= nowMin);
+    // "Now" = an appointment that has started and not yet ended; "Next" = the first one still to start.
+    const endMin = a=> a.end_time ? minutesOf(a.end_time) : minutesOf(a.start_time) + 30;
+    const current = list.find(a=> minutesOf(a.start_time) <= nowMin && nowMin < endMin(a));
+    const next = list.find(a=> minutesOf(a.start_time) > nowMin);
     const summaryEl = root.querySelector('#home-today-summary');
     const listEl = root.querySelector('#home-today-list');
     if (!list.length){
@@ -3096,19 +3099,19 @@ document.getElementById('btn-bk-landing-dismiss').addEventListener('click', ()=>
       return;
     }
     summaryEl.textContent = list.length + (list.length === 1 ? ' appointment today' : ' appointments today') +
-      (next ? ' · next at ' + fmtTime12(next.start_time) : ' · all done for today');
-    const shown = list.slice(0, 4);
-    listEl.innerHTML = shown.map(a=>{
+      (next ? ' · next at ' + fmtTime12(next.start_time) : (current ? ' · last one is in progress' : ' · all done for today'));
+    function row(label, a, highlight){
       const svc = (a.services || []).map(s=> s.name).join(', ');
-      const isNext = next && a.id === next.id;
-      return `<div class="cal-appt-row${a.is_vip ? ' is-vip' : ''}"${isNext ? ' style="border-color:var(--brass);"' : ''}>
+      return `<div class="cal-appt-row${a.is_vip ? ' is-vip' : ''}"${highlight ? ' style="border-color:var(--brass);"' : ''}>
         <span class="cal-appt-time">${esc(fmtTime12(a.start_time))}</span>
         <div style="display:flex; flex-direction:column; gap:1px; min-width:0;">
+          <span class="eyebrow-mini" style="margin:0;">${label}</span>
           <strong style="font-size:13.5px;">${esc(a.client_name || 'Client')}</strong>
           <span class="screen-sub" style="margin:0;">${esc(svc)}${a.total_price ? ' · $' + esc(a.total_price) : ''}</span>
         </div>
       </div>`;
-    }).join('') + (list.length > shown.length ? `<p class="screen-sub" style="margin:0;">+ ${list.length - shown.length} more today</p>` : '');
+    }
+    listEl.innerHTML = (current ? row('Now', current, true) : '') + (next ? row('Next', next, !current) : '');
   }
 
   function renderMonthLocked(){
@@ -3215,6 +3218,11 @@ document.getElementById('btn-bk-landing-dismiss').addEventListener('click', ()=>
       showTab('booking');
       const btn = document.getElementById('btn-bk-view-calendar');
       if (btn) btn.click();
+      // Open on today's Day view so the whole day is visible at once.
+      const todayBtn = document.getElementById('btn-calendar-today');
+      if (todayBtn) todayBtn.click();
+      const dayBtn = document.querySelector('#calendar-view-toggle [data-cal-view="day"]');
+      if (dayBtn) dayBtn.click();
       return;
     }
     if (target === 'account'){ showAccountScreen(); return; }
