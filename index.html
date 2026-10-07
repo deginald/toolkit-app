@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-08T01-00-00Z">
+<meta name="app-build" content="2026-10-08T02-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -2647,6 +2647,23 @@ try{
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 }catch(e){ supabaseClient = null; }
+
+// Notifications are a courtesy on top of the real action (booking, changing, cancelling).
+// If the notification function is slow or unreachable, never leave the screen waiting on it:
+// give up after 10 seconds and report it as "not sent" instead.
+try{
+  if (supabaseClient && supabaseClient.functions && !supabaseClient.functions.__timeoutWrapped){
+    const rawInvoke = supabaseClient.functions.invoke.bind(supabaseClient.functions);
+    supabaseClient.functions.invoke = function(name, opts){
+      if (name !== 'send-quick-message') return rawInvoke(name, opts);
+      return Promise.race([
+        rawInvoke(name, opts),
+        new Promise(resolve => setTimeout(() => resolve({ data:null, error:{ message:'timed out' } }), 10000))
+      ]);
+    };
+    supabaseClient.functions.__timeoutWrapped = true;
+  }
+}catch(e){ console.warn('could not wrap function invoke', e); }
 /* =========================================================
    PASSWORD RECOVERY
    When someone taps the "reset your password" link from their email,
@@ -7338,18 +7355,18 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     // appointment, it just doesn't notify the client about it (they'd need to be
     // told some other way, or see it themselves if they ever log into their own
     // Vono Passport with this code).
-    if (hasActiveAccess()){
-      try{
-        const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
-        const svcNames = svcs.map(s=>s.name).join(', ');
-        await supabaseClient.functions.invoke('send-quick-message', { body: {
-          appointment_id: appt.id, sender_role: 'barber',
-          message: `I booked an appointment for you: ${dateLabel} at ${time} for ${svcNames}. It's saved in your Vono Passport.`
-        }});
-      }catch(e){ console.warn('appointment notification text failed (non-blocking)', e); }
-    }
+    // The appointment is saved -- finish on screen now, and send the notification in
+    // the background so a slow notification can never leave this screen on "Saving…".
     resetManualCard();
     loadAppointments();
+    if (hasActiveAccess()){
+      const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+      const svcNames = svcs.map(s=>s.name).join(', ');
+      Promise.resolve(supabaseClient.functions.invoke('send-quick-message', { body: {
+        appointment_id: appt.id, sender_role: 'barber',
+        message: `I booked an appointment for you: ${dateLabel} at ${time} for ${svcNames}. It's saved in your Vono Passport.`
+      }})).catch(e=>{ console.warn('appointment notification text failed (non-blocking)', e); });
+    }
   });
   window.initBookingTab = function(){
     renderSetupFromProfile();

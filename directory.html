@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono: Find a Pro</title>
-<meta name="app-build" content="2026-10-08T01-00-00Z">
+<meta name="app-build" content="2026-10-08T02-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -371,6 +371,23 @@ try{
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 }catch(e){ supabaseClient = null; }
+
+// Notifications are a courtesy on top of the real action (booking, changing, cancelling).
+// If the notification function is slow or unreachable, never leave the screen waiting on it:
+// give up after 10 seconds and report it as "not sent" instead.
+try{
+  if (supabaseClient && supabaseClient.functions && !supabaseClient.functions.__timeoutWrapped){
+    const rawInvoke = supabaseClient.functions.invoke.bind(supabaseClient.functions);
+    supabaseClient.functions.invoke = function(name, opts){
+      if (name !== 'send-quick-message') return rawInvoke(name, opts);
+      return Promise.race([
+        rawInvoke(name, opts),
+        new Promise(resolve => setTimeout(() => resolve({ data:null, error:{ message:'timed out' } }), 10000))
+      ]);
+    };
+    supabaseClient.functions.__timeoutWrapped = true;
+  }
+}catch(e){ console.warn('could not wrap function invoke', e); }
 
 const dbAvailable = !!supabaseClient;
 // Every visitor to the public directory gets a real (if anonymous) Supabase
