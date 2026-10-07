@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-07T19-10-00Z">
+<meta name="app-build" content="2026-10-07T19-45-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -760,7 +760,7 @@
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 19V12M12 19V5M19 19v-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
             <span>Earnings</span>
           </button>
-          <button type="button" class="home-tile" data-home-go="calendar">
+          <button type="button" class="home-tile" data-home-go="calendar:month">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M4 9.5h16M8 3.5v3.5M16 3.5v3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <span>Calendar</span>
           </button>
@@ -3213,16 +3213,17 @@ document.getElementById('btn-bk-landing-dismiss').addEventListener('click', ()=>
     if (!target) return;
     if (target === 'more'){ openMore(); return; }
     closeMore();
-    if (target === 'calendar'){
+    if (target === 'calendar' || target === 'calendar:month'){
+      const viewName = target === 'calendar:month' ? 'month' : 'day';
       returnHomeAfterCalendar = true;
       showTab('booking');
       const btn = document.getElementById('btn-bk-view-calendar');
       if (btn) btn.click();
-      // Open on today's Day view so the whole day is visible at once.
+      // "View calendar" (under Today) opens today's Day view; the Calendar tile opens the Month view.
       const todayBtn = document.getElementById('btn-calendar-today');
       if (todayBtn) todayBtn.click();
-      const dayBtn = document.querySelector('#calendar-view-toggle [data-cal-view="day"]');
-      if (dayBtn) dayBtn.click();
+      const viewBtn = document.querySelector('#calendar-view-toggle [data-cal-view="' + viewName + '"]');
+      if (viewBtn) viewBtn.click();
       return;
     }
     if (target === 'account'){ showAccountScreen(); return; }
