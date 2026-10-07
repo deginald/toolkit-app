@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-05T20-15-00Z">
+<meta name="app-build" content="2026-10-07T18-30-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -75,6 +75,38 @@
   .tabbar.role-student .tab-btn[data-tabbtn="consult"]{ order:3; }
   .tabbar.role-student .tab-btn[data-tabbtn="ledger"]{ order:4; }
   .tabbar.role-student .tab-btn[data-tabbtn="jobs"]{ order:5; }
+  .tab-btn[data-tabbtn="home"]{ order:0; }
+  /* ---- Home tab (professionals only): greeting, today, shortcut tiles, month card ---- */
+  .home-greet{ font-size:15px; font-weight:600; color:var(--muted); margin:0; }
+  .home-headline{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:32px; line-height:1.08; letter-spacing:-0.015em; margin:4px 0 0; color:var(--ink); text-wrap:balance; }
+  .home-section-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  .home-today-list{ display:flex; flex-direction:column; gap:8px; }
+  .home-tiles{ display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
+  .home-tile{ position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:9px; padding:16px 6px 14px; min-height:96px; border:1px solid var(--line); border-radius:14px; background:var(--paper); color:var(--ink); font-family:'Public Sans',sans-serif; font-weight:700; font-size:12.5px; cursor:pointer; }
+  .home-tile svg{ width:28px; height:28px; color:var(--brass); flex:none; }
+  .home-tile .home-lock{ position:absolute; top:8px; right:9px; width:13px; height:13px; color:var(--muted); }
+  .home-tile:active{ background:var(--surface); }
+  .home-tile:focus-visible, .home-more-item:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .home-month{ gap:12px; }
+  .home-month-body{ display:flex; align-items:flex-end; justify-content:space-between; gap:14px; }
+  .home-month-total{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:34px; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; line-height:1.05; color:var(--ink); margin:0; }
+  .home-month-sub{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:12.5px; color:var(--muted); font-weight:600; margin-top:6px; }
+  .home-delta{ display:inline-flex; align-items:center; gap:3px; font-weight:700; font-size:12.5px; }
+  .home-delta.up{ color:var(--good); }
+  .home-delta.down{ color:var(--behind); }
+  .home-delta.flat{ color:var(--muted); }
+  .home-bars{ display:flex; align-items:flex-end; gap:7px; height:70px; flex:none; }
+  .home-bar-col{ display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:4px; height:100%; width:22px; }
+  .home-bar{ width:100%; border-radius:4px 4px 2px 2px; background:rgba(217,174,94,0.5); min-height:3px; }
+  .home-bar.current{ background:var(--brass); }
+  .home-bar-lbl{ font-size:9.5px; font-weight:600; color:var(--muted); letter-spacing:0.02em; }
+  .home-more-overlay{ position:fixed; inset:0; z-index:460; background:rgba(5,9,15,0.62); display:flex; align-items:flex-end; justify-content:center; }
+  .home-more-overlay[hidden]{ display:none; }
+  .home-more-sheet{ width:100%; max-width:480px; background:var(--surface); border:1px solid var(--line); border-bottom:none; border-radius:18px 18px 0 0; padding:18px 18px calc(18px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:6px; }
+  .home-more-item{ display:flex; align-items:center; gap:12px; width:100%; padding:13px 10px; border:none; border-radius:10px; background:transparent; color:var(--ink); font-family:'Public Sans',sans-serif; font-weight:700; font-size:15px; text-align:left; cursor:pointer; }
+  .home-more-item svg{ width:22px; height:22px; color:var(--brass); flex:none; }
+  .home-more-item .home-more-note{ margin-left:auto; font-size:11.5px; font-weight:600; color:var(--muted); }
+  .home-more-item:active{ background:var(--paper); }
   .biz-pane{ display:none; flex-direction:column; gap:16px; }
   .biz-pane.show{ display:flex; }
   .jobs-pane{ display:none; flex-direction:column; gap:16px; }
@@ -704,6 +736,66 @@
       </span>
     </div>
     <main class="tab-content">
+      <!-- ============ HOME (professionals only) ============ -->
+      <section class="tab-pane" data-tab="home" id="tab-home">
+        <div class="home-hero">
+          <p class="home-greet" id="home-greet">Welcome</p>
+          <h2 class="home-headline">Let's make today count.</h2>
+        </div>
+        <div class="card" id="home-today-card" style="gap:10px;">
+          <div class="home-section-head">
+            <p class="eyebrow-mini">Today</p>
+            <span class="screen-sub" id="home-today-date" style="margin:0;">&nbsp;</span>
+          </div>
+          <p class="screen-sub" id="home-today-summary" style="margin:0; color:var(--ink);">&nbsp;</p>
+          <div class="home-today-list" id="home-today-list"></div>
+          <button type="button" class="link-btn" id="btn-home-open-calendar" style="align-self:flex-start; padding:0;">View calendar</button>
+        </div>
+        <div class="home-tiles" id="home-tiles">
+          <button type="button" class="home-tile" data-home-go="biz:clients" data-home-pro="1">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="9" cy="8.5" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 19c.5-3.2 2.7-5 5.5-5s5 1.8 5.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="17" cy="9.5" r="2.3" stroke="currentColor" stroke-width="1.6"/><path d="M16 14.2c2.6-.2 4.3 1.3 4.8 4.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span>Clients</span>
+          </button>
+          <button type="button" class="home-tile" data-home-go="biz:earnings" data-home-pro="1">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 19V12M12 19V5M19 19v-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span>Earnings</span>
+          </button>
+          <button type="button" class="home-tile" data-home-go="calendar">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M4 9.5h16M8 3.5v3.5M16 3.5v3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span>Calendar</span>
+          </button>
+          <button type="button" class="home-tile" data-home-go="biz:walkins" data-home-pro="1">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 12h10M10.5 8l3.5 4-3.5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Walk-ins</span>
+          </button>
+          <button type="button" class="home-tile" data-home-go="biz:inventory" data-home-pro="1">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.5l8 4v9l-8 4-8-4v-9l8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 7.5l8 4 8-4M12 11.5v9" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            <span>Inventory</span>
+          </button>
+          <button type="button" class="home-tile" data-home-go="more">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="7" cy="7" r="1.8"/><circle cx="17" cy="7" r="1.8"/><circle cx="7" cy="17" r="1.8"/><circle cx="17" cy="17" r="1.8"/></svg>
+            <span>More</span>
+          </button>
+        </div>
+        <div class="card home-month" id="home-month-card">
+          <div class="home-section-head">
+            <p class="eyebrow-mini">This month</p>
+            <button type="button" class="link-btn" id="btn-home-view-earnings" style="padding:0;">View all &rsaquo;</button>
+          </div>
+          <div class="home-month-body" id="home-month-body">
+            <div>
+              <p class="home-month-total" id="home-month-total">$0</p>
+              <div class="home-month-sub"><span>Total earnings</span><span class="home-delta flat" id="home-month-delta" hidden></span></div>
+            </div>
+            <div class="home-bars" id="home-bars" role="img" aria-label="Earnings for the last six months"></div>
+          </div>
+          <p class="screen-sub" id="home-month-note" style="margin:0;"></p>
+          <div id="home-month-locked" hidden style="display:none; flex-direction:column; gap:10px;">
+            <p class="screen-sub" style="margin:0;">Earnings tracking is part of Vono Pro. Try it free: you won't be charged until the trial ends.</p>
+            <button class="btn btn-primary" type="button" id="btn-home-month-trial">Start free trial</button>
+          </div>
+        </div>
+      </section>
       <!-- ============ PACE ============ -->
       <section class="tab-pane" data-tab="pace" id="tab-pace">
         <div class="tab-head">
@@ -1142,7 +1234,7 @@
           <h2>Booking</h2>
         </div>
         <div class="card tip" id="bk-landing-note" hidden>
-          <p class="screen-sub" style="margin:0; color:var(--ink);">This is now where you land when you log in, since it's what you'll use most day to day.</p>
+          <p class="screen-sub" style="margin:0; color:var(--ink);">Your Home tab now shows today's appointments and your month at a glance. Booking is where you set up services and hours and manage appointments.</p>
           <button type="button" class="link-btn" id="btn-bk-landing-dismiss" style="align-self:flex-end; padding:0;">Got it</button>
         </div>
         <div class="screen-body show" data-screen="setup" style="gap:16px;">
@@ -1992,6 +2084,10 @@
       </div>
     </main>
     <nav class="tabbar">
+      <button class="tab-btn" data-tabbtn="home">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 11.2 12 4.5l8 6.7V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1v-7.8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span>Home</span>
+      </button>
       <button class="tab-btn active" data-tabbtn="pace">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Pace</span>
@@ -2021,6 +2117,40 @@
         <span>Jobs</span>
       </button>
     </nav>
+    <div class="home-more-overlay" id="home-more-overlay" hidden>
+      <div class="home-more-sheet" role="dialog" aria-modal="true" aria-label="More">
+        <p class="eyebrow-mini" style="padding:2px 10px 6px;">More</p>
+        <button type="button" class="home-more-item" data-home-go="biz:loyalty" data-home-pro="1">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20.5s-7.5-4.4-7.5-10A4.3 4.3 0 0 1 12 7.9a4.3 4.3 0 0 1 7.5 2.6c0 5.6-7.5 10-7.5 10Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <span>Loyalty rewards</span><span class="home-more-note" data-home-note="pro"></span>
+        </button>
+        <button type="button" class="home-more-item" data-home-go="biz:shop" data-home-pro="1">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 9.5 6 4.5h12l1.5 5M4.5 9.5v10h15v-10M4.5 9.5c0 1.7 1.3 2.6 2.5 2.6s2.5-.9 2.5-2.6c0 1.7 1.3 2.6 2.5 2.6s2.5-.9 2.5-2.6c0 1.7 1.3 2.6 2.5 2.6s2.5-.9 2.5-2.6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
+          <span>Shop</span><span class="home-more-note" data-home-note="studio"></span>
+        </button>
+        <button type="button" class="home-more-item" data-home-go="biz:rentcomm" data-home-pro="1">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="6" width="17" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.4" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span>Rent &amp; Commission</span><span class="home-more-note" data-home-note="pro"></span>
+        </button>
+        <button type="button" class="home-more-item" data-home-go="tab:consult">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 6.5A2.5 2.5 0 0 1 7 4h10a2.5 2.5 0 0 1 2.5 2.5v6A2.5 2.5 0 0 1 17 15H10l-4 3.5V15H7A2.5 2.5 0 0 1 4.5 12.5v-6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <span>Consult</span>
+        </button>
+        <button type="button" class="home-more-item" data-home-go="tab:coach">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6.5c2-1 5-1.3 8 0v11c-3-1.3-6-1-8 0v-11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 6.5c-2-1-5-1.3-8 0v11c3-1.3 6-1 8 0v-11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <span>Refresher</span>
+        </button>
+        <button type="button" class="home-more-item" data-home-go="tab:jobs">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="8" width="17" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 8V6.5A2 2 0 0 1 10.5 4.5h3A2 2 0 0 1 15.5 6.5V8" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span>Jobs</span>
+        </button>
+        <button type="button" class="home-more-item" data-home-go="account">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c.6-3.8 3.4-6 7-6s6.4 2.2 7 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span>Account</span>
+        </button>
+        <button type="button" class="link-btn" id="btn-home-more-close" style="align-self:center; padding:12px 0 2px;">Close</button>
+      </div>
+    </div>
   </div>
   <div id="account-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100svh;">
     <header class="topbar">
@@ -2539,7 +2669,11 @@ function defaultTechniques(){
     { id:'exposure', category:'safety', name:'Exposure Incident Response', rated:false, rating:5 }
   ];
 }
-function todayIso(){ return new Date().toISOString().slice(0,10); }
+// All "YYYY-MM-DD" dates in the app are the person's LOCAL calendar day. (toISOString() is
+// UTC, which makes "today" flip to tomorrow every evening in the US and shifts local-midnight
+// dates back a day in time zones east of UTC.)
+function localIsoDate(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function todayIso(){ return localIsoDate(new Date()); }
 function defaultProfile(name){
   return {
     name: name || 'You',
@@ -2838,10 +2972,12 @@ document.querySelectorAll('#booking-mode-toggle .mode-btn').forEach(btn=>{
 });
 function showTab(name){
   window.__activeScanStoppers.forEach(fn => { try{ fn(); }catch(e){} });
-  if (!isStudent() && (name === 'pace' || name === 'ledger')) name = 'coach';
+  if (!isStudent() && (name === 'pace' || name === 'ledger')) name = 'home';
+  if (isStudent() && name === 'home') name = 'pace';
   if (isStudent() && (name === 'booking' || name === 'business')) name = 'coach';
   document.querySelectorAll('.tab-pane').forEach(p=> p.classList.toggle('show', p.dataset.tab===name));
   document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tabbtn===name));
+  if (name === 'home' && window.initHomeTab) window.initHomeTab();
   if (name === 'ledger') enterLedgerTab();
   if (name === 'booking' || name === 'business') applyAccessGating();
   if (name === 'booking'){
@@ -2867,12 +3003,265 @@ document.getElementById('btn-bk-landing-dismiss').addEventListener('click', ()=>
   try{ localStorage.setItem(bookingLandingNoteDismissKey(), '1'); }catch(e){}
   document.getElementById('bk-landing-note').hidden = true;
 });
+/* =========================================================
+   HOME TAB (professionals only; students keep their own tab set)
+   Landing screen after login: a time-of-day greeting (read from the
+   phone's own clock, so it follows the device's time zone), today's
+   appointments, shortcut tiles into the existing Business/Booking tools,
+   and a This Month earnings card. It only reads data the other tabs
+   already own -- appointments (status 'booked') and walk_in logs -- and
+   uses the same rule as the Earnings tab: only appointments whose date
+   has already passed count as earned. Dates here use the device's LOCAL
+   calendar day, not UTC, so "today" is right in the evening.
+   Locked (Basic) pros see lock badges on Business tiles; tapping one
+   lands on the Business tab's existing "Start free trial" paywall.
+   ========================================================= */
+(function(){
+  const root = document.getElementById('tab-home');
+  const overlay = document.getElementById('home-more-overlay');
+  const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let loadToken = 0;
+  let lastInitAt = 0;
+  let returnHomeAfterCalendar = false;
+
+  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function localIso(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  function monthKeyFor(year, monthIdx){ const d = new Date(year, monthIdx, 1); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); }
+  function fmtMoney(n){
+    const v = Math.round((Number(n)||0) * 100) / 100;
+    return '$' + v.toLocaleString('en-US', { minimumFractionDigits: (v % 1 ? 2 : 0), maximumFractionDigits: 2 });
+  }
+  function fmtTime12(hhmm){
+    if (!hhmm) return '';
+    const parts = String(hhmm).split(':').map(Number);
+    const h = parts[0] || 0, m = parts[1] || 0;
+    return (((h + 11) % 12) + 1) + ':' + String(m).padStart(2,'0') + ' ' + (h >= 12 ? 'PM' : 'AM');
+  }
+  function minutesOf(hhmm){ const p = String(hhmm||'').split(':').map(Number); return (p[0]||0) * 60 + (p[1]||0); }
+
+  // Morning 5:00-11:59, afternoon 12:00-4:59 pm, evening 5:00 pm to 4:59 am.
+  function greetingFor(date){
+    const h = date.getHours();
+    if (h >= 5 && h < 12) return 'Good morning';
+    if (h >= 12 && h < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+  function firstNameOf(){
+    const n = ((profile && profile.name) || '').trim();
+    return n ? n.split(/\s+/)[0] : '';
+  }
+  function renderGreeting(){
+    const el = root.querySelector('#home-greet');
+    if (!el) return;
+    const first = firstNameOf();
+    el.textContent = greetingFor(new Date()) + (first ? ', ' + first : '');
+  }
+
+  const LOCK_SVG = '<svg class="home-lock" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  function applyLocks(){
+    const locked = !hasActiveAccess();
+    root.querySelectorAll('.home-tile[data-home-pro="1"]').forEach(tile=>{
+      const existing = tile.querySelector('.home-lock');
+      if (locked && !existing) tile.insertAdjacentHTML('beforeend', LOCK_SVG);
+      if (!locked && existing) existing.remove();
+      tile.setAttribute('aria-label', tile.textContent.trim() + (locked ? ' (needs Vono Pro)' : ''));
+    });
+    overlay.querySelectorAll('[data-home-note="pro"]').forEach(el=>{ el.textContent = locked ? 'Vono Pro' : ''; });
+    overlay.querySelectorAll('[data-home-note="studio"]').forEach(el=>{
+      el.textContent = hasStudioAccess() ? '' : (locked ? 'Vono Pro' : 'Studio');
+    });
+  }
+
+  async function fetchAppts(){
+    if (!dbAvailable || !profileCode) return [];
+    try{
+      const { data, error } = await supabaseClient.from('appointments').select('*').eq('barber_code', profileCode).eq('status','booked');
+      if (error) throw error;
+      return data || [];
+    }catch(e){ console.warn('home: load appointments failed', e); return []; }
+  }
+
+  function renderToday(appts){
+    const now = new Date();
+    const todayStr = localIso(now);
+    root.querySelector('#home-today-date').textContent = now.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+    const list = (appts || []).filter(a=> a.appt_date === todayStr).sort((a,b)=> minutesOf(a.start_time) - minutesOf(b.start_time));
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const next = list.find(a=> minutesOf(a.start_time) >= nowMin);
+    const summaryEl = root.querySelector('#home-today-summary');
+    const listEl = root.querySelector('#home-today-list');
+    if (!list.length){
+      summaryEl.textContent = 'No appointments today.';
+      listEl.innerHTML = '';
+      return;
+    }
+    summaryEl.textContent = list.length + (list.length === 1 ? ' appointment today' : ' appointments today') +
+      (next ? ' · next at ' + fmtTime12(next.start_time) : ' · all done for today');
+    const shown = list.slice(0, 4);
+    listEl.innerHTML = shown.map(a=>{
+      const svc = (a.services || []).map(s=> s.name).join(', ');
+      const isNext = next && a.id === next.id;
+      return `<div class="cal-appt-row${a.is_vip ? ' is-vip' : ''}"${isNext ? ' style="border-color:var(--brass);"' : ''}>
+        <span class="cal-appt-time">${esc(fmtTime12(a.start_time))}</span>
+        <div style="display:flex; flex-direction:column; gap:1px; min-width:0;">
+          <strong style="font-size:13.5px;">${esc(a.client_name || 'Client')}</strong>
+          <span class="screen-sub" style="margin:0;">${esc(svc)}${a.total_price ? ' · $' + esc(a.total_price) : ''}</span>
+        </div>
+      </div>`;
+    }).join('') + (list.length > shown.length ? `<p class="screen-sub" style="margin:0;">+ ${list.length - shown.length} more today</p>` : '');
+  }
+
+  function renderMonthLocked(){
+    root.querySelector('#home-month-body').style.display = 'none';
+    root.querySelector('#home-month-note').textContent = '';
+    root.querySelector('#btn-home-view-earnings').style.display = 'none';
+    const lockedEl = root.querySelector('#home-month-locked');
+    lockedEl.hidden = false;
+    lockedEl.style.display = 'flex';
+  }
+  function renderMonth(appts, walkinLogs){
+    root.querySelector('#home-month-body').style.display = '';
+    root.querySelector('#btn-home-view-earnings').style.display = '';
+    const lockedEl = root.querySelector('#home-month-locked');
+    lockedEl.hidden = true;
+    lockedEl.style.display = 'none';
+
+    const now = new Date();
+    const todayStr = localIso(now);
+    const todayDay = now.getDate();
+    // Every dated amount, appointments (already happened only, same rule as
+    // Earnings) plus walk-ins, as { date, amount } so any month/day slice is easy.
+    const entries = [];
+    (appts || []).forEach(a=>{
+      if (!a.appt_date || a.appt_date > todayStr) return;
+      entries.push({ date: a.appt_date, amount: Number(a.total_price) || 0 });
+    });
+    (walkinLogs || []).forEach(r=>{
+      const d = r.entry_date ? String(r.entry_date).slice(0,10) : '';
+      if (!d || d > todayStr) return;
+      entries.push({ date: d, amount: (Number(r.count)||0) * (Number(r.price)||0) });
+    });
+    function sumFor(monthKey, maxDay){
+      let t = 0;
+      entries.forEach(e=>{
+        if (e.date.slice(0,7) !== monthKey) return;
+        if (maxDay && parseInt(e.date.slice(8,10), 10) > maxDay) return;
+        t += e.amount;
+      });
+      return t;
+    }
+    const y = now.getFullYear(), m = now.getMonth();
+    const curKey = monthKeyFor(y, m);
+    const prevKey = monthKeyFor(y, m - 1);
+    const curTotal = sumFor(curKey);
+    root.querySelector('#home-month-total').textContent = fmtMoney(curTotal);
+
+    // Compare against the same days last month (1st through today's date), not
+    // the whole prior month, so a few days into a month it isn't an unfair drop.
+    const prevSamePoint = sumFor(prevKey, todayDay);
+    const deltaEl = root.querySelector('#home-month-delta');
+    const noteEl = root.querySelector('#home-month-note');
+    if (prevSamePoint > 0){
+      const pct = Math.round(((curTotal - prevSamePoint) / prevSamePoint) * 100);
+      deltaEl.hidden = false;
+      deltaEl.className = 'home-delta ' + (pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat');
+      deltaEl.textContent = (pct > 0 ? '↑ ' : pct < 0 ? '↓ ' : '') + Math.abs(pct) + '%';
+      noteEl.textContent = 'Compared with the same days last month.';
+    } else {
+      deltaEl.hidden = true;
+      noteEl.textContent = curTotal === 0 ? 'Earnings from completed appointments and walk-ins show up here.' : '';
+    }
+
+    const months = [];
+    for (let i = 5; i >= 0; i--){
+      const key = monthKeyFor(y, m - i);
+      const d = new Date(y, m - i, 1);
+      months.push({ key, label: MONTH_ABBR[d.getMonth()], total: sumFor(key), current: i === 0 });
+    }
+    const maxVal = Math.max.apply(null, months.map(x=> x.total));
+    root.querySelector('#home-bars').innerHTML = months.map(x=>{
+      const px = maxVal > 0 ? Math.round((x.total / maxVal) * 50) : 0;
+      return `<div class="home-bar-col"><div class="home-bar${x.current ? ' current' : ''}" style="height:${px}px;"></div><span class="home-bar-lbl">${x.label}</span></div>`;
+    }).join('');
+    root.querySelector('#home-bars').setAttribute('aria-label',
+      'Earnings for the last six months: ' + months.map(x=> x.label + ' ' + fmtMoney(x.total)).join(', '));
+  }
+
+  window.initHomeTab = async function(){
+    renderGreeting();
+    applyLocks();
+    lastInitAt = Date.now();
+    const token = ++loadToken;
+    const appts = await fetchAppts();
+    if (token !== loadToken) return;
+    renderToday(appts);
+    if (hasActiveAccess()){
+      const walkins = window.fetchAllWalkinLogsForBarber ? await window.fetchAllWalkinLogsForBarber() : [];
+      if (token !== loadToken) return;
+      renderMonth(appts, walkins);
+    } else {
+      renderMonthLocked();
+    }
+  };
+
+  function openMore(){ applyLocks(); overlay.hidden = false; }
+  function closeMore(){ overlay.hidden = true; }
+  function go(target){
+    if (!target) return;
+    if (target === 'more'){ openMore(); return; }
+    closeMore();
+    if (target === 'calendar'){
+      returnHomeAfterCalendar = true;
+      showTab('booking');
+      const btn = document.getElementById('btn-bk-view-calendar');
+      if (btn) btn.click();
+      return;
+    }
+    if (target === 'account'){ showAccountScreen(); return; }
+    if (target.indexOf('tab:') === 0){ showTab(target.slice(4)); return; }
+    if (target.indexOf('biz:') === 0){
+      showTab('business');
+      // Locked pros stay on the Business paywall that showTab() already shows.
+      if (hasActiveAccess()) showBusinessSubtab(target.slice(4));
+    }
+  }
+  root.addEventListener('click', e=>{
+    const el = e.target.closest('[data-home-go]');
+    if (el) go(el.dataset.homeGo);
+  });
+  overlay.addEventListener('click', e=>{
+    if (e.target === overlay){ closeMore(); return; }
+    const el = e.target.closest('[data-home-go]');
+    if (el) go(el.dataset.homeGo);
+  });
+  document.getElementById('btn-home-more-close').addEventListener('click', closeMore);
+  document.addEventListener('keydown', e=>{ if (e.key === 'Escape' && !overlay.hidden) closeMore(); });
+  document.getElementById('btn-home-open-calendar').addEventListener('click', ()=> go('calendar'));
+  document.getElementById('btn-home-view-earnings').addEventListener('click', ()=> go('biz:earnings'));
+  document.getElementById('btn-home-month-trial').addEventListener('click', e=> startCheckout('pro', e.currentTarget));
+  // Closing the calendar after opening it from Home returns to Home, not Booking.
+  document.getElementById('btn-calendar-close').addEventListener('click', ()=>{
+    if (!returnHomeAfterCalendar) return;
+    returnHomeAfterCalendar = false;
+    showTab('home');
+  });
+  // Coming back to the app (e.g. unlocking the phone hours later): refresh the
+  // greeting and numbers if Home is what's on screen and it's been a little while.
+  document.addEventListener('visibilitychange', ()=>{
+    if (document.visibilityState !== 'visible') return;
+    if (!root.classList.contains('show')) return;
+    renderGreeting();
+    if (Date.now() - lastInitAt > 30000) window.initHomeTab();
+  });
+})();
 function applyRoleVisibility(){
   const show = isStudent();
   const paceBtn = document.querySelector('.tab-btn[data-tabbtn="pace"]');
   const ledgerBtn = document.querySelector('.tab-btn[data-tabbtn="ledger"]');
   const bookingBtn = document.querySelector('.tab-btn[data-tabbtn="booking"]');
   const businessBtn = document.querySelector('.tab-btn[data-tabbtn="business"]');
+  const homeBtn = document.querySelector('.tab-btn[data-tabbtn="home"]');
+  if (homeBtn) homeBtn.style.display = show ? 'none' : '';
   if (paceBtn) paceBtn.style.display = show ? '' : 'none';
   if (ledgerBtn) ledgerBtn.style.display = show ? '' : 'none';
   if (bookingBtn) bookingBtn.style.display = show ? 'none' : '';
@@ -3051,7 +3440,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     while (d <= last && guard < 400){ total += schedule[DAYS[d.getDay()]] || 0; d.setDate(d.getDate()+1); guard++; }
     return total;
   }
-  function isoDate(d){ return d.toISOString().slice(0,10); }
+  function isoDate(d){ return localIsoDate(d); }
   function inAnyRange(dateStr, ranges){ return ranges.some(r => dateStr >= r.start && dateStr <= r.end); }
   function fmtDate(d){ return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }
   function simulate(startDateStr, startHours, totalHours, schedule, blockedRanges, partialDeductions, recoveryDay, recoveryHours){
@@ -3360,7 +3749,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   function S(){ return profile.services; }
   function todayIsoSvc(){ return todayIso(); }
   function diffDaysSvc(a, b){ return Math.round((new Date(b+'T00:00:00') - new Date(a+'T00:00:00')) / 86400000); }
-  function isoDateSvc(d){ return d.toISOString().slice(0,10); }
+  function isoDateSvc(d){ return localIsoDate(d); }
   function fmtDateSvc(dateStr){ return new Date(dateStr+'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }
   function fmtSingleDateSvc(dateStr){ return new Date(dateStr+'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric'}); }
   function newLogId(){ return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
@@ -6513,7 +6902,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const d = new Date(dateStr + 'T00:00:00');
     const start = new Date(d); start.setDate(d.getDate() - d.getDay());
     const end = new Date(start); end.setDate(start.getDate() + 6);
-    const iso = x => x.toISOString().slice(0,10);
+    const iso = x => localIsoDate(x);
     return { start: iso(start), end: iso(end) };
   }
   async function loadWalkinLogs(){
@@ -7530,7 +7919,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (!iso) return '';
     try{ return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }catch(e){ return iso; }
   }
-  function rentIso(d){ return d.toISOString().slice(0,10); }
+  function rentIso(d){ return localIsoDate(d); }
   function rentAddDays(iso, days){ const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate()+days); return rentIso(d); }
   function rentAddMonths(iso, months){ const d = new Date(iso + 'T00:00:00'); d.setMonth(d.getMonth()+months); return rentIso(d); }
   // The period that contains `todayIso`, given a cadence + anchor date. Walks
@@ -8195,7 +8584,7 @@ function enterApp(){
   window.__ahcLandingIntent = null;
   let jumpToJobMessages = false;
   try{ jumpToJobMessages = !!new URLSearchParams(window.location.search).get('jobmessage'); }catch(e){}
-  showTab((landingIntent === 'jobs' || jumpToJobMessages) ? 'jobs' : (isStudent() ? 'pace' : 'booking'));
+  showTab((landingIntent === 'jobs' || jumpToJobMessages) ? 'jobs' : (isStudent() ? 'pace' : 'home'));
   if (jumpToJobMessages){
     if (window.__ahcShowJobsMessages) window.__ahcShowJobsMessages();
     try{
@@ -9060,8 +9449,8 @@ document.getElementById('btn-role-change-confirm').addEventListener('click', asy
   populateNotificationsStatus();
   populateAccountListing();
   applyRoleVisibility();
-  const currentTab = (document.querySelector('.tab-btn.active') || {}).dataset ? document.querySelector('.tab-btn.active').dataset.tabbtn : 'booking';
-  showTab(currentTab || 'booking');
+  const currentTab = (document.querySelector('.tab-btn.active') || {}).dataset ? document.querySelector('.tab-btn.active').dataset.tabbtn : 'home';
+  showTab(currentTab || 'home');
   showToast('Role updated. Pace and Ledger are no longer available');
 });
 let deleteAccountArmed = false;

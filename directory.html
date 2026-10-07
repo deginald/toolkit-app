@@ -823,7 +823,7 @@ async function showDetail(code){
 /* =========================================================
    CLIENT BOOKING FLOW
    ========================================================= */
-function todayIso(){ return new Date().toISOString().slice(0,10); }
+function todayIso(){ var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); } // local calendar day, not UTC
 function sanitizeCode(raw){
   let c = (raw||'').trim().toLowerCase().replace(/[^a-z0-9_.~:@+-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
   if (c.length > 60) c = c.slice(0,60);
