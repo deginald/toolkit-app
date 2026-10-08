@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-08T18-00-00Z">
+<meta name="app-build" content="2026-10-09T12-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -105,6 +105,10 @@
   .shome-stat{ gap:4px; padding:12px; }
   .shome-stat .big{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:19px; margin:0; font-variant-numeric:tabular-nums; }
   .shome-stat .big small{ font-size:12px; color:var(--muted); font-weight:600; }
+  .shome-stat[role="button"]{ cursor:pointer; position:relative; padding-right:26px; }
+  .shome-stat[role="button"]::after{ content:'\203A'; position:absolute; right:11px; top:9px; font-size:20px; line-height:1; color:var(--muted); }
+  .shome-stat[role="button"]:active{ background:var(--surface); }
+  .shome-stat[role="button"]:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
   .shome-bar{ height:6px; border-radius:3px; background:var(--line); overflow:hidden; margin-top:6px; }
   .shome-bar > span{ display:block; height:100%; background:var(--brass); border-radius:3px; }
   .shome-tile{ display:flex; align-items:center; gap:10px; padding:12px; border:1px solid var(--line); border-radius:14px; background:var(--paper); color:var(--ink); font-family:'Public Sans',sans-serif; text-align:left; cursor:pointer; min-width:0; }
@@ -947,17 +951,17 @@
           </div>
           <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; border-top:1px solid var(--line); padding-top:12px;">
             <span class="screen-sub" id="shome-asof" style="margin:0;"></span>
-            <button type="button" class="btn btn-primary" id="btn-shome-update" style="flex:none; padding:9px 14px; font-size:13px;">Update hours</button>
+            <button type="button" class="btn btn-primary" id="btn-shome-update" style="flex:none; padding:9px 14px; font-size:13px;">Log absence</button>
           </div>
         </div>
         <div class="shome-grid2" id="shome-stats" hidden>
-          <div class="card shome-stat" id="shome-svc-card">
+          <div class="card shome-stat" id="shome-svc-card" role="button" tabindex="0" data-shome-stat="services" aria-label="Open your services">
             <p class="eyebrow-mini">Services</p>
             <p class="big" id="shome-svc-big"></p>
             <div class="shome-bar" id="shome-svc-bar-wrap"><span id="shome-svc-bar" style="width:0%;"></span></div>
-            <button type="button" class="link-btn" id="btn-shome-svc-add" style="padding:0; align-self:flex-start; display:none;">Add my services</button>
+            <span class="link-btn" id="btn-shome-svc-add" style="padding:0; align-self:flex-start; display:none;">Add my services</span>
           </div>
-          <div class="card shome-stat">
+          <div class="card shome-stat" role="button" tabindex="0" data-shome-stat="week" aria-label="Open your weekly schedule">
             <p class="eyebrow-mini">This week</p>
             <p class="big" id="shome-week-big"></p>
             <p class="screen-sub" id="shome-week-note" style="margin:6px 0 0; font-size:12px;"></p>
@@ -997,17 +1001,17 @@
           <button class="step-btn" data-goto="result"><span class="n">5</span>Updated</button>
         </nav>
         <div class="screen-body" data-screen="setup">
-          <p class="screen-sub">Copy these numbers off your last monthly report or time-clock printout.</p>
+          <p class="screen-sub">Enter the numbers from your school's latest report or time-clock printout. From there Vono counts your hours for you each day, using your schedule below. It skips school breaks and any absence you log, and adds any make-up hours. When your school gives you a new official count, enter it here with its date.</p>
           <div class="field">
             <label>Total hours required</label>
             <div class="input-row"><input id="in-total" type="number" placeholder="e.g. 1500"><span class="suffix">hrs</span></div>
           </div>
           <div class="field">
-            <label>Hours earned, as of</label>
+            <label>Date of that report</label>
             <div class="input-row"><input id="in-asof" type="date"></div>
           </div>
           <div class="field">
-            <label>Hours earned so far</label>
+            <label>Hours on that report</label>
             <div class="input-row"><input id="in-earned" type="number" placeholder="e.g. 400"><span class="suffix">hrs</span></div>
           </div>
           <div class="field">
@@ -1066,9 +1070,10 @@
             <div class="meter-track"><div class="meter-fill" id="db-meter"></div></div>
             <div class="meter-labels"><span id="db-hours">0 / 0 hrs</span><span id="db-pct">0%</span></div>
           </div>
+          <p class="screen-sub" id="db-est-note" style="margin:0; font-size:12px;"></p>
           <div class="card" style="flex-direction:row; align-items:center; justify-content:space-between;">
             <div><p class="eyebrow-mini2">Hours remaining</p><div class="big-date" id="db-remaining" style="font-size:20px;">&nbsp;</div></div>
-            <div style="text-align:right;"><p class="eyebrow-mini2">Hours earned</p><div class="big-date" id="db-earned-stat" style="font-size:20px; color:var(--muted);">&nbsp;</div></div>
+            <div style="text-align:right;"><p class="eyebrow-mini2">Hours earned (est.)</p><div class="big-date" id="db-earned-stat" style="font-size:20px; color:var(--muted);">&nbsp;</div></div>
           </div>
           <div class="card">
             <p class="eyebrow-mini2" style="margin-bottom:2px;">Weekly schedule</p>
@@ -1120,6 +1125,22 @@
               <div class="big-date" id="ab-estimate" style="font-size:17px;">&nbsp;</div>
             </div>
             <button class="btn btn-primary" id="btn-add-absence" style="padding:10px;">+ Add absence</button>
+          </div>
+          <div class="card" style="gap:10px;">
+            <p class="eyebrow-mini2">Made up time or an extra day?</p>
+            <p class="screen-sub" style="margin:0;">Add hours you attended on a day that wasn't on your schedule, like a make-up Saturday. They count toward your total.</p>
+            <div id="extra-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+            <div class="input-row"><span class="suffix">Date</span><input id="ex-date" type="date"></div>
+            <div style="display:flex; gap:8px;">
+              <div class="input-row" style="flex:1;"><input id="ex-hours" type="number" min="0" max="16" step="1" value="4"><span class="suffix">hrs</span></div>
+              <div class="input-row" style="flex:1;">
+                <select id="ex-min">
+                  <option value="0" selected>:00</option><option value="15">:15</option>
+                  <option value="30">:30</option><option value="45">:45</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-outline" id="btn-add-extra" style="padding:10px;">+ Add extra hours</button>
           </div>
           <div class="spacer"></div>
           <button class="btn btn-primary" data-goto="result">See updated date</button>
@@ -2966,7 +2987,7 @@ function defaultProfile(name){
     pace: {
       total: null, asOf: todayIso(), earned: null,
       schedule: {Sun:0, Mon:0, Tue:0, Wed:0, Thu:0, Fri:0, Sat:0},
-      breaks: [], absences: []
+      breaks: [], absences: [], extras: []
     },
     services: {
       total: null, asOf: todayIso(), earned: null, targetDate: null,
@@ -3571,6 +3592,7 @@ document.getElementById('btn-bk-landing-dismiss').addEventListener('click', ()=>
     { key:'rate', title:'Rate your first skill', sub:'Start your Ledger. It stays yours.', cta:'Rate my first skill' }
   ];
   let nextStepKey = 'hours';
+  let updateTarget = 'absence';
   function render(){
     if (!profile) return;
     const now = new Date();
@@ -3631,12 +3653,21 @@ document.getElementById('btn-bk-landing-dismiss').addEventListener('click', ()=>
       const small = document.createElement('span'); small.style.cssText = 'font-size:13px; color:var(--muted); font-weight:600;';
       small.textContent = 'of ' + Math.round(pace.total).toLocaleString() + ' hrs'; hrsEl.appendChild(small);
       const gradEl = root.querySelector('#shome-grad');
-      gradEl.textContent = pace.projected ? fmtLong(pace.projected) : '-';
+      gradEl.textContent = pace.complete ? 'Hours complete' : (pace.projected ? fmtLong(pace.projected) : '-');
       gradEl.style.color = color;
-      const age = pace.asOf ? daysBetweenIso(pace.asOf, localIsoDate(now)) : 0;
       const asofEl = root.querySelector('#shome-asof');
-      asofEl.textContent = age > 14 ? ('Your hours are ' + age + ' days old. Update them from your latest report.') : ('Hours as of ' + fmtShort(pace.asOf));
-      asofEl.style.color = age > 14 ? 'var(--brass)' : '';
+      const updBtn = root.querySelector('#btn-shome-update');
+      if (pace.weekly <= 0){
+        asofEl.textContent = 'Add your weekly schedule so Vono can count your hours.';
+        asofEl.style.color = 'var(--brass)';
+        updBtn.textContent = 'Add schedule'; updateTarget = 'setup';
+      } else {
+        asofEl.style.color = '';
+        updBtn.textContent = 'Log absence'; updateTarget = 'absence';
+        if (pace.complete) asofEl.textContent = 'You have reached your required hours (estimated).';
+        else if (pace.estimated) asofEl.textContent = 'Estimated from your schedule. Last reported ' + Math.round(pace.reported).toLocaleString() + ' hrs on ' + fmtShort(pace.asOf).replace(' ', '\u00a0') + '.';
+        else asofEl.textContent = 'Hours as of ' + fmtShort(pace.asOf);
+      }
 
       // Services + this-week cards
       const big = root.querySelector('#shome-svc-big'); big.innerHTML = '';
@@ -3667,10 +3698,22 @@ document.getElementById('btn-bk-landing-dismiss').addEventListener('click', ()=>
     }
   }
   root.querySelector('#btn-shome-setup-cta').addEventListener('click', setupCta);
-  root.querySelector('#btn-shome-update').addEventListener('click', ()=>{ showTab('pace'); });
-  root.querySelector('#btn-shome-svc-add').addEventListener('click', ()=>{
+  root.querySelector('#btn-shome-update').addEventListener('click', ()=>{
     showTab('pace');
-    const b = document.querySelector('#pace-mode-toggle [data-pace-mode="services"]'); if (b) b.click();
+    if (window.__ahcPaceGoto) window.__ahcPaceGoto(updateTarget);
+  });
+  // The Services and This week cards are tappable, like the Refresher and Consult tiles.
+  function openStatCard(kind){
+    showTab('pace');
+    if (kind === 'services'){
+      const b = document.querySelector('#pace-mode-toggle [data-pace-mode="services"]'); if (b) b.click();
+    } else if (window.__ahcPaceGoto){
+      window.__ahcPaceGoto('setup');
+    }
+  }
+  root.querySelectorAll('[data-shome-stat]').forEach(card=>{
+    card.addEventListener('click', ()=> openStatCard(card.dataset.shomeStat));
+    card.addEventListener('keydown', e=>{ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openStatCard(card.dataset.shomeStat); } });
   });
   root.addEventListener('click', e=>{
     const el = e.target.closest('[data-shome-go]');
@@ -3888,11 +3931,13 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   function isoDate(d){ return localIsoDate(d); }
   function inAnyRange(dateStr, ranges){ return ranges.some(r => dateStr >= r.start && dateStr <= r.end); }
   function fmtDate(d){ return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }
-  function simulate(startDateStr, startHours, totalHours, schedule, blockedRanges, partialDeductions, recoveryDay, recoveryHours){
+  function simulate(startDateStr, startHours, totalHours, schedule, blockedRanges, partialDeductions, recoveryDay, recoveryHours, extraHours){
     let hours = startHours;
     let date = new Date(startDateStr + 'T00:00:00');
     const partialMap = {};
     (partialDeductions||[]).forEach(p => { partialMap[p.date] = (partialMap[p.date]||0) + p.amount; });
+    const extraMap = {};
+    (extraHours||[]).forEach(x => { extraMap[x.date] = (extraMap[x.date]||0) + x.amount; });
     let guard = 0;
     while (hours < totalHours && guard < 3650){
       date.setDate(date.getDate()+1); guard++;
@@ -3902,11 +3947,46 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       let sched = blocked ? 0 : (schedule[dayName] || 0);
       if (!blocked && partialMap[dateStr]) sched = Math.max(0, sched - partialMap[dateStr]);
       if (!blocked && recoveryDay && dayName === recoveryDay && (schedule[dayName]||0) === 0) sched = recoveryHours;
-      hours += sched;
+      hours += sched + (extraMap[dateStr]||0);
     }
     return date;
   }
   function P(){ return profile.pace; }
+  // ---- Automatic hours ----
+  // The student's last reported number (P().earned as of P().asOf) is the anchor. Every day
+  // after that date and before today adds that weekday's scheduled hours, unless the day is in a
+  // school break or a full absence; a partial absence subtracts the hours missed; make-up hours
+  // add extra. Nothing is stored: the estimate is recomputed on demand, so logging an absence
+  // for a past day corrects the total, and a new official count simply moves the anchor.
+  function pBlocked(){ return (P().breaks||[]).concat((P().absences||[]).filter(a=>a.type==='full').map(a=>({start:a.start, end:a.end}))); }
+  function pPartials(){ return (P().absences||[]).filter(a=>a.type==='partial').map(a=>({date:a.date, amount:a.amount})); }
+  function pExtras(){ return (P().extras||[]).map(x=>({date:x.date, amount:Number(x.amount)||0})); }
+  function yesterdayIso(){ const d = new Date(); d.setDate(d.getDate()-1); return isoDate(d); }
+  function countHours(asOfIso, throughIso, schedule, blockedRanges, partials, extras){
+    if (!asOfIso || !throughIso || throughIso <= asOfIso) return 0;
+    const partialMap = {}, extraMap = {};
+    (partials||[]).forEach(p => { partialMap[p.date] = (partialMap[p.date]||0) + p.amount; });
+    (extras||[]).forEach(x => { extraMap[x.date] = (extraMap[x.date]||0) + x.amount; });
+    let hours = 0, guard = 0;
+    const d = new Date(asOfIso + 'T00:00:00');
+    while (guard < 3650){
+      d.setDate(d.getDate()+1); guard++;
+      const ds = isoDate(d);
+      if (ds > throughIso) break;
+      const blocked = inAnyRange(ds, blockedRanges);
+      let sched = blocked ? 0 : ((schedule||{})[DAYS[d.getDay()]] || 0);
+      if (!blocked && partialMap[ds]) sched = Math.max(0, sched - partialMap[ds]);
+      hours += sched + (extraMap[ds]||0);
+    }
+    return hours;
+  }
+  function estimateEarned(anchor, asOfIso, total){
+    const added = countHours(asOfIso, yesterdayIso(), P().schedule || {}, pBlocked(), pPartials(), pExtras());
+    let earned = (Number(anchor)||0) + added;
+    if (total > 0) earned = Math.min(total, earned);
+    return { earned, added };
+  }
+  function fmtNum(n){ return (Math.round((Number(n)||0) * 10) / 10).toLocaleString(); }
   function buildDayGrid(){
     const grid = root.querySelector('#day-grid');
     grid.innerHTML = '';
@@ -4000,15 +4080,35 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#ab-total-count').textContent = days;
     root.querySelector('#ab-total-hours').textContent = fmtHours(totalHours);
   }
+  function renderExtras(){
+    const list = root.querySelector('#extra-list');
+    list.innerHTML = '';
+    const extras = P().extras || [];
+    extras.forEach((x, i)=>{
+      const el = document.createElement('div');
+      el.className = 'break-item';
+      el.innerHTML = `<div class="bi-text"><span class="bi-label">Extra hours</span><span class="bi-range">${fmtSingleDate(x.date)} \u00b7 ${fmtHours(Number(x.amount)||0)}</span></div><div class="bi-actions"><button class="bi-remove" data-idx="${i}" aria-label="Remove">\u00d7</button></div>`;
+      list.appendChild(el);
+    });
+    list.querySelectorAll('.bi-remove').forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        P().extras.splice(parseInt(e.currentTarget.dataset.idx), 1);
+        renderExtras();
+        persistProfile({pace:P()});
+      });
+    });
+  }
   function recalcDashboard(){
     const total = parseFloat(root.querySelector('#in-total').value)||0;
     const asOf = root.querySelector('#in-asof').value || todayIso();
-    const earned = parseFloat(root.querySelector('#in-earned').value)||0;
-    const baselineDate = simulate(asOf, earned, total, P().schedule, P().breaks, [], null, 0);
+    const reported = parseFloat(root.querySelector('#in-earned').value)||0;
+    const est = estimateEarned(reported, asOf, total);
+    const earned = est.earned;
+    const baselineDate = simulate(asOf, reported, total, P().schedule, P().breaks, [], null, 0);
     pstate.originalDate = baselineDate;
     const blocked = P().breaks.concat(P().absences.filter(a=>a.type==='full').map(a=>({start:a.start, end:a.end})));
     const partials = P().absences.filter(a=>a.type==='partial').map(a=>({date:a.date, amount:a.amount}));
-    const currentDate = simulate(asOf, earned, total, P().schedule, blocked, partials, null, 0);
+    const currentDate = simulate(asOf, reported, total, P().schedule, blocked, partials, null, 0, pExtras());
     root.querySelector('#db-date').textContent = total>0 ? fmtDate(currentDate) : 'Add your hours to begin';
     const totalBreakDays = P().breaks.reduce((sum,b)=> sum + daysBetween(b.start,b.end), 0);
     root.querySelector('#db-breaks-note').textContent = P().breaks.length
@@ -4017,7 +4117,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const slipDays = Math.round((currentDate - baselineDate) / 86400000);
     root.querySelector('#db-absence-note').textContent = absDays
       ? `${slipDays > 0 ? `Pushed back ${slipDays} day${slipDays===1?'':'s'} by ` : 'Includes '}${absDays} day${absDays===1?'':'s'} absent so far` : '';
-    root.querySelector('#db-hours').textContent = `${earned.toLocaleString()} / ${total.toLocaleString()} hrs`;
+    root.querySelector('#db-hours').textContent = `${fmtNum(earned)} / ${total.toLocaleString()} hrs`;
+    const dbEst = root.querySelector('#db-est-note');
+    if (dbEst) dbEst.textContent = (est.added > 0 ? 'Estimated from your schedule. ' : '') + (reported > 0 ? `Last reported: ${fmtNum(reported)} hrs on ${fmtSingleDate(asOf)}.` : '');
     const pct = total>0 ? Math.min(100, Math.round((earned/total)*100)) : 0;
     root.querySelector('#db-pct').textContent = pct + '%';
     root.querySelector('#db-meter').style.width = pct + '%';
@@ -4029,8 +4131,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const ringPctEl = root.querySelector('#db-ring-pct');
     ringPctEl.textContent = pct + '%';
     ringPctEl.style.color = ringColor;
-    root.querySelector('#db-remaining').textContent = `${Math.max(0, total - earned).toLocaleString()} hrs`;
-    root.querySelector('#db-earned-stat').textContent = `${earned.toLocaleString()} hrs`;
+    root.querySelector('#db-remaining').textContent = `${fmtNum(Math.max(0, total - earned))} hrs`;
+    root.querySelector('#db-earned-stat').textContent = `${fmtNum(earned)} hrs`;
     const schedRow = root.querySelector('#db-sched');
     schedRow.innerHTML = '';
     DAYS.forEach((d,i)=>{
@@ -4066,7 +4168,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const blocked = P().breaks.concat(P().absences.filter(a=>a.type==='full').map(a=>({start:a.start, end:a.end})));
     const partials = P().absences.filter(a=>a.type==='partial').map(a=>({date:a.date, amount:a.amount}));
     const recoverOn = root.querySelector('#recover-switch').classList.contains('on');
-    const newDate = simulate(asOf, earned, total, P().schedule, blocked, partials, recoverOn ? 'Sat' : null, 4);
+    const newDate = simulate(asOf, earned, total, P().schedule, blocked, partials, recoverOn ? 'Sat' : null, 4, pExtras());
     root.querySelector('#res-old').textContent = pstate.originalDate ? fmtDate(pstate.originalDate) : '-';
     root.querySelector('#res-new').textContent = fmtDate(newDate);
     const absDays = absenceDayCount(P().absences);
@@ -4112,6 +4214,18 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   root.querySelector('#ab-start').addEventListener('input', updateAbsenceEstimate);
   root.querySelector('#ab-end').addEventListener('input', updateAbsenceEstimate);
   root.querySelectorAll('.mode-btn').forEach(btn=> btn.addEventListener('click', ()=> setAbsenceMode(btn.dataset.mode)));
+  root.querySelector('#btn-add-extra').addEventListener('click', ()=>{
+    const date = root.querySelector('#ex-date').value;
+    const hrs = parseFloat(root.querySelector('#ex-hours').value)||0;
+    const min = parseFloat(root.querySelector('#ex-min').value)||0;
+    const amount = hrs + (min/60);
+    if (!date || amount <= 0) return;
+    if (!Array.isArray(P().extras)) P().extras = [];
+    P().extras.push({ date, amount });
+    root.querySelector('#ex-date').value = '';
+    renderExtras();
+    persistProfile({pace:P()});
+  });
   root.querySelector('#btn-add-absence').addEventListener('click', ()=>{
     const reason = root.querySelector('#ab-reason').value;
     if (pstate.absenceMode === 'full'){
@@ -4141,31 +4255,33 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const earned = parseFloat(root.querySelector('#in-earned').value)||0;
     const blocked = P().breaks.concat(P().absences.filter(a=>a.type==='full').map(a=>({start:a.start, end:a.end})));
     const partials = P().absences.filter(a=>a.type==='partial').map(a=>({date:a.date, amount:a.amount}));
-    const currentDate = simulate(asOf, earned, total, P().schedule, blocked, partials, null, 0);
+    const currentDate = simulate(asOf, earned, total, P().schedule, blocked, partials, null, 0, pExtras());
     return isoDate(currentDate);
   };
   // Read-only snapshot for the student Home screen (uses the saved Hours numbers, so it
   // works before the Pace tab itself has ever been opened this session).
   window.__ahcPaceSummary = function(){
     const total = parseFloat(P().total)||0;
-    const earned = parseFloat(P().earned)||0;
+    const reported = parseFloat(P().earned)||0;
     const asOf = P().asOf || todayIso();
     const sched = P().schedule || {};
     const weekly = DAYS.reduce((sum,d)=> sum + (Number(sched[d])||0), 0);
+    const est = estimateEarned(reported, asOf, total);
+    const earned = est.earned;
     let projected = null, behind = false;
     if (total > 0){
       const breaks = P().breaks || [];
       const absences = P().absences || [];
       const blocked = breaks.concat(absences.filter(a=>a.type==='full').map(a=>({start:a.start, end:a.end})));
       const partials = absences.filter(a=>a.type==='partial').map(a=>({date:a.date, amount:a.amount}));
-      const baseline = simulate(asOf, earned, total, sched, breaks, [], null, 0);
-      const current = simulate(asOf, earned, total, sched, blocked, partials, null, 0);
+      const baseline = simulate(asOf, reported, total, sched, breaks, [], null, 0);
+      const current = simulate(asOf, reported, total, sched, blocked, partials, null, 0, pExtras());
       projected = isoDate(current);
       behind = current > baseline;
     }
     const today = todayIso();
     const nextBreak = (P().breaks || []).filter(b=> b.end >= today).sort((a,b)=> a.start < b.start ? -1 : 1)[0] || null;
-    return { total, earned, asOf, weekly, projected, behind, nextBreak };
+    return { total, earned, reported, estimated: est.added > 0, complete: total > 0 && earned >= total, asOf, weekly, projected, behind, nextBreak };
   };
   window.initPaceTab = function(){
     root.querySelector('#in-total').value = P().total || '';
@@ -4174,8 +4290,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     buildDayGrid();
     renderBreaks();
     renderAbsences();
+    renderExtras();
     setAbsenceMode('full');
     goto('setup');
+  };
+  // Lets the student Home open a specific step of the Hours flow (used by the Log absence button).
+  window.__ahcPaceGoto = function(step){
+    const hb = document.querySelector('#pace-mode-toggle [data-pace-mode="hours"]'); if (hb) hb.click();
+    goto(step);
   };
   window._paceSyncBeforeSave = function(){
     P().total = parseFloat(root.querySelector('#in-total').value)||0;
