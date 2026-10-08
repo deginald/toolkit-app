@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-08T05-00-00Z">
+<meta name="app-build" content="2026-10-08T06-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -479,6 +479,10 @@
           </div>
           <button class="btn btn-primary" id="btn-enable-notifications" type="button">Turn on notifications</button>
           <p class="foot-note-small" id="notifications-status-note">&nbsp;</p>
+        <div style="margin-top:12px;">
+          <button class="btn btn-secondary" id="btn-notif-check" type="button">Check messages and notifications</button>
+          <pre id="notif-check-out" style="white-space:pre-wrap;word-break:break-word;font-size:12px;margin:8px 0 0;"></pre>
+        </div>
           <p class="foot-note-small">Not seeing the message text in a notification? On iPhone, check Settings &rarr; Notifications &rarr; Vono &rarr; Show Previews, and set it to Always.</p>
         </div>
         <div style="border-top:1px solid var(--line); padding-top:16px;">
@@ -2725,6 +2729,44 @@ registerServiceWorker();
   // to be showing someone a stale copy without them knowing it.
   window.addEventListener('pageshow', checkForUpdate);
 })();
+</script>
+<script>
+document.addEventListener('click', async (ev)=>{
+  const btn = ev.target.closest && ev.target.closest('#btn-notif-check'); if (!btn) return;
+  const out = document.getElementById('notif-check-out'); const lines = [];
+  const say = t => { lines.push(t); out.textContent = lines.join('\n'); };
+  btn.disabled = true; out.textContent = 'Checking…';
+  try{
+    const me = clientCode;
+    say('Build: ' + ((document.querySelector('meta[name="app-build"]')||{}).content || '?'));
+    say('Your code: ' + (me || 'NONE'));
+    if (!supabaseClient || !me){ say('FAILED: not connected or not logged in.'); btn.disabled = false; return; }
+    let s = await supabaseClient.auth.getSession();
+    say('Login session: ' + ((s && s.data && s.data.session) ? 'yes' : 'NO'));
+    // 1. can this login save a message row?
+    const id = (self.crypto && crypto.randomUUID) ? crypto.randomUUID() : null;
+    let t0 = Date.now();
+    try{
+      const r = await Promise.race([ supabaseClient.from('quick_messages').insert({ id, appointment_id:'check', sender_role:'client', sender_name:'Check', message:'Check: this is a test message.', status:'sent', recipient_code: me, recipient_role:'client' }), new Promise(res=>setTimeout(()=>res({error:{message:'no answer after 12 seconds'}}),12000)) ]);
+      say('1. Save a message: ' + (r.error ? 'FAILED - ' + r.error.message : 'OK') + ' (' + (Date.now()-t0) + ' ms)');
+    }catch(e){ say('1. Save a message: FAILED - ' + (e && e.message || e)); }
+    // 2. can it read messages addressed to it?
+    t0 = Date.now();
+    try{
+      const r = await Promise.race([ supabaseClient.from('quick_messages').select('id').eq('recipient_code', me).eq('recipient_role','client'), new Promise(res=>setTimeout(()=>res({error:{message:'no answer after 12 seconds'}}),12000)) ]);
+      say('2. Read your messages: ' + (r.error ? 'FAILED - ' + r.error.message : 'OK, ' + (r.data||[]).length + ' waiting') + ' (' + (Date.now()-t0) + ' ms)');
+    }catch(e){ say('2. Read your messages: FAILED - ' + (e && e.message || e)); }
+    // 3. does the notification function answer?
+    t0 = Date.now();
+    try{
+      const r = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id:'check-does-not-exist', event:'booked' } });
+      const st = r && r.error ? ('FAILED - ' + (r.error.message || 'error') + (r.error.context && r.error.context.status ? ' (code ' + r.error.context.status + ')' : '')) : ('answered: ' + JSON.stringify(r && r.data));
+      say('3. Notification function: ' + st + ' (' + (Date.now()-t0) + ' ms)');
+    }catch(e){ say('3. Notification function: FAILED - ' + (e && e.message || e)); }
+    say('Done. Screenshot this and send it to Claude.');
+  }catch(e){ say('Check crashed: ' + (e && e.message || e)); }
+  btn.disabled = false;
+});
 </script>
 <script>document.querySelectorAll('.build-tag').forEach(function(e){var m=document.querySelector('meta[name="app-build"]');e.textContent='Version '+(m?m.content.replace(/^\d{4}-/,'').replace(/-00Z$/,'').replace('T',' '):'?');});</script>
 </body>
