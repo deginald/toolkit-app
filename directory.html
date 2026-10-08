@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono: Find a Pro</title>
-<meta name="app-build" content="2026-10-08T12-00-00Z">
+<meta name="app-build" content="2026-10-08T18-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -333,7 +333,6 @@
         <div id="bkc-step-success" style="display:none; flex-direction:column; gap:12px;">
           <p class="screen-title" style="margin:0;">You're booked!</p>
           <p class="screen-sub" id="bkc-success-summary" style="margin:0;"></p>
-          <p class="screen-sub" id="bkc-notice-diag" style="margin:0;font-size:12px;opacity:.7;white-space:pre-line;"></p>
           <div id="bkc-pay-links" style="display:flex; flex-direction:column; gap:8px;"></div>
           <button class="btn btn-outline" id="btn-bkc-add-calendar" type="button">Add to calendar</button>
           <button class="btn btn-ghost" id="btn-bkc-book-again" type="button">Book another appointment</button>
@@ -1340,9 +1339,8 @@ document.getElementById('btn-bkc-confirm').addEventListener('click', async ()=>{
     try{ const nres = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: appt.id, event: 'booked' },
       fallback: { appointment_id: appt.id, recipient_code: appt.barber_code, recipient_role: 'professional', sender_role: 'client', sender_name: null,
         message: `New booking: ${appt.client_name}, ${qmWhen(appt.appt_date, appt.start_time)}.` } }); 
-      const dg = document.getElementById('bkc-notice-diag');
-      if (dg) dg.textContent = 'Message for ' + bkc.pro.name + ' (code ' + bkc.pro.code + '): popup ' + (nres && nres.backupSaved ? 'saved' : 'NOT saved' + (nres && nres.backupError ? ' - ' + nres.backupError : '')) + '. Build ' + ((document.querySelector('meta[name="app-build"]')||{}).content||'?').replace(/^\d{4}-/,'');
-    }catch(e){ console.warn('booking notification failed', e); const dg = document.getElementById('bkc-notice-diag'); if (dg) dg.textContent = 'Message for the professional failed: ' + ((e && e.message) || e); }
+      if (!(nres && nres.backupSaved)) console.warn('booking notice: popup not saved', nres && nres.backupError);
+    }catch(e){ console.warn('booking notification failed', e); }
   }catch(e){
     console.warn('booking failed', e);
     statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
