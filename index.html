@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-08T06-00-00Z">
+<meta name="app-build" content="2026-10-08T07-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -2665,29 +2665,34 @@ try{
       // function didn't, so the popup never depends on the function's own database write.
       const fb = opts && opts.fallback;
       if (opts && 'fallback' in opts){ opts = Object.assign({}, opts); delete opts.fallback; }
-      let msgId = null;
+      let msgId = null, backup = null;
       if (fb){
         try{ msgId = (self.crypto && crypto.randomUUID) ? crypto.randomUUID() : null; }catch(e){}
-        if (msgId) opts = Object.assign({}, opts, { body: Object.assign({}, opts.body, { message_id: msgId }) });
+        if (msgId){
+          opts = Object.assign({}, opts, { body: Object.assign({}, opts.body, { message_id: msgId }) });
+          // Save the on-screen message right away, alongside the function call, so the popup
+          // exists even if the function is slow, hangs or fails. The function reuses the same id.
+          backup = (async () => {
+            try{
+              if (fb.recipient_role === 'professional'){
+                const pr = await supabaseClient.from('profiles').select('notify_appt_events').eq('code', fb.recipient_code).maybeSingle();
+                if (pr && pr.data && pr.data.notify_appt_events === false) return false;
+              }
+              const ins = await supabaseClient.from('quick_messages').insert({
+                id: msgId, appointment_id: String(fb.appointment_id), sender_role: fb.sender_role, sender_name: fb.sender_name || null,
+                message: fb.message, status: 'sent', recipient_code: fb.recipient_code, recipient_role: fb.recipient_role
+              });
+              if (ins && ins.error){ console.warn('popup message not saved', ins.error.message); return false; }
+              return true;
+            }catch(e){ console.warn('popup message failed', e); return false; }
+          })();
+        }
       }
       const res = await Promise.race([
         rawInvoke(name, opts),
-        new Promise(resolve => setTimeout(() => resolve({ data:null, error:{ message:'timed out' } }), 10000))
+        new Promise(resolve => setTimeout(() => resolve({ data:null, error:{ message:'timed out' } }), 8000))
       ]);
-      if (fb && msgId){
-        const d = res && res.data;
-        const skip = d && (d.saved === true || d.reason === 'opted_out' || d.reason === 'messaging_locked');
-        if (!skip){
-          try{
-            const ins = await supabaseClient.from('quick_messages').insert({
-              id: msgId, appointment_id: String(fb.appointment_id), sender_role: fb.sender_role, sender_name: fb.sender_name || null,
-              message: fb.message, status: 'sent', recipient_code: fb.recipient_code, recipient_role: fb.recipient_role
-            });
-            if (ins && ins.error) console.warn('backup popup message not saved', ins.error.message);
-            else if (res) res.backupSaved = true;
-          }catch(e){ console.warn('backup popup message failed', e); }
-        }
-      }
+      if (backup){ const okSaved = await backup; if (res && okSaved) res.backupSaved = true; }
       return res;
     };
     supabaseClient.functions.__timeoutWrapped = true;
@@ -6388,9 +6393,15 @@ async function saveAppointmentChange(id, core, extras){
       if (statusEl) statusEl.textContent = 'Sending…';
       e.target.disabled = true;
       try{
-        const { data, error } = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: sendId, sender_role: 'barber', message } });
-        if (error) throw error;
-        if (data && data.ok){
+        const qa = (typeof bkApptCache !== 'undefined' ? bkApptCache : []).find(x=> String(x.id) === String(sendId));
+        const qres = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: sendId, sender_role: 'barber', message },
+          fallback: (qa && qa.client_code && hasActiveAccess()) ? { appointment_id: sendId, recipient_code: qa.client_code, recipient_role: 'client', sender_role: 'barber', sender_name: profile.name || null,
+            message: `${profile.name || 'Your professional'}: ${message}` } : undefined });
+        const data = qres && qres.data, error = qres && qres.error;
+        if (error && !qres.backupSaved) throw error;
+        if (!(data && data.ok) && qres.backupSaved && !(data && (data.reason === 'messaging_locked'))){
+          if (statusEl) statusEl.textContent = 'Sent. They will see it next time they open Vono.';
+        } else if (data && data.ok){
           if (statusEl) statusEl.textContent = 'Sent.';
         } else if (data && data.reason === 'not_subscribed'){
           if (statusEl) statusEl.textContent = "This client hasn't turned on notifications yet, so this can't be sent.";
