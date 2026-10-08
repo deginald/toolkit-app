@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-08T03-00-00Z">
+<meta name="app-build" content="2026-10-08T04-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -544,7 +544,7 @@
       <div><p class="eyebrow-mini" style="margin-bottom:8px;">Pick a day</p><div class="cs-days" id="cs-days"></div></div>
       <div><p class="eyebrow-mini" style="margin-bottom:8px;">Open times</p><div class="cs-chips" id="cs-times"></div></div>
       <p class="screen-sub" id="cs-rule" style="font-size:12.5px;">&nbsp;</p>
-      <p class="screen-sub" id="cs-status" style="margin:0;" aria-live="polite"></p>
+      <p class="screen-sub" id="cs-status" style="margin:0;white-space:pre-line;" aria-live="polite"></p>
       <p class="build-tag" style="margin:8px 0 0;font-size:11px;opacity:.5;text-align:center;"></p>
       <div class="cs-actions"><button type="button" class="btn btn-primary" id="cs-save" disabled>Confirm new time</button><button type="button" class="btn btn-outline" id="cs-back">Back</button></div>
     </div>
@@ -1337,6 +1337,13 @@ async function loadUpcomingAppointments(){
 // change (for example a login that isn't allowed to touch that row) answers with "no error,
 // zero rows" -- so this asks for the changed row back and treats an empty answer as a failure.
 // Also never waits forever: after 15 seconds it reports the save as not finished.
+function notifyDiag(res){
+  const d = res && res.data, e = res && res.error;
+  if (e) return 'Notice not sent: ' + (e.message || 'function error') + (e.context && e.context.status ? ' (code ' + e.context.status + ')' : '');
+  if (!d) return 'Notice not sent: no answer from the function';
+  if (d.ok) return '';
+  return 'Notice result: ' + (d.reason || d.error || 'unknown') + (d.reason === 'not_subscribed' ? ' (no push on that device; on-screen message saved)' : '');
+}
 function withDeadline(p, ms, msg){
   return Promise.race([p, new Promise((_, rej)=> setTimeout(()=> rej(new Error(msg)), ms))]);
 }
@@ -1489,13 +1496,15 @@ csEl('cs-save').addEventListener('click', async ()=>{
   // The change is saved: show it right away, then send the notification.
   statusEl.textContent = 'Changed. Telling ' + a.barber_name + '…';
   loadUpcomingAppointments();
-  let told = `Changed. ${a.barber_name} has been notified.`;
+  let told = `Changed. ${a.barber_name} has been notified.`, diag = '';
   try{
-    const { data } = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: a.id, event: 'changed', changed_by: 'client', previous: prev } });
+    const res = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: a.id, event: 'changed', changed_by: 'client', previous: prev } });
+    const data = res && res.data;
     if (!(data && data.ok)) told = `Changed. ${a.barber_name} will see it next time they open Vono.`;
-  }catch(err){ console.warn('change notification failed', err); told = 'Changed. We could not notify them right now, so consider sending a quick note.'; }
-  statusEl.textContent = told;
-  setTimeout(closeApptChange, 1400);
+    diag = notifyDiag(res);
+  }catch(err){ console.warn('change notification failed', err); told = 'Changed. We could not notify them right now, so consider sending a quick note.'; diag = 'Notice not sent: ' + (err && err.message || err); }
+  statusEl.textContent = told + (diag ? '\n' + diag : '');
+  setTimeout(closeApptChange, diag ? 9000 : 1400);
   loadUpcomingAppointments();
 });
 
