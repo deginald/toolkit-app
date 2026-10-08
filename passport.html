@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-08T07-00-00Z">
+<meta name="app-build" content="2026-10-08T08-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -1652,9 +1652,24 @@ function renderUpcoming(list){
         if (statusEl) statusEl.textContent = 'Sending…';
         btn.disabled = true;
         try{
-          const { data, error } = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: apptId, sender_role: 'client', message } });
-          if (error) throw error;
-          if (data && data.ok){
+          // Same rule the function applies: messaging is part of a paid plan. Checked here too so the
+          // message can be saved on screen right away, even if the function is slow.
+          const ap = list.find(x=> String(x.id) === String(apptId));
+          let planOk = false;
+          if (ap && ap.barber_code){
+            try{
+              const pr = await withDeadline(supabaseClient.from('profiles').select('subscription_status').eq('code', ap.barber_code).maybeSingle(), 5000, 'plan check timed out');
+              planOk = !!(pr && pr.data && ['trialing','active','past_due'].includes(pr.data.subscription_status));
+            }catch(e){ planOk = false; }
+          }
+          const qres = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: apptId, sender_role: 'client', message },
+            fallback: (ap && planOk) ? { appointment_id: apptId, recipient_code: ap.barber_code, recipient_role: 'professional', sender_role: 'client', sender_name: ap.client_name || null,
+              message: `${ap.client_name || 'Your client'}: ${message}` } : undefined });
+          const data = qres && qres.data, error = qres && qres.error;
+          if (error && !qres.backupSaved) throw error;
+          if (!(data && data.ok) && qres.backupSaved){
+            if (statusEl) statusEl.textContent = 'Sent. They will see it next time they open Vono.';
+          } else if (data && data.ok){
             if (statusEl) statusEl.textContent = 'Sent.';
           } else if (data && data.reason === 'not_subscribed'){
             if (statusEl) statusEl.textContent = "Your barber hasn't turned on notifications yet, so this can't be sent.";
