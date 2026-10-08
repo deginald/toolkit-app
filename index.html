@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-08T04-00-00Z">
+<meta name="app-build" content="2026-10-08T05-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -2655,16 +2655,60 @@ try{
 try{
   if (supabaseClient && supabaseClient.functions && !supabaseClient.functions.__timeoutWrapped){
     const rawInvoke = supabaseClient.functions.invoke.bind(supabaseClient.functions);
-    supabaseClient.functions.invoke = function(name, opts){
+    supabaseClient.functions.invoke = async function(name, opts){
       if (name !== 'send-quick-message') return rawInvoke(name, opts);
-      return Promise.race([
+      // opts.fallback describes the on-screen popup message. The app saves it itself when the
+      // function didn't, so the popup never depends on the function's own database write.
+      const fb = opts && opts.fallback;
+      if (opts && 'fallback' in opts){ opts = Object.assign({}, opts); delete opts.fallback; }
+      let msgId = null;
+      if (fb){
+        try{ msgId = (self.crypto && crypto.randomUUID) ? crypto.randomUUID() : null; }catch(e){}
+        if (msgId) opts = Object.assign({}, opts, { body: Object.assign({}, opts.body, { message_id: msgId }) });
+      }
+      const res = await Promise.race([
         rawInvoke(name, opts),
         new Promise(resolve => setTimeout(() => resolve({ data:null, error:{ message:'timed out' } }), 10000))
       ]);
+      if (fb && msgId){
+        const d = res && res.data;
+        const skip = d && (d.saved === true || d.reason === 'opted_out' || d.reason === 'messaging_locked');
+        if (!skip){
+          try{
+            const ins = await supabaseClient.from('quick_messages').insert({
+              id: msgId, appointment_id: String(fb.appointment_id), sender_role: fb.sender_role, sender_name: fb.sender_name || null,
+              message: fb.message, status: 'sent', recipient_code: fb.recipient_code, recipient_role: fb.recipient_role
+            });
+            if (ins && ins.error) console.warn('backup popup message not saved', ins.error.message);
+            else if (res) res.backupSaved = true;
+          }catch(e){ console.warn('backup popup message failed', e); }
+        }
+      }
+      return res;
     };
     supabaseClient.functions.__timeoutWrapped = true;
   }
 }catch(e){ console.warn('could not wrap function invoke', e); }
+// Builds the same wording the notification function uses, for the backup popup message.
+function qmWhen(d, t){
+  let dl = d;
+  try{ dl = new Date(d + 'T00:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }); }catch(e){}
+  const p = String(t || '0:0').split(':').map(Number);
+  return dl + ' at ' + ((p[0] % 12) || 12) + ':' + String(p[1] || 0).padStart(2, '0') + ' ' + (p[0] >= 12 ? 'PM' : 'AM');
+}
+function qmChangedText(o){
+  const lines = [ o.byBarber ? `${o.barberName} changed your appointment.` : `${o.clientName} changed their appointment.` ];
+  const pv = o.prev || {}, n = o.now || {};
+  const moved = pv.appt_date && pv.start_time && (pv.appt_date !== n.appt_date || String(pv.start_time).slice(0,5) !== String(n.start_time).slice(0,5));
+  if (moved){ lines.push('Was: ' + qmWhen(pv.appt_date, pv.start_time)); lines.push('Now: ' + qmWhen(n.appt_date, n.start_time)); }
+  else lines.push('When: ' + qmWhen(n.appt_date, n.start_time));
+  const ns = n.services || [], ps = pv.services || [];
+  const svcMoved = ps.length > 0 && ps.join('|') !== ns.join('|');
+  if (svcMoved) lines.push('Services: ' + ns.join(', '));
+  const priceMoved = typeof pv.total_price === 'number' && Number(pv.total_price) !== Number(n.total_price);
+  if (priceMoved || svcMoved) lines.push('Total: $' + n.total_price);
+  return lines.join('\n');
+}
 /* =========================================================
    PASSWORD RECOVERY
    When someone taps the "reset your password" link from their email,
@@ -6307,7 +6351,12 @@ async function saveAppointmentChange(id, core, extras){
       }catch(err){ console.warn('cancel failed', err); }
       // Best-effort: tell the client. Never blocks or undoes the cancellation.
       if (cancelled){
-        try{ await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: cancelYesId, event: 'cancelled', cancelled_by: 'barber' } }); }
+        try{
+          const ca = (typeof bkApptCache !== 'undefined' ? bkApptCache : []).find(x=> String(x.id) === String(cancelYesId));
+          await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: cancelYesId, event: 'cancelled', cancelled_by: 'barber' },
+            fallback: ca ? { appointment_id: cancelYesId, recipient_code: ca.client_code, recipient_role: 'client', sender_role: 'barber', sender_name: profile.name || ca.barber_name || null,
+              message: `${profile.name || ca.barber_name || 'Your professional'} cancelled your ${qmWhen(ca.appt_date, ca.start_time)} appointment.` } : undefined });
+        }
         catch(err){ console.warn('cancel notification failed', err); }
       }
       loadAppointments();
@@ -6534,6 +6583,9 @@ async function saveAppointmentChange(id, core, extras){
       const res = await supabaseClient.functions.invoke('send-quick-message', { body: {
         appointment_id: a.id, event: 'changed', changed_by: 'barber',
         previous: prev
+      }, fallback: {
+        appointment_id: a.id, recipient_code: a.client_code, recipient_role: 'client', sender_role: 'barber', sender_name: profile.name || a.barber_name || null,
+        message: qmChangedText({ byBarber:true, barberName: profile.name || a.barber_name || 'Your professional', prev, now:{ appt_date:date, start_time:startTime, services:newNames, total_price:price } })
       }});
       const data = res && res.data;
       const first = (a.client_name||'Your client').split(' ')[0];
@@ -7389,10 +7441,12 @@ async function saveAppointmentChange(id, core, extras){
     if (hasActiveAccess()){
       const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
       const svcNames = svcs.map(s=>s.name).join(', ');
+      const manualMsg = `I booked an appointment for you: ${dateLabel} at ${time} for ${svcNames}. It's saved in your Vono Passport.`;
       Promise.resolve(supabaseClient.functions.invoke('send-quick-message', { body: {
         appointment_id: appt.id, sender_role: 'barber',
-        message: `I booked an appointment for you: ${dateLabel} at ${time} for ${svcNames}. It's saved in your Vono Passport.`
-      }})).catch(e=>{ console.warn('appointment notification text failed (non-blocking)', e); });
+        message: manualMsg
+      }, fallback: appt.client_code ? { appointment_id: appt.id, recipient_code: appt.client_code, recipient_role: 'client', sender_role: 'barber', sender_name: profile.name || null,
+        message: `${profile.name || 'Your professional'}: ${manualMsg}` } : undefined })).catch(e=>{ console.warn('appointment notification text failed (non-blocking)', e); });
     }
   });
   window.initBookingTab = function(){
