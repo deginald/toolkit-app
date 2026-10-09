@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-09T12-00-00Z">
+<meta name="app-build" content="2026-10-09T18-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -285,6 +285,11 @@
   .lightbox-counter{ position:fixed; bottom:max(18px, calc(env(safe-area-inset-bottom) + 10px)); left:50%; transform:translateX(-50%); color:#fff; font-size:12.5px; font-weight:700; background:rgba(255,255,255,0.15); padding:5px 12px; border-radius:999px; }
   .calendar-overlay{ position:fixed; inset:0; background:var(--bg); z-index:450; display:flex; flex-direction:column; }
   .calendar-modal-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:16px 20px; padding-top:max(16px, calc(env(safe-area-inset-top) + 12px)); border-bottom:1px solid var(--line); flex:none; }
+  .print-preview-overlay{ position:fixed; inset:0; z-index:9500; background:var(--bg); display:flex; flex-direction:column; }
+  .pp-bar{ flex:none; display:flex; align-items:center; gap:10px; padding:12px 16px; padding-top:max(12px, calc(env(safe-area-inset-top) + 8px)); border-bottom:1px solid var(--line); background:var(--paper); }
+  .pp-bar .btn{ flex:none; padding:10px 18px; }
+  .pp-title{ flex:1; min-width:0; text-align:center; font-weight:700; font-size:13px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pp-frame{ flex:1; width:100%; border:0; background:#fff; }
   .cal-month-grid{ display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; }
   .cal-month-dow{ font-size:10.5px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); text-align:center; padding-bottom:4px; }
   .cal-month-cell{ position:relative; aspect-ratio:1/1; border:1px solid var(--line); border-radius:9px; background:var(--paper); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; font-variant-numeric:tabular-nums; }
@@ -1742,6 +1747,7 @@
             <button type="button" class="mode-btn active" data-biz-mode="loyalty">Loyalty</button>
             <button type="button" class="mode-btn" data-biz-mode="earnings">Earnings</button>
             <button type="button" class="mode-btn" data-biz-mode="walkins">Walk-ins</button>
+            <button type="button" class="mode-btn" data-biz-mode="tips">Tips</button>
             <button type="button" class="mode-btn" data-biz-mode="clients">My Clients</button>
             <button type="button" class="mode-btn" data-biz-mode="inventory">Inventory</button>
             <button type="button" class="mode-btn" data-biz-mode="shop">Shop</button>
@@ -1776,12 +1782,20 @@
               <p class="eyebrow-mini2" id="earn-year-label" style="margin:0;">Year to date</p>
               <p class="screen-title" id="earn-ytd-total" style="margin:0;">$0</p>
               <p class="screen-sub" id="earn-ytd-split" style="display:none; margin:0;">&nbsp;</p>
+              <p class="screen-sub" id="earn-ytd-tips" style="display:none; margin:6px 0 0; padding-top:6px; border-top:1px solid var(--line);">&nbsp;</p>
             </div>
             <div id="earn-month-list" style="display:flex; flex-direction:column; gap:2px;"></div>
             <p class="screen-sub" id="earn-empty-note" style="display:none; margin:0;">No completed appointments yet this year.</p>
-            <p class="foot-note-small">Appointments counts bookings saved in Vono once their date has passed (cancelled ones don't count); Walk-ins adds in whatever you've logged on the Walk-ins tab. Neither can see payments made outside the app that aren't logged one of those two ways.</p>
-            <div id="earn-download-row" style="display:none; flex-direction:column; gap:8px; border-top:1px solid var(--line); padding-top:16px;">
-              <button class="btn btn-outline" id="btn-earn-download" type="button">Download <span id="earn-download-year">last year's</span> totals (CSV)</button>
+            <p class="foot-note-small">Appointments counts bookings saved in Vono once their date has passed (cancelled ones don't count); Walk-ins adds in whatever you've logged on the Walk-ins tab. Neither can see payments made outside the app that aren't logged one of those two ways. Tips you log on the Tips tab are shown on their own line and are never added into these totals.</p>
+            <div id="earn-download-row" style="display:none; flex-direction:column; gap:10px; border-top:1px solid var(--line); padding-top:16px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                <p class="eyebrow-mini" style="margin:0;">Yearly record</p>
+                <select id="earn-year-select" class="title-select" style="width:auto;" aria-label="Year"></select>
+              </div>
+              <div class="btn-row" style="gap:10px;">
+                <button class="btn btn-outline" id="btn-earn-download" type="button" style="flex:1;">Download CSV</button>
+                <button class="btn btn-outline" id="btn-earn-print" type="button" style="flex:1;">Print</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1823,6 +1837,61 @@
                 </div>
                 <p class="foot-note-small" style="margin:0;">This is your own record for your taxes. Vono doesn't verify these payments actually happened. If a service's price changes later, days already logged keep the price they were logged at.</p>
               </div>
+            </div>
+          </div>
+        </div>
+        <div class="biz-pane" data-biz="tips" id="tab-tips">
+          <div class="screen-body show" data-screen="dashboard" style="gap:16px;">
+            <p class="screen-sub" style="margin:0;">Log the tips you got each day, including ones you were handed outside the app. Tips are tracked on their own and are never added into your Earnings or Walk-ins totals.</p>
+
+            <div style="border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px; display:flex; flex-direction:column; gap:4px;">
+              <p class="eyebrow-mini2" id="tip-ytd-label" style="margin:0;">Year to date</p>
+              <p class="screen-title" id="tip-ytd-total" style="margin:0;">$0.00</p>
+              <p class="screen-sub" id="tip-ytd-sub" style="margin:0;">&nbsp;</p>
+            </div>
+
+            <div class="card" style="gap:12px;">
+              <p class="eyebrow-mini2" style="margin:0;">Log tips</p>
+              <div class="field">
+                <label for="tip-entry-date">Date</label>
+                <div class="input-row"><input id="tip-entry-date" type="date"></div>
+              </div>
+              <div class="field">
+                <label for="tip-entry-amount">Total tips for the day ($)</label>
+                <div class="input-row"><input id="tip-entry-amount" type="number" inputmode="decimal" min="0" max="100000" step="0.01" placeholder="e.g. 85.00"></div>
+              </div>
+              <div class="btn-row" style="gap:10px;">
+                <button class="btn btn-primary" id="btn-tip-save" type="button">Save tips</button>
+                <button class="btn btn-outline" id="btn-tip-clear" type="button" style="display:none;">Remove</button>
+              </div>
+              <p class="foot-note-small" id="tip-save-note" style="margin:0;" aria-live="polite">&nbsp;</p>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:6px; border-top:1px solid var(--line); padding-top:16px;">
+              <p class="eyebrow-mini" style="margin:0;">Totals</p>
+              <div class="summary-row"><span>Selected day</span><span id="tip-total-day">$0.00</span></div>
+              <div class="summary-row"><span>This week</span><span id="tip-total-week">$0.00</span></div>
+              <div class="summary-row"><span>This month</span><span id="tip-total-month">$0.00</span></div>
+              <div class="summary-row"><span>This year</span><span id="tip-total-year">$0.00</span></div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:6px; border-top:1px solid var(--line); padding-top:16px;">
+              <p class="eyebrow-mini" style="margin:0;">Recent days</p>
+              <div id="tip-recent-list" style="display:flex; flex-direction:column; gap:2px;"></div>
+              <p class="screen-sub" id="tip-recent-empty" style="margin:0;">No tips logged yet.</p>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px; border-top:1px solid var(--line); padding-top:16px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                <p class="eyebrow-mini" style="margin:0;">Yearly record</p>
+                <select id="tip-year-select" class="title-select" style="width:auto;" aria-label="Year"></select>
+              </div>
+              <div id="tip-month-list" style="display:flex; flex-direction:column; gap:2px;"></div>
+              <div class="btn-row" style="gap:10px;">
+                <button class="btn btn-outline" id="btn-tip-download" type="button" style="flex:1;">Download CSV</button>
+                <button class="btn btn-outline" id="btn-tip-print" type="button" style="flex:1;">Print</button>
+              </div>
+              <p class="foot-note-small" style="margin:0;">This is your own record for your taxes. Vono doesn't verify these tips. The running total adds each month to the ones before it.</p>
             </div>
           </div>
         </div>
@@ -2340,6 +2409,10 @@
         <button type="button" class="home-more-item" data-home-go="biz:shop" data-home-pro="1">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 9.5 6 4.5h12l1.5 5M4.5 9.5v10h15v-10M4.5 9.5c0 1.7 1.3 2.6 2.5 2.6s2.5-.9 2.5-2.6c0 1.7 1.3 2.6 2.5 2.6s2.5-.9 2.5-2.6c0 1.7 1.3 2.6 2.5 2.6s2.5-.9 2.5-2.6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
           <span>Shop</span><span class="home-more-note" data-home-note="studio"></span>
+        </button>
+        <button type="button" class="home-more-item" data-home-go="biz:tips" data-home-pro="1">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5v9M14.6 9.4c-.4-.8-1.4-1.2-2.6-1.2-1.5 0-2.5.7-2.5 1.8 0 2.5 5.1 1.2 5.1 3.7 0 1.1-1.1 1.9-2.6 1.9-1.3 0-2.4-.5-2.8-1.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span>Tips</span><span class="home-more-note" data-home-note="pro"></span>
         </button>
         <button type="button" class="home-more-item" data-home-go="biz:rentcomm" data-home-pro="1">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="6" width="17" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.4" stroke="currentColor" stroke-width="1.6"/></svg>
@@ -3234,6 +3307,58 @@ async function compressPhotoForUpload(file, maxDim, quality){
   }
 }
 /* =========================================================
+   IN-APP PRINT PREVIEW
+   Shows a printable page in a full-screen panel INSIDE the app (instead
+   of a new browser page that traps the person with no way back), with a
+   Close button and a Print button that never appear on the paper.
+   ========================================================= */
+window.escPrint = function(v){ return (v==null?'':String(v)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); };
+const escPrint = window.escPrint;
+window.openPrintPreview = function(opts){
+  opts = opts || {};
+  const title = opts.title || 'Print preview';
+  const old = document.getElementById('print-preview-overlay');
+  if (old) old.remove();
+  const prevFocus = document.activeElement;
+  const ov = document.createElement('div');
+  ov.id = 'print-preview-overlay';
+  ov.className = 'print-preview-overlay';
+  ov.setAttribute('role', 'dialog');
+  ov.setAttribute('aria-modal', 'true');
+  ov.setAttribute('aria-label', title);
+  ov.innerHTML = '<div class="pp-bar"><button type="button" class="btn btn-outline pp-close">Close</button><span class="pp-title"></span><button type="button" class="btn btn-primary pp-print">Print</button></div><iframe class="pp-frame" title="Print preview"></iframe>';
+  ov.querySelector('.pp-title').textContent = title;
+  const baseCss = "body{ font-family: Georgia, 'Times New Roman', serif; color:#1a1a1a; background:#fff; padding:24px 20px 40px; max-width:800px; margin:0 auto; }" +
+    "h1{ font-size:20px; margin:0 0 2px; } h2{ font-size:14px; margin:20px 0 4px; } p.sub{ color:#555; margin:0 0 24px; font-size:13px; }" +
+    "table{ width:100%; border-collapse:collapse; font-size:13px; margin-bottom:4px; } th, td{ text-align:left; padding:6px; border-bottom:1px solid #ddd; }" +
+    "th{ font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:#555; } tfoot td{ font-weight:bold; border-top:1px solid #1a1a1a; border-bottom:none; }" +
+    ".r{ text-align:right; } .year-total{ margin-top:24px; font-size:16px; font-weight:bold; text-align:right; border-top:2px solid #1a1a1a; padding-top:10px; }" +
+    ".tips-line{ margin-top:10px; font-size:14px; font-weight:bold; text-align:right; } .tips-line span{ font-weight:normal; color:#555; font-size:12px; }" +
+    "@media print{ body{ padding:0; } }";
+  const doc = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>' +
+    String(title).replace(/[&<>]/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])) + '</title><style>' + baseCss + (opts.css || '') + '</style></head><body>' +
+    (opts.body || '') + '</body></html>';
+  const frame = ov.querySelector('.pp-frame');
+  frame.srcdoc = doc;
+  const prevOverflow = document.body.style.overflow;
+  function close(){
+    document.removeEventListener('keydown', onKey, true);
+    ov.remove();
+    document.body.style.overflow = prevOverflow;
+    try{ if (prevFocus && prevFocus.focus) prevFocus.focus(); }catch(e){}
+  }
+  function onKey(e){ if (e.key === 'Escape'){ e.stopPropagation(); close(); } }
+  ov.querySelector('.pp-close').addEventListener('click', close);
+  ov.querySelector('.pp-print').addEventListener('click', ()=>{
+    try{ frame.contentWindow.focus(); frame.contentWindow.print(); }catch(e){ console.warn('print failed', e); }
+  });
+  document.addEventListener('keydown', onKey, true);
+  document.body.style.overflow = 'hidden';
+  document.body.appendChild(ov);
+  ov.querySelector('.pp-close').focus();
+  return { close };
+};
+/* =========================================================
    TOP-LEVEL TAB SWITCHING
    ========================================================= */
 // Any tab that opens a QR camera scan registers a "stop and reset" callback here, so
@@ -3249,6 +3374,7 @@ function showBusinessSubtab(mode){
   document.querySelectorAll('#business-mode-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.bizMode===mode));
   if (mode === 'earnings' && window.initEarningsTab) window.initEarningsTab();
   if (mode === 'walkins' && window.initWalkinsTab) window.initWalkinsTab();
+  if (mode === 'tips' && window.initTipsTab) window.initTipsTab();
   if (mode === 'loyalty' && window.initLoyaltyTab) window.initLoyaltyTab();
   if (mode === 'clients' && window.initMyClientsTab) window.initMyClientsTab();
   if (mode === 'inventory' && window.initInventoryTab) window.initInventoryTab();
@@ -7737,15 +7863,45 @@ async function saveAppointmentChange(id, core, extras){
 (function(){
   const root = document.getElementById('tab-earnings');
   const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let cache = null;          // { appts, walkinLogs, tipLogs } from the last render
+  let selectedYear = null;   // year picked in the Yearly record
   function csvEscape(val){
     const s = String(val);
     if (/[",\r\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
     return s;
   }
+  function escapeHtmlEarn(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  // Whole dollars show without cents, anything else with two decimals.
+  function fmtEarn(n){ n = Math.round((Number(n)||0) * 100) / 100; return '$' + (Number.isInteger(n) ? n : n.toFixed(2)); }
+  function fmt2(n){ return '$' + (Number(n)||0).toFixed(2); }
   async function fetchBookedAppointments(){
     const { data, error } = await supabaseClient.from('appointments').select('*').eq('barber_code', profileCode).eq('status','booked');
     if (error) throw error;
     return data || [];
+  }
+  // One place that works out a year's numbers, so the screen, the CSV and the
+  // printout can never disagree.
+  function yearNumbers(year){
+    const today = todayIso();
+    const appt = Array(12).fill(0);
+    (cache.appts || []).forEach(a=>{
+      if (!a.appt_date || a.appt_date > today) return;
+      if (parseInt(a.appt_date.slice(0,4), 10) !== year) return;
+      appt[parseInt(a.appt_date.slice(5,7), 10) - 1] += Number(a.total_price) || 0;
+    });
+    const walk = window.walkinMonthTotalsForYear ? window.walkinMonthTotalsForYear(cache.walkinLogs, year) : Array(12).fill(0);
+    const tips = window.tipMonthTotalsForYear ? window.tipMonthTotalsForYear(cache.tipLogs, year) : Array(12).fill(0);
+    const sum = arr => arr.reduce((s,v)=> s+v, 0);
+    return { appt, walk, tips, apptTotal: sum(appt), walkTotal: sum(walk), tipTotal: sum(tips) };
+  }
+  function yearsWithData(){
+    const today = todayIso();
+    const years = new Set();
+    (cache.appts || []).forEach(a=>{ if (a.appt_date && a.appt_date <= today) years.add(parseInt(a.appt_date.slice(0,4), 10)); });
+    (cache.walkinLogs || []).forEach(r=>{ if (r.entry_date && (Number(r.count)||0) > 0) years.add(parseInt(String(r.entry_date).slice(0,4), 10)); });
+    (cache.tipLogs || []).forEach(r=>{ if (r.entry_date) years.add(parseInt(String(r.entry_date).slice(0,4), 10)); });
+    years.delete(NaN);
+    return Array.from(years).sort((a,b)=> b - a);
   }
   async function renderEarnings(){
     const yearLabelEl = root.querySelector('#earn-year-label');
@@ -7753,11 +7909,12 @@ async function saveAppointmentChange(id, core, extras){
     const listEl = root.querySelector('#earn-month-list');
     const emptyEl = root.querySelector('#earn-empty-note');
     const downloadRow = root.querySelector('#earn-download-row');
-    const downloadYearEl = root.querySelector('#earn-download-year');
+    const tipsEl = root.querySelector('#earn-ytd-tips');
     const now = new Date();
     const year = now.getFullYear();
     const currentMonthIdx = now.getMonth();
     yearLabelEl.textContent = year + ' year to date';
+    tipsEl.style.display = 'none';
     if (!dbAvailable || !profileCode){
       listEl.innerHTML = '';
       emptyEl.style.display = 'block';
@@ -7767,92 +7924,92 @@ async function saveAppointmentChange(id, core, extras){
     }
     try{
       const appts = await fetchBookedAppointments();
-      const today = todayIso();
-      const apptMonthTotals = Array(12).fill(0);
-      let prevYearHasData = false;
-      appts.forEach(a=>{
-        if (!a.appt_date || a.appt_date > today) return;
-        const y = parseInt(a.appt_date.slice(0,4), 10);
-        const m = parseInt(a.appt_date.slice(5,7), 10) - 1;
-        if (y === year) apptMonthTotals[m] += Number(a.total_price) || 0;
-        else if (y === year - 1) prevYearHasData = true;
-      });
-      // Walk-ins (logged on the separate Walk-ins tab) merge in here so this
-      // tab shows one full income picture for pros who use both. Pulled from
-      // a shared helper (defined in the Walk-ins section below) rather than
-      // querying walkin_logs twice, so the two tabs can never disagree on
-      // how a month's walk-in total is computed.
+      // Walk-ins and tips (logged on their own tabs) come from shared helpers
+      // defined further down, so each tab and this one always agree.
       const walkinLogs = window.fetchAllWalkinLogsForBarber ? await window.fetchAllWalkinLogsForBarber() : [];
-      const walkinMonthTotals = window.walkinMonthTotalsForYear ? window.walkinMonthTotalsForYear(walkinLogs, year) : Array(12).fill(0);
-      const walkinPrevMonthTotals = window.walkinMonthTotalsForYear ? window.walkinMonthTotalsForYear(walkinLogs, year - 1) : Array(12).fill(0);
-      const walkinYtd = walkinMonthTotals.reduce((s,v)=> s+v, 0);
-      if (walkinPrevMonthTotals.reduce((s,v)=> s+v, 0) > 0) prevYearHasData = true;
-      const apptYtd = apptMonthTotals.reduce((s,v)=> s+v, 0);
-      const combinedYtd = apptYtd + walkinYtd;
-      ytdEl.textContent = '$' + combinedYtd;
+      const tipLogs = window.fetchAllTipLogsForBarber ? await window.fetchAllTipLogsForBarber() : [];
+      cache = { appts, walkinLogs, tipLogs };
+      const cur = yearNumbers(year);
+      const combinedYtd = cur.apptTotal + cur.walkTotal;
+      ytdEl.textContent = fmtEarn(combinedYtd);
       const splitEl = root.querySelector('#earn-ytd-split');
-      if (walkinYtd > 0){
+      if (cur.walkTotal > 0){
         splitEl.style.display = 'block';
-        splitEl.textContent = '$' + apptYtd + ' appointments + $' + walkinYtd + ' walk-ins';
+        splitEl.textContent = fmtEarn(cur.apptTotal) + ' appointments + ' + fmtEarn(cur.walkTotal) + ' walk-ins';
       } else {
         splitEl.style.display = 'none';
       }
+      if (cur.tipTotal > 0){
+        tipsEl.style.display = 'block';
+        tipsEl.textContent = 'Tips (separate, not included above): ' + fmtEarn(cur.tipTotal);
+      }
       listEl.innerHTML = MONTH_NAMES.map((name, idx)=>{
         if (idx > currentMonthIdx) return `<div class="summary-row"><span>${name}</span><span>-</span></div>`;
-        const apptVal = apptMonthTotals[idx], wiVal = walkinMonthTotals[idx];
+        const apptVal = cur.appt[idx], wiVal = cur.walk[idx];
         const combined = apptVal + wiVal;
-        const val = wiVal > 0 ? `$${combined} <span style="opacity:0.6; font-weight:400;">($${apptVal} + $${wiVal})</span>` : ('$' + combined);
+        const val = wiVal > 0 ? `${fmtEarn(combined)} <span style="opacity:0.6; font-weight:400;">(${fmtEarn(apptVal)} + ${fmtEarn(wiVal)})</span>` : fmtEarn(combined);
         return `<div class="summary-row"><span>${name}</span><span>${val}</span></div>`;
       }).join('');
-      emptyEl.style.display = (combinedYtd === 0) ? 'block' : 'none';
-      if (prevYearHasData){
+      emptyEl.style.display = (combinedYtd === 0 && cur.tipTotal === 0) ? 'block' : 'none';
+      const years = yearsWithData();
+      if (years.length){
+        if (selectedYear == null || !years.includes(selectedYear)){
+          selectedYear = years.includes(year - 1) ? year - 1 : years[0];
+        }
+        const sel = root.querySelector('#earn-year-select');
+        sel.innerHTML = years.map(y => `<option value="${y}" ${y===selectedYear?'selected':''}>${y}</option>`).join('');
         downloadRow.style.display = 'flex';
-        downloadYearEl.textContent = String(year - 1);
       } else {
         downloadRow.style.display = 'none';
       }
     }catch(e){
       console.warn('load earnings failed', e);
+      cache = null;
       listEl.innerHTML = '';
       emptyEl.style.display = 'block';
       downloadRow.style.display = 'none';
     }
   }
-  async function downloadPrevYearCsv(){
-    if (!dbAvailable || !profileCode) return;
-    const targetYear = new Date().getFullYear() - 1;
-    try{
-      const appts = await fetchBookedAppointments();
-      const apptMonthTotals = Array(12).fill(0);
-      appts.forEach(a=>{
-        if (!a.appt_date) return;
-        const y = parseInt(a.appt_date.slice(0,4), 10);
-        if (y !== targetYear) return;
-        const m = parseInt(a.appt_date.slice(5,7), 10) - 1;
-        apptMonthTotals[m] += Number(a.total_price) || 0;
-      });
-      const walkinLogs = window.fetchAllWalkinLogsForBarber ? await window.fetchAllWalkinLogsForBarber() : [];
-      const walkinMonthTotals = window.walkinMonthTotalsForYear ? window.walkinMonthTotalsForYear(walkinLogs, targetYear) : Array(12).fill(0);
-      const rows = [['Month','Appointments','Walk-ins','Combined']];
-      MONTH_NAMES.forEach((name, idx)=>{
-        const a = apptMonthTotals[idx], w = walkinMonthTotals[idx];
-        rows.push([name, '$' + a, '$' + w, '$' + (a+w)]);
-      });
-      const apptTotal = apptMonthTotals.reduce((s,v)=> s+v, 0);
-      const walkinTotal = walkinMonthTotals.reduce((s,v)=> s+v, 0);
-      rows.push(['Year Total', '$' + apptTotal, '$' + walkinTotal, '$' + (apptTotal+walkinTotal)]);
-      const csv = rows.map(r=> r.map(csvEscape).join(',')).join('\r\n');
-      const blob = new Blob([csv], {type:'text/csv'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'earnings-' + targetYear + '.csv';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }catch(e){
-      console.warn('download earnings failed', e);
-    }
+  root.querySelector('#earn-year-select').addEventListener('change', function(){
+    selectedYear = parseInt(this.value, 10);
+  });
+  function yearRows(year){
+    const n = yearNumbers(year);
+    const rows = MONTH_NAMES.map((name, idx)=> ({
+      name, appt: n.appt[idx], walk: n.walk[idx], combined: n.appt[idx] + n.walk[idx], tips: n.tips[idx]
+    }));
+    return { rows, n };
   }
-  root.querySelector('#btn-earn-download').addEventListener('click', downloadPrevYearCsv);
+  function downloadYearCsv(){
+    if (!cache || selectedYear == null) return;
+    const { rows: mrows, n } = yearRows(selectedYear);
+    const rows = [['Month','Appointments','Walk-ins','Combined','Tips (separate, not in Combined)']];
+    mrows.forEach(r=> rows.push([r.name, fmt2(r.appt), fmt2(r.walk), fmt2(r.combined), fmt2(r.tips)]));
+    rows.push(['Year Total', fmt2(n.apptTotal), fmt2(n.walkTotal), fmt2(n.apptTotal + n.walkTotal), fmt2(n.tipTotal)]);
+    const csv = rows.map(r=> r.map(csvEscape).join(',')).join('\r\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'earnings-' + selectedYear + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  function printYear(){
+    if (!cache || selectedYear == null) return;
+    const { rows, n } = yearRows(selectedYear);
+    const proName = (typeof profile !== 'undefined' && profile && profile.name) ? profile.name : '';
+    const body = `
+      <h1>Earnings (${selectedYear})</h1>
+      <p class="sub">${proName ? escapeHtmlEarn(proName) + ' &middot; ' : ''}Personal record, prepared via Vono. Not verified payment data.</p>
+      <table><thead><tr><th>Month</th><th class="r">Appointments</th><th class="r">Walk-ins</th><th class="r">Combined</th></tr></thead>
+      <tbody>${rows.map(r=> `<tr><td>${r.name}</td><td class="r">${fmt2(r.appt)}</td><td class="r">${fmt2(r.walk)}</td><td class="r">${fmt2(r.combined)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>Year Total</td><td class="r">${fmt2(n.apptTotal)}</td><td class="r">${fmt2(n.walkTotal)}</td><td class="r">${fmt2(n.apptTotal + n.walkTotal)}</td></tr></tfoot>
+      </table>
+      <div class="tips-line">Tips year total: ${fmt2(n.tipTotal)} <span>(tracked separately, not included in the totals above)</span></div>`;
+    window.openPrintPreview({ title: 'Earnings ' + selectedYear, body });
+  }
+  root.querySelector('#btn-earn-download').addEventListener('click', downloadYearCsv);
+  root.querySelector('#btn-earn-print').addEventListener('click', printYear);
   window.initEarningsTab = function(){
     renderEarnings();
   };
@@ -8076,29 +8233,11 @@ async function saveAppointmentChange(id, core, extras){
       <tbody>${m.rows.map(r=> `<tr><td>${escapeHtmlWi(r.name)}</td><td style="text-align:right;">${r.count}</td><td style="text-align:right;">${wiFmtMoney(r.amount)}</td></tr>`).join('')}</tbody>
       <tfoot><tr><td>Month Total</td><td></td><td style="text-align:right;">${wiFmtMoney(m.total)}</td></tr></tfoot>
       </table>`).join('');
-    const win = window.open('', '_blank');
-    if (!win) return;
-    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Walk-ins -- ${wiSelectedYear}</title>
-      <style>
-        body{ font-family: Georgia, 'Times New Roman', serif; color:#1a1a1a; padding:32px; max-width:800px; margin:0 auto; }
-        h1{ font-size:20px; margin:0 0 2px; }
-        h2{ font-size:14px; margin:20px 0 4px; }
-        p.sub{ color:#555; margin:0 0 24px; font-size:13px; }
-        table{ width:100%; border-collapse:collapse; font-size:13px; margin-bottom:4px; }
-        th, td{ text-align:left; padding:6px; border-bottom:1px solid #ddd; }
-        th{ font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:#555; }
-        tfoot td{ font-weight:bold; border-top:1px solid #1a1a1a; border-bottom:none; }
-        .year-total{ margin-top:24px; font-size:16px; font-weight:bold; text-align:right; border-top:2px solid #1a1a1a; padding-top:10px; }
-        @media print{ body{ padding:0; } }
-      </style></head><body>
+    window.openPrintPreview({ title: 'Walk-ins ' + wiSelectedYear, body: `
       <h1>Walk-ins (${wiSelectedYear})</h1>
       <p class="sub">Personal record, prepared via Vono. Not verified payment data.</p>
       ${monthsHtml || '<p>No walk-ins logged for this year.</p>'}
-      <div class="year-total">Year Total: ${wiFmtMoney(yearTotal)}</div>
-      </body></html>`);
-    win.document.close();
-    win.focus();
-    setTimeout(()=> win.print(), 200);
+      <div class="year-total">Year Total: ${wiFmtMoney(yearTotal)}</div>` });
   });
   window.initWalkinsTab = async function(){
     wiSelectedDate = todayIso();
@@ -8108,6 +8247,234 @@ async function saveAppointmentChange(id, core, extras){
     renderDayTotal();
     renderTotalsSummary();
     renderWiYearSelect();
+  };
+})();
+/* =========================================================
+   TIPS TAB (Business > Tips)
+   One manually-entered total per day (tips handed over outside the app),
+   kept completely separate from appointment and walk-in income. Stored in
+   tip_logs, one row per barber_code + entry_date; saving a date again
+   replaces that day's amount. window.fetchAllTipLogsForBarber and
+   window.tipMonthTotalsForYear are shared with the Earnings tab so it can
+   show a separate Tips line that always matches this tab.
+   ========================================================= */
+(function(){
+  const root = document.getElementById('tab-tips');
+  if (!root) return;
+  let tipLogs = [];            // every tip_logs row for this barber
+  let tipSelectedDate = todayIso();
+  let tipSelectedYear = new Date().getFullYear();
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function money(n){ return '$' + (Number(n)||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function csvMoney(n){ return (Number(n)||0).toFixed(2); }
+  function fmtDate(iso){
+    if (!iso) return '';
+    try{ return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric', year:'numeric'}); }catch(e){ return iso; }
+  }
+  function csvEscape(val){
+    const s = String(val);
+    if (/[",\r\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+    return s;
+  }
+  function weekRange(dateStr){
+    const d = new Date(dateStr + 'T00:00:00');
+    const start = new Date(d); start.setDate(d.getDate() - d.getDay());
+    const end = new Date(start); end.setDate(start.getDate() + 6);
+    return { start: localIsoDate(start), end: localIsoDate(end) };
+  }
+  function ymd(r){ return String(r.entry_date).slice(0,10); }
+  function rowFor(date){ return tipLogs.find(r => ymd(r) === date); }
+  function sumRange(a, b){ return tipLogs.reduce((s,r)=> (ymd(r) >= a && ymd(r) <= b) ? s + (Number(r.amount)||0) : s, 0); }
+  function setNote(msg, isError){
+    const n = root.querySelector('#tip-save-note');
+    n.textContent = msg || ' ';
+    n.style.color = isError ? 'var(--bad, #E0705F)' : '';
+  }
+  // ---- shared with the Earnings tab ----
+  window.fetchAllTipLogsForBarber = async function(){
+    if (!dbAvailable || !profileCode) return [];
+    try{
+      const { data, error } = await supabaseClient.from('tip_logs').select('entry_date, amount').eq('barber_code', profileCode);
+      if (error) throw error;
+      return data || [];
+    }catch(e){ console.warn('load tip logs failed', e); return []; }
+  };
+  window.tipMonthTotalsForYear = function(logs, year){
+    const totals = Array(12).fill(0);
+    (logs || []).forEach(r=>{
+      if (!r.entry_date) return;
+      const d = String(r.entry_date);
+      if (parseInt(d.slice(0,4), 10) !== year) return;
+      totals[parseInt(d.slice(5,7), 10) - 1] += Number(r.amount) || 0;
+    });
+    return totals;
+  };
+  async function loadTipLogs(){
+    if (!dbAvailable || !profileCode){ tipLogs = []; return; }
+    try{
+      const { data, error } = await supabaseClient.from('tip_logs').select('*').eq('barber_code', profileCode);
+      if (error) throw error;
+      tipLogs = data || [];
+    }catch(e){
+      console.warn('load tip logs failed', e);
+      tipLogs = [];
+    }
+  }
+  function availableYears(){
+    const years = new Set(tipLogs.map(r => parseInt(ymd(r).slice(0,4), 10)).filter(y => !isNaN(y)));
+    years.add(new Date().getFullYear());
+    return Array.from(years).sort((a,b)=> b - a);
+  }
+  function monthBreakdown(year){
+    const totals = window.tipMonthTotalsForYear(tipLogs, year);
+    let run = 0;
+    const days = Array(12).fill(0);
+    tipLogs.forEach(r=>{ if (ymd(r).slice(0,4) === String(year) && (Number(r.amount)||0) > 0) days[parseInt(ymd(r).slice(5,7), 10) - 1]++; });
+    const months = MONTHS.map((name, i)=>{ run += totals[i]; return { name, total: totals[i], running: run, days: days[i] }; });
+    return { months, yearTotal: run };
+  }
+  function renderAll(){
+    const today = todayIso();
+    const year = parseInt(today.slice(0,4), 10);
+    // Year-to-date card
+    const ytd = sumRange(year + '-01-01', today);
+    root.querySelector('#tip-ytd-label').textContent = year + ' year to date';
+    root.querySelector('#tip-ytd-total').textContent = money(ytd);
+    const dayCount = tipLogs.filter(r => ymd(r) >= year + '-01-01' && ymd(r) <= today && (Number(r.amount)||0) > 0).length;
+    root.querySelector('#tip-ytd-sub').textContent = dayCount ? (dayCount + (dayCount === 1 ? ' day' : ' days') + ' with tips logged') : 'No tips logged yet this year.';
+    // Entry form for the selected day
+    const row = rowFor(tipSelectedDate);
+    const input = root.querySelector('#tip-entry-amount');
+    if (document.activeElement !== input) input.value = row ? (Number(row.amount)||0).toFixed(2) : '';
+    root.querySelector('#btn-tip-clear').style.display = row ? '' : 'none';
+    // Totals
+    const wk = weekRange(today);
+    root.querySelector('#tip-total-day').textContent = money(row ? row.amount : 0);
+    root.querySelector('#tip-total-week').textContent = money(sumRange(wk.start, wk.end));
+    root.querySelector('#tip-total-month').textContent = money(sumRange(today.slice(0,7) + '-01', today));
+    root.querySelector('#tip-total-year').textContent = money(ytd);
+    // Recent days
+    const recent = tipLogs.filter(r => (Number(r.amount)||0) > 0).slice().sort((a,b)=> ymd(b).localeCompare(ymd(a))).slice(0, 7);
+    root.querySelector('#tip-recent-list').innerHTML = recent.map(r=>
+      `<button type="button" class="summary-row" data-tip-pick="${ymd(r)}" style="background:none; border:0; padding:8px 0; color:inherit; font-family:inherit; font-size:12.5px; cursor:pointer; width:100%; border-bottom:1px solid var(--line);"><span>${fmtDate(ymd(r))}</span><span>${money(r.amount)}</span></button>`).join('');
+    root.querySelector('#tip-recent-empty').style.display = recent.length ? 'none' : 'block';
+    // Year select + month list
+    const sel = root.querySelector('#tip-year-select');
+    const years = availableYears();
+    if (!years.includes(tipSelectedYear)) tipSelectedYear = years[0];
+    sel.innerHTML = years.map(y => `<option value="${y}" ${y===tipSelectedYear?'selected':''}>${y}</option>`).join('');
+    renderMonths();
+  }
+  function renderMonths(){
+    const { months, yearTotal } = monthBreakdown(tipSelectedYear);
+    const nowY = new Date().getFullYear(), nowM = new Date().getMonth();
+    root.querySelector('#tip-month-list').innerHTML = months.map((m, i)=>{
+      if (tipSelectedYear === nowY && i > nowM) return `<div class="summary-row"><span>${m.name}</span><span>-</span></div>`;
+      return `<div class="summary-row"><span>${m.name}</span><span>${money(m.total)} <span style="opacity:0.6; font-weight:400;">&middot; running ${money(m.running)}</span></span></div>`;
+    }).join('') + `<div class="summary-row" style="border-top:1px solid var(--line); padding-top:8px; margin-top:4px;"><span>${tipSelectedYear} total</span><span>${money(yearTotal)}</span></div>`;
+  }
+  async function saveTips(){
+    const input = root.querySelector('#tip-entry-amount');
+    const raw = String(input.value || '').trim();
+    const date = tipSelectedDate;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)){ setNote('Pick a date first.', true); return; }
+    if (raw === ''){
+      if (rowFor(date)) { setNote('Enter an amount, or tap Remove to clear this day.', true); }
+      else setNote('Enter the tip amount for the day.', true);
+      return;
+    }
+    const amount = Math.round(parseFloat(raw) * 100) / 100;
+    if (!isFinite(amount) || amount < 0 || amount > 100000){ setNote('Enter an amount between $0 and $100,000.', true); return; }
+    const existing = rowFor(date);
+    const prev = existing ? Object.assign({}, existing) : null;
+    const nowIso = new Date().toISOString();
+    const row = { barber_code: profileCode, entry_date: date, amount, updated_at: nowIso };
+    if (existing) Object.assign(existing, row); else tipLogs.push(row);
+    renderAll();
+    if (!dbAvailable){ setNote('Saved for ' + fmtDate(date) + '.'); return; }
+    try{
+      const { error } = await supabaseClient.from('tip_logs').upsert(row, { onConflict: 'barber_code,entry_date' });
+      if (error) throw error;
+      setNote('Saved ' + money(amount) + ' for ' + fmtDate(date) + '.');
+    }catch(e){
+      console.warn('save tips failed', e);
+      if (prev) Object.assign(existing, prev); else tipLogs = tipLogs.filter(r => r !== row);
+      renderAll();
+      setNote("Couldn't save. Check your connection and try again.", true);
+    }
+  }
+  async function removeTips(){
+    const date = tipSelectedDate;
+    const existing = rowFor(date);
+    if (!existing) return;
+    const snapshot = tipLogs.slice();
+    tipLogs = tipLogs.filter(r => r !== existing);
+    root.querySelector('#tip-entry-amount').value = '';
+    renderAll();
+    if (!dbAvailable){ setNote('Removed tips for ' + fmtDate(date) + '.'); return; }
+    try{
+      const { error } = await supabaseClient.from('tip_logs').delete().eq('barber_code', profileCode).eq('entry_date', date);
+      if (error) throw error;
+      setNote('Removed tips for ' + fmtDate(date) + '.');
+    }catch(e){
+      console.warn('remove tips failed', e);
+      tipLogs = snapshot;
+      renderAll();
+      setNote("Couldn't remove that. Check your connection and try again.", true);
+    }
+  }
+  root.querySelector('#btn-tip-save').addEventListener('click', saveTips);
+  root.querySelector('#btn-tip-clear').addEventListener('click', removeTips);
+  root.querySelector('#tip-entry-amount').addEventListener('keydown', e=>{ if (e.key === 'Enter'){ e.preventDefault(); saveTips(); } });
+  root.querySelector('#tip-entry-date').addEventListener('change', function(){
+    tipSelectedDate = this.value || todayIso();
+    setNote('');
+    renderAll();
+  });
+  root.querySelector('#tip-recent-list').addEventListener('click', e=>{
+    const b = e.target.closest('[data-tip-pick]');
+    if (!b) return;
+    tipSelectedDate = b.dataset.tipPick;
+    root.querySelector('#tip-entry-date').value = tipSelectedDate;
+    setNote('');
+    renderAll();
+  });
+  root.querySelector('#tip-year-select').addEventListener('change', function(){
+    tipSelectedYear = parseInt(this.value, 10);
+    renderMonths();
+  });
+  root.querySelector('#btn-tip-download').addEventListener('click', ()=>{
+    const { months, yearTotal } = monthBreakdown(tipSelectedYear);
+    const rows = [['Month','Days with tips','Tips','Running total']];
+    months.forEach(m=> rows.push([m.name, m.days, '$' + csvMoney(m.total), '$' + csvMoney(m.running)]));
+    rows.push(['Year Total', '', '$' + csvMoney(yearTotal), '$' + csvMoney(yearTotal)]);
+    const csv = rows.map(r=> r.map(csvEscape).join(',')).join('\r\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'tips-' + tipSelectedYear + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  root.querySelector('#btn-tip-print').addEventListener('click', ()=>{
+    const { months, yearTotal } = monthBreakdown(tipSelectedYear);
+    const nowY = new Date().getFullYear(), nowM = new Date().getMonth();
+    const shown = months.filter((m, i)=> !(tipSelectedYear === nowY && i > nowM));
+    const proName = (typeof profile !== 'undefined' && profile && profile.name) ? profile.name : '';
+    window.openPrintPreview({ title: 'Tips ' + tipSelectedYear, body: `
+      <h1>Tips (${tipSelectedYear})</h1>
+      <p class="sub">${proName ? window.escPrint(proName) + ' &middot; ' : ''}Personal record, prepared via Vono. Not verified payment data.</p>
+      <table><thead><tr><th>Month</th><th class="r">Days with tips</th><th class="r">Tips</th><th class="r">Running total</th></tr></thead>
+      <tbody>${shown.map(m=> `<tr><td>${m.name}</td><td class="r">${m.days || ''}</td><td class="r">${money(m.total)}</td><td class="r">${money(m.running)}</td></tr>`).join('')}</tbody>
+      </table>
+      <div class="year-total">Tips Year Total: ${money(yearTotal)}</div>` });
+  });
+  window.initTipsTab = async function(){
+    tipSelectedDate = todayIso();
+    root.querySelector('#tip-entry-date').value = tipSelectedDate;
+    setNote('');
+    await loadTipLogs();
+    renderAll();
   };
 })();
 /* =========================================================
@@ -8317,33 +8684,17 @@ async function saveAppointmentChange(id, core, extras){
   root.querySelector('#btn-rc-print').addEventListener('click', ()=>{
     const rowsHtml = currentYearEntries().map(e=>{
       const type = e.kind === 'commission' ? `Commission (${Number(e.rate)}% of ${fmtMoney(e.earned_amount)})` : 'Flat rent';
-      return `<tr><td>${fmtDate(e.entry_date)}</td><td>${e.paid_to}</td><td>${type}</td><td style="text-align:right;">${fmtMoney(e.amount)}</td><td>${e.note || ''}</td></tr>`;
+      return `<tr><td>${fmtDate(e.entry_date)}</td><td>${escPrint(e.paid_to)}</td><td>${type}</td><td style="text-align:right;">${fmtMoney(e.amount)}</td><td>${escPrint(e.note)}</td></tr>`;
     }).join('');
     const total = currentYearEntries().reduce((s,e)=> s + (Number(e.amount)||0), 0);
     const proName = (profile && profile.name) ? profile.name : '';
-    const win = window.open('', '_blank');
-    if (!win) return;
-    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Rent &amp; Commission -- ${selectedYear}</title>
-      <style>
-        body{ font-family: Georgia, 'Times New Roman', serif; color:#1a1a1a; padding:32px; max-width:720px; margin:0 auto; }
-        h1{ font-size:20px; margin:0 0 2px; }
-        p.sub{ color:#555; margin:0 0 24px; font-size:13px; }
-        table{ width:100%; border-collapse:collapse; font-size:13px; }
-        th, td{ text-align:left; padding:8px 6px; border-bottom:1px solid #ddd; }
-        th{ font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:#555; }
-        tfoot td{ font-weight:bold; border-top:2px solid #1a1a1a; border-bottom:none; }
-        @media print{ body{ padding:0; } }
-      </style></head><body>
+    window.openPrintPreview({ title: 'Rent & Commission ' + selectedYear, css: 'th, td{ padding:8px 6px; } tfoot td{ border-top:2px solid #1a1a1a; }', body: `
       <h1>Rent &amp; Commission (${selectedYear})</h1>
-      <p class="sub">${proName ? proName + ' &middot; ' : ''}Personal record, prepared via Vono. Not verified payment data.</p>
+      <p class="sub">${proName ? escPrint(proName) + ' &middot; ' : ''}Personal record, prepared via Vono. Not verified payment data.</p>
       <table><thead><tr><th>Date</th><th>Paid To</th><th>Type</th><th style="text-align:right;">Amount</th><th>Note</th></tr></thead>
       <tbody>${rowsHtml || '<tr><td colspan="5">No payments logged for this year.</td></tr>'}</tbody>
       <tfoot><tr><td colspan="3"></td><td style="text-align:right;">${fmtMoney(total)}</td><td></td></tr></tfoot>
-      </table>
-      </body></html>`);
-    win.document.close();
-    win.focus();
-    setTimeout(()=> win.print(), 200);
+      </table>` });
   });
   window.initRentCommTab = function(){
     loadEntries();
@@ -9264,33 +9615,17 @@ async function saveAppointmentChange(id, core, extras){
     const rowsHtml = rentYearPayments().map(p=>{
       const member = teamMembers.find(m => m.code === p.staff_code);
       const type = p.kind === 'commission' ? `Commission (${Number(p.rate)}% of ${rentFmtMoney(p.earned_amount)})` : 'Flat rent';
-      return `<tr><td>${rentFmtDate(p.period_start)} – ${rentFmtDate(p.period_end)}</td><td>${escapeHtmlShop(member ? (member.name||member.code) : p.staff_code)}</td><td>${type}</td><td style="text-align:right;">${rentFmtMoney(p.amount)}</td><td>${p.note || ''}</td></tr>`;
+      return `<tr><td>${rentFmtDate(p.period_start)} – ${rentFmtDate(p.period_end)}</td><td>${escapeHtmlShop(member ? (member.name||member.code) : p.staff_code)}</td><td>${type}</td><td style="text-align:right;">${rentFmtMoney(p.amount)}</td><td>${escPrint(p.note)}</td></tr>`;
     }).join('');
     const total = rentYearPayments().reduce((s,p)=> s + (Number(p.amount)||0), 0);
     const shopName = myShop ? myShop.name : '';
-    const win = window.open('', '_blank');
-    if (!win) return;
-    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Rent &amp; Commission -- ${rentSelectedYear}</title>
-      <style>
-        body{ font-family: Georgia, 'Times New Roman', serif; color:#1a1a1a; padding:32px; max-width:800px; margin:0 auto; }
-        h1{ font-size:20px; margin:0 0 2px; }
-        p.sub{ color:#555; margin:0 0 24px; font-size:13px; }
-        table{ width:100%; border-collapse:collapse; font-size:13px; }
-        th, td{ text-align:left; padding:8px 6px; border-bottom:1px solid #ddd; }
-        th{ font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:#555; }
-        tfoot td{ font-weight:bold; border-top:2px solid #1a1a1a; border-bottom:none; }
-        @media print{ body{ padding:0; } }
-      </style></head><body>
+    window.openPrintPreview({ title: 'Rent & Commission ' + rentSelectedYear, css: 'th, td{ padding:8px 6px; } tfoot td{ border-top:2px solid #1a1a1a; }', body: `
       <h1>Rent &amp; Commission (${rentSelectedYear})</h1>
       <p class="sub">${shopName ? escapeHtmlShop(shopName) + ' &middot; ' : ''}Shop record, prepared via Vono. Not verified payment data.</p>
       <table><thead><tr><th>Period</th><th>Staff</th><th>Type</th><th style="text-align:right;">Amount</th><th>Note</th></tr></thead>
       <tbody>${rowsHtml || '<tr><td colspan="5">No payments logged for this year.</td></tr>'}</tbody>
       <tfoot><tr><td colspan="3"></td><td style="text-align:right;">${rentFmtMoney(total)}</td><td></td></tr></tfoot>
-      </table>
-      </body></html>`);
-    win.document.close();
-    win.focus();
-    setTimeout(()=> win.print(), 200);
+      </table>` });
   });
   async function renderRentSection(){
     if (!profile.shopCode || profile.shopRole !== 'owner') return;
