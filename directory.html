@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono: Find a Pro</title>
-<meta name="app-build" content="2026-10-08T18-00-00Z">
+<meta name="app-build" content="2026-10-09T19-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -58,6 +58,22 @@
   .input-row{ display:flex; align-items:center; border:1px solid var(--line); border-radius:10px; background:var(--paper); padding:0 12px; min-width:0; }
   .input-row input{ border:none; background:transparent; outline:none; font-family:'Public Sans',sans-serif; font-size:16px; font-weight:600; color:var(--ink); padding:11px 4px; width:100%; min-width:0; }
 
+  .prof-label-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:22px; }
+  .prof-label-row .link-btn{ padding:0; }
+  .prof-toggle{ display:flex; align-items:center; justify-content:space-between; gap:10px; font-family:'Public Sans',sans-serif; font-size:16px; font-weight:600; color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:11px 12px; width:100%; min-width:0; cursor:pointer; text-align:left; }
+  .prof-toggle:focus-visible, .prof-chip:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .prof-toggle span:first-child{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .prof-toggle .chev{ flex:none; color:var(--muted); font-size:11px; transition:transform .15s ease; }
+  .prof-toggle[aria-expanded="true"] .chev{ transform:rotate(180deg); }
+  .prof-panel{ border:1px solid var(--line); border-radius:10px; background:var(--paper); padding:12px; }
+  .prof-panel[hidden]{ display:none; }
+  .prof-chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .prof-chip{ border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--ink); font-family:'Public Sans',sans-serif; font-size:13.5px; font-weight:700; padding:0 14px; min-height:38px; display:inline-flex; align-items:center; cursor:pointer; }
+  .prof-chip[aria-pressed="true"]{ border-color:var(--brass); background:var(--brass-tint); color:var(--brass); }
+  .prof-chip[aria-pressed="true"]::before{ content:"\2713\00a0"; }
+  .list-heading{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin:0; }
+  .list-heading .screen-title{ margin:0; font-size:18px; }
+  .list-heading .list-count{ font-size:13px; font-weight:700; color:var(--muted); }
   .filter-grid{ display:flex; flex-direction:column; gap:12px; }
   .filter-select{ appearance:none; -webkit-appearance:none; -moz-appearance:none; font-family:'Public Sans',sans-serif; font-size:16px; font-weight:600; color:var(--ink); background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%2393A0C2' d='M4 6l4 4 4-4z'/%3E%3C/svg%3E") no-repeat right 12px center; background-size:11px; border:1px solid var(--line); border-radius:10px; padding:11px 34px 11px 12px; width:100%; min-width:0; cursor:pointer; }
 
@@ -209,10 +225,17 @@
           <select class="filter-select" id="filter-state" aria-label="Filter by state"><option value="">All states</option></select>
         </div>
         <div class="field">
-          <label>Profession</label>
-          <select class="filter-select" id="filter-profession" aria-label="Filter by profession"><option value="">All professions</option></select>
+          <div class="prof-label-row">
+            <label for="btn-prof-toggle">Profession</label>
+            <button type="button" class="link-btn" id="btn-prof-clear" hidden>Clear</button>
+          </div>
+          <button type="button" class="prof-toggle" id="btn-prof-toggle" aria-expanded="false" aria-controls="prof-panel"><span id="prof-summary">All professions</span><span class="chev" aria-hidden="true">&#9662;</span></button>
+          <div class="prof-panel" id="prof-panel" hidden>
+            <div class="prof-chips" id="prof-chips" role="group" aria-label="Choose one or more professions"></div>
+          </div>
         </div>
       </div>
+      <div class="list-heading"><h2 class="screen-title" id="list-heading">Current Professionals</h2><span class="list-count" id="list-count" aria-live="polite"></span></div>
       <div id="pro-list" style="display:flex; flex-direction:column; gap:12px;"></div>
     </main>
   </div>
@@ -616,11 +639,42 @@ function locationLine(p){
   return bits.join(', ');
 }
 
+// Barber, Master Barber and Apprentice Barber share one "Barber" chip; every other
+// profession is already a single title, so it stands on its own.
+function professionFamily(title){
+  const t = String(title || '').trim();
+  if (!t) return '';
+  if (/barber/i.test(t)) return 'Barber';
+  return t;
+}
+// Professions the client has switched on. Empty means "show everyone".
+let selectedProfessions = new Set();
+
 function matchesFilters(p, filters){
   if (filters.city && (p.shop_city || '') !== filters.city) return false;
   if (filters.state && (p.shop_state || '') !== filters.state) return false;
-  if (filters.profession && (p.title || '') !== filters.profession) return false;
+  if (filters.professions && filters.professions.length && !filters.professions.includes(professionFamily(p.title))) return false;
   return true;
+}
+
+function renderProfessionBar(){
+  const chipsEl = document.getElementById('prof-chips');
+  const families = [...new Set(allPros.map(p=>professionFamily(p.title)).filter(Boolean))].sort();
+  // Drop any picked profession that is no longer listed anywhere.
+  selectedProfessions = new Set([...selectedProfessions].filter(f=> families.includes(f)));
+  chipsEl.innerHTML = '';
+  families.forEach(f=>{
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'prof-chip';
+    b.dataset.prof = f;
+    b.textContent = f;
+    b.setAttribute('aria-pressed', selectedProfessions.has(f) ? 'true' : 'false');
+    chipsEl.appendChild(b);
+  });
+  const picked = families.filter(f=> selectedProfessions.has(f));
+  document.getElementById('prof-summary').textContent = picked.length ? picked.join(', ') : 'All professions';
+  document.getElementById('btn-prof-clear').hidden = !picked.length;
 }
 
 // Fills the three filter dropdowns from whoever is actually listed right now,
@@ -630,7 +684,6 @@ function populateFilterOptions(){
   const specs = [
     { id:'filter-city', allLabel:'All cities', values: [...new Set(allPros.map(p=>p.shop_city).filter(Boolean))].sort() },
     { id:'filter-state', allLabel:'All states', values: [...new Set(allPros.map(p=>p.shop_state).filter(Boolean))].sort() },
-    { id:'filter-profession', allLabel:'All professions', values: [...new Set(allPros.map(p=>p.title).filter(Boolean))].sort() },
   ];
   specs.forEach(spec=>{
     const sel = document.getElementById(spec.id);
@@ -638,18 +691,30 @@ function populateFilterOptions(){
     sel.innerHTML = `<option value="">${spec.allLabel}</option>` + spec.values.map(v=>`<option value="${v}">${v}</option>`).join('');
     if (current && spec.values.includes(current)) sel.value = current;
   });
+  renderProfessionBar();
 }
 
 function renderList(){
   const filters = {
     city: document.getElementById('filter-city').value,
     state: document.getElementById('filter-state').value,
-    profession: document.getElementById('filter-profession').value,
+    professions: [...selectedProfessions],
   };
   const holder = document.getElementById('pro-list');
   const filtered = allPros.filter(p=> matchesFilters(p, filters));
+  document.getElementById('list-count').textContent = '(' + filtered.length + ')';
   if (!filtered.length){
-    holder.innerHTML = '<div class="empty-note">No listed barbers or stylists match that search yet.</div>';
+    const anyFilter = !!(filters.city || filters.state || filters.professions.length);
+    holder.innerHTML = '<div class="empty-note">No current professionals match that search yet.' +
+      (anyFilter ? '<br><button type="button" class="link-btn" id="btn-clear-all-filters" style="margin-top:8px;">Clear filters</button>' : '') + '</div>';
+    const clr = document.getElementById('btn-clear-all-filters');
+    if (clr) clr.addEventListener('click', ()=>{
+      document.getElementById('filter-city').value = '';
+      document.getElementById('filter-state').value = '';
+      selectedProfessions = new Set();
+      renderProfessionBar();
+      renderList();
+    });
     return;
   }
   holder.innerHTML = '';
@@ -1399,7 +1464,25 @@ document.getElementById('btn-back-list').addEventListener('click', ()=>{
 });
 document.getElementById('filter-city').addEventListener('change', renderList);
 document.getElementById('filter-state').addEventListener('change', renderList);
-document.getElementById('filter-profession').addEventListener('change', renderList);
+document.getElementById('btn-prof-toggle').addEventListener('click', function(){
+  const panel = document.getElementById('prof-panel');
+  const open = panel.hidden;
+  panel.hidden = !open;
+  this.setAttribute('aria-expanded', open ? 'true' : 'false');
+});
+document.getElementById('prof-chips').addEventListener('click', function(e){
+  const b = e.target.closest('.prof-chip');
+  if (!b) return;
+  const f = b.dataset.prof;
+  if (selectedProfessions.has(f)) selectedProfessions.delete(f); else selectedProfessions.add(f);
+  renderProfessionBar();
+  renderList();
+});
+document.getElementById('btn-prof-clear').addEventListener('click', function(){
+  selectedProfessions = new Set();
+  renderProfessionBar();
+  renderList();
+});
 document.getElementById('btn-hours-toggle').addEventListener('click', function(){
   this.classList.toggle('open');
   document.getElementById('detail-hours-list').classList.toggle('open');
