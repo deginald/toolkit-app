@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono: Find a Pro</title>
-<meta name="app-build" content="2026-10-12T21-00-00Z">
+<meta name="app-build" content="2026-10-13T02-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -1485,7 +1485,15 @@ function downloadIcs(appt, proName){
   URL.revokeObjectURL(url);
 }
 
+// Arrived from the client's home screen (Book my usual, Open today, Book again, a pasted
+// code): the back arrow returns there instead of dropping into the Find a Pro list.
+const arrivedFromHome = new URLSearchParams(window.location.search).get('from') === 'home';
+if (arrivedFromHome){
+  const bb = document.getElementById('btn-back-list');
+  bb.setAttribute('aria-label', 'Back to your home screen');
+}
 document.getElementById('btn-back-list').addEventListener('click', ()=>{
+  if (arrivedFromHome){ window.location.href = 'passport.html'; return; }
   document.getElementById('detail-screen').hidden = true;
   document.getElementById('list-screen').hidden = false;
   renderList();

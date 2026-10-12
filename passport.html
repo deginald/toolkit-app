@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-13T01-00-00Z">
+<meta name="app-build" content="2026-10-13T02-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -1462,7 +1462,7 @@ function renderBookAgain(){
   section.style.display = 'flex';
   holder.innerHTML = barbers.map(b => `
     <div style="display:flex; flex-direction:column; gap:2px;">
-      <a class="btn btn-outline" style="text-decoration:none; text-align:center;" href="directory.html?pro=${encodeURIComponent(b.code)}&client=${encodeURIComponent(clientCode)}">Book again with ${b.name}</a>
+      <a class="btn btn-outline" style="text-decoration:none; text-align:center;" href="directory.html?pro=${encodeURIComponent(b.code)}&client=${encodeURIComponent(clientCode)}&from=home">Book again with ${b.name}</a>
       <button type="button" class="link-btn" data-remove-pro="${b.code}" style="align-self:center; padding:3px 0; font-size:11.5px;">Remove from suggestions</button>
     </div>
   `).join('');
@@ -2208,12 +2208,12 @@ function renderFresh(){
     subEl.textContent = 'Last visit' + whoLast + ' on ' + fmtShortDate(lastDate) + '.';
     let href, label;
     if (usualInfo){
-      href = 'directory.html?pro=' + encodeURIComponent(usualInfo.pro_code) + '&client=' + encodeURIComponent(clientCode) + '&usual=' + encodeURIComponent(usualInfo.names.join('|'));
+      href = 'directory.html?pro=' + encodeURIComponent(usualInfo.pro_code) + '&client=' + encodeURIComponent(clientCode) + '&from=home&usual=' + encodeURIComponent(usualInfo.names.join('|'));
       label = 'Book my usual · ' + usualInfo.names.join(' + ') + (usualInfo.price ? ' · $' + (Number.isInteger(usualInfo.price) ? usualInfo.price : usualInfo.price.toFixed(2)) : '');
     } else {
       const b = uniqueBarbers()[0] || (pastBookedAppts()[0] ? { code: pastBookedAppts()[0].barber_code, name: pastBookedAppts()[0].barber_name } : null);
       if (b && b.code){
-        href = 'directory.html?pro=' + encodeURIComponent(b.code) + '&client=' + encodeURIComponent(clientCode);
+        href = 'directory.html?pro=' + encodeURIComponent(b.code) + '&client=' + encodeURIComponent(clientCode) + '&from=home';
         label = 'Book again with ' + (b.name || 'your pro');
       }
     }
@@ -2448,7 +2448,7 @@ function renderOpenToday(){
   if (!client || viewedViaSharedCode || !openToday.length){ section.style.display = 'none'; return; }
   section.style.display = 'flex';
   document.getElementById('open-today-list').innerHTML = openToday.map(o=>{
-    const href = 'directory.html?pro=' + encodeURIComponent(o.code) + '&client=' + encodeURIComponent(clientCode) + (o.names.length ? '&usual=' + encodeURIComponent(o.names.join('|')) : '');
+    const href = 'directory.html?pro=' + encodeURIComponent(o.code) + '&client=' + encodeURIComponent(clientCode) + '&from=home' + (o.names.length ? '&usual=' + encodeURIComponent(o.names.join('|')) : '');
     const alsoTimes = (o.picks || []).slice(1).map(t => fmtTime12(otToHHMM(t)));
     const sub = [o.title, o.city].filter(Boolean).join(' · ');
     return `<a class="open-chip" href="${escHomeHtml(href)}" aria-label="Book ${escHomeHtml(o.name)} today, next opening ${escHomeHtml(fmtTime12(otToHHMM(o.times[0])))}">
@@ -2727,7 +2727,7 @@ function goToProFromInput(){
     status.textContent = "Enter a pro's code, or paste the link they sent you.";
     return;
   }
-  window.location.href = 'directory.html?pro=' + encodeURIComponent(code) + '&client=' + encodeURIComponent(clientCode);
+  window.location.href = 'directory.html?pro=' + encodeURIComponent(code) + '&client=' + encodeURIComponent(clientCode) + '&from=home';
 }
 document.getElementById('btn-go-to-pro').addEventListener('click', goToProFromInput);
 document.getElementById('find-pro-input').addEventListener('keydown', function(e){
