@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-13T00-00-00Z">
+<meta name="app-build" content="2026-10-13T01-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -154,6 +154,8 @@
   .home-tile{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:14px 12px; display:flex; align-items:center; gap:10px; font-family:'Public Sans',sans-serif; font-weight:700; font-size:13.5px; color:var(--ink); text-decoration:none; cursor:pointer; text-align:left; }
   .home-tile svg{ width:22px; height:22px; color:var(--brass); flex:none; }
   .home-tile[hidden]{ display:none !important; }
+  .row-link{ width:100%; border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:14px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; font-family:'Public Sans',sans-serif; font-weight:700; font-size:13.5px; color:var(--ink); cursor:pointer; text-align:left; }
+  .row-link svg{ width:18px; height:18px; color:var(--brass); flex:none; }
   .code-row{ display:flex; align-items:center; gap:12px; border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:12px 14px; }
   .code-row .cr-code{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:16px; letter-spacing:.06em; word-break:break-all; }
   .looks-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
@@ -426,6 +428,7 @@
             <a class="home-tile" id="btn-browse-directory" href="directory.html"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.7"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Find a Pro</a>
             <button type="button" class="home-tile" id="btn-open-looks" hidden><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2.5" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="10.5" r="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M5 17l4.5-4.5 3.5 3 2.5-2.5L19 16" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>My looks</button>
           </div>
+          <button type="button" class="row-link" id="btn-open-visits" style="display:none;">Your visits<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <button type="button" class="link-btn" id="btn-toggle-find-code" style="align-self:flex-start; padding:0;" aria-expanded="false" aria-controls="find-pro-form">Have a pro's code or a link they sent you?</button>
           <div id="find-pro-form" style="display:none; flex-direction:column; gap:10px;">
             <div class="field">
@@ -444,10 +447,18 @@
           <div id="bookagain-list-holder"></div>
         </div>
 
-        <div class="section-head">
+        <div class="section-head" id="visits-inline-head" style="display:none;">
           <h2>Your visits</h2>
         </div>
         <div id="visit-list-holder"></div>
+      </div>
+
+      <div class="screen-body" data-screen="visits">
+        <div class="walk-header">
+          <button class="back-btn" id="btn-back-home-from-visits" aria-label="Back">&larr;</button>
+          <div><div class="vc-date">Your visits</div></div>
+        </div>
+        <div id="visits-screen-holder"></div>
       </div>
 
       <div class="screen-body" data-screen="looks">
@@ -1363,7 +1374,12 @@ function renderHome(){
   renderOpenToday();
   document.getElementById('btn-browse-directory').href = 'directory.html?client=' + encodeURIComponent(clientCode);
 
-  const holder = document.getElementById('visit-list-holder');
+  // Own account: visits live on their own screen, opened from a row on home.
+  // Someone viewing through a shared code still sees them right on the page.
+  const holder = document.getElementById(viewedViaSharedCode ? 'visit-list-holder' : 'visits-screen-holder');
+  document.getElementById('visit-list-holder').innerHTML = '';
+  document.getElementById('visits-inline-head').style.display = viewedViaSharedCode ? '' : 'none';
+  document.getElementById('btn-open-visits').style.display = viewedViaSharedCode ? 'none' : 'flex';
   const visits = sortedVisits();
   if (visits.length === 0){
     holder.innerHTML = '<div class="empty-note">No visits yet. Share your code with your barber or stylist and it\'ll show up here after your next appointment.</div>';
@@ -1935,7 +1951,10 @@ function downloadApptIcs(appt){
   URL.revokeObjectURL(url);
 }
 
+let currentScreen = 'home';
+let detailReturn = 'home';
 function showScreen(name){
+  currentScreen = name;
   document.querySelectorAll('.screen-body').forEach(el=>{
     el.style.display = el.dataset.screen === name ? 'flex' : 'none';
   });
@@ -2007,7 +2026,14 @@ async function openDetail(id){
   } else {
     rateBlock.style.display = 'none';
   }
+  if (currentScreen !== 'detail') detailReturn = currentScreen;
   showScreen('detail');
+}
+function backFromDetail(){
+  renderHome();
+  if (detailReturn === 'visits') { showScreen('visits'); scrollAppToTop(); }
+  else if (detailReturn === 'looks') openLooks();
+  else showScreen('home');
 }
 
 RATING_KEYS.forEach(key=>{
@@ -2054,7 +2080,7 @@ document.getElementById('btn-submit-rating').addEventListener('click', async ()=
   }
 });
 
-document.getElementById('btn-back-home').addEventListener('click', ()=>{ renderHome(); showScreen('home'); });
+document.getElementById('btn-back-home').addEventListener('click', backFromDetail);
 
 document.getElementById('btn-toggle-favorite').addEventListener('click', async ()=>{
   const v = client.visits.find(x=>x.id===dstate.selectedVisitId);
@@ -2074,8 +2100,7 @@ document.getElementById('btn-delete-visit').addEventListener('click', async func
   client.visits = client.visits.filter(x=>x.id !== dstate.selectedVisitId);
   await persistClient();
   showToast('Visit deleted');
-  renderHome();
-  showScreen('home');
+  backFromDetail();
 });
 
 /* =========================================================
@@ -2456,6 +2481,8 @@ function openLooks(){
   scrollAppToTop();
 }
 document.getElementById('btn-open-looks').addEventListener('click', openLooks);
+document.getElementById('btn-open-visits').addEventListener('click', ()=>{ renderHome(); showScreen('visits'); scrollAppToTop(); });
+document.getElementById('btn-back-home-from-visits').addEventListener('click', ()=>{ renderHome(); showScreen('home'); });
 document.getElementById('btn-back-home-from-looks').addEventListener('click', ()=>{ renderHome(); showScreen('home'); });
 document.getElementById('looks-grid').addEventListener('click', e=>{
   const b = e.target.closest('[data-looks-visit]');
