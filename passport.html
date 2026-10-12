@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-12T21-00-00Z">
+<meta name="app-build" content="2026-10-13T00-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -144,6 +144,12 @@
   .rstep .rby{ margin-left:auto; font-size:11px; color:var(--muted); font-weight:600; padding-left:8px; white-space:nowrap; }
   .rstep-wrap{ display:flex; gap:8px; align-items:stretch; }
   .rstep-x{ flex:none; border:1px solid var(--line); background:transparent; color:var(--behind); border-radius:12px; font-family:'Public Sans',sans-serif; font-weight:700; font-size:12px; padding:0 12px; cursor:pointer; }
+  .open-chips{ display:flex; gap:10px; overflow-x:auto; padding:2px 2px 6px; margin:0 -2px; scroll-snap-type:x proximity; }
+  .open-chip{ flex:none; min-width:158px; max-width:200px; scroll-snap-align:start; border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:12px; display:flex; flex-direction:column; gap:3px; text-decoration:none; color:var(--ink); }
+  .open-chip:hover, .open-chip:focus-visible{ border-color:var(--brass); outline:none; }
+  .open-chip b{ font-size:14px; }
+  .open-chip .oc-sub{ font-size:12px; color:var(--muted); line-height:1.35; }
+  .open-chip .oc-t{ color:var(--good); font-weight:700; font-size:12.5px; margin-top:2px; }
   .home-tiles{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; }
   .home-tile{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:14px 12px; display:flex; align-items:center; gap:10px; font-family:'Public Sans',sans-serif; font-weight:700; font-size:13.5px; color:var(--ink); text-decoration:none; cursor:pointer; text-align:left; }
   .home-tile svg{ width:22px; height:22px; color:var(--brass); flex:none; }
@@ -386,6 +392,12 @@
             <button type="button" class="link-btn" id="btn-routine-edit" style="padding:0;">Edit</button>
           </div>
           <p class="foot-note-small" id="routine-privacy" style="margin:0;">&nbsp;</p>
+        </div>
+
+        <div id="open-today-section" style="display:none; flex-direction:column; gap:8px;">
+          <div class="section-head"><h2>Open today</h2></div>
+          <div class="open-chips" id="open-today-list"></div>
+          <p class="foot-note-small" style="margin:0;">Free times today from pros you've visited.</p>
         </div>
 
         <div id="loyalty-section" style="display:none; flex-direction:column; gap:10px;">
@@ -1348,6 +1360,7 @@ function renderHome(){
   renderFresh();
   renderRoutine();
   renderLooksTile();
+  renderOpenToday();
   document.getElementById('btn-browse-directory').href = 'directory.html?client=' + encodeURIComponent(clientCode);
 
   const holder = document.getElementById('visit-list-holder');
@@ -1475,6 +1488,7 @@ async function loadUpcomingAppointments(){
     renderSoonBanner(list);
     resolveUsual().then(renderFresh).catch(()=>{});
     renderFresh();
+    loadOpenToday();
   }catch(e){
     console.warn('load appointments failed', e);
     section.style.display = 'none';
@@ -2326,6 +2340,100 @@ document.getElementById('btn-routine-add-cancel').addEventListener('click', ()=>
 document.getElementById('btn-routine-add').addEventListener('click', addRoutineStep);
 document.getElementById('routine-add-input').addEventListener('keydown', e=>{ if (e.key === 'Enter'){ e.preventDefault(); addRoutineStep(); } });
 document.getElementById('btn-routine-edit').addEventListener('click', ()=>{ routineEditing = !routineEditing; renderRoutine(); });
+
+
+/* ---- Open today: free times today from pros the client has already visited ----
+   Same rules the booking page uses: the pro's hours (or a date override) for today,
+   minus every booked appointment, in 15-minute steps, and only times still ahead of
+   us (with a short head start so the client can actually get there). VIP-only
+   windows are left out. Quietly shows nothing if no pro has an opening. */
+const OPEN_TODAY_HEAD_START_MIN = 30;
+const OPEN_TODAY_MAX_PROS = 6;
+let openToday = [];
+function otToMin(hhmm){ const p = String(hhmm||'0:0').split(':').map(Number); return (p[0]||0)*60 + (p[1]||0); }
+function otToHHMM(m){ return String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0'); }
+function otPickDuration(pro, lastApptForPro){
+  const list = Array.isArray(pro.booking_services) ? pro.booking_services : [];
+  if (lastApptForPro && Array.isArray(lastApptForPro.services)){
+    const found = lastApptForPro.services.map(sv => list.find(x => String(x.name||'').toLowerCase() === String((sv && sv.name)||'').toLowerCase()));
+    if (found.length && found.every(Boolean)) return { mins: found.reduce((t,f)=> t + (Number(f.duration)||0), 0) || 30, names: found.map(f => f.name) };
+  }
+  const first = list.find(x => Number(x.duration) > 0) || list[0];
+  return { mins: Number(first && first.duration) || 30, names: [] };
+}
+async function openTodayFor(code, lastAppt, today, nowMin){
+  const { data: pro } = await supabaseClient.from('profiles')
+    .select('code, name, title, shop_city, shop_state, subscription_status, booking_enabled, booking_services, booking_hours, booking_overrides')
+    .eq('code', code).maybeSingle();
+  if (!pro || !['trialing','active','past_due'].includes(pro.subscription_status)) return null;
+  if (!pro.booking_enabled || !Array.isArray(pro.booking_services) || !pro.booking_services.length) return null;
+  const ov = (pro.booking_overrides || []).find(o => o.date === today);
+  const hours = ov || (pro.booking_hours || {})[CS_DAY_KEYS[new Date().getDay()]] || { closed:true };
+  if (!hours || hours.closed) return null;
+  const { mins, names } = otPickDuration(pro, lastAppt);
+  let rows = null;
+  try{
+    const { data, error } = await supabaseClient.rpc('get_busy_slots', { p_barber_code: code, p_from: today, p_to: today, p_exclude_id: null });
+    if (!error && Array.isArray(data)) rows = data;
+  }catch(e){ /* fall back below */ }
+  if (rows === null){
+    try{
+      const { data } = await supabaseClient.from('appointments').select('*').eq('barber_code', code).eq('status','booked');
+      rows = (data || []).filter(a => a.appt_date === today);
+    }catch(e){ rows = []; }
+  }
+  const busy = rows.map(r => [otToMin(String(r.start_time).slice(0,5)), otToMin(String(r.end_time).slice(0,5))]);
+  const open = otToMin(hours.open || '09:00'), close = otToMin(hours.close || '18:00');
+  const earliest = nowMin + OPEN_TODAY_HEAD_START_MIN;
+  const times = [];
+  for (let t = open; t + mins <= close; t += 15){
+    if (t < earliest) continue;
+    if (busy.some(([bs,be]) => t < be && (t + mins) > bs)) continue;
+    times.push(t);
+  }
+  if (!times.length) return null;
+  const gap = Math.max(mins, 30);
+  const picks = [];
+  times.forEach(t => { if (picks.length < 3 && (!picks.length || t - picks[picks.length-1] >= gap)) picks.push(t); });
+  return { code, name: pro.name || 'Your pro', title: pro.title || '', city: pro.shop_city || '', names, times, picks };
+}
+async function loadOpenToday(){
+  const section = document.getElementById('open-today-section');
+  openToday = [];
+  if (!dbAvailable || !clientCode || viewedViaSharedCode){ renderOpenToday(); return; }
+  try{
+    const past = pastBookedAppts();
+    const order = [];
+    const lastByPro = {};
+    past.forEach(a => { if (a.barber_code && !lastByPro[a.barber_code]) lastByPro[a.barber_code] = a; });
+    past.forEach(a => { if (a.barber_code && !order.includes(a.barber_code)) order.push(a.barber_code); });
+    uniqueBarbers().forEach(b => { if (b.code && !order.includes(b.code)) order.push(b.code); });
+    const hidden = (client && client.hiddenBookAgain) || [];
+    const codes = order.filter(c => !hidden.includes(c)).slice(0, OPEN_TODAY_MAX_PROS);
+    const today = todayIso();
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const results = await Promise.all(codes.map(c => openTodayFor(c, lastByPro[c] || null, today, nowMin).catch(()=> null)));
+    openToday = results.filter(Boolean).sort((a,b)=> a.times[0] - b.times[0]);
+  }catch(e){ console.warn('open today failed', e); openToday = []; }
+  renderOpenToday();
+}
+function renderOpenToday(){
+  const section = document.getElementById('open-today-section');
+  if (!client || viewedViaSharedCode || !openToday.length){ section.style.display = 'none'; return; }
+  section.style.display = 'flex';
+  document.getElementById('open-today-list').innerHTML = openToday.map(o=>{
+    const href = 'directory.html?pro=' + encodeURIComponent(o.code) + '&client=' + encodeURIComponent(clientCode) + (o.names.length ? '&usual=' + encodeURIComponent(o.names.join('|')) : '');
+    const alsoTimes = (o.picks || []).slice(1).map(t => fmtTime12(otToHHMM(t)));
+    const sub = [o.title, o.city].filter(Boolean).join(' · ');
+    return `<a class="open-chip" href="${escHomeHtml(href)}" aria-label="Book ${escHomeHtml(o.name)} today, next opening ${escHomeHtml(fmtTime12(otToHHMM(o.times[0])))}">
+      <b>${escHomeHtml(o.name)}</b>
+      ${sub ? `<span class="oc-sub">${escHomeHtml(sub)}</span>` : ''}
+      <span class="oc-t">${escHomeHtml(fmtTime12(otToHHMM(o.times[0])))} open</span>
+      ${alsoTimes.length ? `<span class="oc-sub">Also ${escHomeHtml(alsoTimes.join(', '))}</span>` : ''}
+    </a>`;
+  }).join('');
+}
 
 /* ---- My looks: every photo from the client's visits ---- */
 function looksPhotos(){
