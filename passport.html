@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-08T18-00-00Z">
+<meta name="app-build" content="2026-10-12T21-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -111,6 +111,49 @@
   #qr-holder{ background:#fff; padding:10px; border-radius:12px; display:flex; align-items:center; justify-content:center; }
   #qr-holder canvas, #qr-holder svg{ display:block; }
 
+  .home-hero{ display:flex; flex-direction:column; }
+  .home-greet{ font-size:15px; font-weight:600; color:var(--muted); margin:0; }
+  .home-headline{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:30px; line-height:1.1; letter-spacing:-0.015em; margin:4px 0 0; color:var(--ink); text-wrap:balance; }
+  .hcard{ border:1px solid var(--line); border-radius:16px; background:var(--paper); padding:16px; display:flex; flex-direction:column; gap:12px; }
+  .hcard[hidden]{ display:none !important; }
+  .hhead{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .hhead h2{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:0; }
+  .hbtn{ border:0; border-radius:11px; padding:13px 18px; font-family:'Public Sans',sans-serif; font-weight:700; font-size:14px; text-align:center; cursor:pointer; text-decoration:none; display:block; }
+  .hbtn.primary{ background:var(--brass); color:#241A0C; }
+  .hbtn.outline{ background:transparent; color:var(--brass); border:1px solid var(--brass); }
+  .fresh-card{ background:linear-gradient(160deg,var(--surface),var(--paper)); }
+  .fresh-row{ display:flex; align-items:center; gap:16px; }
+  .ring{ position:relative; width:104px; height:104px; flex:none; }
+  .ring svg{ width:104px; height:104px; transform:rotate(-90deg); }
+  .ring .mid{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .ring .n{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:28px; line-height:1; font-variant-numeric:tabular-nums; }
+  .ring .l{ font-size:10.5px; color:var(--muted); font-weight:700; letter-spacing:.06em; text-transform:uppercase; margin-top:3px; text-align:center; }
+  .fresh-copy{ min-width:0; display:flex; flex-direction:column; gap:5px; }
+  .fresh-copy .big{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:18px; line-height:1.2; }
+  .streak{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; color:var(--brass); }
+  .rdays{ display:flex; gap:6px; }
+  .rday{ flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; font-size:10.5px; font-weight:700; color:var(--muted); }
+  .rdot{ width:100%; aspect-ratio:1/1; max-width:34px; border-radius:50%; border:1.5px solid var(--line); }
+  .rdot.done{ background:var(--brass); border-color:var(--brass); }
+  .rdot.today{ border-color:var(--brass); border-style:dashed; }
+  .rdot.today.done{ border-style:solid; }
+  .rstep{ display:flex; align-items:center; gap:12px; padding:11px 12px; border:1px solid var(--line); border-radius:12px; background:var(--surface); font-family:'Public Sans',sans-serif; font-size:14px; font-weight:600; color:var(--ink); width:100%; text-align:left; cursor:pointer; }
+  .rstep .rbox{ width:22px; height:22px; border-radius:7px; border:1.5px solid var(--muted); flex:none; display:flex; align-items:center; justify-content:center; }
+  .rstep.done{ color:var(--muted); }
+  .rstep.done .rbox{ background:var(--brass); border-color:var(--brass); }
+  .rstep .rby{ margin-left:auto; font-size:11px; color:var(--muted); font-weight:600; padding-left:8px; white-space:nowrap; }
+  .rstep-wrap{ display:flex; gap:8px; align-items:stretch; }
+  .rstep-x{ flex:none; border:1px solid var(--line); background:transparent; color:var(--behind); border-radius:12px; font-family:'Public Sans',sans-serif; font-weight:700; font-size:12px; padding:0 12px; cursor:pointer; }
+  .home-tiles{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; }
+  .home-tile{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:14px 12px; display:flex; align-items:center; gap:10px; font-family:'Public Sans',sans-serif; font-weight:700; font-size:13.5px; color:var(--ink); text-decoration:none; cursor:pointer; text-align:left; }
+  .home-tile svg{ width:22px; height:22px; color:var(--brass); flex:none; }
+  .home-tile[hidden]{ display:none !important; }
+  .code-row{ display:flex; align-items:center; gap:12px; border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:12px 14px; }
+  .code-row .cr-code{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:16px; letter-spacing:.06em; word-break:break-all; }
+  .looks-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .looks-item{ position:relative; aspect-ratio:1/1; border:0; padding:0; border-radius:10px; overflow:hidden; background:var(--surface); cursor:pointer; }
+  .looks-item img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .looks-item span{ position:absolute; left:0; right:0; bottom:0; font-size:10.5px; font-weight:700; padding:14px 6px 4px; color:#fff; background:linear-gradient(transparent, rgba(0,0,0,.7)); text-align:left; }
   .screen-body{ display:none; flex-direction:column; gap:16px; }
 
   .section-head{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
@@ -300,33 +343,49 @@
     <main class="content">
 
       <div class="screen-body" data-screen="home">
-        <div id="soon-banner" class="foot-note-small" style="padding:10px 14px; border-radius:10px; background:var(--brass-tint); color:var(--ink); border:1px solid var(--brass);" hidden></div>
-
-        <div class="code-card">
-          <span class="cc-label">Your code</span>
-          <div id="qr-holder"></div>
-          <span class="cc-code" id="home-code">&nbsp;</span>
-          <span class="cc-hint">Show this to your barber or stylist at your next visit</span>
+        <div class="home-hero" id="home-hero">
+          <p class="home-greet" id="home-greet">Welcome</p>
+          <h2 class="home-headline">Stay fresh. Your next move is right here.</h2>
         </div>
 
-        <div id="find-pro-section" style="display:flex; flex-direction:column; gap:10px;">
-          <div class="section-head">
-            <h2>Find a new pro</h2>
+        <div id="soon-banner" class="foot-note-small" style="padding:10px 14px; border-radius:10px; background:var(--brass-tint); color:var(--ink); border:1px solid var(--brass);" hidden></div>
+
+        <div class="hcard fresh-card" id="fresh-card" hidden>
+          <div class="hhead"><p class="eyebrow-mini">Fresh meter</p><span class="streak" id="fresh-usual">&nbsp;</span></div>
+          <div class="fresh-row">
+            <div class="ring" role="img" id="fresh-ring" aria-label="">
+              <svg viewBox="0 0 104 104" aria-hidden="true"><circle cx="52" cy="52" r="44" fill="none" stroke="#30456B" stroke-width="9"/><circle id="fresh-arc" cx="52" cy="52" r="44" fill="none" stroke="#D9AE5E" stroke-width="9" stroke-linecap="round" stroke-dasharray="276.46" stroke-dashoffset="276.46"/></svg>
+              <div class="mid"><span class="n" id="fresh-n">0</span><span class="l" id="fresh-l">days</span></div>
+            </div>
+            <div class="fresh-copy">
+              <span class="big" id="fresh-big">&nbsp;</span>
+              <p class="screen-sub" id="fresh-sub" style="margin:0; font-size:12.5px;">&nbsp;</p>
+            </div>
           </div>
-          <a class="btn btn-outline" id="btn-browse-directory" style="text-decoration:none; text-align:center;" href="directory.html">Browse Find a Pro</a>
-          <div class="field">
-            <label for="find-pro-input">Have a pro's code or a link they sent you?</label>
-            <div class="input-row"><input id="find-pro-input" type="text" placeholder="Paste a code or link" autocapitalize="off" autocorrect="off"></div>
-          </div>
-          <button type="button" class="btn btn-primary" id="btn-go-to-pro">Go to their profile</button>
-          <p class="foot-note-small" id="find-pro-status">&nbsp;</p>
+          <a class="hbtn primary" id="fresh-book" href="directory.html" hidden>Book my usual</a>
         </div>
 
         <div id="upcoming-section" style="display:none; flex-direction:column; gap:10px;">
           <div class="section-head">
-            <h2>Upcoming appointments</h2>
+            <h2>Up next</h2>
           </div>
           <div id="upcoming-list-holder"></div>
+        </div>
+
+        <div class="hcard" id="routine-card" hidden>
+          <div class="hhead"><h2>Today's routine</h2><span class="streak" id="routine-streak" hidden></span></div>
+          <div class="rdays" id="routine-days" aria-label="This week"></div>
+          <div id="routine-steps" style="display:flex; flex-direction:column; gap:8px;"></div>
+          <div id="routine-add-row" style="display:none; flex-direction:column; gap:8px;">
+            <select class="filter-select" id="routine-add-pro" aria-label="Add to which routine" style="display:none; font-size:14px; padding:10px; border-radius:10px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-family:inherit;"></select>
+            <div class="input-row"><input id="routine-add-input" type="text" maxlength="80" placeholder="Add your own step" autocomplete="off"></div>
+            <div class="btn-row"><button type="button" class="hbtn primary" id="btn-routine-add" style="flex:1;">Add step</button><button type="button" class="hbtn outline" id="btn-routine-add-cancel">Cancel</button></div>
+          </div>
+          <div style="display:flex; gap:16px; align-items:center;">
+            <button type="button" class="link-btn" id="btn-routine-add-open" style="padding:0;">Add a step</button>
+            <button type="button" class="link-btn" id="btn-routine-edit" style="padding:0;">Edit</button>
+          </div>
+          <p class="foot-note-small" id="routine-privacy" style="margin:0;">&nbsp;</p>
         </div>
 
         <div id="loyalty-section" style="display:none; flex-direction:column; gap:10px;">
@@ -334,6 +393,36 @@
             <h2>Rewards</h2>
           </div>
           <div id="loyalty-list-holder" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+
+        <div class="code-row" id="code-row">
+          <div style="min-width:0; flex:1;">
+            <div class="eyebrow-mini">Your code</div>
+            <div class="cr-code" id="home-code-row">&nbsp;</div>
+          </div>
+          <button type="button" class="link-btn" id="btn-toggle-code" aria-expanded="false" aria-controls="code-card">Show QR</button>
+        </div>
+        <div class="code-card" id="code-card" hidden>
+          <span class="cc-label">Your code</span>
+          <div id="qr-holder"></div>
+          <span class="cc-code" id="home-code">&nbsp;</span>
+          <span class="cc-hint">Show this to your barber or stylist at your next visit</span>
+        </div>
+
+        <div id="find-pro-section" style="display:flex; flex-direction:column; gap:10px;">
+          <div class="home-tiles">
+            <a class="home-tile" id="btn-browse-directory" href="directory.html"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.7"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Find a Pro</a>
+            <button type="button" class="home-tile" id="btn-open-looks" hidden><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2.5" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="10.5" r="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M5 17l4.5-4.5 3.5 3 2.5-2.5L19 16" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>My looks</button>
+          </div>
+          <button type="button" class="link-btn" id="btn-toggle-find-code" style="align-self:flex-start; padding:0;" aria-expanded="false" aria-controls="find-pro-form">Have a pro's code or a link they sent you?</button>
+          <div id="find-pro-form" style="display:none; flex-direction:column; gap:10px;">
+            <div class="field">
+              <label for="find-pro-input">Paste a code or link</label>
+              <div class="input-row"><input id="find-pro-input" type="text" placeholder="Paste a code or link" autocapitalize="off" autocorrect="off"></div>
+            </div>
+            <button type="button" class="btn btn-primary" id="btn-go-to-pro">Go to their profile</button>
+            <p class="foot-note-small" id="find-pro-status">&nbsp;</p>
+          </div>
         </div>
 
         <div id="bookagain-section" style="display:none; flex-direction:column; gap:10px;">
@@ -347,6 +436,15 @@
           <h2>Your visits</h2>
         </div>
         <div id="visit-list-holder"></div>
+      </div>
+
+      <div class="screen-body" data-screen="looks">
+        <div class="walk-header">
+          <button class="back-btn" id="btn-back-home-from-looks" aria-label="Back">&larr;</button>
+          <div><div class="vc-date">My looks</div></div>
+        </div>
+        <p class="screen-sub" style="margin:0;">Photos from your visits, newest first. Tap one to open that visit.</p>
+        <div class="looks-grid" id="looks-grid"></div>
       </div>
 
       <div class="screen-body" data-screen="detail">
@@ -1244,7 +1342,12 @@ const SERVICE_LABELS = { cut:'Haircut', chemical:'Chemical service', other:'Othe
 function renderHome(){
   document.getElementById('tb-name').textContent = client.name;
   document.getElementById('home-code').textContent = clientCode;
+  document.getElementById('home-code-row').textContent = clientCode;
   renderQr();
+  renderHomeHero();
+  renderFresh();
+  renderRoutine();
+  renderLooksTile();
   document.getElementById('btn-browse-directory').href = 'directory.html?client=' + encodeURIComponent(clientCode);
 
   const holder = document.getElementById('visit-list-holder');
@@ -1356,6 +1459,7 @@ function renderBookAgain(){
 }
 
 let upcomingAppts = [];
+let allBookedAppts = [];
 
 async function loadUpcomingAppointments(){
   const section = document.getElementById('upcoming-section');
@@ -1366,8 +1470,11 @@ async function loadUpcomingAppointments(){
     const today = todayIso();
     const list = (data || []).filter(a => a.appt_date >= today).sort((a,b)=> (a.appt_date+a.start_time) < (b.appt_date+b.start_time) ? -1 : 1);
     upcomingAppts = list;
+    allBookedAppts = data || [];
     renderUpcoming(list);
     renderSoonBanner(list);
+    resolveUsual().then(renderFresh).catch(()=>{});
+    renderFresh();
   }catch(e){
     console.warn('load appointments failed', e);
     section.style.display = 'none';
@@ -1960,6 +2067,307 @@ document.getElementById('btn-delete-visit').addEventListener('click', async func
 /* =========================================================
    AUTH / BOOT
    ========================================================= */
+
+/* =========================================================
+   NEW HOME: greeting, Fresh meter, Today's routine, My looks
+   ========================================================= */
+function isoToDate(iso){ const p = String(iso).slice(0,10).split('-').map(Number); return new Date(p[0], (p[1]||1)-1, p[2]||1); }
+function daysBetweenIso(a, b){ return Math.round((isoToDate(b) - isoToDate(a)) / 86400000); }
+function addDaysIso(iso, n){ const d = isoToDate(iso); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function fmtShortDate(iso){ return isoToDate(iso).toLocaleDateString('en-US', {month:'short', day:'numeric'}); }
+function escHomeHtml(str){ return (str==null?'':String(str)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function renderHomeHero(){
+  const hero = document.getElementById('home-hero');
+  hero.hidden = false;
+  const h = new Date().getHours();
+  const part = h < 12 ? 'Good morning' : (h < 18 ? 'Good afternoon' : 'Good evening');
+  const first = String((client && client.name) || '').trim().split(/\s+/)[0];
+  document.getElementById('home-greet').textContent = first && first !== 'You' ? part + ', ' + first : part;
+}
+
+/* ---- Fresh meter ---- */
+let usualInfo = null; // { pro_code, pro_name, names:[], price } for the most recent finished appointment
+function pastBookedAppts(){
+  const today = todayIso();
+  return (allBookedAppts || []).filter(a => a.appt_date && a.appt_date <= today)
+    .sort((a,b)=> (a.appt_date + (a.start_time||'')) < (b.appt_date + (b.start_time||'')) ? 1 : -1);
+}
+function visitDatesInfo(){
+  // Every date the client was seen, from saved visits and finished bookings.
+  const today = todayIso();
+  const map = {}; // date -> pro name
+  (client && Array.isArray(client.visits) ? client.visits : []).forEach(v=>{
+    if (v.date && v.date <= today) map[v.date] = map[v.date] || v.barberName || '';
+  });
+  pastBookedAppts().forEach(a=>{ map[a.appt_date] = a.barber_name || map[a.appt_date] || ''; });
+  const dates = Object.keys(map).sort();
+  return { dates, map };
+}
+function usualIntervalDays(dates){
+  const gaps = [];
+  for (let i = 1; i < dates.length; i++){
+    const g = daysBetweenIso(dates[i-1], dates[i]);
+    if (g >= 3) gaps.push(g);
+  }
+  const recent = gaps.slice(-6).sort((a,b)=> a - b);
+  if (!recent.length) return null;
+  const mid = Math.floor(recent.length / 2);
+  const med = recent.length % 2 ? recent[mid] : (recent[mid-1] + recent[mid]) / 2;
+  return Math.max(7, Math.min(56, Math.round(med)));
+}
+async function resolveUsual(){
+  usualInfo = null;
+  if (!dbAvailable) return;
+  const last = pastBookedAppts()[0];
+  if (!last || !Array.isArray(last.services) || !last.services.length) return;
+  const names = last.services.map(sv => sv && sv.name).filter(Boolean);
+  if (!names.length) return;
+  let price = Number(last.total_price) || 0;
+  try{
+    const { data } = await supabaseClient.from('profiles').select('code, name, booking_enabled, booking_services').eq('code', last.barber_code).maybeSingle();
+    if (!data || !data.booking_enabled || !Array.isArray(data.booking_services)) return;
+    const found = names.map(n => data.booking_services.find(sv => String(sv.name||'').toLowerCase() === String(n).toLowerCase()));
+    if (found.some(f => !f)) return;
+    price = found.reduce((t, f)=> t + (Number(f.price)||0), 0);
+  }catch(e){ return; }
+  usualInfo = { pro_code: last.barber_code, pro_name: last.barber_name || 'your pro', names, price };
+}
+function renderFresh(){
+  const card = document.getElementById('fresh-card');
+  if (!client || viewedViaSharedCode){ card.hidden = true; return; }
+  const { dates, map } = visitDatesInfo();
+  const interval = usualIntervalDays(dates);
+  if (dates.length < 2 || !interval){ card.hidden = true; return; }
+  const today = todayIso();
+  const lastDate = dates[dates.length - 1];
+  const since = Math.max(0, daysBetweenIso(lastDate, today));
+  if (since > 400){ card.hidden = true; return; }
+  const next = (upcomingAppts || [])[0] || null;
+  const left = interval - since;
+  const arc = document.getElementById('fresh-arc');
+  const C = 276.46;
+  const frac = Math.min(1, since / interval);
+  arc.setAttribute('stroke-dashoffset', String(C * (1 - frac)));
+  document.getElementById('fresh-n').textContent = String(Math.min(since, 99));
+  document.getElementById('fresh-l').textContent = 'of ' + interval + ' days';
+  document.getElementById('fresh-ring').setAttribute('aria-label', 'Day ' + since + ' of ' + interval);
+  document.getElementById('fresh-usual').textContent = 'Your usual: every ' + interval + ' days';
+  const whoLast = map[lastDate] ? ' with ' + map[lastDate] : '';
+  const bigEl = document.getElementById('fresh-big');
+  const subEl = document.getElementById('fresh-sub');
+  const btn = document.getElementById('fresh-book');
+  if (next){
+    const when = new Date(next.appt_date + 'T00:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+    bigEl.textContent = 'Next visit ' + when;
+    subEl.textContent = 'Last visit' + whoLast + ' on ' + fmtShortDate(lastDate) + '.';
+    btn.hidden = true;
+  } else {
+    if (left > 1) bigEl.textContent = 'Fresh for about ' + left + ' more days';
+    else if (left === 1) bigEl.textContent = 'Fresh for about 1 more day';
+    else bigEl.textContent = 'Time for a fresh-up';
+    subEl.textContent = 'Last visit' + whoLast + ' on ' + fmtShortDate(lastDate) + '.';
+    let href, label;
+    if (usualInfo){
+      href = 'directory.html?pro=' + encodeURIComponent(usualInfo.pro_code) + '&client=' + encodeURIComponent(clientCode) + '&usual=' + encodeURIComponent(usualInfo.names.join('|'));
+      label = 'Book my usual · ' + usualInfo.names.join(' + ') + (usualInfo.price ? ' · $' + (Number.isInteger(usualInfo.price) ? usualInfo.price : usualInfo.price.toFixed(2)) : '');
+    } else {
+      const b = uniqueBarbers()[0] || (pastBookedAppts()[0] ? { code: pastBookedAppts()[0].barber_code, name: pastBookedAppts()[0].barber_name } : null);
+      if (b && b.code){
+        href = 'directory.html?pro=' + encodeURIComponent(b.code) + '&client=' + encodeURIComponent(clientCode);
+        label = 'Book again with ' + (b.name || 'your pro');
+      }
+    }
+    if (href){ btn.href = href; btn.textContent = label; btn.hidden = false; } else { btn.hidden = true; }
+  }
+  card.hidden = false;
+}
+
+/* ---- Today's routine ---- */
+let routine = { items: [], checks: new Set(), loaded: false };
+let routineEditing = false;
+function routineKey(itemId, date){ return itemId + '|' + String(date).slice(0,10); }
+async function loadRoutine(){
+  if (!dbAvailable || !clientCode || viewedViaSharedCode){ routine = { items: [], checks: new Set(), loaded: true }; renderRoutine(); return; }
+  try{
+    const { data, error } = await supabaseClient.rpc('routine_client_get', { p_client_code: clientCode, p_from: addDaysIso(todayIso(), -40) });
+    if (error) throw error;
+    const items = (data && Array.isArray(data.items)) ? data.items : [];
+    const checks = new Set(((data && data.checks) || []).map(c => routineKey(c.item_id, c.date)));
+    routine = { items, checks, loaded: true };
+  }catch(e){
+    console.warn('load routine failed', e);
+    routine = { items: [], checks: new Set(), loaded: true };
+  }
+  renderRoutine();
+}
+function routineDayDone(date){
+  return routine.items.some(it => routine.checks.has(routineKey(it.id, date)));
+}
+function routineStreak(){
+  const today = todayIso();
+  let d = routineDayDone(today) ? today : addDaysIso(today, -1);
+  let n = 0;
+  while (n < 400 && routineDayDone(d)){ n++; d = addDaysIso(d, -1); }
+  return n;
+}
+function renderRoutine(){
+  const card = document.getElementById('routine-card');
+  if (!client || viewedViaSharedCode || !routine.items.length){ card.hidden = true; return; }
+  card.hidden = false;
+  const today = todayIso();
+  // Week strip, Monday to Sunday
+  const dow = (isoToDate(today).getDay() + 6) % 7; // Mon=0
+  const monday = addDaysIso(today, -dow);
+  const letters = ['M','T','W','T','F','S','S'];
+  document.getElementById('routine-days').innerHTML = letters.map((l, i)=>{
+    const d = addDaysIso(monday, i);
+    const cls = 'rdot' + (d === today ? ' today' : '') + (d <= today && routineDayDone(d) ? ' done' : '');
+    return `<div class="rday"><span class="${cls}"></span>${l}</div>`;
+  }).join('');
+  const streak = routineStreak();
+  const sEl = document.getElementById('routine-streak');
+  if (streak >= 2){
+    sEl.hidden = false;
+    sEl.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 .2 1.2.8 2 1.6 2.4C10.2 8.8 10.8 5.6 12 3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>' + streak + '-day streak';
+  } else { sEl.hidden = true; }
+  const multiPro = new Set(routine.items.map(i => i.pro_code)).size > 1;
+  document.getElementById('routine-steps').innerHTML = routine.items.map(it=>{
+    const done = routine.checks.has(routineKey(it.id, today));
+    const by = it.added_by === 'client' ? 'You' : (it.pro_name || 'Your pro');
+    const showBy = it.added_by === 'client' ? (multiPro ? 'You · ' + (it.pro_name || '') : 'You') : by;
+    return `<div class="rstep-wrap">
+      <button type="button" class="rstep${done ? ' done' : ''}" data-routine-item="${escHomeHtml(it.id)}" aria-pressed="${done ? 'true' : 'false'}">
+        <span class="rbox">${done ? '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="#241A0C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}</span>
+        <span>${escHomeHtml(it.label)}</span><span class="rby">${escHomeHtml(showBy)}</span>
+      </button>
+      ${routineEditing ? `<button type="button" class="rstep-x" data-routine-hide="${escHomeHtml(it.id)}" aria-label="Remove ${escHomeHtml(it.label)} from my list">Remove</button>` : ''}
+    </div>`;
+  }).join('');
+  document.getElementById('btn-routine-edit').textContent = routineEditing ? 'Done' : 'Edit';
+  // Which pros can see what is checked off
+  const proNames = [...new Set(routine.items.map(i => i.pro_name || 'Your pro'))];
+  document.getElementById('routine-privacy').textContent = proNames.join(' and ') + (proNames.length > 1 ? ' can' : ' can') + ' see what you check off here.';
+  // Which routine a new step is added to
+  const pros = [];
+  routine.items.forEach(i=>{ if (!pros.find(p => p.code === i.pro_code)) pros.push({ code: i.pro_code, name: i.pro_name || 'Your pro' }); });
+  const sel = document.getElementById('routine-add-pro');
+  sel.innerHTML = pros.map(p => `<option value="${escHomeHtml(p.code)}">${escHomeHtml(p.name)}'s routine</option>`).join('');
+  sel.style.display = pros.length > 1 ? '' : 'none';
+}
+async function toggleRoutineItem(itemId){
+  const today = todayIso();
+  const key = routineKey(itemId, today);
+  const wasDone = routine.checks.has(key);
+  if (wasDone) routine.checks.delete(key); else routine.checks.add(key);
+  renderRoutine();
+  try{
+    const { error } = await supabaseClient.rpc('routine_client_check', { p_client_code: clientCode, p_item_id: itemId, p_date: today, p_done: !wasDone });
+    if (error) throw error;
+  }catch(e){
+    console.warn('routine check failed', e);
+    if (wasDone) routine.checks.add(key); else routine.checks.delete(key);
+    renderRoutine();
+    showToast("Couldn't save that. Try again.", true);
+  }
+}
+async function addRoutineStep(){
+  const input = document.getElementById('routine-add-input');
+  const label = input.value.trim();
+  if (!label) return;
+  const sel = document.getElementById('routine-add-pro');
+  const proCode = sel.value || (routine.items[0] && routine.items[0].pro_code);
+  if (!proCode) return;
+  const btn = document.getElementById('btn-routine-add');
+  btn.disabled = true;
+  try{
+    const { error } = await supabaseClient.rpc('routine_client_add', { p_client_code: clientCode, p_pro_code: proCode, p_label: label });
+    if (error) throw error;
+    input.value = '';
+    document.getElementById('routine-add-row').style.display = 'none';
+    await loadRoutine();
+    showToast('Step added');
+  }catch(e){
+    console.warn('add routine step failed', e);
+    showToast("Couldn't add that. Try again.", true);
+  }
+  btn.disabled = false;
+}
+async function hideRoutineStep(itemId){
+  const before = routine.items.slice();
+  routine.items = routine.items.filter(i => i.id !== itemId);
+  renderRoutine();
+  try{
+    const { error } = await supabaseClient.rpc('routine_client_hide', { p_client_code: clientCode, p_item_id: itemId });
+    if (error) throw error;
+    showToast('Removed from your list');
+  }catch(e){
+    console.warn('hide routine step failed', e);
+    routine.items = before;
+    renderRoutine();
+    showToast("Couldn't remove that. Try again.", true);
+  }
+}
+document.getElementById('routine-steps').addEventListener('click', e=>{
+  const hide = e.target.closest('[data-routine-hide]');
+  if (hide){ hideRoutineStep(hide.dataset.routineHide); return; }
+  const step = e.target.closest('[data-routine-item]');
+  if (step) toggleRoutineItem(step.dataset.routineItem);
+});
+document.getElementById('btn-routine-add-open').addEventListener('click', ()=>{
+  const row = document.getElementById('routine-add-row');
+  row.style.display = 'flex';
+  document.getElementById('routine-add-input').focus();
+});
+document.getElementById('btn-routine-add-cancel').addEventListener('click', ()=>{
+  document.getElementById('routine-add-row').style.display = 'none';
+  document.getElementById('routine-add-input').value = '';
+});
+document.getElementById('btn-routine-add').addEventListener('click', addRoutineStep);
+document.getElementById('routine-add-input').addEventListener('keydown', e=>{ if (e.key === 'Enter'){ e.preventDefault(); addRoutineStep(); } });
+document.getElementById('btn-routine-edit').addEventListener('click', ()=>{ routineEditing = !routineEditing; renderRoutine(); });
+
+/* ---- My looks: every photo from the client's visits ---- */
+function looksPhotos(){
+  const out = [];
+  sortedVisits().forEach(v=>{
+    (Array.isArray(v.photos) ? v.photos : []).forEach(ph=>{ if (ph && ph.url) out.push({ url: ph.url, visitId: v.id, date: v.date || '', name: v.barberName || '' }); });
+  });
+  return out;
+}
+function renderLooksTile(){
+  const tile = document.getElementById('btn-open-looks');
+  tile.hidden = viewedViaSharedCode || !looksPhotos().length;
+  document.getElementById('find-pro-section').style.display = viewedViaSharedCode ? 'none' : 'flex';
+}
+function openLooks(){
+  const photos = looksPhotos();
+  document.getElementById('looks-grid').innerHTML = photos.map(ph=>
+    `<button type="button" class="looks-item" data-looks-visit="${escHomeHtml(ph.visitId)}" aria-label="Open the visit from ${escHomeHtml(ph.date ? fmtShortDate(ph.date) : 'an earlier date')}"><img src="${escHomeHtml(ph.url)}" alt="" loading="lazy"><span>${ph.date ? escHomeHtml(fmtShortDate(ph.date)) : ''}</span></button>`).join('');
+  showScreen('looks');
+  scrollAppToTop();
+}
+document.getElementById('btn-open-looks').addEventListener('click', openLooks);
+document.getElementById('btn-back-home-from-looks').addEventListener('click', ()=>{ renderHome(); showScreen('home'); });
+document.getElementById('looks-grid').addEventListener('click', e=>{
+  const b = e.target.closest('[data-looks-visit]');
+  if (b) openDetail(b.dataset.looksVisit);
+});
+
+/* ---- small toggles on the home screen ---- */
+document.getElementById('btn-toggle-code').addEventListener('click', function(){
+  const card = document.getElementById('code-card');
+  card.hidden = !card.hidden;
+  this.textContent = card.hidden ? 'Show QR' : 'Hide QR';
+  this.setAttribute('aria-expanded', card.hidden ? 'false' : 'true');
+});
+document.getElementById('btn-toggle-find-code').addEventListener('click', function(){
+  const f = document.getElementById('find-pro-form');
+  const open = f.style.display === 'none';
+  f.style.display = open ? 'flex' : 'none';
+  this.setAttribute('aria-expanded', open ? 'true' : 'false');
+});
+
 function enterApp(){
   if (!viewedViaSharedCode){
     syncNdaToServer();
@@ -1977,6 +2385,7 @@ function enterApp(){
   showScreen('home');
   loadUpcomingAppointments();
   loadLoyalty();
+  loadRoutine();
   updateNotifNudgeBanner();
   updateInstallNudgeBanner();
   // loadQuickMessageQueue() decides when to also show the install reminder

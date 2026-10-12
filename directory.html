@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono: Find a Pro</title>
-<meta name="app-build" content="2026-10-09T19-00-00Z">
+<meta name="app-build" content="2026-10-12T21-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -1063,6 +1063,34 @@ async function initBookingFor(pro){
       }catch(e){ console.warn('family roster fetch failed', e); }
     }
   }
+  applyUsualFromLink(pro);
+}
+
+// "Book my usual" from the client home screen: ?usual=Cut|Beard Trim carries the service
+// names from the client's last visit. If every one of them is still on this pro's price
+// list, tick them and jump straight to picking a time. If any is gone, do nothing, so the
+// client just sees the normal services list.
+function applyUsualFromLink(pro){
+  try{
+    const qp = new URLSearchParams(window.location.search);
+    const raw = qp.get('usual');
+    if (!raw || qp.get('pro') !== pro.code) return;
+    const names = raw.split('|').map(x=>x.trim()).filter(Boolean).slice(0, 8);
+    if (!names.length) return;
+    const list = Array.isArray(pro.booking_services) ? pro.booking_services : [];
+    const ids = [];
+    for (const n of names){
+      const hit = list.find(sv => String(sv.name||'').toLowerCase() === n.toLowerCase());
+      if (!hit) return;
+      if (!ids.includes(hit.id)) ids.push(hit.id);
+    }
+    bkc.selectedIds = ids;
+    document.querySelectorAll('.bkc-svc-check').forEach(cb=>{ cb.checked = ids.includes(cb.dataset.svc); });
+    updateBkcTotal();
+    goToBkcSlots();
+    const block = document.getElementById('detail-booking-block');
+    if (block && block.scrollIntoView) setTimeout(()=> block.scrollIntoView({ block:'start' }), 50);
+  }catch(e){ console.warn('usual link failed', e); }
 }
 
 function showBkcStep(name){

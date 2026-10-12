@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-09T18-00-00Z">
+<meta name="app-build" content="2026-10-12T21-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1896,7 +1896,7 @@
           </div>
         </div>
         <div class="biz-pane" data-biz="clients" id="tab-my-clients">
-          <div class="screen-body show" data-screen="dashboard" style="gap:14px;">
+          <div class="screen-body show" data-screen="dashboard" id="myclients-list-view" style="gap:14px;">
             <p class="screen-sub" style="margin:0;">Clients you've saved a visit for through Consult, in one searchable list. Tap a client to look them up again in Consult, or check the box to send a message.</p>
             <div class="input-row"><input id="myclients-search" type="text" placeholder="Search by name or code"></div>
             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
@@ -1930,6 +1930,41 @@
             <div id="myclients-list" style="display:flex; flex-direction:column; gap:8px;"></div>
             <p class="screen-sub" id="myclients-empty" style="display:none; margin:0;">No clients yet. They'll show up here once you save a visit for them through Consult.</p>
             <p class="foot-note-small" style="margin:0;">This list only ever holds clients you've actually served through the app. Vono has no way to import contacts from your phone or elsewhere to build a marketing list.</p>
+          </div>
+          <div id="myclients-routine-view" style="display:none; flex-direction:column; gap:14px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <button type="button" class="link-btn" id="btn-routine-back" style="padding:0;">&larr; Clients</button>
+            </div>
+            <div>
+              <p class="eyebrow-mini" style="margin:0;">Routine</p>
+              <h3 class="screen-title" id="rt-client-name" style="margin:2px 0 0; font-size:20px;">&nbsp;</h3>
+            </div>
+            <div class="card" id="rt-summary" style="gap:10px;">
+              <div class="summary-row"><span>Current streak</span><span id="rt-streak">0 days</span></div>
+              <div class="summary-row"><span>Last 14 days</span><span id="rt-days14">0 of 14 days</span></div>
+              <div id="rt-step-stats" style="display:flex; flex-direction:column; gap:6px; border-top:1px solid var(--line); padding-top:10px;"></div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <p class="eyebrow-mini" style="margin:0;">Steps</p>
+              <div id="rt-steps" style="display:flex; flex-direction:column; gap:6px;"></div>
+              <p class="screen-sub" id="rt-steps-empty" style="margin:0;">No steps yet. Add your own or start from a template below.</p>
+            </div>
+            <div class="card" style="gap:10px;">
+              <p class="eyebrow-mini2" style="margin:0;">Add a step</p>
+              <div class="input-row"><input id="rt-add-input" type="text" maxlength="80" placeholder="e.g. Moisturize scalp daily" autocomplete="off"></div>
+              <button type="button" class="btn btn-primary" id="btn-rt-add">Add step</button>
+              <div class="field" style="margin-top:4px;">
+                <label for="rt-template-select">Or start from a template</label>
+                <select id="rt-template-select" class="title-select" style="width:100%; font-size:14px;"></select>
+              </div>
+              <button type="button" class="btn btn-outline" id="btn-rt-template">Add template steps</button>
+              <p class="screen-sub" id="rt-status" style="margin:0;" aria-live="polite">&nbsp;</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <p class="eyebrow-mini" style="margin:0;">Last 5 weeks</p>
+              <div id="rt-cal" style="display:grid; grid-template-columns:repeat(7,1fr); gap:5px;"></div>
+              <p class="foot-note-small" style="margin:0;">Brighter days mean more steps were checked off. Your client knows you can see what they check off.</p>
+            </div>
           </div>
         </div>
         <div class="biz-pane" data-biz="inventory" id="tab-inventory">
@@ -8745,6 +8780,23 @@ async function saveAppointmentChange(id, core, extras){
     selectAllCb.checked = allSelected;
     selectAllCb.indeterminate = !allSelected && anySelected;
   }
+  // How each client's routine is doing (steps + days checked in over the last 14),
+  // loaded after the list so the list itself never waits on it.
+  let routineOverview = {};
+  function routineLabelFor(code){
+    const o = routineOverview[code];
+    return o && o.steps > 0 ? 'Routine &middot; ' + o.days + ' of 14 days' : 'Routine';
+  }
+  async function loadRoutineOverview(){
+    routineOverview = {};
+    if (!dbAvailable || !profileCode) return;
+    try{
+      const { data, error } = await supabaseClient.rpc('routine_pro_overview', { p_pro_code: profileCode, p_from: addDaysIsoPro(todayIso(), -13) });
+      if (error) throw error;
+      (Array.isArray(data) ? data : []).forEach(r => { routineOverview[r.client_code] = { steps: Number(r.steps)||0, days: Number(r.days)||0 }; });
+    }catch(e){ console.warn('routine overview failed', e); }
+  }
+  function addDaysIsoPro(iso, n){ const p = iso.split('-').map(Number); const d = new Date(p[0], p[1]-1, p[2]); d.setDate(d.getDate()+n); return localIsoDate(d); }
   function renderMyClients(filterText){
     const listEl = root.querySelector('#myclients-list');
     const emptyEl = root.querySelector('#myclients-empty');
@@ -8777,6 +8829,7 @@ async function saveAppointmentChange(id, core, extras){
             <span class="screen-sub" style="margin:0;">${c.visitCount} visit${c.visitCount===1?'':'s'}</span>
           </div>
           <span class="screen-sub" style="margin:0;">${c.code}${c.lastDate ? ' &middot; last visit ' + fmtVisitDate(c.lastDate) : ''}</span>
+          <button type="button" class="link-btn" data-open-routine="${c.code}" style="align-self:flex-start; padding:0; font-size:12px;">${routineLabelFor(c.code)}</button>
         </div>
       </div>`).join('');
     updateSelectAllState();
@@ -8797,6 +8850,7 @@ async function saveAppointmentChange(id, core, extras){
       myClients = (data || []).map(summarizeClient).sort((a,b)=> (b.lastDate||'').localeCompare(a.lastDate||''));
       myClientsLoaded = true;
       renderMyClients(root.querySelector('#myclients-search').value);
+      loadRoutineOverview().then(()=>{ if (myClientsLoaded) renderMyClients(root.querySelector('#myclients-search').value); });
     }catch(e){
       console.warn('load my clients failed', e);
       listEl.innerHTML = '';
@@ -8811,6 +8865,8 @@ async function saveAppointmentChange(id, core, extras){
     // A checkbox click bubbles up to this same handler -- let its own change
     // handler manage selection and don't also navigate into Consult.
     if (e.target.closest('[data-select-client]')) return;
+    const rtBtn = e.target.closest('[data-open-routine]');
+    if (rtBtn){ openRoutine(rtBtn.dataset.openRoutine); return; }
     const card = e.target.closest('[data-open-client]');
     if (!card) return;
     const code = card.dataset.openClient;
@@ -8823,7 +8879,7 @@ async function saveAppointmentChange(id, core, extras){
     }, 50);
   });
   root.querySelector('#myclients-list').addEventListener('keydown', (e)=>{
-    if (e.target.closest('[data-select-client]')) return;
+    if (e.target.closest('[data-select-client]') || e.target.closest('[data-open-routine]')) return;
     const card = e.target.closest('[data-open-client]');
     if (!card) return;
     if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); card.click(); }
@@ -8898,10 +8954,150 @@ async function saveAppointmentChange(id, core, extras){
     }
     sendBtn.disabled = false;
   });
+  /* ---------- Routine for one client ---------- */
+  const RT_TEMPLATES = {
+    barber: { label: 'Barber aftercare', steps: ['Moisturize scalp daily', 'Brush waves for 5 minutes', 'Wrap hair at night', 'Rinse and condition twice a week'] },
+    braids: { label: 'Braids and locs care', steps: ['Moisturize scalp daily', 'Wrap hair in a satin scarf at night', 'Spray braids lightly with leave-in', 'Keep heavy products away from the edges'] },
+    hair:   { label: 'Hair color and styling', steps: ['Use sulfate-free shampoo', 'Deep condition once a week', 'Use heat protectant before styling', 'Cover hair at night'] },
+    skin:   { label: 'Skincare', steps: ['Cleanse morning and night', 'Apply sunscreen daily', 'Moisturize at night', 'Skip harsh scrubs'] },
+    nails:  { label: 'Nail care', steps: ['Apply cuticle oil daily', 'Moisturize hands', 'Wear gloves for cleaning', 'Skip using nails as tools'] },
+    massage:{ label: 'After a massage', steps: ['Drink extra water', 'Gentle stretching for 5 minutes', 'Use heat on sore spots', 'Rest and go easy on heavy lifting'] }
+  };
+  function defaultTemplateKey(){
+    const t = String((profile && profile.title) || '').toLowerCase();
+    if (/barber/.test(t)) return 'barber';
+    if (/braid|loc/.test(t)) return 'braids';
+    if (/estheti|skin|lash|brow/.test(t)) return 'skin';
+    if (/nail/.test(t)) return 'nails';
+    if (/massage/.test(t)) return 'massage';
+    return 'hair';
+  }
+  let rt = { code: '', name: '', items: [], checks: new Set() };
+  function rtEsc(str){ return (str==null?'':String(str)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function rtKey(id, d){ return id + '|' + String(d).slice(0,10); }
+  function rtStatus(msg, bad){ const el = root.querySelector('#rt-status'); el.textContent = msg || ' '; el.style.color = bad ? 'var(--bad, #E0705F)' : ''; }
+  function rtDayCount(date){ return rt.items.filter(it => rt.checks.has(rtKey(it.id, date))).length; }
+  function renderRoutinePanel(){
+    const today = todayIso();
+    root.querySelector('#rt-client-name').textContent = rt.name || rt.code;
+    // streak: any step checked counts the day; today not yet done doesn't break it
+    let d = rtDayCount(today) > 0 ? today : addDaysIsoPro(today, -1), streak = 0;
+    while (streak < 400 && rtDayCount(d) > 0){ streak++; d = addDaysIsoPro(d, -1); }
+    root.querySelector('#rt-streak').textContent = streak + (streak === 1 ? ' day' : ' days');
+    let days14 = 0;
+    for (let i = 0; i < 14; i++) if (rtDayCount(addDaysIsoPro(today, -i)) > 0) days14++;
+    root.querySelector('#rt-days14').textContent = days14 + ' of 14 days';
+    root.querySelector('#rt-step-stats').innerHTML = rt.items.map(it=>{
+      let n = 0; for (let i = 0; i < 14; i++) if (rt.checks.has(rtKey(it.id, addDaysIsoPro(today, -i)))) n++;
+      return `<div class="summary-row"><span>${rtEsc(it.label)}</span><span>${n} of 14 days</span></div>`;
+    }).join('');
+    root.querySelector('#rt-step-stats').style.display = rt.items.length ? 'flex' : 'none';
+    root.querySelector('#rt-steps').innerHTML = rt.items.map(it=>
+      `<div class="check-row" style="justify-content:space-between; gap:10px; padding:10px 12px;">
+        <span style="min-width:0;">${rtEsc(it.label)}<span class="screen-sub" style="display:block; margin:2px 0 0; font-size:11.5px;">${it.added_by === 'client' ? 'Added by your client' : 'Added by you'}${it.client_hidden ? ' &middot; client hid this from their list' : ''}</span></span>
+        <button type="button" class="link-btn" data-rt-remove="${rtEsc(it.id)}" style="flex:none; padding:0;">Remove</button>
+      </div>`).join('');
+    root.querySelector('#rt-steps-empty').style.display = rt.items.length ? 'none' : 'block';
+    // 5 weeks, Sunday first, ending with the current week
+    const dow = new Date().getDay();
+    const start = addDaysIsoPro(today, -(dow + 28));
+    const cells = [];
+    const total = Math.max(1, rt.items.length);
+    for (let i = 0; i < 35; i++){
+      const day = addDaysIsoPro(start, i);
+      const future = day > today;
+      const n = future ? 0 : rtDayCount(day);
+      const alpha = n === 0 ? 0 : 0.28 + 0.72 * (n / total);
+      const bg = n ? `rgba(217,174,94,${alpha.toFixed(2)})` : 'transparent';
+      const fg = n && alpha > 0.6 ? '#241A0C' : 'var(--ink)';
+      cells.push(`<div title="${day}: ${n} of ${rt.items.length} steps" style="aspect-ratio:1/1; border:1px solid ${day === today ? 'var(--brass)' : 'var(--line)'}; border-radius:8px; background:${bg}; color:${future ? 'var(--muted)' : fg}; opacity:${future ? 0.45 : 1}; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; font-variant-numeric:tabular-nums;">${parseInt(day.slice(8,10), 10)}</div>`);
+    }
+    root.querySelector('#rt-cal').innerHTML = cells.join('');
+  }
+  async function loadRoutineFor(code){
+    try{
+      const { data, error } = await supabaseClient.rpc('routine_pro_get', { p_pro_code: profileCode, p_client_code: code, p_from: addDaysIsoPro(todayIso(), -40) });
+      if (error) throw error;
+      rt.items = (data && Array.isArray(data.items)) ? data.items : [];
+      rt.checks = new Set(((data && data.checks) || []).map(c => rtKey(c.item_id, c.date)));
+      rtStatus('');
+    }catch(e){
+      console.warn('load routine failed', e);
+      rt.items = []; rt.checks = new Set();
+      rtStatus("Couldn't load this routine right now.", true);
+    }
+    renderRoutinePanel();
+  }
+  function openRoutine(code){
+    const c = myClients.find(x => x.code === code);
+    rt = { code, name: c ? c.name : code, items: [], checks: new Set() };
+    root.querySelector('#myclients-list-view').style.display = 'none';
+    root.querySelector('#myclients-routine-view').style.display = 'flex';
+    const sel = root.querySelector('#rt-template-select');
+    const def = defaultTemplateKey();
+    sel.innerHTML = Object.keys(RT_TEMPLATES).map(k => `<option value="${k}" ${k === def ? 'selected' : ''}>${RT_TEMPLATES[k].label}</option>`).join('');
+    root.querySelector('#rt-add-input').value = '';
+    rtStatus('');
+    renderRoutinePanel();
+    loadRoutineFor(code);
+    window.scrollTo && window.scrollTo(0, 0);
+  }
+  function closeRoutine(){
+    root.querySelector('#myclients-routine-view').style.display = 'none';
+    root.querySelector('#myclients-list-view').style.display = 'flex';
+    loadRoutineOverview().then(()=> renderMyClients(root.querySelector('#myclients-search').value));
+  }
+  async function addRoutineLabels(labels){
+    if (!dbAvailable || !profileCode){ rtStatus("Live saving isn't connected right now.", true); return; }
+    const addBtn = root.querySelector('#btn-rt-add'), tplBtn = root.querySelector('#btn-rt-template');
+    addBtn.disabled = tplBtn.disabled = true;
+    let added = 0, failed = false;
+    for (const label of labels){
+      if (rt.items.some(it => it.label.toLowerCase() === label.toLowerCase())) continue;
+      try{
+        const { error } = await supabaseClient.rpc('routine_pro_add', { p_pro_code: profileCode, p_client_code: rt.code, p_label: label });
+        if (error) throw error;
+        added++;
+      }catch(e){ console.warn('add routine step failed', e); failed = true; break; }
+    }
+    addBtn.disabled = tplBtn.disabled = false;
+    await loadRoutineFor(rt.code);
+    if (failed) rtStatus("Couldn't add every step. Check the list and try again.", true);
+    else rtStatus(added ? (added === 1 ? 'Step added.' : added + ' steps added.') : 'Those steps are already on the list.');
+  }
+  root.querySelector('#btn-rt-add').addEventListener('click', async ()=>{
+    const input = root.querySelector('#rt-add-input');
+    const label = input.value.trim();
+    if (!label){ rtStatus('Type a step first.', true); return; }
+    await addRoutineLabels([label]);
+    input.value = '';
+  });
+  root.querySelector('#rt-add-input').addEventListener('keydown', e=>{ if (e.key === 'Enter'){ e.preventDefault(); root.querySelector('#btn-rt-add').click(); } });
+  root.querySelector('#btn-rt-template').addEventListener('click', ()=>{
+    const t = RT_TEMPLATES[root.querySelector('#rt-template-select').value];
+    if (t) addRoutineLabels(t.steps);
+  });
+  root.querySelector('#rt-steps').addEventListener('click', async e=>{
+    const b = e.target.closest('[data-rt-remove]');
+    if (!b) return;
+    const id = b.dataset.rtRemove;
+    try{
+      const { error } = await supabaseClient.rpc('routine_pro_remove', { p_pro_code: profileCode, p_item_id: id });
+      if (error) throw error;
+      await loadRoutineFor(rt.code);
+      rtStatus('Step removed.');
+    }catch(err){
+      console.warn('remove routine step failed', err);
+      rtStatus("Couldn't remove that. Try again.", true);
+    }
+  });
+  root.querySelector('#btn-routine-back').addEventListener('click', closeRoutine);
   window.initMyClientsTab = function(){
     // Cheap to call every time the tab is opened -- keeps the list current without
     // needing a manual refresh button, and the query is scoped to this professional
     // only, not a scan of every client in the database.
+    root.querySelector('#myclients-routine-view').style.display = 'none';
+    root.querySelector('#myclients-list-view').style.display = 'flex';
     loadMyClients();
   };
 })();
