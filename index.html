@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-12T21-00-00Z">
+<meta name="app-build" content="2026-10-14T15-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -2610,6 +2610,11 @@
             <option value="48">48 hours before</option>
           </select>
         </div>
+        <div id="appt-reminder-tz-row" class="field" style="margin-top:6px;">
+          <label for="appt-reminder-tz">Your time zone</label>
+          <select class="title-select" id="appt-reminder-tz" style="width:100%;"></select>
+          <p class="foot-note-small" id="appt-reminder-tz-note" style="margin:4px 0 0;">Reminders go out by this clock. It was set from your phone; change it here if it's wrong.</p>
+        </div>
         <p class="foot-note-small">Sends the client a push with your name, the service, the time, and your address, once per appointment, if they have notifications turned on. Turn this off if you'd rather not.</p>
       </div>
       <div id="listing-ineligible" style="display:none; border-top:1px solid var(--line); padding-top:16px;">
@@ -3128,6 +3133,7 @@ function defaultProfile(name){
     notifyRebookNudges: true,
     notifyApptReminders: true,
     apptReminderHours: 24,
+    timezone: '',
     subscriptionStatus: 'none',
     planTier: null,
     trialEndsAt: null
@@ -3197,6 +3203,7 @@ async function persistProfile(fields){
   if (fields.notifyRebookNudges !== undefined) row.notify_rebook_nudges = fields.notifyRebookNudges;
   if (fields.notifyApptReminders !== undefined) row.notify_appt_reminders = fields.notifyApptReminders;
   if (fields.apptReminderHours !== undefined) row.appt_reminder_hours = fields.apptReminderHours;
+  if (fields.timezone !== undefined) row.timezone = fields.timezone;
   try{
     const { data, error } = await supabaseClient.from('profiles').update(row).eq('code', profileCode).select();
     if (error) throw error;
@@ -3210,6 +3217,23 @@ async function persistProfile(fields){
     console.warn('save failed', e);
     return { ok:false, message: (e && e.message) ? e.message : "Something went wrong saving. Try again." };
   }
+}
+function detectTimeZone(){
+  try{ return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; }catch(e){ return ''; }
+}
+const TZ_CHOICES = [
+  ['America/New_York','Eastern (New York)'],['America/Chicago','Central (Chicago)'],['America/Denver','Mountain (Denver)'],
+  ['America/Phoenix','Arizona (no daylight saving)'],['America/Los_Angeles','Pacific (Los Angeles)'],
+  ['America/Anchorage','Alaska'],['Pacific/Honolulu','Hawaii']
+];
+function renderTimeZoneSelect(){
+  const sel = document.getElementById('appt-reminder-tz');
+  if (!sel) return;
+  const cur = profile.timezone || detectTimeZone() || 'America/New_York';
+  const list = TZ_CHOICES.slice();
+  if (!list.some(x => x[0] === cur)) list.push([cur, cur.replace(/_/g,' ')]);
+  sel.innerHTML = list.map(x => `<option value="${x[0]}">${x[1]}</option>`).join('');
+  sel.value = cur;
 }
 function sanitizeCode(raw){
   let c = (raw||'').trim().toLowerCase().replace(/[^a-z0-9_.~:@+-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
@@ -10027,6 +10051,14 @@ function applyProfileRow(data){
   profile.planTier = data.plan_tier || null;
   profile.trialEndsAt = data.trial_ends_at || null;
   profileCode = data.code;
+  profile.timezone = data.timezone || '';
+  // First time here (or before this setting existed): remember the time zone this device is
+  // in, so appointment reminders go out at the right hour for this pro. Only fills a blank --
+  // it never overwrites a zone the pro picked, so travelling doesn't shift their reminders.
+  if (!profile.timezone){
+    const tz = detectTimeZone();
+    if (tz){ profile.timezone = tz; persistProfile({ timezone: tz }); }
+  }
 }
 async function tryLoadProfile(code){
   try{
@@ -10591,7 +10623,7 @@ async function populateNotificationsStatus(){
   const btn = document.getElementById('btn-enable-notifications');
   const note = document.getElementById('notifications-status-note');
   const lockedNote = document.getElementById('notifications-locked-note');
-  const toggleIds = ['notify-appt-events-toggle', 'notify-rebook-toggle', 'notify-appt-reminder-toggle', 'appt-reminder-hours'];
+  const toggleIds = ['notify-appt-events-toggle', 'notify-rebook-toggle', 'notify-appt-reminder-toggle', 'appt-reminder-hours', 'appt-reminder-tz'];
   if (!hasActiveAccess()){
     if (lockedNote) lockedNote.style.display = 'flex';
     document.getElementById('ios-homescreen-tip').style.display = 'none';
@@ -10604,6 +10636,8 @@ async function populateNotificationsStatus(){
   if (lockedNote) lockedNote.style.display = 'none';
   toggleIds.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = false; });
   document.getElementById('ios-homescreen-tip').style.display = isIosNotStandalone() ? 'flex' : 'none';
+  renderTimeZoneSelect();
+  document.getElementById('appt-reminder-tz-row').style.display = (profile.notifyApptReminders !== false) ? '' : 'none';
   if (!pushSupported()){
     btn.disabled = true;
     btn.textContent = 'Not supported on this device';
@@ -10629,6 +10663,8 @@ async function populateNotificationsStatus(){
   document.getElementById('notify-appt-reminder-toggle').checked = profile.notifyApptReminders !== false;
   document.getElementById('appt-reminder-hours').value = String(profile.apptReminderHours || 24);
   document.getElementById('appt-reminder-hours-row').style.display = (profile.notifyApptReminders !== false) ? '' : 'none';
+  document.getElementById('appt-reminder-tz-row').style.display = (profile.notifyApptReminders !== false) ? '' : 'none';
+  renderTimeZoneSelect();
 }
 document.getElementById('btn-ios-homescreen-steps').addEventListener('click', function(){
   const steps = document.getElementById('ios-homescreen-steps');
@@ -10647,11 +10683,18 @@ document.getElementById('notify-rebook-toggle').addEventListener('change', funct
 document.getElementById('notify-appt-reminder-toggle').addEventListener('change', function(){
   profile.notifyApptReminders = this.checked;
   document.getElementById('appt-reminder-hours-row').style.display = this.checked ? '' : 'none';
+  document.getElementById('appt-reminder-tz-row').style.display = this.checked ? '' : 'none';
   persistProfile({ notifyApptReminders: this.checked });
 });
 document.getElementById('appt-reminder-hours').addEventListener('change', function(){
   profile.apptReminderHours = Number(this.value) || 24;
   persistProfile({ apptReminderHours: profile.apptReminderHours });
+});
+document.getElementById('appt-reminder-tz').addEventListener('change', async function(){
+  const note = document.getElementById('appt-reminder-tz-note');
+  profile.timezone = this.value;
+  const r = await persistProfile({ timezone: this.value });
+  note.textContent = r && r.ok ? 'Saved. Reminders will go out by this clock.' : ("Couldn't save your time zone: " + ((r && r.message) || 'try again.'));
 });
 document.getElementById('btn-enable-notifications').addEventListener('click', async ()=>{
   const btn = document.getElementById('btn-enable-notifications');
