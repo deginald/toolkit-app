@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-14T18-00-00Z">
+<meta name="app-build" content="2026-10-15T15-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -313,12 +313,12 @@
     </div>
     <div>
       <p class="eyebrow-mini">Vono Passport</p>
-      <h2 class="screen-title" id="auth-heading">First time here</h2>
-      <p class="screen-sub" style="margin-top:6px;" id="auth-subhead">Pick a name and a personal code of your own. Give that code to any barber or stylist and they can pull up your visits. Add an email below so you can always get your code back if you lose it.</p>
+      <h2 class="screen-title" id="auth-heading">Create your passport</h2>
+      <p class="screen-sub" style="margin-top:6px;" id="auth-subhead">Your visits, your pros, your history. All in one place.</p>
     </div>
     <div class="mode-toggle" style="width:100%; max-width:320px;">
-      <button type="button" class="mode-btn active" id="btn-auth-mode-new">First time</button>
-      <button type="button" class="mode-btn" id="btn-auth-mode-returning">Returning</button>
+      <button type="button" class="mode-btn active" id="btn-auth-mode-new">Create passport</button>
+      <button type="button" class="mode-btn" id="btn-auth-mode-returning">Log in</button>
     </div>
     <form class="auth-form" id="auth-form">
       <div class="field">
@@ -327,12 +327,13 @@
       </div>
       <div class="field">
         <label>Personal code</label>
-        <div class="input-row"><input id="auth-code" type="text" placeholder="e.g. jordan-2026" autocomplete="off" required></div>
+        <div class="input-row"><input id="auth-code" type="text" placeholder="e.g. jordan-4821" autocomplete="off" required><button type="button" class="link-btn" id="auth-code-random" style="flex:none; padding:6px 0 6px 8px;">Random digits</button></div>
+        <p class="foot-note-small" id="auth-code-hint" style="margin:0;">Your first name plus four digits you'll remember, like the last 4 of your phone. Give this code to any barber or stylist and they can pull up your visits. We never ask for or store your phone number.</p>
       </div>
       <div class="field" id="auth-email-field">
         <label>Email</label>
         <div class="input-row"><input id="auth-email" type="email" placeholder="e.g. jordan@email.com" autocomplete="email" required></div>
-        <p class="foot-note-small">Needed to create your passport, and lets you recover your code later if you lose it. Never shown to your barber.</p>
+        <p class="foot-note-small">Lets you get your code back if you lose it. Never shown to your barber.</p>
       </div>
       <button class="btn btn-primary" type="submit" id="auth-submit-btn">Create my passport</button>
       <p class="foot-note-small" id="auth-tos-note" style="text-align:center;">By creating a passport, you agree to our <a href="terms.html" target="_blank" style="color:var(--brass);">Terms of Service</a> and <a href="privacy.html" target="_blank" style="color:var(--brass);">Privacy Policy</a>.</p>
@@ -2590,10 +2591,12 @@ function setAuthMode(mode){
   const isNew = mode !== 'returning';
   document.getElementById('btn-auth-mode-new').classList.toggle('active', isNew);
   document.getElementById('btn-auth-mode-returning').classList.toggle('active', !isNew);
-  document.getElementById('auth-heading').textContent = isNew ? 'First time here' : 'Welcome back';
+  document.getElementById('auth-heading').textContent = isNew ? 'Create your passport' : 'Welcome back';
   document.getElementById('auth-subhead').textContent = isNew
-    ? "Pick a name and a personal code of your own. Give that code to any barber or stylist and they can pull up your visits. Add an email below so you can always get your code back if you lose it."
-    : 'Enter your name and the personal code you set up before.';
+    ? 'Your visits, your pros, your history. All in one place.'
+    : 'Use your name and personal code.';
+  document.getElementById('auth-code-hint').style.display = isNew ? '' : 'none';
+  document.getElementById('auth-code-random').style.display = isNew ? '' : 'none';
   document.getElementById('auth-submit-btn').textContent = isNew ? 'Create my passport' : 'Continue';
   document.getElementById('auth-error').textContent = '\u00a0';
   document.getElementById('auth-email-field').style.display = isNew ? '' : 'none';
@@ -2610,6 +2613,32 @@ function setAuthMode(mode){
   document.getElementById('forgot-code-status').textContent = '\u00a0';
 }
 
+// While creating a passport, the code starts as the first name -- the client adds
+// four digits they will remember (the last 4 of their phone works well). Only the
+// finished code is saved, never a phone number.
+let authCodeAuto = '';
+function authFirstNameCode(){
+  const first = (document.getElementById('auth-name').value || '').trim().split(/\s+/)[0] || '';
+  return sanitizeCode(first);
+}
+function authIsCreating(){
+  return document.getElementById('btn-auth-mode-new').classList.contains('active');
+}
+document.getElementById('auth-name').addEventListener('input', ()=>{
+  if (!authIsCreating()) return;
+  const codeEl = document.getElementById('auth-code');
+  if (!codeEl.value || codeEl.value === authCodeAuto){
+    const base = authFirstNameCode();
+    authCodeAuto = base ? base + '-' : '';
+    codeEl.value = authCodeAuto;
+  }
+});
+document.getElementById('auth-code-random').addEventListener('click', ()=>{
+  const base = authFirstNameCode() || 'me';
+  const codeEl = document.getElementById('auth-code');
+  codeEl.value = base + '-' + String(Math.floor(1000 + Math.random() * 9000));
+  authCodeAuto = '';
+});
 document.getElementById('btn-auth-mode-new').addEventListener('click', ()=> setAuthMode('new'));
 document.getElementById('btn-auth-mode-returning').addEventListener('click', ()=> setAuthMode('returning'));
 
@@ -2638,6 +2667,10 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
   if (!code) return;
   const email = (document.getElementById('auth-email').value || '').trim();
   const isReturning = document.getElementById('btn-auth-mode-returning').classList.contains('active');
+  if (!isReturning && code === authFirstNameCode()){
+    errorEl.textContent = "Add four digits you'll remember to your code, like the last 4 of your phone.";
+    return;
+  }
 
   if (!dbAvailable){
     await createClientRecord(code, name, email);
@@ -3168,6 +3201,7 @@ async function continueBoot(){
     if (ok){ await proceedPastLogin(); return; }
   }
   showAuthScreen(urlCode || savedCode);
+  if (!urlCode && params.get('mode') === 'returning') setAuthMode('returning');
 }
 
 // iOS Safari/Chrome sometimes leave the page scrolled up (hiding the header behind the

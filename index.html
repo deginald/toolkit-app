@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-14T18-00-00Z">
+<meta name="app-build" content="2026-10-15T15-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -470,6 +470,31 @@
   .profile-card .pc-detail{ font-size:12px; color:var(--ink); }
   .profile-card .pc-tag{ font-size:10.5px; color:var(--brass); font-weight:700; text-transform:uppercase; letter-spacing:0.06em; }
   .option-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .welcome-cards{ width:100%; max-width:320px; margin-top:6px; display:flex; flex-direction:column; gap:12px; }
+  .welcome-card{ display:flex; align-items:center; gap:14px; border:1px solid var(--line); border-radius:16px; background:var(--paper); padding:16px; cursor:pointer; text-align:left; }
+  .welcome-card.primary{ border-color:var(--brass); background:linear-gradient(160deg,var(--surface),var(--paper)); }
+  .welcome-card:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .welcome-card .wc-ic{ width:44px; height:44px; border-radius:50%; background:var(--surface); border:1px solid var(--line); color:var(--brass); display:flex; align-items:center; justify-content:center; flex:none; }
+  .welcome-card .wc-ic svg{ width:24px; height:24px; }
+  .welcome-card .wc-t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .welcome-card .wc-t b{ font-size:15.5px; font-weight:800; }
+  .welcome-card .wc-t span{ font-size:12px; color:var(--muted); line-height:1.4; }
+  .welcome-card .wc-chev{ width:16px; height:16px; color:var(--brass); flex:none; }
+  .welcome-login{ margin:2px 0 0; text-align:center; font-size:13px; color:var(--muted); }
+  .welcome-login .link-btn{ padding:0 0 0 2px; font-size:13px; }
+  .welcome-login-choice{ display:flex; flex-direction:column; gap:8px; }
+  .welcome-login-choice[hidden]{ display:none; }
+  .welcome-rule{ height:1px; background:var(--line); }
+  .welcome-links{ display:flex; justify-content:center; gap:20px; flex-wrap:wrap; }
+  .auth-steps{ display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:8px; }
+  .auth-steps[hidden]{ display:none; }
+  .auth-steps i{ width:26px; height:4px; border-radius:2px; background:var(--line); display:block; }
+  .auth-steps i.on{ background:var(--brass); }
+  .auth-steps span{ font-size:11px; color:var(--muted); font-weight:700; letter-spacing:.06em; text-transform:uppercase; margin-left:6px; }
+  .pw-toggle{ flex:none; padding:6px 0 6px 8px; }
+  .code-sugs{ display:flex; gap:6px; flex-wrap:wrap; }
+  .code-sugs:empty{ display:none; }
+  .code-sugs button{ border:1px solid var(--line); border-radius:999px; padding:5px 11px; font-size:12px; font-weight:700; color:var(--brass); background:var(--paper); font-family:'Public Sans',sans-serif; cursor:pointer; }
   .option-card{ border:1px solid var(--line); background:var(--paper); border-radius:14px; padding:20px 12px; text-align:center; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:6px; }
   .option-card.selected{ border-color:var(--brass); background:var(--brass-tint); }
   .option-card .oc-label{ font-weight:700; font-size:14px; }
@@ -535,131 +560,10 @@
 </style>
 </head>
 <body>
-  <!-- Install Intro -->
-<div id="ahc-gate" style="position:fixed;inset:0;z-index:99999;background:#0A1220;display:flex;align-items:center;justify-content:center;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;overflow-y:auto;">
-  <div style="width:100%;max-width:360px;background:#0F1A2B;border:1px solid rgba(212,175,106,0.25);border-radius:16px;padding:32px;text-align:center;margin:auto;">
-    <img src="icon-192.png" alt="Vono" style="width:64px;height:64px;border-radius:50%;margin:0 auto 16px;display:block;" onerror="this.style.display='none'">
-    <h2 style="color:#F3EFE6;font-size:1.1rem;margin:0 0 8px;">Get the Full Experience</h2>
-    <p style="color:#A9B2C3;font-size:0.9rem;margin:0 0 20px;">Vono works best added to your Home Screen: faster to open, full-screen, and it's how you'll get appointment and message notifications.</p>
-    <button id="ahc-gate-install" style="display:none;width:100%;background:linear-gradient(180deg,#E8C87E,#D4AF6A);color:#1a1206;border:none;padding:12px;border-radius:999px;font-weight:600;cursor:pointer;font-size:0.95rem;margin-bottom:14px;">Install Now</button>
-    <div style="display:flex;border:1px solid rgba(255,255,255,0.14);border-radius:10px;padding:3px;gap:3px;background:#0c1526;margin-bottom:12px;">
-      <button type="button" id="ahc-gate-ios" style="flex:1;border:none;background:transparent;color:#A9B2C3;font-size:0.8rem;font-weight:700;padding:8px 6px;border-radius:7px;cursor:pointer;transition:background 0.15s,color 0.15s;">iPhone</button>
-      <button type="button" id="ahc-gate-android" style="flex:1;border:none;background:transparent;color:#A9B2C3;font-size:0.8rem;font-weight:700;padding:8px 6px;border-radius:7px;cursor:pointer;transition:background 0.15s,color 0.15s;">Android</button>
-    </div>
-    <p id="ahc-gate-steps-ios" style="display:none;color:#A9B2C3;font-size:0.82rem;line-height:1.5;text-align:left;margin:0 0 18px;">1. Tap the &bull;&bull;&bull; icon in Safari's toolbar.<br>2. Tap the Share icon (the square with an arrow pointing up).<br>3. Scroll down and tap "Add to Home Screen."<br>4. Tap "Add" in the top right.<br>5. Open Vono from that new icon.</p>
-    <p id="ahc-gate-steps-android" style="display:none;color:#A9B2C3;font-size:0.82rem;line-height:1.5;text-align:left;margin:0 0 18px;">1. Tap the three-dot menu in Chrome's toolbar.<br>2. Tap "Add to Home screen" or "Install app."<br>3. Tap "Add" or "Install" to confirm.</p>
-    <p style="color:#7C879C;font-size:0.78rem;margin:0;">Already have an account? <a href="#" id="ahc-gate-login-link" style="color:#D4AF6A;">Log in</a></p>
-  </div>
-</div>
-<script>
-(function(){
-  var gate = document.getElementById('ahc-gate');
-  if(!gate) return;
-  var SEEN_KEY = 'ahc_install_intro_seen';
-  // Exposed so a returning professional who logs in successfully (see the main app
-  // script's auth-form handler / markAhcGateAndNdaPassed) can mark this intro as
-  // seen even if this gate's own "remembered" flag didn't carry over -- e.g.
-  // opening the app from its Home Screen icon on an iPhone can start it in storage
-  // separate from Safari's, so someone who already saw this in Safari can land
-  // back on this gate even though they already have an account.
-  window.AHC_INSTALL_INTRO_KEY = SEEN_KEY;
-  function isStandalone(){
-    return window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-  }
-  function dismissGate(){
-    gate.remove();
-    document.body.style.overflow = '';
-    try{ localStorage.setItem(SEEN_KEY, '1'); }catch(e){}
-  }
-  // Already running installed -- this screen has nothing left to offer, skip it.
-  if (isStandalone()){ gate.remove(); return; }
-  try{
-    if(localStorage.getItem(SEEN_KEY) === '1'){
-      gate.remove();
-      return;
-    }
-  }catch(e){}
-  // A password-reset email link can land here on a browser/device that never saw
-  // this intro before (a different browser than usual, a fresh device, cleared
-  // storage) -- without this, someone resetting their password would be stuck
-  // looking at the install prompt instead of the "set a new password" screen (or,
-  // if the link itself expired or was already used, the explanation for that)
-  // running underneath. Supabase's reset links carry "type=recovery" in the query
-  // string or the URL fragment depending on flow type, and an expired/used link
-  // comes back as "error=access_denied" instead -- check for either, in both
-  // places, rather than assuming one.
-  try{
-    var linkText = window.location.search + ' ' + window.location.hash;
-    if(/[?&#]type=recovery(&|$)/.test(linkText) || /error=access_denied/.test(linkText) || /error_code=otp_expired/.test(linkText)){
-      gate.remove();
-      return;
-    }
-  }catch(e){}
-  // A shared read-only Ledger link (?view=<code>) is public-facing by design, same
-  // as directory.html -- someone opening it (often for the first time, with no
-  // account of their own) should see the shared view directly, not this install
-  // pitch. Without this, the very first thing an outside viewer of a shared link
-  // sees is a beta gate meant for people signing up, not looking at someone else's
-  // read-only page.
-  try{
-    if(/[?&]view=/.test(window.location.search)){
-      gate.remove();
-      return;
-    }
-  }catch(e){}
-  document.body.style.overflow = 'hidden';
-  // Chrome/Edge (Android + desktop) fire this instead of leaving someone to find
-  // "Add to Home Screen" in a menu -- capture it here (registered before the main
-  // app script runs, so we won't miss it) and offer a real one-tap "Install Now"
-  // button instead of only the manual steps below. iOS Safari never fires this, so
-  // the button just stays hidden there and the manual steps carry the load.
-  var deferredPrompt = null;
-  window.addEventListener('beforeinstallprompt', function(e){
-    e.preventDefault();
-    deferredPrompt = e;
-    var btn = document.getElementById('ahc-gate-install');
-    if (btn) btn.style.display = 'block';
-  });
-  document.getElementById('ahc-gate-install').addEventListener('click', async function(){
-    if (!deferredPrompt) return;
-    var promptEvent = deferredPrompt;
-    deferredPrompt = null;
-    try{ promptEvent.prompt(); await promptEvent.userChoice; }catch(e){}
-    dismissGate();
-  });
-  var ACTIVE_BG = 'linear-gradient(180deg,#E8C87E,#D4AF6A)';
-  function setDevice(device){
-    var iosBtn = document.getElementById('ahc-gate-ios');
-    var androidBtn = document.getElementById('ahc-gate-android');
-    var iosActive = device === 'ios';
-    iosBtn.style.background = iosActive ? ACTIVE_BG : 'transparent';
-    iosBtn.style.color = iosActive ? '#1a1206' : '#A9B2C3';
-    androidBtn.style.background = iosActive ? 'transparent' : ACTIVE_BG;
-    androidBtn.style.color = iosActive ? '#A9B2C3' : '#1a1206';
-    document.getElementById('ahc-gate-steps-ios').style.display = iosActive ? 'block' : 'none';
-    document.getElementById('ahc-gate-steps-android').style.display = iosActive ? 'none' : 'block';
-  }
-  document.getElementById('ahc-gate-ios').addEventListener('click', function(){ setDevice('ios'); });
-  document.getElementById('ahc-gate-android').addEventListener('click', function(){ setDevice('android'); });
-  setDevice(/iPhone|iPad|iPod/i.test(navigator.userAgent || '') ? 'ios' : 'android');
-  // "Already have an account? Log in" -- for someone who doesn't need the
-  // install pitch right now. This used to force the credentials form
-  // straight open, but that's not actually what "Log in" should mean here:
-  // the main app script is already running its own startup (boot ->
-  // continueBoot) underneath this gate the whole time, and that startup
-  // alone decides the right landing spot -- home/dashboard if this device
-  // already has a valid signed-in session, or the app's own home (role
-  // picker) screen if not, where a returning professional can tap
-  // "Professional" and get the ordinary login form themselves. So this link
-  // just gets out of the way and lets that happen, instead of jumping ahead
-  // of it into a screen that isn't right for either case.
-  document.getElementById('ahc-gate-login-link').addEventListener('click', function(e){
-    e.preventDefault();
-    dismissGate();
-  });
-})();
-</script>
-<!-- End Install Intro -->
+  <!-- The install card no longer sits in front of the welcome screen. New people see the
+     welcome screen first; the install prompt comes right after they create an account
+     (see maybeShowInstallReminder). -->
+<script>window.AHC_INSTALL_INTRO_KEY = 'ahc_install_intro_seen';</script>
 <!-- Recurring install reminder: the one-time "Get the Full Experience" gate
      above only ever shows once, often before someone even has an account --
      this catches a returning, already-logged-in professional who's still
@@ -671,8 +575,8 @@
   <div class="card" style="max-width:360px; width:100%; margin:auto; text-align:center; gap:14px; padding:28px 24px;">
     <img src="icon-192.png" alt="Vono" style="width:56px; height:56px; border-radius:50%; margin:0 auto;" onerror="this.style.display='none'">
     <div>
-      <h2 style="margin:0 0 6px; font-size:1.05rem;">Add Vono to your Home Screen</h2>
-      <p class="screen-sub" style="margin:0;">We noticed you still haven't added the app to your Home Screen. For a better experience (faster to open, full-screen, and how you'll get appointment and message notifications), add it now.</p>
+      <h2 id="install-reminder-title" style="margin:0 0 6px; font-size:1.05rem;">Add Vono to your Home Screen</h2>
+      <p id="install-reminder-lead" class="screen-sub" style="margin:0;">We noticed you still haven't added the app to your Home Screen. For a better experience (faster to open, full-screen, and how you'll get appointment and message notifications), add it now.</p>
     </div>
     <button type="button" class="btn btn-primary" id="install-reminder-install-btn" style="display:none; width:100%;">Install Now</button>
     <div class="mode-toggle">
@@ -698,31 +602,31 @@
       <p class="brand-name">Vono</p>
       <p class="brand-tagline">Your care. Your history.<br>Your connection.</p>
     </div>
-    <div class="option-grid" style="width:100%; max-width:320px; margin-top:6px;">
-      <div class="option-card" id="btn-role-client">
-        <span class="oc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M3.5 20.5c0-4.7 3.8-8.5 8.5-8.5s8.5 3.8 8.5 8.5" fill="currentColor"/></svg></span>
-        <span class="oc-label">I'm a Client</span>
-        <span class="oc-sub">Keep your service history in one place and stay connected with your pros.</span>
+    <div class="welcome-cards">
+      <div class="welcome-card primary" id="btn-role-client" role="button" tabindex="0">
+        <span class="wc-ic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M3.5 20.5c0-4.7 3.8-8.5 8.5-8.5s8.5 3.8 8.5 8.5" fill="currentColor"/></svg></span>
+        <span class="wc-t"><b>I'm a Client</b><span>Keep your service history in one place and book your pros.</span></span>
+        <svg class="wc-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      <div class="option-card" id="btn-role-pro">
-        <span class="oc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6.2" cy="6.2" r="2.4" stroke="currentColor" stroke-width="1.7"/><circle cx="6.2" cy="17.8" r="2.4" stroke="currentColor" stroke-width="1.7"/><path d="M8 7.6L20 18.5M8 16.4L20 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
-        <span class="oc-label">I'm a Professional</span>
-        <span class="oc-sub">Barbers, stylists, nail and lash techs, estheticians, makeup artists, massage therapists, and students.</span>
+      <div class="welcome-card" id="btn-role-pro" role="button" tabindex="0">
+        <span class="wc-ic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6.2" cy="6.2" r="2.4" stroke="currentColor" stroke-width="1.7"/><circle cx="6.2" cy="17.8" r="2.4" stroke="currentColor" stroke-width="1.7"/><path d="M8 7.6L20 18.5M8 16.4L20 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+        <span class="wc-t"><b>I'm a Professional</b><span>Barbers, stylists, nail and lash techs, estheticians, makeup artists, massage therapists, and students.</span></span>
+        <svg class="wc-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      <div class="option-card" id="btn-role-directory">
-        <span class="oc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.7"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
-        <span class="oc-label">Find a Pro</span>
-        <span class="oc-sub">Browse beauty and wellness pros near you, and see their ratings and reviews.</span>
+      <p class="welcome-login">Already have an account? <button type="button" class="link-btn" id="btn-welcome-login">Log in</button></p>
+      <div id="welcome-login-choice" class="welcome-login-choice" hidden>
+        <button type="button" class="btn btn-outline" id="btn-welcome-login-client">Log in as a Client</button>
+        <button type="button" class="btn btn-outline" id="btn-welcome-login-pro">Log in as a Professional</button>
       </div>
-      <div class="option-card" id="btn-role-jobs">
-        <span class="oc-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3.5" y="8" width="17" height="11" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 8V6.5A2 2 0 0 1 10.5 4.5h3A2 2 0 0 1 15.5 6.5V8" stroke="currentColor" stroke-width="1.7"/></svg></span>
-        <span class="oc-label">Jobs Board</span>
-        <span class="oc-sub">See who's looking for work and who's hiring. Sign in or create a free account to view profiles and message.</span>
+      <div class="welcome-rule"></div>
+      <div class="welcome-links">
+        <button type="button" class="link-btn" id="btn-role-directory">Find a Pro</button>
+        <button type="button" class="link-btn" id="btn-role-jobs">Jobs Board</button>
+        <button type="button" class="link-btn" id="btn-share-app">Share the app</button>
       </div>
     </div>
     <p class="brand-footer" style="margin-top:10px;">A stronger beauty &amp; wellness community,<br>together.</p>
     <button type="button" class="btn btn-outline" id="btn-install-app" style="display:none; margin-top:10px; width:100%; max-width:320px;">Install App</button>
-    <button type="button" class="link-btn" id="btn-share-app" style="margin-top:2px;">Share the app</button>
   </div>
   <div id="share-app-panel" style="display:none; position:fixed; inset:0; z-index:600; background:var(--bg); overflow-y:auto;">
     <div style="max-width:420px; margin:0 auto; padding:max(20px, env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));">
@@ -765,26 +669,28 @@
     </header>
     <main class="tab-content" style="display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center;">
       <div>
-        <p class="eyebrow-mini">Pace &middot; Refresher &middot; Consult &middot; Ledger</p>
-        <p class="screen-sub" style="margin-top:6px;" id="auth-subhead">Create your account with an email and password, plus your name, role, license (if licensed), and a public booking code.</p>
+        <div class="auth-steps" id="auth-steps" hidden><i class="on"></i><i id="auth-step-dot2"></i><span id="auth-step-label">Step 1 of 2</span></div>
+        <h2 class="screen-title" id="auth-title-h2" style="margin:0;">Create your account</h2>
+        <p class="screen-sub" style="margin-top:6px;" id="auth-subhead">Take bookings, track your day, and keep client history in one place.</p>
       </div>
       <div class="mode-toggle" id="auth-mode-toggle" style="width:100%; max-width:320px;">
         <button type="button" class="mode-btn active" id="btn-auth-mode-new">Sign up</button>
         <button type="button" class="mode-btn" id="btn-auth-mode-returning">Log in</button>
       </div>
       <form class="auth-form" id="auth-form">
-      <div class="field">
-        <label>Email</label>
-        <div class="input-row"><input id="auth-email" type="email" placeholder="e.g. jordan@email.com" autocomplete="email" required></div>
-      </div>
-      <div class="field">
-        <label>Password</label>
-        <div class="input-row"><input id="auth-password" type="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required></div>
-        <p class="foot-note-small" id="auth-forgot-row" style="display:none;"><a href="#" id="auth-forgot-link" style="color:var(--brass);">Forgot password?</a></p>
-      </div>
       <div class="field" id="auth-name-field">
         <label>Your name</label>
         <div class="input-row"><input id="auth-name" type="text" placeholder="e.g. Jordan Smith" autocomplete="name" required></div>
+      </div>
+      <div class="field" id="auth-email-field">
+        <label>Email</label>
+        <div class="input-row"><input id="auth-email" type="email" placeholder="e.g. jordan@email.com" autocomplete="email" required></div>
+      </div>
+      <div class="field" id="auth-password-field">
+        <label>Password</label>
+        <div class="input-row"><input id="auth-password" type="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required><button type="button" class="link-btn pw-toggle" id="auth-pw-toggle" aria-label="Show password">Show</button></div>
+        <p class="foot-note-small" id="auth-pw-hint" style="margin:0;">At least 8 characters.</p>
+        <p class="foot-note-small" id="auth-forgot-row" style="display:none;"><a href="#" id="auth-forgot-link" style="color:var(--brass);">Forgot password?</a></p>
       </div>
       <div class="field" id="auth-title-field">
         <label>Your role</label>
@@ -826,11 +732,13 @@
       </div>
       <div class="field" id="auth-code-field">
         <label>Public booking code</label>
-        <div class="input-row"><input id="auth-code" type="text" placeholder="make your own code" autocomplete="off" required></div>
-        <p class="foot-note-small">You make this one up yourself. It's not assigned to you. This is what shows up in your booking link, QR code, and shared Ledger link. It's not something you log in with.</p>
+        <div class="input-row"><input id="auth-code" type="text" placeholder="make your own code" autocomplete="off"></div>
+        <div class="code-sugs" id="auth-code-sugs"></div>
+        <p class="foot-note-small">Made up from your name; change it if you like. It's part of your booking link, QR code, and shared Ledger link. You don't log in with it.</p>
       </div>
+      <button class="btn btn-primary" type="button" id="auth-continue-btn">Continue</button>
       <button class="btn btn-primary" type="submit" id="auth-submit-btn">Create my account</button>
-      <p class="foot-note-small" id="auth-tos-note" style="text-align:center;">By creating an account, you agree to our <a href="terms.html" target="_blank" style="color:var(--brass);">Terms of Service</a> and <a href="privacy.html" target="_blank" style="color:var(--brass);">Privacy Policy</a>.</p>
+      <p class="foot-note-small" id="auth-tos-note" style="text-align:center;">By continuing, you agree to our <a href="terms.html" target="_blank" style="color:var(--brass);">Terms of Service</a> and <a href="privacy.html" target="_blank" style="color:var(--brass);">Privacy Policy</a>.</p>
       <p class="foot-note-small" id="auth-note">&nbsp;</p>
       </form>
     </main>
@@ -1378,11 +1286,13 @@
             </div>
             <div id="consult-client-attach-newname" style="display:none; flex-direction:column; gap:10px;">
               <div class="field"><label>Client's name</label><div class="input-row"><input id="consult-client-new-name" type="text" placeholder="e.g. Jordan Smith"></div></div>
+              <div class="field"><label>Last 4 of their phone</label><div class="input-row"><input id="consult-client-new-last4" type="tel" inputmode="numeric" autocomplete="off" placeholder="e.g. 4821"></div></div>
               <div class="field">
                 <label>Their passport code</label>
-                <div class="input-row"><input id="consult-client-new-code" type="text" placeholder="e.g. jordan-47"></div>
+                <div class="input-row"><input id="consult-client-new-code" type="text" placeholder="e.g. jordan-4821"></div>
+                <div class="code-sugs" id="consult-client-code-sugs"></div>
+                <p class="foot-note-small" id="consult-client-code-say" style="margin:0;"></p>
               </div>
-              <p class="screen-sub" style="margin:0;">This is what they'll use to log into their own Vono Passport later. Write it down for them or have them save it.</p>
               <button class="btn btn-primary" id="btn-consult-client-create" type="button" style="width:100%;">Start their Vono Passport</button>
               <button class="btn btn-ghost" id="btn-consult-client-newclient-back" type="button" style="width:100%;">Back</button>
               <p class="screen-sub" id="consult-client-create-status" style="margin:0;">&nbsp;</p>
@@ -1553,8 +1463,13 @@
               </div>
               <div id="bk-manual-client-newname" style="display:none; flex-direction:column; gap:10px;">
                 <div class="field"><label>Client's name</label><div class="input-row"><input id="bk-manual-client-new-name" type="text" placeholder="e.g. Jordan Smith"></div></div>
-                <div class="field"><label>Their passport code</label><div class="input-row"><input id="bk-manual-client-new-code" type="text" placeholder="e.g. jordan-47"></div></div>
-                <p class="screen-sub" style="margin:0;">This is what they'll use to log into their own Vono Passport later.</p>
+                <div class="field"><label>Last 4 of their phone</label><div class="input-row"><input id="bk-manual-client-new-last4" type="tel" inputmode="numeric" autocomplete="off" placeholder="e.g. 4821"></div></div>
+                <div class="field">
+                  <label>Their passport code</label>
+                  <div class="input-row"><input id="bk-manual-client-new-code" type="text" placeholder="e.g. jordan-4821"></div>
+                  <div class="code-sugs" id="bk-manual-client-code-sugs"></div>
+                  <p class="foot-note-small" id="bk-manual-client-code-say" style="margin:0;"></p>
+                </div>
                 <button class="btn btn-primary" id="btn-bk-manual-client-create" type="button" style="width:100%;">Start their Vono Passport</button>
                 <button class="btn btn-ghost" id="btn-bk-manual-client-newclient-back" type="button" style="width:100%;">Back</button>
                 <p class="screen-sub" id="bk-manual-client-create-status" style="margin:0;">&nbsp;</p>
@@ -2995,6 +2910,18 @@ function maybeShowInstallReminder(){
   if (isAppStandalone()){ modal.style.display = 'none'; return; }
   const installBtn = document.getElementById('install-reminder-install-btn');
   if (installBtn) installBtn.style.display = deferredInstallPrompt ? 'block' : 'none';
+  // Right after someone creates an account, the prompt is a welcome plus one last
+  // step instead of the "we noticed you still haven't" reminder.
+  const titleEl = document.getElementById('install-reminder-title');
+  const leadEl = document.getElementById('install-reminder-lead');
+  if (window.__installFreshName !== undefined && titleEl && leadEl){
+    titleEl.textContent = window.__installFreshName ? ("You're in, " + window.__installFreshName) : "You're in";
+    leadEl.textContent = 'One more step: add Vono to your Home Screen so appointment reminders and messages reach you.';
+    window.__installFreshName = undefined;
+  } else if (titleEl && leadEl){
+    titleEl.textContent = 'Add Vono to your Home Screen';
+    leadEl.textContent = "We noticed you still haven't added the app to your Home Screen. For a better experience (faster to open, full-screen, and how you'll get appointment and message notifications), add it now.";
+  }
   modal.style.display = 'flex';
 }
 function setInstallReminderDevice(device){
@@ -3340,8 +3267,81 @@ async function clearHiddenBookAgain(code, barberCode){
 function suggestClientCode(name){
   const first = (name||'').trim().split(/\s+/)[0] || '';
   const base = sanitizeCode(first) || 'client';
-  const suffix = Math.floor(10 + Math.random()*90);
+  const suffix = Math.floor(1000 + Math.random()*9000);
   return `${base}-${suffix}`;
+}
+// A code a client will remember: their first name plus four digits they already
+// know by heart (the last 4 of their phone). Only the finished code is saved --
+// the phone digits are never stored anywhere.
+function clientCodeFromLast4(name, digits){
+  const d = String(digits || '').replace(/\D/g, '');
+  if (d.length !== 4) return '';
+  const first = (name||'').trim().split(/\s+/)[0] || '';
+  const base = sanitizeCode(first);
+  return base ? `${base}-${d}` : '';
+}
+// Wires the "Last 4 of their phone" + code fields of a pro's "Start their Vono
+// Passport" form (used in both Booking and Consult). Returns { reset, showTaken }.
+function wireNewClientCodeFields(root, prefix){
+  const nameEl = root.querySelector('#' + prefix + '-new-name');
+  const l4El = root.querySelector('#' + prefix + '-new-last4');
+  const codeEl = root.querySelector('#' + prefix + '-new-code');
+  const sugsEl = root.querySelector('#' + prefix + '-code-sugs');
+  const sayEl = root.querySelector('#' + prefix + '-code-say');
+  const SAY_DEFAULT = "They'll use this to log in to their own Vono Passport. We save the code only, never the phone number.";
+  function updateSay(){
+    const m = /^([a-z0-9_.~:@+-]+)-(\d{4})$/.exec(codeEl.value.trim());
+    sayEl.textContent = m
+      ? `Say it back to them: "Your code is ${m[1].split('-')[0]}, ${m[2].split('').join('-')}." ` + SAY_DEFAULT
+      : SAY_DEFAULT;
+  }
+  function clearSugs(){ sugsEl.innerHTML = ''; }
+  function setCode(v, touched){
+    codeEl.value = v;
+    codeEl.dataset.touched = touched ? '1' : '';
+    clearSugs();
+    updateSay();
+  }
+  function autoFill(){
+    if (codeEl.dataset.touched) return;
+    const built = clientCodeFromLast4(nameEl.value, l4El.value);
+    codeEl.value = built || (nameEl.value.trim() ? suggestClientCode(nameEl.value) : '');
+    clearSugs();
+    updateSay();
+  }
+  nameEl.addEventListener('input', autoFill);
+  l4El.addEventListener('input', ()=>{
+    // A whole phone number can be pasted in; only its last four digits are kept.
+    l4El.value = l4El.value.replace(/\D/g, '').slice(-4);
+    autoFill();
+  });
+  codeEl.addEventListener('input', ()=>{ codeEl.dataset.touched = '1'; clearSugs(); updateSay(); });
+  function showTaken(){
+    const words = (nameEl.value || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const first = sanitizeCode(words[0] || '') || 'client';
+    const d = l4El.value.replace(/\D/g, '');
+    const four = d.length === 4 ? d : String(Math.floor(1000 + Math.random() * 9000));
+    const opts = [];
+    if (words.length > 1) opts.push(`${first}-${sanitizeCode(words[words.length - 1]).charAt(0)}-${four}`);
+    opts.push(`${first}-${four}-2`);
+    const chips = opts.map(sanitizeCode).filter((c, i, a)=> c && a.indexOf(c) === i && c !== codeEl.value.trim());
+    chips.push('__random__');
+    sugsEl.innerHTML = '';
+    chips.forEach(c=>{
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = c === '__random__' ? 'Random digits' : c;
+      b.addEventListener('click', ()=> setCode(c === '__random__' ? suggestClientCode(nameEl.value) : c, true));
+      sugsEl.appendChild(b);
+    });
+  }
+  function reset(prefill){
+    nameEl.value = '';
+    l4El.value = '';
+    setCode(prefill || '', !!prefill);
+  }
+  updateSay();
+  return { reset, showTaken };
 }
 function toTitleCase(str){
   if (!str) return str;
@@ -5299,13 +5299,11 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
     renderProfilePreview();
   }
+  const consultCodeUi = wireNewClientCodeFields(root, 'consult-client');
   function openNewClientPanel_consult(prefillCode){
     root.querySelector('#consult-client-attach-search').style.display = 'none';
     root.querySelector('#consult-client-attach-newname').style.display = 'flex';
-    root.querySelector('#consult-client-new-name').value = '';
-    const codeEl = root.querySelector('#consult-client-new-code');
-    codeEl.value = prefillCode || '';
-    codeEl.dataset.touched = prefillCode ? '1' : '';
+    consultCodeUi.reset(prefillCode);
     root.querySelector('#consult-client-create-status').textContent = '';
     root.querySelector('#consult-client-new-name').focus();
   }
@@ -5439,13 +5437,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     closeScanPanel_consult();
     root.querySelector('#consult-client-code-input').focus();
   });
-  root.querySelector('#consult-client-new-name').addEventListener('input', ()=>{
-    const codeEl = root.querySelector('#consult-client-new-code');
-    if (!codeEl.dataset.touched) codeEl.value = suggestClientCode(root.querySelector('#consult-client-new-name').value);
-  });
-  root.querySelector('#consult-client-new-code').addEventListener('input', ()=>{
-    root.querySelector('#consult-client-new-code').dataset.touched = '1';
-  });
   root.querySelector('#btn-consult-client-newclient-back').addEventListener('click', ()=>{
     root.querySelector('#consult-client-attach-newname').style.display = 'none';
     root.querySelector('#consult-client-attach-search').style.display = '';
@@ -5460,7 +5451,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     statusEl.textContent = 'Checking that code…';
     try{
       const taken = await clientCodeTaken(code);
-      if (taken){ statusEl.textContent = 'That code is already taken. Try another.'; return; }
+      if (taken){ statusEl.textContent = 'That code is already taken. Try one of these:'; consultCodeUi.showTaken(); return; }
       const { error } = await supabaseClient.from('clients').insert({ code, name, visits: [] });
       if (error) throw error;
     }catch(e){
@@ -5469,9 +5460,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       return;
     }
     attachedClient = { code, name, visits: [], hairProfile: null, barberCodes: [] };
-    root.querySelector('#consult-client-new-name').value = '';
-    root.querySelector('#consult-client-new-code').value = '';
-    root.querySelector('#consult-client-new-code').dataset.touched = '';
+    consultCodeUi.reset('');
     root.querySelector('#consult-client-lookup-status').textContent = '';
     statusEl.textContent = '';
     renderClientAttach();
@@ -7536,13 +7525,11 @@ async function saveAppointmentChange(id, core, extras){
       loadedEl.style.display = 'none';
     }
   }
+  const bkCodeUi = wireNewClientCodeFields(root, 'bk-manual-client');
   function openManualNewClientPanel(prefillCode){
     root.querySelector('#bk-manual-client-search').style.display = 'none';
     root.querySelector('#bk-manual-client-newname').style.display = 'flex';
-    root.querySelector('#bk-manual-client-new-name').value = '';
-    const codeEl = root.querySelector('#bk-manual-client-new-code');
-    codeEl.value = prefillCode || '';
-    codeEl.dataset.touched = prefillCode ? '1' : '';
+    bkCodeUi.reset(prefillCode);
     root.querySelector('#bk-manual-client-create-status').textContent = '';
     root.querySelector('#bk-manual-client-new-name').focus();
   }
@@ -7676,13 +7663,6 @@ async function saveAppointmentChange(id, core, extras){
     closeScanPanel();
     root.querySelector('#bk-manual-client-code').focus();
   });
-  root.querySelector('#bk-manual-client-new-name').addEventListener('input', function(){
-    const codeEl = root.querySelector('#bk-manual-client-new-code');
-    if (!codeEl.dataset.touched) codeEl.value = suggestClientCode(this.value);
-  });
-  root.querySelector('#bk-manual-client-new-code').addEventListener('input', function(){
-    this.dataset.touched = '1';
-  });
   root.querySelector('#btn-bk-manual-client-newclient-back').addEventListener('click', ()=>{
     root.querySelector('#bk-manual-client-newname').style.display = 'none';
     root.querySelector('#bk-manual-client-search').style.display = '';
@@ -7697,7 +7677,7 @@ async function saveAppointmentChange(id, core, extras){
     statusEl.textContent = 'Checking that code…';
     try{
       const taken = await clientCodeTaken(code);
-      if (taken){ statusEl.textContent = 'That code is already taken. Try another.'; return; }
+      if (taken){ statusEl.textContent = 'That code is already taken. Try one of these:'; bkCodeUi.showTaken(); return; }
       const { error } = await supabaseClient.from('clients').insert({ code, name, visits: [] });
       if (error) throw error;
     }catch(e){
@@ -10241,6 +10221,8 @@ function showRoleScreen(){
   document.getElementById('loading-screen').hidden = true;
   document.getElementById('auth-screen').hidden = true;
   document.getElementById('role-screen').hidden = false;
+  const loginChoice = document.getElementById('welcome-login-choice');
+  if (loginChoice) loginChoice.hidden = true;
   // The auth form's submit button gets disabled the moment someone taps it (to
   // stop a double-submit) and is only ever re-enabled on an in-form validation
   // error -- never on a successful signup/login, since that normally moves on to
@@ -10251,27 +10233,51 @@ function showRoleScreen(){
   const submitBtn = document.getElementById('auth-submit-btn');
   if (submitBtn) submitBtn.disabled = false;
 }
+// Sign-up runs in two short steps on one form: step 1 is the account basics
+// (name, email, password), step 2 is about their work (role, level, license,
+// booking code). Logging in is always the single email + password screen.
+let authStep = 1;
+let authCodeAuto = '';
+function authIsNew(){
+  return document.getElementById('btn-auth-mode-new').classList.contains('active');
+}
 function updateAuthFieldVisibility(){
-  const isNew = document.getElementById('btn-auth-mode-new').classList.contains('active');
+  const isNew = authIsNew();
+  const step2 = isNew && authStep === 2;
+  const step1 = isNew && authStep === 1;
   const title = document.getElementById('auth-title').value;
-  document.getElementById('auth-name-field').style.display = isNew ? '' : 'none';
-  document.getElementById('auth-title-field').style.display = isNew ? '' : 'none';
-  document.getElementById('auth-student-field-field').style.display = (isNew && title === 'Student') ? '' : 'none';
-  document.getElementById('auth-barber-level-field').style.display = (isNew && title === 'Barber') ? '' : 'none';
-  document.getElementById('auth-license-field').style.display = (isNew && title !== 'Student') ? '' : 'none';
-  document.getElementById('auth-code-field').style.display = isNew ? '' : 'none';
+  const show = (id, on)=>{ document.getElementById(id).style.display = on ? '' : 'none'; };
+  show('auth-name-field', step1);
+  show('auth-email-field', !step2);
+  show('auth-password-field', !step2);
+  show('auth-pw-hint', step1);
+  show('auth-title-field', step2);
+  show('auth-student-field-field', step2 && title === 'Student');
+  show('auth-barber-level-field', step2 && title === 'Barber');
+  show('auth-license-field', step2 && title !== 'Student');
+  show('auth-code-field', step2);
   document.getElementById('auth-forgot-row').style.display = isNew ? 'none' : 'block';
-  document.getElementById('auth-name').required = isNew;
-  document.getElementById('auth-code').required = isNew;
+  document.getElementById('auth-name').required = step1;
+  document.getElementById('auth-code').required = step2;
+  document.getElementById('auth-continue-btn').style.display = step1 ? '' : 'none';
+  document.getElementById('auth-submit-btn').style.display = (step1) ? 'none' : '';
+  document.getElementById('auth-tos-note').style.display = step1 ? 'block' : 'none';
+  document.getElementById('auth-mode-toggle').style.display = step2 ? 'none' : '';
+  const steps = document.getElementById('auth-steps');
+  steps.hidden = !isNew;
+  document.getElementById('auth-step-dot2').classList.toggle('on', step2);
+  document.getElementById('auth-step-label').textContent = 'Step ' + authStep + ' of 2';
+  document.getElementById('auth-heading').textContent = isNew ? 'Sign up' : 'Log in';
+  document.getElementById('auth-title-h2').textContent = !isNew ? 'Welcome back' : (step2 ? 'About your work' : 'Create your account');
+  document.getElementById('auth-subhead').textContent = !isNew
+    ? 'Log in to your Vono account.'
+    : (step2 ? 'This is what clients see on your booking page.' : 'Take bookings, track your day, and keep client history in one place.');
 }
 function setAuthMode(mode){
   const isNew = mode !== 'returning';
+  authStep = 1;
   document.getElementById('btn-auth-mode-new').classList.toggle('active', isNew);
   document.getElementById('btn-auth-mode-returning').classList.toggle('active', !isNew);
-  document.getElementById('auth-heading').textContent = isNew ? 'Sign up' : 'Log in';
-  document.getElementById('auth-subhead').textContent = isNew
-    ? "Create your account with an email and password, plus your name, role, license (if licensed), and a public booking code."
-    : "Enter the email and password you signed up with.";
   document.getElementById('auth-submit-btn').textContent = isNew ? 'Create my account' : 'Log in';
   document.getElementById('auth-password').setAttribute('autocomplete', isNew ? 'new-password' : 'current-password');
   // The 8-character minimum only makes sense when someone is SETTING a
@@ -10281,9 +10287,65 @@ function setAuthMode(mode){
   document.getElementById('auth-password').setAttribute('minlength', isNew ? '8' : '1');
   document.getElementById('auth-password').setAttribute('placeholder', isNew ? 'At least 8 characters' : 'Your password');
   document.getElementById('auth-note').textContent = ' ';
-  document.getElementById('auth-tos-note').style.display = isNew ? 'block' : 'none';
   updateAuthFieldVisibility();
 }
+// Booking-code suggestions are built from the name typed on step 1.
+function authCodeSuggestions(name){
+  const words = (name || '').toLowerCase().replace(/[^a-z0-9\s'-]+/g,' ').replace(/['-]/g,'').split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+  const first = words[0];
+  const out = [];
+  if (words.length > 1){
+    const last = words[words.length - 1];
+    out.push(first + '-' + last, first + last, first.charAt(0) + last);
+  } else {
+    out.push(first, first + '-' + String(Math.floor(10 + Math.random() * 90)));
+  }
+  return out.map(sanitizeCode).filter((c, i, a)=> c && a.indexOf(c) === i);
+}
+function renderAuthCodeSuggestions(){
+  const wrap = document.getElementById('auth-code-sugs');
+  const sugs = authCodeSuggestions(document.getElementById('auth-name').value);
+  wrap.innerHTML = '';
+  sugs.forEach(code=>{
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = code;
+    b.addEventListener('click', ()=>{
+      document.getElementById('auth-code').value = code;
+      authCodeAuto = '';
+    });
+    wrap.appendChild(b);
+  });
+  const codeEl = document.getElementById('auth-code');
+  if (sugs.length && (!codeEl.value.trim() || codeEl.value === authCodeAuto)){
+    codeEl.value = sugs[0];
+    authCodeAuto = sugs[0];
+  }
+}
+function authContinueToStep2(){
+  const note = document.getElementById('auth-note');
+  const nameEl = document.getElementById('auth-name');
+  const emailEl = document.getElementById('auth-email');
+  const pwEl = document.getElementById('auth-password');
+  if (!nameEl.value.trim()){ note.textContent = 'Enter your name.'; return; }
+  if (!emailEl.value.trim() || !emailEl.checkValidity()){ note.textContent = 'Enter a valid email address.'; return; }
+  if (pwEl.value.length < 8){ note.textContent = 'Your password needs at least 8 characters.'; return; }
+  note.textContent = ' ';
+  authStep = 2;
+  renderAuthCodeSuggestions();
+  updateAuthFieldVisibility();
+  window.scrollTo(0, 0);
+}
+document.getElementById('auth-continue-btn').addEventListener('click', authContinueToStep2);
+document.getElementById('auth-pw-toggle').addEventListener('click', ()=>{
+  const pw = document.getElementById('auth-password');
+  const showing = pw.type === 'text';
+  pw.type = showing ? 'password' : 'text';
+  const btn = document.getElementById('auth-pw-toggle');
+  btn.textContent = showing ? 'Show' : 'Hide';
+  btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+});
 document.getElementById('btn-auth-mode-new').addEventListener('click', ()=> setAuthMode('new'));
 document.getElementById('btn-auth-mode-returning').addEventListener('click', ()=> setAuthMode('returning'));
 document.getElementById('auth-title').addEventListener('change', updateAuthFieldVisibility);
@@ -10291,7 +10353,6 @@ function showAuthScreen(forceMode){
   document.getElementById('loading-screen').hidden = true;
   document.getElementById('role-screen').hidden = true;
   document.getElementById('auth-screen').hidden = false;
-  document.getElementById('auth-mode-toggle').style.display = '';
   let hasAccount = false, lastEmail = '';
   try{
     hasAccount = localStorage.getItem('ahcProAccountExists') === '1';
@@ -10299,6 +10360,10 @@ function showAuthScreen(forceMode){
   }catch(e){}
   document.getElementById('auth-email').value = lastEmail;
   document.getElementById('auth-password').value = '';
+  document.getElementById('auth-password').type = 'password';
+  document.getElementById('auth-pw-toggle').textContent = 'Show';
+  document.getElementById('auth-code-sugs').innerHTML = '';
+  authCodeAuto = '';
   document.getElementById('auth-name').value = '';
   document.getElementById('auth-title').value = 'Student';
   document.getElementById('auth-student-field').value = '';
@@ -10392,6 +10457,25 @@ document.getElementById('btn-role-client').addEventListener('click', ()=>{
 document.getElementById('btn-role-pro').addEventListener('click', ()=>{
   showAuthScreen();
 });
+// The two big cards are div buttons, so Enter / Space should work on them too.
+['btn-role-client','btn-role-pro'].forEach(id=>{
+  document.getElementById(id).addEventListener('keydown', (e)=>{
+    if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); e.currentTarget.click(); }
+  });
+});
+// "Already have an account? Log in" -- a device that already has a professional
+// account goes straight to that login; otherwise ask which kind of account.
+document.getElementById('btn-welcome-login').addEventListener('click', ()=>{
+  let hasPro = false;
+  try{ hasPro = localStorage.getItem('ahcProAccountExists') === '1'; }catch(e){}
+  if (hasPro){ showAuthScreen('returning'); return; }
+  const choice = document.getElementById('welcome-login-choice');
+  choice.hidden = !choice.hidden;
+});
+document.getElementById('btn-welcome-login-pro').addEventListener('click', ()=> showAuthScreen('returning'));
+document.getElementById('btn-welcome-login-client').addEventListener('click', ()=>{
+  window.location.href = AHC_CANONICAL_APP_URL + 'passport.html?mode=returning';
+});
 document.getElementById('btn-role-directory').addEventListener('click', ()=>{
   window.location.href = AHC_CANONICAL_APP_URL + 'directory.html';
 });
@@ -10457,6 +10541,12 @@ document.getElementById('btn-share-app-native').addEventListener('click', async 
   }catch(e){}
 });
 document.getElementById('btn-auth-back').addEventListener('click', ()=>{
+  if (authIsNew() && authStep === 2){
+    authStep = 1;
+    document.getElementById('auth-note').textContent = ' ';
+    updateAuthFieldVisibility();
+    return;
+  }
   showRoleScreen();
 });
 // Each reset request immediately invalidates whatever link a previous request already sent
@@ -10507,6 +10597,7 @@ function markAhcGateAndNdaPassed(){
 document.getElementById('auth-form').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const isNew = document.getElementById('btn-auth-mode-new').classList.contains('active');
+  if (isNew && authStep === 1){ authContinueToStep2(); return; }
   const email = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value;
   const note = document.getElementById('auth-note');
@@ -10542,6 +10633,7 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
         localStorage.setItem('ahcLastProEmail', email);
       }catch(err){}
       markAhcGateAndNdaPassed();
+      window.__installFreshName = (name || '').split(' ')[0] || '';
       enterApp();
     } else {
       note.textContent = 'Logging in…';
