@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-17T15-00-00Z">
+<meta name="app-build" content="2026-10-18T12-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -2676,8 +2676,10 @@
       <div id="listing-ineligible" style="display:none;">
         <p class="screen-sub">Public listings on Find a Pro are available once you're no longer a Student and have a license number on file.</p>
       </div>
-      <div id="listing-locked" style="display:none;">
-        <p class="screen-sub">Your Find a Pro listing, and clients being able to open your booking link or QR code at all, is part of a paid Vono plan. Choose a plan under Subscription to turn it on.</p>
+      <div id="listing-locked" class="card tip" style="display:none; gap:8px;">
+        <p class="screen-sub" style="margin:0; color:var(--ink);"><strong>You're on a Basic listing.</strong> Clients see your shop details and up to 5 photos, and they call or visit to book.</p>
+        <p class="screen-sub" style="margin:0;">A Vono plan adds online booking with your link and QR code, payment links, unlimited portfolio photos, and a spot above Basic listings.</p>
+        <button type="button" class="btn btn-outline" id="btn-listing-see-plans" style="align-self:flex-start;">See plans</button>
       </div>
       <div id="listing-eligible" style="display:none; flex-direction:column; gap:14px;">
         <div>
@@ -2742,12 +2744,13 @@
           </div>
         </div>
         <div class="field" id="listing-photos-field" style="display:none;">
-          <label>Portfolio photos <span style="text-transform:none; font-weight:600;">(optional, up to 14)</span></label>
+          <label>Portfolio photos <span style="text-transform:none; font-weight:600;"><span id="listing-photos-hint">(optional, up to 14)</span><span id="listing-photos-count" hidden></span></span></label>
           <p class="foot-note-small" style="margin:0 0 8px;">Add a few photos of your work. Clients see these on your public profile and in search results. This is separate from Vono Passport photo consent. If a client is recognizable in a photo here, make sure they've agreed to it being shown publicly before you add it.</p>
           <div class="checkpoint-photo-grid" id="listing-photos-grid" style="justify-content:flex-start;"></div>
           <input type="file" accept="image/*" multiple id="listing-photos-input" style="display:none;">
           <button class="btn btn-outline" id="btn-listing-add-photos" type="button" style="margin-top:10px; width:100%;">Add photos</button>
           <p class="foot-note-small" id="listing-photos-status">&nbsp;</p>
+          <p class="foot-note-small" id="listing-photos-over" hidden>Only the first 5 photos show on a Basic listing. A Vono plan shows them all.</p>
         </div>
         <button class="btn btn-primary" id="btn-save-listing" type="button">Save listing</button>
         <p class="foot-note-small" id="listing-save-note">&nbsp;</p>
@@ -2761,7 +2764,7 @@
           <p class="screen-sub" style="margin:0; font-weight:700; color:var(--ink);">Try either plan free: you won't be charged until your trial ends, and you can cancel any time before that.</p>
           <div class="card" style="gap:6px;">
             <strong>Vono Pro ($20/month)</strong>
-            <span class="screen-sub" style="margin:0;">Messaging clients, Business tools, your Find a Pro listing, and notifications. Booking itself is free on every plan.</span>
+            <span class="screen-sub" style="margin:0;">Online booking with your link and QR code, payment links, a top spot on Find a Pro with unlimited photos, messaging clients, Business tools, and notifications.</span>
           </div>
           <button class="btn btn-primary" id="btn-subscribe-pro" type="button">Start Vono Pro free trial</button>
           <div class="card" style="gap:6px;">
@@ -11495,11 +11498,12 @@ function updateListingViewLink(){
 }
 function populateAccountListing(){
   const eligible = listingEligible();
-  const locked = eligible && !hasActiveAccess();
-  document.getElementById('listing-eligible').style.display = (eligible && !locked) ? 'flex' : 'none';
-  document.getElementById('listing-locked').style.display = locked ? 'block' : 'none';
+  // Basic (no plan) pros can still have a listing: shop details and up to 5 photos, no online
+  // booking. The card below the toggle explains what a plan adds.
+  document.getElementById('listing-eligible').style.display = eligible ? 'flex' : 'none';
+  document.getElementById('listing-locked').style.display = (eligible && !hasActiveAccess()) ? 'flex' : 'none';
   document.getElementById('listing-ineligible').style.display = eligible ? 'none' : 'block';
-  if (!eligible || locked) return;
+  if (!eligible) return;
   document.getElementById('listing-public-toggle').checked = !!profile.publicListing;
   document.getElementById('listing-shop-name').value = profile.shopName || '';
   document.getElementById('listing-city').value = profile.shopCity || '';
@@ -11582,6 +11586,9 @@ document.getElementById('btn-listing-profile-pic-remove').addEventListener('clic
 });
 /* ---- Portfolio photos (public listing) ---- */
 const MAX_LISTING_PHOTOS = 14;
+const BASIC_LISTING_PHOTOS = 5;
+// Pros without a plan can show up to 5 portfolio photos; a plan unlocks the full set.
+function listingPhotoLimit(){ return hasActiveAccess() ? MAX_LISTING_PHOTOS : BASIC_LISTING_PHOTOS; }
 function renderListingPhotos(){
   const grid = document.getElementById('listing-photos-grid');
   const photos = Array.isArray(profile.portfolioPhotos) ? profile.portfolioPhotos : [];
@@ -11628,9 +11635,18 @@ function renderListingPhotos(){
     });
   });
   const addBtn = document.getElementById('btn-listing-add-photos');
-  const atLimit = photos.length >= MAX_LISTING_PHOTOS;
+  const limit = listingPhotoLimit();
+  const atLimit = photos.length >= limit;
   addBtn.disabled = atLimit;
-  addBtn.textContent = atLimit ? `Limit reached (${MAX_LISTING_PHOTOS} photos)` : 'Add photos';
+  addBtn.textContent = atLimit ? `Limit reached (${limit} photos)` : 'Add photos';
+  document.getElementById('listing-photos-hint').textContent = `(optional, up to ${limit})`;
+  const countEl = document.getElementById('listing-photos-count');
+  if (countEl){
+    countEl.textContent = hasActiveAccess() ? '' : ` (${Math.min(photos.length, limit)} of ${limit})`;
+    countEl.hidden = hasActiveAccess();
+  }
+  const overEl = document.getElementById('listing-photos-over');
+  if (overEl) overEl.hidden = hasActiveAccess() || photos.length <= limit;
 }
 document.getElementById('btn-listing-add-photos').addEventListener('click', ()=> document.getElementById('listing-photos-input').click());
 document.getElementById('listing-photos-input').addEventListener('change', async (e)=>{
@@ -11640,9 +11656,10 @@ document.getElementById('listing-photos-input').addEventListener('change', async
   const statusEl = document.getElementById('listing-photos-status');
   if (!dbAvailable){ statusEl.textContent = "Live saving isn't connected right now."; return; }
   const existingCount = (profile.portfolioPhotos || []).length;
-  const remainingSlots = Math.max(0, MAX_LISTING_PHOTOS - existingCount);
+  const photoLimit = listingPhotoLimit();
+  const remainingSlots = Math.max(0, photoLimit - existingCount);
   if (remainingSlots === 0){
-    statusEl.textContent = `You've reached the ${MAX_LISTING_PHOTOS}-photo limit. Remove one to add another.`;
+    statusEl.textContent = hasActiveAccess() ? `You've reached the ${photoLimit}-photo limit. Remove one to add another.` : `Basic listings can show ${photoLimit} photos. Remove one to add another, or choose a plan for unlimited photos.`;
     return;
   }
   const skipped = files.length - remainingSlots;
@@ -11671,7 +11688,7 @@ document.getElementById('listing-photos-input').addEventListener('change', async
     ? (uploaded.length > 1 ? `${uploaded.length} photos added.` : 'Photo added.')
     : ("Couldn't save: " + ((result && result.message) || 'try again.'));
   if (skipped > 0 && result && result.ok){
-    statusMsg += ` ${skipped} photo${skipped === 1 ? '' : 's'} skipped. Portfolio photos are limited to ${MAX_LISTING_PHOTOS}.`;
+    statusMsg += ` ${skipped} photo${skipped === 1 ? '' : 's'} skipped. Portfolio photos are limited to ${photoLimit}.`;
   }
   statusEl.textContent = statusMsg;
   renderListingPhotos();
@@ -11741,7 +11758,6 @@ async function renderAcctHub(){
   document.getElementById('acct-sub-profile').textContent = student ? 'Name and status' : 'Name, status, license number';
   // Public listing
   if (!listingEligible()) setAcctPill('acct-pill-listing', 'Not available yet', 'muted');
-  else if (!hasActiveAccess()) setAcctPill('acct-pill-listing', 'Plan needed', 'warn');
   else if (profile.publicListing) setAcctPill('acct-pill-listing', 'Live', 'good');
   else setAcctPill('acct-pill-listing', 'Not listed', 'warn');
   // Business rows are for non-students only
@@ -11767,6 +11783,7 @@ async function renderAcctHub(){
   setAcctPill('acct-pill-notifications', on ? 'On' : 'Off', on ? 'good' : 'warn');
 }
 document.querySelectorAll('[data-acct-open]').forEach(btn=> btn.addEventListener('click', ()=> showAcctPane(btn.dataset.acctOpen)));
+document.getElementById('btn-listing-see-plans').addEventListener('click', ()=> showAcctPane('plan'));
 function showAccountScreen(pane){
   populateAccountName();
   populateAccountTitleSelect();

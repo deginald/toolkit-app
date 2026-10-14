@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono: Find a Pro</title>
-<meta name="app-build" content="2026-10-13T02-00-00Z">
+<meta name="app-build" content="2026-10-18T12-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -178,6 +178,98 @@
   .hours-row.is-today .hd-day{ color:var(--brass); }
   .bkc-svc-row-book{ display:flex; align-items:center; gap:9px; padding:11px 12px; border:1px solid var(--line); border-radius:10px; background:var(--paper); }
   .bkc-svc-book-btn{ border:1px solid var(--brass); background:transparent; color:var(--brass); border-radius:8px; padding:6px 11px; font-size:11.5px; font-weight:700; cursor:pointer; flex-shrink:0; }
+
+  /* ---- Find a Pro: list ---- */
+  .list-top{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  .list-top .screen-title{ font-size:28px; margin:0; }
+  .list-top .list-count{ font-size:13px; font-weight:700; color:var(--muted); }
+  .prof-row{ display:flex; gap:8px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; flex:none; padding-bottom:2px; }
+  .prof-row::-webkit-scrollbar{ display:none; }
+  .prof-row .prof-chip{ flex:none; min-height:36px; }
+  .prof-row .prof-chip[aria-pressed="true"]::before{ content:none; }
+  .list-divider{ font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin:6px 0 0; padding-top:12px; border-top:1px solid var(--line); }
+  .pro-badges{ display:flex; align-items:center; flex-wrap:wrap; gap:4px 8px; margin-top:3px; }
+  .pro-badge{ font-size:10px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; padding:3px 9px; border-radius:999px; background:var(--surface); color:var(--muted); }
+  .pro-badge.good{ background:var(--good-tint); color:var(--good); }
+  .pro-price{ font-size:12px; color:var(--muted); }
+
+  /* ---- Find a Pro: a pro's page ---- */
+  .profile-hero{ height:170px; }
+  .profile-hero.compact{ height:56px; }
+  .rating-line{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); }
+  .rating-line .stars{ color:var(--brass); letter-spacing:1px; }
+  .rating-line b{ color:var(--ink); }
+  .status-line{ display:flex; align-items:flex-start; gap:8px; font-size:12.5px; color:var(--muted); line-height:1.45; }
+  .status-dot{ width:8px; height:8px; border-radius:50%; background:var(--muted); flex:none; margin-top:5px; }
+  .status-line.open .status-dot{ background:var(--good); }
+  .status-line.open b{ color:var(--good); }
+  .act-row{ display:flex; gap:8px; }
+  .act-row .btn{ display:flex; align-items:center; justify-content:center; text-decoration:none; flex:none; }
+  .act-row .btn-grow{ flex:1; }
+  .bio-clamp{ display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  .more-btn{ align-self:flex-start; padding:0; margin-top:-8px; }
+  .sec-label{ font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin:0; }
+  .svc-row{ display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--paper); cursor:pointer; }
+  .svc-row.on{ border-color:var(--brass); background:var(--brass-tint); }
+  .svc-row input{ width:20px; height:20px; accent-color:var(--brass); flex:none; margin:0; }
+  .svc-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .svc-name{ font-weight:700; font-size:14.5px; }
+  .svc-meta{ font-size:12px; color:var(--muted); }
+  .svc-price{ font-weight:800; font-size:15px; flex:none; }
+  .pick-hint{ font-size:12.5px; color:var(--brass); margin:0; font-weight:600; }
+  .about-group{ border:1px solid var(--line); border-radius:14px; background:var(--paper); overflow:hidden; }
+  .about-item{ border-bottom:1px solid var(--line); }
+  .about-item:last-child{ border-bottom:none; }
+  .about-row{ display:flex; align-items:center; gap:10px; width:100%; background:none; border:none; padding:13px 14px; color:inherit; font-family:inherit; text-align:left; cursor:pointer; }
+  .about-row:focus-visible{ outline:2px solid var(--brass); outline-offset:-2px; }
+  .ar-main{ flex:1; min-width:0; }
+  .ar-title{ font-weight:700; font-size:14px; }
+  .ar-sub{ font-size:12px; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .about-row .chev{ color:var(--brass); font-size:18px; line-height:1; transition:transform .15s ease; }
+  .about-row[aria-expanded="true"] .chev{ transform:rotate(90deg); }
+  .about-body{ padding:0 14px 14px; display:flex; flex-direction:column; gap:10px; }
+  .about-body[hidden]{ display:none; }
+  .rating-card{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:14px 16px; display:flex; flex-direction:column; gap:12px; }
+  .rating-big{ display:flex; align-items:baseline; gap:10px; }
+  .rating-big .num{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:34px; line-height:1; }
+  .rating-big .stars{ color:var(--brass); letter-spacing:1px; }
+  .rating-big .cnt{ font-size:12px; color:var(--muted); }
+  .rating-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px 18px; }
+  .rating-grid div{ display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--muted); }
+  .rating-grid b{ color:var(--ink); }
+  .sel-bar{ flex:none; display:flex; align-items:center; gap:12px; padding:12px 16px; padding-bottom:max(12px, env(safe-area-inset-bottom)); background:var(--brass-tint); border-top:1px solid var(--brass); }
+  .sel-bar[hidden]{ display:none; }
+  .sel-bar .sel-text{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .sel-bar .sel-total{ font-weight:800; font-size:15px; }
+  .sel-bar .sel-names{ font-size:11.5px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .sel-bar .btn{ flex:none; padding:11px 16px; }
+
+  /* ---- Find a Pro: booking screens ---- */
+  .bk-head{ display:flex; align-items:center; gap:12px; padding:16px 20px 8px; padding-top:max(16px, calc(env(safe-area-inset-top) + 12px)); flex:none; }
+  .bk-head .bk-who{ flex:1; min-width:0; font-size:13px; font-weight:700; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bk-head .bk-count{ font-size:11.5px; font-weight:700; color:var(--muted); letter-spacing:0.04em; flex:none; }
+  .bk-dots{ display:flex; gap:6px; padding:0 20px 4px; flex:none; }
+  .bk-dots span{ flex:1; height:4px; border-radius:2px; background:var(--line); }
+  .bk-dots span.on{ background:var(--brass); }
+  .bk-chosen{ display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:12.5px; color:var(--muted); border:1px solid var(--line); border-radius:12px; background:var(--paper); padding:10px 14px; }
+  .bk-chosen b{ color:var(--ink); }
+  .day-strip{ position:relative; display:flex; gap:8px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px; }
+  .day-strip::-webkit-scrollbar{ display:none; }
+  .day-chip{ flex:none; width:52px; padding:8px 0; border:1px solid var(--line); border-radius:12px; background:var(--paper); color:var(--ink); font-family:inherit; display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer; }
+  .day-chip .dow{ font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); }
+  .day-chip .dnum{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:18px; }
+  .day-chip.on{ background:var(--brass); border-color:var(--brass); color:#241A0C; }
+  .day-chip.on .dow{ color:#241A0C; }
+  .day-chip.closed:not(.on){ opacity:0.4; }
+  .slot-group{ display:flex; flex-direction:column; gap:8px; width:100%; }
+  .slot-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
+  .slot-grid .bkc-slot-btn{ padding:10px 4px; }
+  .seg{ display:flex; gap:4px; padding:4px; border:1px solid var(--line); border-radius:12px; background:var(--paper); }
+  .seg button{ flex:1; border:none; background:transparent; color:var(--muted); font-family:inherit; font-weight:700; font-size:13px; padding:10px 6px; border-radius:9px; cursor:pointer; }
+  .seg button[aria-pressed="true"]{ background:var(--brass); color:#241A0C; }
+  .code-sugs{ display:flex; flex-wrap:wrap; gap:6px; }
+  .code-sugs button{ border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:999px; font-family:inherit; font-size:12.5px; font-weight:700; padding:7px 12px; cursor:pointer; }
+  .code-sugs:empty{ display:none; }
 </style>
 </head>
 <body>
@@ -206,168 +298,195 @@
 
   <div id="list-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:0;">
     <div id="pro-not-found-banner" class="banner" hidden style="padding-top:max(10px, calc(env(safe-area-inset-top) + 10px));">This professional's page is no longer available.</div>
-    <header style="padding:20px 20px 4px; padding-top:max(20px, calc(env(safe-area-inset-top) + 16px));">
-      <button type="button" class="link-btn" id="btn-directory-exit" style="padding:0 0 10px;">&larr; Vono</button>
-      <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
-        <img src="vono-mark-gold.svg" alt="Vono" style="width:80px; height:80px;">
-        <p class="brand-name">Find a Pro</p>
-        <p class="screen-sub" style="margin-top:6px;">Browse beauty and wellness pros near you, and see their ratings and reviews.</p>
-      </div>
+    <header style="padding:20px 20px 4px; padding-top:max(20px, calc(env(safe-area-inset-top) + 16px)); display:flex; flex-direction:column; gap:6px;">
+      <button type="button" class="link-btn" id="btn-directory-exit" style="padding:0; align-self:flex-start;">&larr; Vono</button>
+      <div class="list-top"><h1 class="screen-title" id="list-title">Find a Pro</h1><span class="list-count" id="list-count" aria-live="polite"></span></div>
     </header>
     <main class="content">
-      <div class="filter-grid">
-        <div class="field">
-          <label>City</label>
-          <select class="filter-select" id="filter-city" aria-label="Filter by city"><option value="">All cities</option></select>
-        </div>
-        <div class="field">
-          <label>State</label>
-          <select class="filter-select" id="filter-state" aria-label="Filter by state"><option value="">All states</option></select>
-        </div>
-        <div class="field">
-          <div class="prof-label-row">
-            <label for="btn-prof-toggle">Profession</label>
-            <button type="button" class="link-btn" id="btn-prof-clear" hidden>Clear</button>
-          </div>
-          <button type="button" class="prof-toggle" id="btn-prof-toggle" aria-expanded="false" aria-controls="prof-panel"><span id="prof-summary">All professions</span><span class="chev" aria-hidden="true">&#9662;</span></button>
-          <div class="prof-panel" id="prof-panel" hidden>
-            <div class="prof-chips" id="prof-chips" role="group" aria-label="Choose one or more professions"></div>
-          </div>
-        </div>
+      <div class="field">
+        <label for="filter-where">Where</label>
+        <select class="filter-select" id="filter-where" aria-label="Filter by location"><option value="">All locations</option></select>
       </div>
-      <div class="list-heading"><h2 class="screen-title" id="list-heading">Current Professionals</h2><span class="list-count" id="list-count" aria-live="polite"></span></div>
+      <div class="prof-row" id="prof-chips" role="group" aria-label="Choose a profession"></div>
       <div id="pro-list" style="display:flex; flex-direction:column; gap:12px;"></div>
     </main>
   </div>
 
   <div id="detail-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:0;">
-    <div class="profile-hero" id="profile-hero">
-      <div class="profile-hero-strip" id="profile-hero-strip"></div>
-      <div class="profile-hero-placeholder" id="profile-hero-placeholder" style="display:none;"></div>
-      <button type="button" class="hero-back-btn" id="btn-back-list" aria-label="Back to search results">&larr;</button>
-      <div class="profile-hero-dots" id="profile-hero-dots"></div>
-    </div>
-    <main class="content profile-sheet" style="padding-top:20px;">
-      <div style="display:flex; gap:14px;">
-        <div class="pro-avatar-col" style="width:68px;">
-          <div class="pro-avatar pro-avatar--lg" id="detail-avatar" aria-hidden="true"></div>
-          <div class="pro-avatar-rating" id="detail-avatar-rating"></div>
+    <main class="content" id="detail-content" style="padding:0 0 28px; gap:0;">
+      <div class="profile-hero" id="profile-hero">
+        <div class="profile-hero-strip" id="profile-hero-strip"></div>
+        <button type="button" class="hero-back-btn" id="btn-back-list" aria-label="Back to search results">&larr;</button>
+        <div class="profile-hero-dots" id="profile-hero-dots"></div>
+      </div>
+      <div class="profile-sheet" style="padding:20px 20px 0; display:flex; flex-direction:column; gap:16px;">
+        <div style="display:flex; gap:14px; align-items:center;">
+          <div class="pro-avatar pro-avatar--lg" id="detail-avatar" aria-hidden="true" style="flex:none;"></div>
+          <div style="flex:1; min-width:0;">
+            <h2 class="screen-title" id="detail-name" style="margin:0;">&nbsp;</h2>
+            <p class="pro-title" id="detail-title" style="margin:2px 0 0;">&nbsp;</p>
+            <p class="screen-sub" id="detail-shop-line" style="margin-top:4px;">&nbsp;</p>
+          </div>
         </div>
-        <div style="flex:1; min-width:0;">
-          <h2 class="screen-title" id="detail-name">&nbsp;</h2>
-          <p class="pro-title" id="detail-title">&nbsp;</p>
-          <p class="screen-sub" id="detail-shop-line" style="margin-top:6px;">&nbsp;</p>
+        <div class="rating-line" id="detail-rating-line"></div>
+        <div class="status-line" id="detail-status"></div>
+        <div class="act-row" id="detail-actions">
+          <button type="button" class="btn btn-primary btn-grow" id="btn-detail-book" hidden>Book an appointment</button>
+          <a class="btn btn-outline" id="btn-detail-call" href="#" hidden>Call</a>
+          <a class="btn btn-outline" id="btn-detail-map" href="#" target="_blank" rel="noopener noreferrer" hidden>Map</a>
         </div>
-      </div>
-      <p class="screen-sub" id="detail-bio" style="display:none; margin:0;">&nbsp;</p>
+        <p class="screen-sub" id="detail-nobook-note" hidden style="margin:0;"></p>
 
-      <div class="detail-card" id="detail-location-card" style="display:none;">
-        <p class="eyebrow-mini2" style="margin:0;">Location</p>
-        <p class="screen-sub" id="detail-contact-line" style="margin:0;">&nbsp;</p>
-        <div class="map-embed-wrap" id="detail-map-wrap" style="display:none;"><iframe id="detail-map-frame" src="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Shop location"></iframe></div>
-      </div>
-
-      <div class="detail-card" id="detail-hours-card" style="display:none;">
-        <button type="button" class="hours-toggle" id="btn-hours-toggle">
-          <p class="eyebrow-mini2" style="margin:0;">Hours</p>
-          <span class="chev">&#9662;</span>
-        </button>
-        <div class="hours-list" id="detail-hours-list"></div>
-      </div>
-
-      <div class="detail-card" id="detail-policies-card" style="display:none;">
-        <p class="eyebrow-mini2" style="margin:0;">Policies</p>
-        <p class="screen-sub" id="detail-policies-text" style="margin:0;">&nbsp;</p>
-      </div>
-
-      <div class="social-row" id="detail-social"></div>
-
-      <div id="detail-booking-block" style="display:none; flex-direction:column; gap:14px; border:1px solid var(--brass); background:var(--brass-tint); border-radius:14px; padding:16px;">
-        <p class="eyebrow-mini" style="color:var(--brass); margin:0;">Book an appointment</p>
-
-        <div id="bkc-fam-picker" class="bkc-fam-picker" style="display:none;">
-          <p class="eyebrow-mini" style="margin:0;">Booking for</p>
-          <div class="bkc-fam-scroller" id="bkc-fam-scroller"></div>
+        <div id="detail-bio-wrap" hidden style="display:flex; flex-direction:column; gap:10px;">
+          <p class="screen-sub bio-clamp" id="detail-bio" style="margin:0;"></p>
+          <button type="button" class="link-btn more-btn" id="btn-bio-more" hidden>More</button>
         </div>
 
-        <div id="bkc-step-services" style="display:flex; flex-direction:column; gap:10px;">
+        <div id="detail-booking-block" style="display:none; flex-direction:column; gap:10px;">
+          <p class="sec-label">Services</p>
+          <div id="bkc-fam-picker" class="bkc-fam-picker" style="display:none;">
+            <p class="eyebrow-mini" style="margin:0;">Booking for</p>
+            <div class="bkc-fam-scroller" id="bkc-fam-scroller"></div>
+          </div>
+          <p class="pick-hint" id="bkc-pick-hint" hidden>Tick what you'd like, then choose a time.</p>
           <div id="bkc-services-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-          <div class="summary-row"><span>Total</span><span id="bkc-total-label">$0 · 0 min</span></div>
-          <button class="btn btn-primary" id="btn-bkc-next-date" type="button" disabled>Choose a date & time</button>
         </div>
 
-        <div id="bkc-step-slots" style="display:none; flex-direction:column; gap:10px;">
-          <button type="button" class="link-btn" id="btn-bkc-back-services" style="align-self:flex-start;">&larr; Back to services</button>
-          <div class="field"><label>Date</label><div class="input-row"><input id="bkc-date" type="date"></div></div>
-
-          <div id="bkc-vip-slots-section" class="vip-card" style="display:none;">
-            <div class="vip-section-head">
-              <p class="eyebrow-mini" style="margin:0;">✨ VIP Hours</p>
+        <div id="detail-about" hidden style="display:flex; flex-direction:column; gap:10px;">
+          <p class="sec-label">About</p>
+          <div class="about-group">
+            <div class="about-item" id="about-address" hidden>
+              <button type="button" class="about-row" aria-expanded="false" data-about="address">
+                <span class="ar-main"><div class="ar-title" id="about-address-title"></div><div class="ar-sub" id="about-address-sub"></div></span><span class="chev" aria-hidden="true">&rsaquo;</span>
+              </button>
+              <div class="about-body" id="about-address-body" hidden>
+                <p class="screen-sub" id="detail-contact-line" style="margin:0;"></p>
+                <div class="map-embed-wrap" id="detail-map-wrap" hidden><iframe id="detail-map-frame" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Shop location"></iframe></div>
+              </div>
             </div>
-            <p class="screen-sub" style="margin:0;">A special after-hours window, open just for this date.</p>
-            <div id="bkc-vip-slots-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
-          </div>
-
-          <p class="eyebrow-mini" id="bkc-standard-slots-label" style="margin:0; display:none;">Standard times</p>
-          <div id="bkc-slots-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
-          <p class="screen-sub" id="bkc-slots-empty" style="display:none; margin:0;">No open times that day. Try another date.</p>
-        </div>
-
-        <div id="bkc-step-confirm" style="display:none; flex-direction:column; gap:12px;">
-          <button type="button" class="link-btn" id="btn-bkc-back-slots" style="align-self:flex-start;">&larr; Back to times</button>
-          <div class="summary-card" id="bkc-confirm-summary"></div>
-
-          <div id="bkc-client-search">
-            <div class="field"><label>Your Vono Passport code</label><div class="input-row"><input id="bkc-client-code" type="text" placeholder="Your personal code" data-lookup-field="1"></div></div>
-            <button class="btn btn-outline" id="btn-bkc-client-lookup" type="button" style="width:100%; margin-top:8px;">Look up</button>
-            <button class="btn btn-ghost" id="btn-bkc-client-newclient" type="button" style="width:100%; margin-top:6px;">First time booking here? Create my Vono Passport</button>
-            <p class="screen-sub" id="bkc-client-status" style="margin-top:6px;">&nbsp;</p>
-          </div>
-          <div id="bkc-client-newname" style="display:none; flex-direction:column; gap:10px;">
-            <div class="field"><label>Your name</label><div class="input-row"><input id="bkc-client-new-name" type="text" placeholder="e.g. Jordan Smith"></div></div>
-            <div class="field">
-              <label>Your passport code</label>
-              <div class="input-row"><input id="bkc-client-new-code" type="text" placeholder="e.g. jordan-47"></div>
+            <div class="about-item" id="about-hours" hidden>
+              <button type="button" class="about-row" aria-expanded="false" data-about="hours">
+                <span class="ar-main"><div class="ar-title">Hours</div><div class="ar-sub" id="about-hours-sub"></div></span><span class="chev" aria-hidden="true">&rsaquo;</span>
+              </button>
+              <div class="about-body" id="about-hours-body" hidden><div class="hours-list open" id="detail-hours-list" style="margin-top:0;"></div></div>
             </div>
-            <p class="screen-sub" style="margin:0;">Remember this or save it. It's what you'll use to log in and see your visit history next time.</p>
-            <div class="field">
-              <label>Mobile number <span style="text-transform:none; font-weight:600;">(optional)</span></label>
-              <div class="input-row"><input id="bkc-client-new-phone" type="tel" placeholder="e.g. (910) 555-0123" autocomplete="tel"></div>
-              <p class="screen-sub" style="margin:0;">Lets you send and receive quick texts about this appointment. Your barber never sees your actual number. You can add or remove it later in Account.</p>
+            <div class="about-item" id="about-policy" hidden>
+              <button type="button" class="about-row" aria-expanded="false" data-about="policy">
+                <span class="ar-main"><div class="ar-title">Cancellation policy</div><div class="ar-sub" id="about-policy-sub"></div></span><span class="chev" aria-hidden="true">&rsaquo;</span>
+              </button>
+              <div class="about-body" id="about-policy-body" hidden><p class="screen-sub" id="detail-policies-text" style="margin:0; white-space:pre-wrap;"></p></div>
             </div>
-            <button class="btn btn-primary" id="btn-bkc-client-create" type="button" style="width:100%;">Create my Vono Passport</button>
-            <button class="btn btn-ghost" id="btn-bkc-client-newclient-back" type="button" style="width:100%;">Back</button>
-            <p class="screen-sub" id="bkc-client-create-status" style="margin:0;">&nbsp;</p>
           </div>
-          <div id="bkc-client-loaded" style="display:none;">
-            <p class="screen-sub" id="bkc-client-attached-summary" style="margin:0;">&nbsp;</p>
-          </div>
-
-          <div id="bkc-policy-block" style="display:none; flex-direction:column; gap:8px;">
-            <p class="eyebrow-mini2" style="margin:0;">Cancellation policy</p>
-            <p class="screen-sub" id="bkc-policy-text" style="margin:0;"></p>
-            <label class="check-row"><input type="checkbox" id="bkc-policy-ack"><span>I've read and agree to this policy</span></label>
-          </div>
-
-          <button class="btn btn-primary" id="btn-bkc-confirm" type="button" disabled>Confirm booking</button>
-          <p class="screen-sub" id="bkc-confirm-status" style="margin:0;">&nbsp;</p>
         </div>
 
-        <div id="bkc-step-success" style="display:none; flex-direction:column; gap:12px;">
-          <p class="screen-title" style="margin:0;">You're booked!</p>
-          <p class="screen-sub" id="bkc-success-summary" style="margin:0;"></p>
-          <div id="bkc-pay-links" style="display:flex; flex-direction:column; gap:8px;"></div>
-          <button class="btn btn-outline" id="btn-bkc-add-calendar" type="button">Add to calendar</button>
-          <button class="btn btn-ghost" id="btn-bkc-book-again" type="button">Book another appointment</button>
-        </div>
-      </div>
+        <div class="social-row" id="detail-social"></div>
 
-      <div class="detail-card" id="detail-scores"></div>
-      <div>
-        <p class="eyebrow-mini2" style="font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin:0 0 10px;">Reviews</p>
-        <div id="detail-reviews" style="display:flex; flex-direction:column; gap:12px;"></div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <p class="sec-label">Ratings</p>
+          <div id="detail-scores"></div>
+        </div>
+        <div id="detail-reviews-wrap" hidden style="display:flex; flex-direction:column; gap:10px;">
+          <p class="sec-label">Reviews</p>
+          <div id="detail-reviews" style="display:flex; flex-direction:column; gap:12px;"></div>
+          <button type="button" class="link-btn" id="btn-see-all-reviews" hidden>See all reviews</button>
+        </div>
       </div>
     </main>
+    <div class="sel-bar" id="detail-bookbar" hidden>
+      <div class="sel-text"><span class="sel-total" id="bkc-total-label">$0 &middot; 0 min</span><span class="sel-names" id="bkc-bar-names"></span></div>
+      <button class="btn btn-primary" id="btn-bkc-next-date" type="button" disabled>Choose a time</button>
+    </div>
+  </div>
+
+  <div id="booking-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:0;">
+    <div class="bk-head">
+      <button type="button" class="back-btn" id="btn-bkc-back" aria-label="Back">&larr;</button>
+      <span class="bk-who" id="bkc-pro-line"></span>
+      <span class="bk-count" id="bkc-stepcount"></span>
+    </div>
+    <div class="bk-dots" id="bkc-dots"><span class="on"></span><span></span></div>
+    <main class="content" id="booking-content">
+
+      <div id="bkc-step-slots" style="display:none; flex-direction:column; gap:14px;">
+        <h2 class="screen-title" style="margin:0;">Pick a time</h2>
+        <div class="bk-chosen" id="bkc-chosen-line"></div>
+        <div class="day-strip" id="bkc-day-strip" role="group" aria-label="Choose a day"></div>
+        <div class="field"><label for="bkc-date">Another date</label><div class="input-row"><input id="bkc-date" type="date"></div></div>
+
+        <div id="bkc-vip-slots-section" class="vip-card" style="display:none;">
+          <div class="vip-section-head">
+            <p class="eyebrow-mini" style="margin:0;">✨ VIP Hours</p>
+          </div>
+          <p class="screen-sub" style="margin:0;">A special after-hours window, open just for this date.</p>
+          <div id="bkc-vip-slots-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+        </div>
+
+        <p class="eyebrow-mini" id="bkc-standard-slots-label" style="margin:0; display:none;">Standard times</p>
+        <div id="bkc-slots-list" style="display:flex; flex-direction:column; gap:14px;"></div>
+        <p class="screen-sub" id="bkc-slots-empty" style="display:none; margin:0;">No open times that day. Try another date.</p>
+      </div>
+
+      <div id="bkc-step-confirm" style="display:none; flex-direction:column; gap:14px;">
+        <h2 class="screen-title" style="margin:0;">Who's booking?</h2>
+        <div class="summary-card" id="bkc-confirm-summary"></div>
+
+        <div class="seg" id="bkc-seg" role="group" aria-label="Do you have a Vono Passport?">
+          <button type="button" id="btn-bkc-seg-have" aria-pressed="true">I have a passport</button>
+          <button type="button" id="btn-bkc-seg-new" aria-pressed="false">First time here</button>
+        </div>
+
+        <div id="bkc-client-search" style="display:flex; flex-direction:column; gap:8px;">
+          <div class="field"><label for="bkc-client-code">Your Vono Passport code</label><div class="input-row"><input id="bkc-client-code" type="text" placeholder="Your personal code" autocapitalize="none" autocorrect="off" data-lookup-field="1"></div></div>
+          <button class="btn btn-outline" id="btn-bkc-client-lookup" type="button" style="width:100%;">Look up</button>
+          <p class="screen-sub" id="bkc-client-status" style="margin:0;">&nbsp;</p>
+        </div>
+        <div id="bkc-client-newname" style="display:none; flex-direction:column; gap:12px;">
+          <div class="field"><label for="bkc-client-new-name">Your name</label><div class="input-row"><input id="bkc-client-new-name" type="text" placeholder="e.g. Jordan Smith" autocomplete="name"></div></div>
+          <div class="field">
+            <label for="bkc-client-new-last4">Last 4 of your phone number</label>
+            <div class="input-row"><input id="bkc-client-new-last4" type="text" inputmode="numeric" maxlength="14" placeholder="e.g. 4719" autocomplete="off"></div>
+          </div>
+          <div class="field">
+            <label for="bkc-client-new-code">Your passport code</label>
+            <div class="input-row"><input id="bkc-client-new-code" type="text" placeholder="e.g. jordan-4719" autocapitalize="none" autocorrect="off"></div>
+            <div class="code-sugs" id="bkc-client-code-sugs"></div>
+            <p class="screen-sub" id="bkc-client-code-say" style="margin:0;"></p>
+          </div>
+          <div class="field">
+            <label for="bkc-client-new-phone">Mobile number <span style="text-transform:none; font-weight:600;">(optional)</span></label>
+            <div class="input-row"><input id="bkc-client-new-phone" type="tel" placeholder="e.g. (910) 555-0123" autocomplete="tel"></div>
+            <p class="screen-sub" style="margin:0;">Lets you send and receive quick texts about this appointment. Your pro never sees your actual number. You can add or remove it later in Account.</p>
+          </div>
+          <p class="screen-sub" id="bkc-client-create-status" style="margin:0;">&nbsp;</p>
+        </div>
+        <div id="bkc-client-loaded" style="display:none; align-items:center; justify-content:space-between; gap:10px; border:1px solid var(--good); background:var(--good-tint); border-radius:12px; padding:12px 14px;">
+          <p class="screen-sub" id="bkc-client-attached-summary" style="margin:0; color:var(--ink); font-weight:600;">&nbsp;</p>
+          <button type="button" class="link-btn" id="btn-bkc-client-change">Not you?</button>
+        </div>
+
+        <div id="bkc-policy-block" style="display:none; flex-direction:column; gap:8px;">
+          <p class="sec-label">Cancellation policy</p>
+          <p class="screen-sub" id="bkc-policy-text" style="margin:0; white-space:pre-wrap;"></p>
+          <label class="check-row"><input type="checkbox" id="bkc-policy-ack"><span>I've read and agree to this policy</span></label>
+        </div>
+
+        <button class="btn btn-primary" id="btn-bkc-confirm" type="button" disabled>Confirm booking</button>
+        <p class="screen-sub" id="bkc-confirm-status" style="margin:0;">&nbsp;</p>
+      </div>
+
+      <div id="bkc-step-success" style="display:none; flex-direction:column; gap:12px;">
+        <p class="screen-title" style="margin:0;">You're booked!</p>
+        <p class="screen-sub" id="bkc-success-summary" style="margin:0;"></p>
+        <div id="bkc-pay-links" style="display:flex; flex-direction:column; gap:8px;"></div>
+        <button class="btn btn-outline" id="btn-bkc-add-calendar" type="button">Add to calendar</button>
+        <button class="btn btn-ghost" id="btn-bkc-book-again" type="button">Book another appointment</button>
+        <button class="btn btn-ghost" id="btn-bkc-back-page" type="button">Back to the pro's page</button>
+      </div>
+    </main>
+    <div class="sel-bar" id="bkc-bar">
+      <div class="sel-text"><span class="sel-total" id="bkc-bar-when">Pick a time</span><span class="sel-names" id="bkc-bar-svc"></span></div>
+      <button class="btn btn-primary" id="btn-bkc-slot-next" type="button" disabled>Continue</button>
+    </div>
   </div>
 
   <div id="photo-lightbox" class="lightbox-overlay" hidden>
@@ -594,22 +713,51 @@ document.getElementById('photo-lightbox').addEventListener('touchend', (e)=>{
   if (dx < 0) lightboxShowNext(); else lightboxShowPrev();
 }, { passive: true });
 
-// A Find a Pro listing (and the booking flow below) is part of a paid Vono
-// plan -- trialing/active/past_due all still count (past_due keeps access
-// for now, same grace-period logic as index.html's gating), but a pro whose
-// subscription lapses to 'none' or 'canceled' drops out of the public
-// directory and can no longer take bookings, even if public_listing/
-// booking_enabled are still true on their row from before they lapsed.
+// Who shows up on Find a Pro, and in what order:
+//  - A pro with an active plan (trialing/active/past_due keep access, same grace-period
+//    logic as index.html) is a "subscriber": listed first, and can take online bookings.
+//  - Any other pro who switched their listing on is a "Basic" listing: still shown (below the
+//    subscribers) with their shop details and up to 5 portfolio photos, but with no online
+//    booking -- clients call or visit instead.
 function hasActiveSubscription(p){
   return !!p && ['trialing', 'active', 'past_due'].includes(p.subscription_status);
+}
+const BASIC_PHOTO_LIMIT = 5;
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+function markPro(p){
+  if (p.name) p.name = toTitleCase(p.name);
+  p._basic = !hasActiveSubscription(p);
+  return p;
+}
+// Online booking needs a plan, the switch on, and at least one service on the price list.
+function isBookable(p){
+  return !!p && !p._basic && !!p.booking_enabled && Array.isArray(p.booking_services) && p.booking_services.length > 0;
+}
+function proPhotos(p){
+  const all = Array.isArray(p.portfolio_photos) ? p.portfolio_photos.filter(ph=>ph && ph.url) : [];
+  return p._basic ? all.slice(0, BASIC_PHOTO_LIMIT) : all;
+}
+function firstNameOf(p){ return String((p && p.name) || '').trim().split(/\s+/)[0] || 'This pro'; }
+function money(n){ n = Number(n) || 0; return '$' + (Number.isInteger(n) ? n : n.toFixed(2)); }
+function priceRangeText(p){
+  const list = Array.isArray(p.booking_services) ? p.booking_services : [];
+  const prices = list.map(s=>Number(s.price)).filter(n=>isFinite(n));
+  if (!prices.length) return '';
+  const lo = Math.min(...prices), hi = Math.max(...prices);
+  if (list.length === 1) return 'From ' + money(lo);
+  return lo === hi ? 'Services ' + money(lo) : 'Services ' + money(lo) + '–' + money(hi);
+}
+function phoneHref(ph){
+  const d = String(ph || '').replace(/[^\d+]/g, '');
+  return /\d/.test(d) ? 'tel:' + d : '';
 }
 async function fetchPublicPros(){
   const { data, error } = await supabaseClient.from('profiles').select('*').eq('public_listing', true);
   if (error) throw error;
   const rows = Array.isArray(data) ? data : [];
-  const subscribed = rows.filter(hasActiveSubscription);
-  subscribed.forEach(p=>{ if (p.name) p.name = toTitleCase(p.name); });
-  return subscribed;
+  return rows.filter(p=>p && p.code).map(markPro);
 }
 
 async function fetchReviewsFor(code){
@@ -651,8 +799,7 @@ function professionFamily(title){
 let selectedProfessions = new Set();
 
 function matchesFilters(p, filters){
-  if (filters.city && (p.shop_city || '') !== filters.city) return false;
-  if (filters.state && (p.shop_state || '') !== filters.state) return false;
+  if (filters.where && locationLine(p) !== filters.where) return false;
   if (filters.professions && filters.professions.length && !filters.professions.includes(professionFamily(p.title))) return false;
   return true;
 }
@@ -663,54 +810,46 @@ function renderProfessionBar(){
   // Drop any picked profession that is no longer listed anywhere.
   selectedProfessions = new Set([...selectedProfessions].filter(f=> families.includes(f)));
   chipsEl.innerHTML = '';
-  families.forEach(f=>{
+  const mk = (label, value, pressed)=>{
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'prof-chip';
-    b.dataset.prof = f;
-    b.textContent = f;
-    b.setAttribute('aria-pressed', selectedProfessions.has(f) ? 'true' : 'false');
+    b.dataset.prof = value;
+    b.textContent = label;
+    b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
     chipsEl.appendChild(b);
-  });
-  const picked = families.filter(f=> selectedProfessions.has(f));
-  document.getElementById('prof-summary').textContent = picked.length ? picked.join(', ') : 'All professions';
-  document.getElementById('btn-prof-clear').hidden = !picked.length;
+  };
+  mk('All', '', selectedProfessions.size === 0);
+  families.forEach(f=> mk(f, f, selectedProfessions.has(f)));
 }
 
-// Fills the three filter dropdowns from whoever is actually listed right now,
-// so a client never picks a city/state/profession that returns zero pros.
-// Keeps each select's current value if it's still one of the valid options.
+// Fills the location dropdown from whoever is actually listed right now, so a client
+// never picks a place that returns zero pros. Keeps the current pick if it's still valid.
 function populateFilterOptions(){
-  const specs = [
-    { id:'filter-city', allLabel:'All cities', values: [...new Set(allPros.map(p=>p.shop_city).filter(Boolean))].sort() },
-    { id:'filter-state', allLabel:'All states', values: [...new Set(allPros.map(p=>p.shop_state).filter(Boolean))].sort() },
-  ];
-  specs.forEach(spec=>{
-    const sel = document.getElementById(spec.id);
-    const current = sel.value;
-    sel.innerHTML = `<option value="">${spec.allLabel}</option>` + spec.values.map(v=>`<option value="${v}">${v}</option>`).join('');
-    if (current && spec.values.includes(current)) sel.value = current;
-  });
+  const sel = document.getElementById('filter-where');
+  const current = sel.value;
+  const values = [...new Set(allPros.map(locationLine).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">All locations</option>' + values.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  if (current && values.includes(current)) sel.value = current;
   renderProfessionBar();
 }
 
 function renderList(){
   const filters = {
-    city: document.getElementById('filter-city').value,
-    state: document.getElementById('filter-state').value,
+    where: document.getElementById('filter-where').value,
     professions: [...selectedProfessions],
   };
   const holder = document.getElementById('pro-list');
-  const filtered = allPros.filter(p=> matchesFilters(p, filters));
-  document.getElementById('list-count').textContent = '(' + filtered.length + ')';
+  // Subscribers first, then Basic listings. Array sort is stable, so each group keeps its order.
+  const filtered = allPros.filter(p=> matchesFilters(p, filters)).sort((a,b)=> (a._basic ? 1 : 0) - (b._basic ? 1 : 0));
+  document.getElementById('list-count').textContent = filtered.length + (filtered.length === 1 ? ' pro' : ' pros');
   if (!filtered.length){
-    const anyFilter = !!(filters.city || filters.state || filters.professions.length);
-    holder.innerHTML = '<div class="empty-note">No current professionals match that search yet.' +
+    const anyFilter = !!(filters.where || filters.professions.length);
+    holder.innerHTML = '<div class="empty-note">No professionals match that search yet.' +
       (anyFilter ? '<br><button type="button" class="link-btn" id="btn-clear-all-filters" style="margin-top:8px;">Clear filters</button>' : '') + '</div>';
     const clr = document.getElementById('btn-clear-all-filters');
     if (clr) clr.addEventListener('click', ()=>{
-      document.getElementById('filter-city').value = '';
-      document.getElementById('filter-state').value = '';
+      document.getElementById('filter-where').value = '';
       selectedProfessions = new Set();
       renderProfessionBar();
       renderList();
@@ -718,7 +857,16 @@ function renderList(){
     return;
   }
   holder.innerHTML = '';
+  const hasBoth = filtered.some(p=>!p._basic) && filtered.some(p=>p._basic);
+  let dividerDone = false;
   filtered.forEach(p=>{
+    if (hasBoth && p._basic && !dividerDone){
+      dividerDone = true;
+      const d = document.createElement('p');
+      d.className = 'list-divider';
+      d.textContent = 'More pros to call or visit';
+      holder.appendChild(d);
+    }
     const agg = allAggregates[p.code] || { count:0, overall:null };
     // A plain div, not a <button> -- the thumbnail filmstrip below holds its own buttons
     // (opening the lightbox), and a button can't contain another button.
@@ -727,13 +875,16 @@ function renderList(){
     card.setAttribute('role', 'button');
     card.tabIndex = 0;
     card.setAttribute('aria-label', `View ${p.name || 'this pro'}'s profile`);
-    const photos = Array.isArray(p.portfolio_photos) ? p.portfolio_photos.filter(ph=>ph && ph.url) : [];
-    // No separate placeholder here when a pro has no photos yet -- the avatar below
-    // already carries their initial, and a second lookalike badge just above it read
-    // as a mistake rather than a deliberate empty state.
+    const photos = proPhotos(p);
+    // No separate placeholder here when a pro has no photos yet -- the avatar already
+    // carries their initial, and a second lookalike badge just above it read as a mistake.
     const photoHtml = photos.length
-      ? `<div class="pro-photo-filmstrip">${photos.map((ph,idx)=>`<button type="button" class="pro-photo-thumb" data-thumb-idx="${idx}" aria-label="View photo ${idx+1} of ${photos.length} from ${p.name || 'this pro'}"><img src="${ph.url}" alt="Work by ${p.name || 'this pro'}" loading="lazy"></button>`).join('')}</div>`
+      ? `<div class="pro-photo-filmstrip">${photos.map((ph,idx)=>`<button type="button" class="pro-photo-thumb" data-thumb-idx="${idx}" aria-label="View photo ${idx+1} of ${photos.length} from ${esc(p.name || 'this pro')}"><img src="${esc(ph.url)}" alt="Work by ${esc(p.name || 'this pro')}" loading="lazy"></button>`).join('')}</div>`
       : '';
+    const price = priceRangeText(p);
+    const badges = isBookable(p)
+      ? `<span class="pro-badge good">Books online</span>${price ? `<span class="pro-price">${esc(price)}</span>` : ''}`
+      : `<span class="pro-badge">Call or visit</span>`;
     card.innerHTML = `
       <div class="pro-card-body">
         <div class="pro-avatar-col">
@@ -741,14 +892,16 @@ function renderList(){
           <div class="pro-avatar-rating">${avatarRatingHtml(agg)}</div>
         </div>
         <div class="pro-info-col">
-          <div class="pro-name">${p.name || 'Unnamed'}</div>
-          <div class="pro-title">${p.title || ''}</div>
-          ${p.shop_name ? `<div class="pro-shop">${p.shop_name}</div>` : ''}
-          ${locationLine(p) ? `<div class="pro-loc">${locationLine(p)}</div>` : ''}
+          <div class="pro-name">${esc(p.name || 'Unnamed')}</div>
+          <div class="pro-title">${esc(p.title || '')}</div>
+          ${p.shop_name ? `<div class="pro-shop">${esc(p.shop_name)}</div>` : ''}
+          ${locationLine(p) ? `<div class="pro-loc">${esc(locationLine(p))}</div>` : ''}
+          <div class="pro-badges">${badges}</div>
         </div>
       </div>
       ${photoHtml}
     `;
+    if (!photos.length) card.querySelector('.pro-card-body').style.paddingBottom = '14px';
     // Tapping a thumbnail opens the full-view lightbox instead of the profile; tapping
     // anywhere else on the card (including a swipe across the filmstrip -- a touch drag
     // doesn't fire a click on release) opens the profile as usual.
@@ -767,111 +920,180 @@ function renderList(){
   });
 }
 
+function ratingLineHtml(agg){
+  return agg && agg.count
+    ? `<span class="stars">${starsFor(agg.overall)}</span><b>${agg.overall.toFixed(1)}</b><span>· ${agg.count} review${agg.count === 1 ? '' : 's'}</span>`
+    : '<span>No reviews yet</span>';
+}
+function fmtTimeShort(hhmm){
+  const [h,m] = String(hhmm).split(':').map(Number);
+  return ((h % 12) || 12) + (m ? ':' + String(m).padStart(2,'0') : '') + ' ' + (h >= 12 ? 'PM' : 'AM');
+}
+function hoursForPro(p, dateStr){
+  const ov = (p.booking_overrides || []).find(o=>o.date === dateStr);
+  if (ov) return ov;
+  const dayKey = DAY_KEYS[new Date(dateStr + 'T00:00:00').getDay()];
+  return (p.booking_hours || {})[dayKey] || { closed:true };
+}
+
+let detailToken = 0;
+let detailReviews = [];
+
+function reviewCardHtml(r){
+  const dateLabel = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '';
+  const statsRow = CATEGORIES.map(cat => `<span><span class="stars">${starsFor(r[cat.key])}</span> ${cat.label}</span>`).join('');
+  return `
+    <div class="review-top">
+      <span class="review-author">${r.display_name ? esc(r.display_name) : 'Anonymous'}</span>
+      <span class="review-date">${dateLabel}</span>
+    </div>
+    <div class="review-stars-row">${statsRow}</div>
+    ${r.comment ? `<div class="review-comment">${esc(r.comment)}</div>` : ''}`;
+}
+function renderReviewList(showAll){
+  const holder = document.getElementById('detail-reviews');
+  const sorted = detailReviews.slice().sort((a,b)=> (b.created_at||'').localeCompare(a.created_at||''));
+  const shown = showAll ? sorted : sorted.slice(0, 2);
+  holder.innerHTML = '';
+  shown.forEach(r=>{
+    const card = document.createElement('div');
+    card.className = 'review-card';
+    card.innerHTML = reviewCardHtml(r);
+    holder.appendChild(card);
+  });
+  const more = document.getElementById('btn-see-all-reviews');
+  more.hidden = showAll || sorted.length <= 2;
+  more.textContent = 'See all reviews (' + sorted.length + ')';
+}
+
 async function showDetail(code){
   let p = allPros.find(x=>x.code===code);
   if (!p){
-    // Not publicly listed. A booking-only (unlisted) pro can still be reached by their direct code link.
+    // Not in the list. A subscriber who switched the list off can still be reached by their
+    // direct link, and so can a Basic pro whose listing is on.
     try{
       const { data, error } = await supabaseClient.from('profiles').select('*').eq('code', code).maybeSingle();
       if (error) throw error;
-      if (data && hasActiveSubscription(data)){
-        if (data.name) data.name = toTitleCase(data.name);
-        p = data;
-      }
+      if (data && (hasActiveSubscription(data) || data.public_listing)) p = markPro(data);
     }catch(e){ console.warn('direct pro lookup failed', e); }
   }
   if (!p){ return false; }
+  const token = ++detailToken;
   document.getElementById('list-screen').hidden = true;
+  document.getElementById('booking-screen').hidden = true;
   document.getElementById('detail-screen').hidden = false;
+  document.getElementById('detail-content').scrollTop = 0;
+
+  const bookable = isBookable(p);
+  const phone = (p.shop_phone || '').trim();
+  const phoneLink = phoneHref(phone);
+  const addr = (p.shop_address || '').trim();
 
   document.getElementById('detail-name').textContent = p.name || 'Unnamed';
   document.getElementById('detail-title').textContent = p.title || '';
   document.getElementById('detail-shop-line').textContent = [p.shop_name, locationLine(p)].filter(Boolean).join(' · ');
   document.getElementById('detail-avatar').innerHTML = avatarInnerHtml(p);
-  document.getElementById('detail-avatar-rating').innerHTML = avatarRatingHtml(allAggregates[code]);
+  document.getElementById('detail-rating-line').innerHTML = ratingLineHtml(allAggregates[code]);
 
-  // ---- Hero photo slider ----
+  // ---- Hero photo slider (a slim banner when there are no photos) ----
+  const heroEl = document.getElementById('profile-hero');
   const heroStrip = document.getElementById('profile-hero-strip');
-  const heroPlaceholder = document.getElementById('profile-hero-placeholder');
   const heroDots = document.getElementById('profile-hero-dots');
-  const heroPhotos = Array.isArray(p.portfolio_photos) ? p.portfolio_photos.filter(ph=>ph && ph.url) : [];
+  const heroPhotos = proPhotos(p);
   heroStrip.innerHTML = '';
   heroDots.innerHTML = '';
   heroStrip.onscroll = null;
-  if (heroPhotos.length){
-    heroStrip.style.display = '';
-    heroPlaceholder.style.display = 'none';
-    heroPhotos.forEach((ph, idx)=>{
-      const img = document.createElement('img');
-      img.src = ph.url;
-      img.alt = `Work by ${p.name || 'this pro'}`;
-      img.loading = 'lazy';
-      // Same tap-vs-drag distinction as the list-card filmstrip: a swipe across the hero
-      // scrolls it without firing a click, so a plain click listener only catches a genuine tap.
-      img.addEventListener('click', ()=> openLightbox(heroPhotos.map(x=>({ url: x.url, alt: `Work by ${p.name || 'this pro'}` })), idx));
-      heroStrip.appendChild(img);
-      if (heroPhotos.length > 1){
-        const dot = document.createElement('span');
-        if (idx === 0) dot.className = 'active';
-        heroDots.appendChild(dot);
-      }
-    });
+  heroEl.classList.toggle('compact', !heroPhotos.length);
+  heroPhotos.forEach((ph, idx)=>{
+    const img = document.createElement('img');
+    img.src = ph.url;
+    img.alt = `Work by ${p.name || 'this pro'}`;
+    img.loading = 'lazy';
+    // A swipe across the hero scrolls it without firing a click, so a plain click listener only catches a genuine tap.
+    img.addEventListener('click', ()=> openLightbox(heroPhotos.map(x=>({ url: x.url, alt: `Work by ${p.name || 'this pro'}` })), idx));
+    heroStrip.appendChild(img);
     if (heroPhotos.length > 1){
-      heroStrip.onscroll = function(){
-        const idx = Math.round(this.scrollLeft / (this.clientWidth || 1));
-        Array.from(heroDots.children).forEach((d,i)=> d.classList.toggle('active', i===idx));
-      };
+      const dot = document.createElement('span');
+      if (idx === 0) dot.className = 'active';
+      heroDots.appendChild(dot);
     }
-  } else {
-    heroStrip.style.display = 'none';
-    heroPlaceholder.style.display = 'flex';
-    // A neutral "no photos yet" icon here, not a second lookalike letter badge --
-    // the avatar just below already shows this pro's initial.
-    heroPlaceholder.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.7"/><circle cx="8.5" cy="9.5" r="1.5" stroke="currentColor" stroke-width="1.7"/><path d="M21 15l-5.5-5.5a1.5 1.5 0 0 0-2 0L4 19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>No photos yet</span>`;
+  });
+  if (heroPhotos.length > 1){
+    heroStrip.onscroll = function(){
+      const idx = Math.round(this.scrollLeft / (this.clientWidth || 1));
+      Array.from(heroDots.children).forEach((d,i)=> d.classList.toggle('active', i===idx));
+    };
   }
+
+  // ---- Status line, then Book / Call / Map ----
+  const statusEl = document.getElementById('detail-status');
+  if (bookable){
+    const todayH = (p.booking_hours && Object.keys(p.booking_hours).length) ? hoursForPro(p, todayIso()) : null;
+    let lead = '', open = false;
+    if (todayH && !todayH.closed){ lead = `<b>Open today</b> · ${fmtTimeShort(todayH.open || '09:00')}–${fmtTimeShort(todayH.close || '18:00')} · `; open = true; }
+    else if (todayH){ lead = 'Closed today · '; }
+    statusEl.className = 'status-line' + (open ? ' open' : '');
+    statusEl.innerHTML = `<span class="status-dot"></span><span>${lead}takes online bookings</span>`;
+  } else {
+    statusEl.className = 'status-line';
+    statusEl.innerHTML = '<span class="status-dot"></span><span>Not taking online bookings</span>';
+  }
+  const bookBtn = document.getElementById('btn-detail-book');
+  const callBtn = document.getElementById('btn-detail-call');
+  const mapBtn = document.getElementById('btn-detail-map');
+  bookBtn.hidden = !bookable;
+  callBtn.hidden = !phoneLink;
+  mapBtn.hidden = !addr;
+  if (phoneLink){
+    callBtn.href = phoneLink;
+    callBtn.className = 'btn ' + (bookable ? 'btn-outline' : 'btn-primary btn-grow');
+  }
+  if (addr){
+    mapBtn.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr);
+    mapBtn.className = 'btn ' + ((bookable || phoneLink) ? 'btn-outline' : 'btn-primary btn-grow');
+  }
+  document.getElementById('detail-actions').hidden = bookBtn.hidden && callBtn.hidden && mapBtn.hidden;
+  const noBook = document.getElementById('detail-nobook-note');
+  noBook.hidden = bookable;
+  noBook.textContent = (phoneLink || addr)
+    ? `${firstNameOf(p)} hasn't set up online booking yet. Call or stop by to book.`
+    : `${firstNameOf(p)} hasn't added contact details yet.`;
 
   // ---- Bio ----
+  const bioWrap = document.getElementById('detail-bio-wrap');
   const bioEl = document.getElementById('detail-bio');
+  const bioMore = document.getElementById('btn-bio-more');
+  bioMore.hidden = true;
   if (p.bio && p.bio.trim()){
+    bioWrap.hidden = false;
     bioEl.textContent = p.bio.trim();
-    bioEl.style.display = 'block';
+    bioEl.classList.add('bio-clamp');
+    bioMore.textContent = 'More';
+    if (bioEl.scrollHeight > bioEl.clientHeight + 1) bioMore.hidden = false;
   } else {
-    bioEl.style.display = 'none';
+    bioWrap.hidden = true;
   }
 
-  const contactBits = [];
-  if (p.shop_address) contactBits.push(p.shop_address);
-  if (p.shop_phone) contactBits.push(p.shop_phone);
-  const contactLine = document.getElementById('detail-contact-line');
-  const locationCard = document.getElementById('detail-location-card');
-  if (contactBits.length){
-    contactLine.textContent = contactBits.join(' · ');
-    contactLine.style.display = 'block';
-    locationCard.style.display = 'flex';
-  } else {
-    contactLine.style.display = 'none';
-    locationCard.style.display = 'none';
-  }
+  // ---- About rows: address, hours, cancellation policy ----
+  const rows = { address:false, hours:false, policy:false };
+  document.querySelectorAll('#detail-about .about-row').forEach(b=> b.setAttribute('aria-expanded', 'false'));
+  ['address','hours','policy'].forEach(k=>{ document.getElementById('about-' + k + '-body').hidden = true; });
 
-  // ---- Embedded map ----
-  const mapWrap = document.getElementById('detail-map-wrap');
   const mapFrame = document.getElementById('detail-map-frame');
-  if (p.shop_address && p.shop_address.trim()){
-    mapFrame.src = `https://www.google.com/maps?q=${encodeURIComponent(p.shop_address.trim())}&output=embed`;
-    mapWrap.style.display = 'block';
-  } else {
-    mapFrame.src = '';
-    mapWrap.style.display = 'none';
+  mapFrame.src = 'about:blank';
+  mapFrame.dataset.loaded = '';
+  mapFrame.dataset.src = addr ? `https://www.google.com/maps?q=${encodeURIComponent(addr)}&output=embed` : '';
+  if (addr || phone){
+    rows.address = true;
+    document.getElementById('about-address-title').textContent = addr || phone;
+    document.getElementById('about-address-sub').textContent = addr ? 'Tap for the map and directions' : 'Shop phone';
+    document.getElementById('detail-contact-line').textContent = [addr, phone].filter(Boolean).join(' · ');
+    document.getElementById('detail-map-wrap').hidden = !addr;
   }
 
-  // ---- Hours ----
-  const hoursCard = document.getElementById('detail-hours-card');
   const hoursList = document.getElementById('detail-hours-list');
-  const hoursToggleBtn = document.getElementById('btn-hours-toggle');
   if (p.booking_enabled && p.booking_hours && Object.keys(p.booking_hours).length){
-    hoursCard.style.display = 'flex';
-    hoursToggleBtn.classList.remove('open');
-    hoursList.classList.remove('open');
+    rows.hours = true;
     const todayKey = DAY_KEYS[new Date().getDay()];
     const DAY_LABELS = { sun:'Sunday', mon:'Monday', tue:'Tuesday', wed:'Wednesday', thu:'Thursday', fri:'Friday', sat:'Saturday' };
     hoursList.innerHTML = DAY_KEYS.map(key=>{
@@ -880,18 +1102,17 @@ async function showDetail(code){
       const timeLabel = (!h || h.closed) ? 'Closed' : `${fmtTime12(h.open||'09:00')} - ${fmtTime12(h.close||'18:00')}`;
       return `<div class="${rowClass}"><span class="hd-day">${DAY_LABELS[key]}</span><span>${timeLabel}</span></div>`;
     }).join('');
-  } else {
-    hoursCard.style.display = 'none';
+    const th = hoursForPro(p, todayIso());
+    document.getElementById('about-hours-sub').textContent = (!th || th.closed) ? 'Closed today' : `Today ${fmtTime12(th.open||'09:00')} - ${fmtTime12(th.close||'18:00')}`;
   }
 
-  // ---- Policies ----
-  const policiesCard = document.getElementById('detail-policies-card');
   if (p.booking_policy && p.booking_policy.trim()){
+    rows.policy = true;
     document.getElementById('detail-policies-text').textContent = p.booking_policy.trim();
-    policiesCard.style.display = 'flex';
-  } else {
-    policiesCard.style.display = 'none';
+    document.getElementById('about-policy-sub').textContent = p.booking_policy.trim().replace(/\s+/g, ' ');
   }
+  Object.keys(rows).forEach(k=>{ document.getElementById('about-' + k).hidden = !rows[k]; });
+  document.getElementById('detail-about').hidden = !(rows.address || rows.hours || rows.policy);
 
   const social = p.social || {};
   const socialHolder = document.getElementById('detail-social');
@@ -909,52 +1130,40 @@ async function showDetail(code){
 
   initBookingFor(p);
 
+  // Reviews load after the page is already showing.
+  document.getElementById('detail-scores').innerHTML = '';
+  document.getElementById('detail-reviews').innerHTML = '';
+  document.getElementById('btn-see-all-reviews').hidden = true;
+  document.getElementById('detail-reviews-wrap').hidden = true;
   let reviews = [];
   try{ reviews = await fetchReviewsFor(code); }catch(e){ console.warn('reviews load failed', e); }
+  if (token !== detailToken) return true; // moved on to another pro while this loaded
   const agg = aggregateReviews(reviews);
   allAggregates[code] = agg;
-  document.getElementById('detail-avatar-rating').innerHTML = avatarRatingHtml(agg);
+  document.getElementById('detail-rating-line').innerHTML = ratingLineHtml(agg);
 
   const scoresHolder = document.getElementById('detail-scores');
   if (!agg.count){
-    scoresHolder.innerHTML = '<p class="screen-sub" style="margin:0;">No reviews yet. Ratings appear here once clients rate a real, logged visit.</p>';
+    scoresHolder.innerHTML = '<div class="empty-note">No reviews yet. Ratings appear here once clients rate a real, logged visit.</div>';
   } else {
-    let rows = `<div class="cat-score-row"><span>Overall</span><span class="stars">${starsFor(agg.overall)} ${agg.overall.toFixed(1)}</span></div>`;
-    CATEGORIES.forEach(cat=>{
-      const v = agg.byCategory[cat.key];
-      rows += `<div class="cat-score-row"><span>${cat.label}</span><span class="stars">${v===null ? '-' : starsFor(v) + ' ' + v.toFixed(1)}</span></div>`;
-    });
-    scoresHolder.innerHTML = rows;
+    scoresHolder.innerHTML = `<div class="rating-card">
+      <div class="rating-big"><span class="num">${agg.overall.toFixed(1)}</span><span class="stars">${starsFor(agg.overall)}</span><span class="cnt">${agg.count} review${agg.count === 1 ? '' : 's'}</span></div>
+      <div class="rating-grid">${CATEGORIES.map(cat=>{ const v = agg.byCategory[cat.key]; return `<div><span>${cat.label}</span><b>${v === null ? '-' : v.toFixed(1)}</b></div>`; }).join('')}</div>
+    </div>`;
   }
-
-  const reviewsHolder = document.getElementById('detail-reviews');
-  if (!reviews.length){
-    reviewsHolder.innerHTML = '<div class="empty-note">No reviews yet.</div>';
-  } else {
-    reviewsHolder.innerHTML = '';
-    reviews.slice().sort((a,b)=> (b.created_at||'').localeCompare(a.created_at||'')).forEach(r=>{
-      const card = document.createElement('div');
-      card.className = 'review-card';
-      const dateLabel = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '';
-      let statsRow = CATEGORIES.map(cat => `<span><span class="stars">${starsFor(r[cat.key])}</span> ${cat.label}</span>`).join('');
-      card.innerHTML = `
-        <div class="review-top">
-          <span class="review-author">${r.display_name ? r.display_name : 'Anonymous'}</span>
-          <span class="review-date">${dateLabel}</span>
-        </div>
-        <div class="review-stars-row">${statsRow}</div>
-        ${r.comment ? `<div class="review-comment">${r.comment}</div>` : ''}
-      `;
-      reviewsHolder.appendChild(card);
-    });
-  }
+  detailReviews = reviews;
+  document.getElementById('detail-reviews-wrap').hidden = !reviews.length;
+  renderReviewList(false);
   return true;
 }
 
 /* =========================================================
    CLIENT BOOKING FLOW
+   The pro's page holds the services list (tick what you want). "Choose a time" opens the
+   booking screens: 1) pick a time, 2) who's booking, then a confirmation.
    ========================================================= */
-function todayIso(){ var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); } // local calendar day, not UTC
+function todayIso(){ return isoOfDate(new Date()); } // local calendar day, not UTC
+function isoOfDate(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
 function sanitizeCode(raw){
   let c = (raw||'').trim().toLowerCase().replace(/[^a-z0-9_.~:@+-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
   if (c.length > 60) c = c.slice(0,60);
@@ -963,8 +1172,64 @@ function sanitizeCode(raw){
 function suggestClientCode(name){
   const first = (name||'').trim().split(/\s+/)[0] || '';
   const base = sanitizeCode(first) || 'client';
-  const suffix = Math.floor(10 + Math.random()*90);
+  const suffix = Math.floor(1000 + Math.random()*9000);
   return `${base}-${suffix}`;
+}
+// A code a client will remember: first name plus four digits they already know by heart
+// (the last 4 of their phone). Only the finished code is saved, never the phone digits.
+function clientCodeFromLast4(name, digits){
+  const d = String(digits || '').replace(/\D/g, '');
+  if (d.length !== 4) return '';
+  const first = (name||'').trim().split(/\s+/)[0] || '';
+  const base = sanitizeCode(first);
+  return base ? `${base}-${d}` : '';
+}
+// Wires the name / last-4 / code fields of the "First time here" form.
+function wireClientCodeFields(prefix){
+  const $ = id => document.getElementById(prefix + '-' + id);
+  const nameEl = $('new-name'), l4El = $('new-last4'), codeEl = $('new-code'), sugsEl = $('code-sugs'), sayEl = $('code-say');
+  const SAY_DEFAULT = "This is what you'll use to log in and see your visit history. We save the code only, never your phone number.";
+  function updateSay(){
+    const m = /^([a-z0-9_.~:@+-]+)-(\d{4})$/.exec(codeEl.value.trim());
+    sayEl.textContent = m ? `Your code will be "${m[1].split('-')[0]}, ${m[2].split('').join('-')}." ${SAY_DEFAULT}` : SAY_DEFAULT;
+  }
+  function setCode(v, touched){ codeEl.value = v; codeEl.dataset.touched = touched ? '1' : ''; sugsEl.innerHTML = ''; updateSay(); }
+  function autoFill(){
+    if (codeEl.dataset.touched) return;
+    const built = clientCodeFromLast4(nameEl.value, l4El.value);
+    codeEl.value = built || (nameEl.value.trim() ? suggestClientCode(nameEl.value) : '');
+    sugsEl.innerHTML = '';
+    updateSay();
+  }
+  nameEl.addEventListener('input', autoFill);
+  l4El.addEventListener('input', ()=>{
+    // A whole phone number can be pasted in; only its last four digits are kept.
+    l4El.value = l4El.value.replace(/\D/g, '').slice(-4);
+    autoFill();
+  });
+  codeEl.addEventListener('input', ()=>{ codeEl.dataset.touched = '1'; sugsEl.innerHTML = ''; updateSay(); });
+  function showTaken(){
+    const words = (nameEl.value || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const first = sanitizeCode(words[0] || '') || 'client';
+    const d = l4El.value.replace(/\D/g, '');
+    const four = d.length === 4 ? d : String(Math.floor(1000 + Math.random() * 9000));
+    const opts = [];
+    if (words.length > 1) opts.push(`${first}-${sanitizeCode(words[words.length - 1]).charAt(0)}-${four}`);
+    opts.push(`${first}-${four}-2`);
+    const chips = opts.map(sanitizeCode).filter((c, i, a)=> c && a.indexOf(c) === i && c !== codeEl.value.trim());
+    chips.push('__random__');
+    sugsEl.innerHTML = '';
+    chips.forEach(c=>{
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = c === '__random__' ? 'Random digits' : c;
+      b.addEventListener('click', ()=>{ setCode(c === '__random__' ? suggestClientCode(nameEl.value) : c, true); updateConfirmEnabled(); });
+      sugsEl.appendChild(b);
+    });
+  }
+  function reset(prefill){ nameEl.value = ''; l4El.value = ''; setCode(prefill || '', !!prefill); }
+  updateSay();
+  return { reset, showTaken };
 }
 function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 // If a client previously removed this pro from their "Book again with..." suggestions
@@ -991,37 +1256,49 @@ function fmtTime12(hhmm){
 }
 const DAY_KEYS = ['sun','mon','tue','wed','thu','fri','sat'];
 
-let bkc = { pro:null, selectedIds:[], date:null, startTime:null, client:null, isVip:false, familyRoster:[], fromFamilyPicker:false };
+let bkc = { pro:null, selectedIds:[], date:null, startTime:null, client:null, mode:'have', isVip:false, familyRoster:[], fromFamilyPicker:false };
+let bkcStep = 'slots';
+const bkcCodeFields = wireClientCodeFields('bkc-client');
 
 function famAvatarHtmlDir(m){
-  if (m.avatarUrl) return `<div class="fam-avatar" style="background:var(--surface);"><img src="${m.avatarUrl}" alt=""></div>`;
+  if (m.avatarUrl) return `<div class="fam-avatar" style="background:var(--surface);"><img src="${esc(m.avatarUrl)}" alt=""></div>`;
   const color = m.avatarColor || '#D9AE5E';
   const initial = (m.name||'?').trim().charAt(0).toUpperCase();
-  return `<div class="fam-avatar" style="background:${color};">${initial}</div>`;
+  return `<div class="fam-avatar" style="background:${esc(color)};">${esc(initial)}</div>`;
 }
 
-function showFamilyClientLoaded(){
-  document.getElementById('bkc-client-search').style.display = 'none';
-  document.getElementById('bkc-client-newname').style.display = 'none';
-  document.getElementById('bkc-client-loaded').style.display = 'block';
-  document.getElementById('bkc-client-attached-summary').textContent = `Booking as: ${bkc.client.name}`;
+// Which of the three "who's booking" views shows: 'have' (type a passport code),
+// 'new' (first-time form) or 'loaded' (someone is chosen).
+function bkcShowClientMode(mode){
+  bkc.mode = mode;
+  const $ = id => document.getElementById(id);
+  $('bkc-seg').hidden = (mode === 'loaded');
+  $('btn-bkc-seg-have').setAttribute('aria-pressed', mode === 'have' ? 'true' : 'false');
+  $('btn-bkc-seg-new').setAttribute('aria-pressed', mode === 'new' ? 'true' : 'false');
+  $('bkc-client-search').style.display = mode === 'have' ? 'flex' : 'none';
+  $('bkc-client-newname').style.display = mode === 'new' ? 'flex' : 'none';
+  $('bkc-client-loaded').style.display = mode === 'loaded' ? 'flex' : 'none';
+  if (mode === 'loaded' && bkc.client){
+    $('bkc-client-attached-summary').textContent = `Booking as: ${bkc.client.name}`;
+    $('btn-bkc-client-change').hidden = !!bkc.fromFamilyPicker;
+  }
   updateConfirmEnabled();
 }
+function showFamilyClientLoaded(){ bkcShowClientMode('loaded'); }
 
-// Shown upfront, above the services list, whenever the link into this page carries
-// a client code that's part of a family account (more than one profile sharing a
-// family_id) -- lets picking who the appointment is for before anything else,
-// and switching at any point in the flow. For a standalone (non-family) client
-// code, or none at all, this never renders and booking works exactly as before.
+// Shown above the services list whenever the link into this page carries a client code that's
+// part of a family account (more than one profile sharing a family_id) -- pick who the
+// appointment is for before anything else. For a standalone client code, or none, this never
+// renders and booking works exactly as before.
 function renderBkcFamPicker(selectedCode){
   const wrap = document.getElementById('bkc-fam-picker');
   const scroller = document.getElementById('bkc-fam-scroller');
   if (!bkc.familyRoster.length){ wrap.style.display = 'none'; return; }
   wrap.style.display = 'flex';
   scroller.innerHTML = bkc.familyRoster.map(m => `
-    <button type="button" class="bkc-fam-tile${m.code===selectedCode ? ' selected' : ''}" data-fam-code="${m.code}" data-fam-name="${m.name}">
+    <button type="button" class="bkc-fam-tile${m.code===selectedCode ? ' selected' : ''}" data-fam-code="${esc(m.code)}" data-fam-name="${esc(m.name)}">
       ${famAvatarHtmlDir(m)}
-      <span>${m.name}</span>
+      <span>${esc(m.name)}</span>
     </button>
   `).join('');
   scroller.querySelectorAll('[data-fam-code]').forEach(btn=>{
@@ -1030,7 +1307,7 @@ function renderBkcFamPicker(selectedCode){
       this.classList.add('selected');
       bkc.client = { code: this.dataset.famCode, name: this.dataset.famName };
       bkc.fromFamilyPicker = true;
-      if (document.getElementById('bkc-step-confirm').style.display !== 'none') showFamilyClientLoaded();
+      if (bkcStep === 'confirm') showFamilyClientLoaded();
     });
   });
   const match = bkc.familyRoster.find(m => m.code === selectedCode) || bkc.familyRoster[0];
@@ -1040,15 +1317,17 @@ function renderBkcFamPicker(selectedCode){
 
 async function initBookingFor(pro){
   const block = document.getElementById('detail-booking-block');
-  if (!pro.booking_enabled || !Array.isArray(pro.booking_services) || !pro.booking_services.length){
+  bkc = { pro, selectedIds:[], date:null, startTime:null, client:null, mode:'have', pendingNewCode:null, isVip:false, familyRoster:[], fromFamilyPicker:false };
+  document.getElementById('bkc-fam-picker').style.display = 'none';
+  document.getElementById('bkc-pick-hint').hidden = true;
+  document.getElementById('bkc-date').value = '';
+  if (!isBookable(pro)){
     block.style.display = 'none';
+    document.getElementById('detail-bookbar').hidden = true;
     return;
   }
   block.style.display = 'flex';
-  bkc = { pro, selectedIds:[], date:null, startTime:null, client:null, pendingNewCode:null, isVip:false, familyRoster:[], fromFamilyPicker:false };
-  document.getElementById('bkc-fam-picker').style.display = 'none';
   renderBkcServices();
-  showBkcStep('services');
   const params = new URLSearchParams(window.location.search);
   const clientParam = sanitizeCode(params.get('client') || '');
   if (clientParam){
@@ -1056,14 +1335,14 @@ async function initBookingFor(pro){
     if (dbAvailable){
       try{
         const { data, error } = await supabaseClient.rpc('family_roster', { p_code: clientParam });
-        if (!error && Array.isArray(data) && data.length > 1){
+        if (!error && Array.isArray(data) && data.length > 1 && bkc.pro === pro){
           bkc.familyRoster = data.map(r => ({ code:r.code, name:r.name, avatarUrl:r.avatar_url||'', avatarColor:r.avatar_color||'' }));
           renderBkcFamPicker(clientParam);
         }
       }catch(e){ console.warn('family roster fetch failed', e); }
     }
   }
-  applyUsualFromLink(pro);
+  if (bkc.pro === pro) applyUsualFromLink(pro);
 }
 
 // "Book my usual" from the client home screen: ?usual=Cut|Beard Trim carries the service
@@ -1085,64 +1364,80 @@ function applyUsualFromLink(pro){
       if (!ids.includes(hit.id)) ids.push(hit.id);
     }
     bkc.selectedIds = ids;
-    document.querySelectorAll('.bkc-svc-check').forEach(cb=>{ cb.checked = ids.includes(cb.dataset.svc); });
+    syncServiceChecks();
     updateBkcTotal();
     goToBkcSlots();
-    const block = document.getElementById('detail-booking-block');
-    if (block && block.scrollIntoView) setTimeout(()=> block.scrollIntoView({ block:'start' }), 50);
   }catch(e){ console.warn('usual link failed', e); }
 }
 
-function showBkcStep(name){
-  ['services','slots','confirm','success'].forEach(n=>{
-    document.getElementById('bkc-step-'+n).style.display = (n===name) ? 'flex' : 'none';
-  });
+function openBooking(){
+  document.getElementById('detail-screen').hidden = true;
+  document.getElementById('booking-screen').hidden = false;
+  document.getElementById('bkc-pro-line').textContent = 'With ' + ((bkc.pro && bkc.pro.name) || 'your pro');
+}
+function closeBooking(toServices){
+  document.getElementById('booking-screen').hidden = true;
+  document.getElementById('detail-screen').hidden = false;
+  if (toServices){
+    const blk = document.getElementById('detail-booking-block');
+    if (blk && blk.scrollIntoView) blk.scrollIntoView({ block:'start' });
+  }
+}
+function resetBkcSelection(){
+  bkc.selectedIds = []; bkc.date = null; bkc.startTime = null; bkc.isVip = false;
+  if (!bkc.fromFamilyPicker) bkc.client = null; // family selection carries over to a second booking
+  document.getElementById('bkc-date').value = '';
+  syncServiceChecks();
+  updateBkcTotal();
 }
 
+function showBkcStep(name){
+  bkcStep = name;
+  ['slots','confirm','success'].forEach(n=>{
+    document.getElementById('bkc-step-'+n).style.display = (n===name) ? 'flex' : 'none';
+  });
+  const num = { slots:1, confirm:2 }[name];
+  document.getElementById('bkc-stepcount').textContent = num ? `Step ${num} of 2` : '';
+  const dots = document.getElementById('bkc-dots');
+  dots.hidden = !num;
+  Array.from(dots.children).forEach((d,i)=> d.classList.toggle('on', num ? i < num : false));
+  document.getElementById('bkc-bar').hidden = (name !== 'slots');
+  const c = document.getElementById('booking-content');
+  if (c) c.scrollTop = 0;
+}
+
+function syncServiceChecks(){
+  document.querySelectorAll('#bkc-services-list .bkc-svc-check').forEach(cb=>{
+    cb.checked = bkc.selectedIds.includes(cb.dataset.svc);
+    const row = cb.closest('.svc-row');
+    if (row) row.classList.toggle('on', cb.checked);
+  });
+}
 function renderBkcServices(){
   const holder = document.getElementById('bkc-services-list');
   holder.innerHTML = (bkc.pro.booking_services||[]).map(s=> `
-    <div class="bkc-svc-row-book">
-      <label style="display:flex; align-items:flex-start; gap:9px; flex:1; cursor:pointer;">
-        <input type="checkbox" class="bkc-svc-check" data-svc="${s.id}" style="margin-top:3px;">
-        <span style="flex:1; display:flex; flex-direction:column; gap:2px; min-width:0;">
-          <span style="display:flex; align-items:center; gap:8px;">
-            <span style="flex:1;">${s.name}</span>
-            <span style="font-weight:700;">$${s.price}</span>
-            <span style="color:var(--muted); font-size:11.5px; flex:none;">${fmtDuration(s.duration)}</span>
-          </span>
-          ${s.description ? `<span style="color:var(--muted); font-size:11.5px; font-weight:400;">${s.description}</span>` : ''}
-          ${s.vipPrice ? `<span class="vip-badge">✨ VIP $${s.vipPrice}</span>` : ''}
-        </span>
-      </label>
-      <button type="button" class="bkc-svc-book-btn" data-book-svc="${s.id}">Book</button>
-    </div>
+    <label class="svc-row">
+      <input type="checkbox" class="bkc-svc-check" data-svc="${esc(s.id)}">
+      <span class="svc-main">
+        <span class="svc-name">${esc(s.name)}</span>
+        <span class="svc-meta">${fmtDuration(Number(s.duration)||0)}${s.description ? ' · ' + esc(s.description) : ''}</span>
+        ${s.vipPrice ? `<span class="vip-badge">✨ VIP $${esc(s.vipPrice)}</span>` : ''}
+      </span>
+      <span class="svc-price">$${esc(s.price)}</span>
+    </label>
   `).join('');
   holder.querySelectorAll('.bkc-svc-check').forEach(cb=>{
     cb.addEventListener('change', function(){
       const id = this.dataset.svc;
       bkc.selectedIds = bkc.selectedIds.filter(x=>x!==id);
       if (this.checked) bkc.selectedIds.push(id);
+      this.closest('.svc-row').classList.toggle('on', this.checked);
+      document.getElementById('bkc-pick-hint').hidden = true;
       updateBkcTotal();
     });
   });
-  holder.querySelectorAll('.bkc-svc-book-btn').forEach(btn=>{
-    btn.addEventListener('click', function(){
-      const id = this.dataset.bookSvc;
-      bkc.selectedIds = [id];
-      holder.querySelectorAll('.bkc-svc-check').forEach(cb=>{ cb.checked = (cb.dataset.svc === id); });
-      updateBkcTotal();
-      goToBkcSlots();
-    });
-  });
+  syncServiceChecks();
   updateBkcTotal();
-}
-function goToBkcSlots(){
-  showBkcStep('slots');
-  const dateInput = document.getElementById('bkc-date');
-  if (!dateInput.value) dateInput.value = todayIso();
-  bkc.date = dateInput.value;
-  renderBkcSlots();
 }
 function selectedServices(){
   return (bkc.pro.booking_services||[]).filter(s=> bkc.selectedIds.includes(s.id));
@@ -1152,29 +1447,79 @@ function updateBkcTotal(){
   const totalPrice = svcs.reduce((a,s)=>a+Number(s.price||0),0);
   const totalMins = svcs.reduce((a,s)=>a+Number(s.duration||0),0);
   document.getElementById('bkc-total-label').textContent = `$${totalPrice} · ${fmtDuration(totalMins || 0)}`;
+  document.getElementById('bkc-bar-names').textContent = svcs.map(s=>s.name).join(' + ');
   document.getElementById('btn-bkc-next-date').disabled = svcs.length === 0;
+  document.getElementById('detail-bookbar').hidden = svcs.length === 0 || !isBookable(bkc.pro);
+}
+function renderChosenLine(){
+  const svcs = selectedServices();
+  const totalPrice = svcs.reduce((a,s)=>a+Number(s.price||0),0);
+  const totalMins = svcs.reduce((a,s)=>a+Number(s.duration||0),0);
+  document.getElementById('bkc-chosen-line').innerHTML =
+    `<span><b>${esc(svcs.map(s=>s.name).join(' + '))}</b> · $${totalPrice} · ${fmtDuration(totalMins)}</span><button type="button" class="link-btn" id="btn-bkc-change-svc">Change</button>`;
+  document.getElementById('bkc-bar-svc').textContent = svcs.map(s=>s.name).join(' + ');
+}
+function goToBkcSlots(){
+  openBooking();
+  const dateInput = document.getElementById('bkc-date');
+  if (!dateInput.value || dateInput.value < todayIso()) dateInput.value = todayIso();
+  bkc.date = dateInput.value;
+  bkc.startTime = null;
+  bkc.isVip = false;
+  showBkcStep('slots');
+  renderChosenLine();
+  renderDayStrip();
+  renderBkcSlots();
 }
 document.getElementById('btn-bkc-next-date').addEventListener('click', goToBkcSlots);
-document.getElementById('btn-bkc-back-services').addEventListener('click', ()=> showBkcStep('services'));
+document.getElementById('bkc-chosen-line').addEventListener('click', (e)=>{
+  if (e.target.closest('#btn-bkc-change-svc')) closeBooking(true);
+});
 document.getElementById('bkc-date').addEventListener('change', function(){
+  if (!this.value) return;
   bkc.date = this.value;
+  bkc.startTime = null;
+  renderDayStrip();
   renderBkcSlots();
 });
 
 function overrideFor(dateStr){
   return (bkc.pro.booking_overrides||[]).find(o=>o.date===dateStr) || null;
 }
-function hoursFor(dateStr){
-  const ov = overrideFor(dateStr);
-  if (ov) return ov;
-  const dayKey = DAY_KEYS[new Date(dateStr+'T00:00:00').getDay()];
-  return (bkc.pro.booking_hours || {})[dayKey] || {closed:true};
-}
+function hoursFor(dateStr){ return hoursForPro(bkc.pro, dateStr); }
 function vipWindowFor(dateStr){
   return (bkc.pro.vip_dates||[]).find(v=>v.date===dateStr) || null;
 }
 function toMinutes(hhmm){ const [h,m] = hhmm.split(':').map(Number); return h*60+m; }
 function toHHMM(mins){ const h = Math.floor(mins/60), m = mins%60; return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'); }
+
+// Two weeks of days to tap through; closed days are dimmed (still tappable, they just
+// show "No open times").
+function renderDayStrip(){
+  const strip = document.getElementById('bkc-day-strip');
+  const base = new Date(); base.setHours(0,0,0,0);
+  let html = '';
+  for (let i = 0; i < 14; i++){
+    const d = new Date(base); d.setDate(base.getDate() + i);
+    const iso = isoOfDate(d);
+    const h = hoursFor(iso);
+    const closed = (!h || h.closed) && !vipWindowFor(iso);
+    const on = bkc.date === iso;
+    html += `<button type="button" class="day-chip${on ? ' on' : ''}${closed ? ' closed' : ''}" data-date="${iso}" aria-pressed="${on ? 'true' : 'false'}"><span class="dow">${d.toLocaleDateString('en-US', { weekday:'short' })}</span><span class="dnum">${d.getDate()}</span></button>`;
+  }
+  strip.innerHTML = html;
+  const onEl = strip.querySelector('.day-chip.on');
+  if (onEl) strip.scrollLeft = Math.max(0, onEl.offsetLeft - (strip.clientWidth - onEl.clientWidth) / 2);
+}
+document.getElementById('bkc-day-strip').addEventListener('click', (e)=>{
+  const b = e.target.closest('.day-chip');
+  if (!b) return;
+  bkc.date = b.dataset.date;
+  bkc.startTime = null;
+  document.getElementById('bkc-date').value = bkc.date;
+  renderDayStrip();
+  renderBkcSlots();
+});
 
 // Shared slot-stepping logic for both standard hours and a VIP window -- an
 // existing appointment (VIP or not) blocks both equally, since it's the same
@@ -1189,19 +1534,43 @@ function computeOpenSlots(openMin, closeMin, totalMins, busy, nowMin){
   return slots;
 }
 
+function updateSlotBar(){
+  const has = !!bkc.startTime && !!bkc.date;
+  let label = 'Pick a time';
+  if (has){
+    const dl = new Date(bkc.date + 'T00:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+    label = `${dl} · ${fmtTime12(bkc.startTime)}`;
+  }
+  document.getElementById('bkc-bar-when').textContent = label;
+  document.getElementById('btn-bkc-slot-next').disabled = !has;
+}
+function markSelectedSlot(){
+  document.querySelectorAll('#bkc-vip-slots-list .bkc-slot-btn, #bkc-slots-list .bkc-slot-btn').forEach(b=>{
+    b.classList.toggle('selected', !!bkc.startTime && b.dataset.start === bkc.startTime && b.classList.contains('vip') === !!bkc.isVip);
+  });
+}
 function bindSlotButtons(listEl, isVip){
   listEl.querySelectorAll('.bkc-slot-btn').forEach(btn=>{
     btn.addEventListener('click', function(){
-      document.querySelectorAll('#bkc-vip-slots-list .bkc-slot-btn, #bkc-slots-list .bkc-slot-btn').forEach(b=>b.classList.remove('selected'));
-      this.classList.add('selected');
       bkc.startTime = this.dataset.start;
       bkc.isVip = isVip;
-      setTimeout(()=>{ showBkcStep('confirm'); renderBkcConfirm(); }, 150);
+      markSelectedSlot();
+      updateSlotBar();
     });
   });
 }
+function slotGroupsHtml(slots){
+  const groups = [['Morning', t=>t < 720], ['Afternoon', t=>t >= 720 && t < 1020], ['Evening', t=>t >= 1020]];
+  return groups.map(([label, test])=>{
+    const inGroup = slots.filter(test);
+    if (!inGroup.length) return '';
+    return `<div class="slot-group"><p class="eyebrow-mini" style="margin:0;">${label}</p><div class="slot-grid">${inGroup.map(t=>`<button type="button" class="bkc-slot-btn" data-start="${toHHMM(t)}">${fmtTime12(toHHMM(t))}</button>`).join('')}</div></div>`;
+  }).join('');
+}
 
+let slotToken = 0;
 async function renderBkcSlots(){
+  const token = ++slotToken;
   const listEl = document.getElementById('bkc-slots-list');
   const emptyEl = document.getElementById('bkc-slots-empty');
   const vipSection = document.getElementById('bkc-vip-slots-section');
@@ -1212,6 +1581,7 @@ async function renderBkcSlots(){
   vipSection.style.display = 'none';
   standardLabel.style.display = 'none';
   emptyEl.style.display = 'none';
+  updateSlotBar();
   const totalMins = selectedServices().reduce((a,s)=>a+Number(s.duration||0),0);
   if (!totalMins){ emptyEl.style.display = 'block'; return; }
 
@@ -1233,6 +1603,7 @@ async function renderBkcSlots(){
       }catch(e){ console.warn('load existing appts failed', e); }
     }
   }
+  if (token !== slotToken) return; // a newer date was picked while this loaded
   const busy = existing.map(a=> [toMinutes(a.start_time), toMinutes(a.end_time)]);
   const nowMin = (bkc.date === todayIso()) ? (new Date().getHours()*60 + new Date().getMinutes()) : -1;
 
@@ -1254,9 +1625,16 @@ async function renderBkcSlots(){
   }
 
   if (!standardSlots.length && !vipSlots.length){ emptyEl.style.display = 'block'; return; }
-  listEl.innerHTML = standardSlots.map(t=> `<button type="button" class="bkc-slot-btn" data-start="${toHHMM(t)}">${fmtTime12(toHHMM(t))}</button>`).join('');
+  listEl.innerHTML = slotGroupsHtml(standardSlots);
   bindSlotButtons(listEl, false);
+  markSelectedSlot();
+  updateSlotBar();
 }
+document.getElementById('btn-bkc-slot-next').addEventListener('click', ()=>{
+  if (!bkc.startTime) return;
+  showBkcStep('confirm');
+  renderBkcConfirm();
+});
 
 function effectivePrice(s){
   return (bkc.isVip && s.vipPrice) ? Number(s.vipPrice) : Number(s.price||0);
@@ -1270,17 +1648,16 @@ function renderBkcConfirm(){
   const dateLabel = new Date(bkc.date+'T00:00:00').toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'});
   document.getElementById('bkc-confirm-summary').innerHTML = `
     ${bkc.isVip ? `<div class="summary-row"><span>&nbsp;</span><span class="vip-badge">✨ VIP Hours</span></div>` : ''}
-    <div class="summary-row"><span>With</span><span>${bkc.pro.name}</span></div>
-    <div class="summary-row"><span>Services</span><span>${svcs.map(s=>s.name).join(', ')}</span></div>
+    <div class="summary-row"><span>With</span><span>${esc(bkc.pro.name)}</span></div>
+    <div class="summary-row"><span>Services</span><span>${esc(svcs.map(s=>s.name).join(', '))}</span></div>
     <div class="summary-row"><span>When</span><span>${dateLabel}, ${fmtTime12(bkc.startTime)}</span></div>
     <div class="summary-row"><span>Total</span><span>$${totalPrice} · ${fmtDuration(totalMins)}</span></div>
   `;
-  document.getElementById('bkc-client-search').style.display = 'block';
-  document.getElementById('bkc-client-newname').style.display = 'none';
-  document.getElementById('bkc-client-loaded').style.display = 'none';
-  document.getElementById('bkc-client-status').textContent = ' ';
-  document.getElementById('bkc-client-create-status').textContent = ' ';
-  document.getElementById('bkc-client-new-code').dataset.touched = '';
+  document.getElementById('bkc-client-status').textContent = ' ';
+  document.getElementById('bkc-client-create-status').textContent = ' ';
+  document.getElementById('bkc-confirm-status').textContent = ' ';
+  bkcCodeFields.reset('');
+  document.getElementById('bkc-client-new-phone').value = '';
   if (!bkc.fromFamilyPicker) bkc.client = null;
   const policyBlock = document.getElementById('bkc-policy-block');
   if (bkc.pro.booking_policy){
@@ -1290,11 +1667,11 @@ function renderBkcConfirm(){
   } else {
     policyBlock.style.display = 'none';
   }
-  updateConfirmEnabled();
 
   if (bkc.fromFamilyPicker && bkc.client){
     showFamilyClientLoaded();
   } else {
+    bkcShowClientMode('have');
     const clientParam = sanitizeCode(new URLSearchParams(window.location.search).get('client') || '');
     if (clientParam){
       document.getElementById('bkc-client-code').value = clientParam;
@@ -1302,7 +1679,9 @@ function renderBkcConfirm(){
     }
   }
 }
-document.getElementById('btn-bkc-back-slots').addEventListener('click', ()=> showBkcStep('slots'));
+document.getElementById('btn-bkc-back').addEventListener('click', ()=>{
+  if (bkcStep === 'confirm') showBkcStep('slots'); else closeBooking();
+});
 
 async function bkcLookupClient(){
   const statusEl = document.getElementById('bkc-client-status');
@@ -1315,10 +1694,7 @@ async function bkcLookupClient(){
     if (data){
       bkc.client = { code, name: toTitleCase(data.name) || 'Client' };
       statusEl.textContent = '';
-      document.getElementById('bkc-client-search').style.display = 'none';
-      document.getElementById('bkc-client-newname').style.display = 'none';
-      document.getElementById('bkc-client-loaded').style.display = 'block';
-      document.getElementById('bkc-client-attached-summary').textContent = `Booking as: ${bkc.client.name}`;
+      bkcShowClientMode('loaded');
     } else {
       statusEl.textContent = "No Vono Passport found for that code. Create one below.";
       openBkcNewClientPanel(code);
@@ -1330,137 +1706,152 @@ async function bkcLookupClient(){
   updateConfirmEnabled();
 }
 document.getElementById('btn-bkc-client-lookup').addEventListener('click', bkcLookupClient);
+document.getElementById('bkc-client-code').addEventListener('keydown', (e)=>{ if (e.key === 'Enter'){ e.preventDefault(); bkcLookupClient(); } });
 
 function openBkcNewClientPanel(prefillCode){
-  document.getElementById('bkc-client-search').style.display = 'none';
-  document.getElementById('bkc-client-newname').style.display = 'flex';
-  document.getElementById('bkc-client-new-name').value = '';
-  document.getElementById('bkc-client-new-phone').value = '';
-  const codeEl = document.getElementById('bkc-client-new-code');
-  codeEl.value = prefillCode || '';
-  codeEl.dataset.touched = prefillCode ? '1' : '';
+  bkcCodeFields.reset(prefillCode || '');
   document.getElementById('bkc-client-create-status').textContent = '';
+  bkcShowClientMode('new');
   document.getElementById('bkc-client-new-name').focus();
 }
-
-document.getElementById('btn-bkc-client-newclient').addEventListener('click', ()=>{
+document.getElementById('btn-bkc-seg-have').addEventListener('click', ()=> bkcShowClientMode('have'));
+document.getElementById('btn-bkc-seg-new').addEventListener('click', ()=>{
   document.getElementById('bkc-client-status').textContent = '';
   openBkcNewClientPanel('');
 });
-
-document.getElementById('bkc-client-new-name').addEventListener('input', function(){
-  const codeEl = document.getElementById('bkc-client-new-code');
-  if (!codeEl.dataset.touched) codeEl.value = suggestClientCode(this.value);
+document.getElementById('btn-bkc-client-change').addEventListener('click', ()=>{
+  bkc.client = null;
+  bkcShowClientMode('have');
 });
-document.getElementById('bkc-client-new-code').addEventListener('input', function(){
-  this.dataset.touched = '1';
-});
+document.getElementById('bkc-client-new-name').addEventListener('input', updateConfirmEnabled);
+document.getElementById('bkc-client-new-code').addEventListener('input', updateConfirmEnabled);
 
-document.getElementById('btn-bkc-client-newclient-back').addEventListener('click', ()=>{
-  document.getElementById('bkc-client-newname').style.display = 'none';
-  document.getElementById('bkc-client-search').style.display = 'block';
-});
-
-document.getElementById('btn-bkc-client-create').addEventListener('click', async ()=>{
+// Creates the passport row for a first-time client. Returns true when it worked (bkc.client is
+// then set), false after showing what to fix.
+async function bkcCreatePassport(){
   const statusEl = document.getElementById('bkc-client-create-status');
   const name = document.getElementById('bkc-client-new-name').value.trim();
   const phone = document.getElementById('bkc-client-new-phone').value.trim();
   const code = sanitizeCode(document.getElementById('bkc-client-new-code').value);
-  if (!name){ statusEl.textContent = 'Enter your name first.'; return; }
-  if (!code){ statusEl.textContent = 'Enter a code first.'; return; }
-  if (!dbAvailable){ statusEl.textContent = "Live save isn't connected right now."; return; }
+  if (!name){ statusEl.textContent = 'Enter your name first.'; return false; }
+  if (!code){ statusEl.textContent = 'Enter a code first.'; return false; }
+  if (!dbAvailable){ statusEl.textContent = "Live save isn't connected right now."; return false; }
   statusEl.textContent = 'Checking that code…';
   const titleName = toTitleCase(name);
   try{
     const taken = await clientCodeTaken(code);
-    if (taken){ statusEl.textContent = 'That code is already taken. Try another.'; return; }
+    if (taken){
+      statusEl.textContent = 'That code is already taken. Pick another below.';
+      bkcCodeFields.showTaken();
+      return false;
+    }
     const uid = await currentAuthUid();
     const { error } = await supabaseClient.from('clients').insert({ code, name: titleName, visits: [], phone, user_id: uid || null });
     if (error) throw error;
   }catch(e){
     console.warn('create client failed', e);
     statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
-    return;
+    return false;
   }
   bkc.client = { code, name: titleName };
   statusEl.textContent = '';
-  document.getElementById('bkc-client-newname').style.display = 'none';
-  document.getElementById('bkc-client-search').style.display = 'none';
-  document.getElementById('bkc-client-loaded').style.display = 'block';
-  document.getElementById('bkc-client-attached-summary').textContent = `Booking as: ${bkc.client.name}`;
-  updateConfirmEnabled();
-});
+  bkcShowClientMode('loaded');
+  return true;
+}
 
 document.getElementById('bkc-policy-ack').addEventListener('change', updateConfirmEnabled);
 function updateConfirmEnabled(){
-  const policyOk = !bkc.pro.booking_policy || document.getElementById('bkc-policy-ack').checked;
-  document.getElementById('btn-bkc-confirm').disabled = !(bkc.client && policyOk);
+  const policyOk = !bkc.pro || !bkc.pro.booking_policy || document.getElementById('bkc-policy-ack').checked;
+  let whoOk = !!bkc.client;
+  const creating = !bkc.client && bkc.mode === 'new';
+  if (creating){
+    whoOk = !!document.getElementById('bkc-client-new-name').value.trim() && !!sanitizeCode(document.getElementById('bkc-client-new-code').value);
+  }
+  const btn = document.getElementById('btn-bkc-confirm');
+  btn.disabled = !(whoOk && policyOk) || !!bkc.busy;
+  btn.textContent = creating ? 'Create passport & book' : 'Confirm booking';
 }
 
 document.getElementById('btn-bkc-confirm').addEventListener('click', async ()=>{
+  if (bkc.busy) return;
   const statusEl = document.getElementById('bkc-confirm-status');
-  if (!bkc.client){ statusEl.textContent = 'Look up or create your Vono Passport first.'; return; }
-  const svcs = selectedServices();
-  const totalPrice = svcs.reduce((a,s)=>a+effectivePrice(s),0);
-  const totalMins = svcs.reduce((a,s)=>a+Number(s.duration||0),0);
-  const appt = {
-    id: genId(),
-    barber_code: bkc.pro.code,
-    barber_name: bkc.pro.name,
-    client_code: bkc.client.code,
-    client_name: bkc.client.name,
-    services: svcs.map(s=>({name:s.name, price:effectivePrice(s), duration:s.duration})),
-    total_price: totalPrice,
-    total_minutes: totalMins,
-    appt_date: bkc.date,
-    start_time: bkc.startTime,
-    end_time: bkc.endTime,
-    status: 'booked',
-    is_vip: !!bkc.isVip
-  };
-  if (!dbAvailable){ statusEl.textContent = "Live booking isn't connected right now. This wasn't saved."; return; }
-  statusEl.textContent = 'Booking…';
+  bkc.busy = true;
+  document.getElementById('btn-bkc-confirm').disabled = true;
   try{
-    const { error } = await supabaseClient.from('appointments').insert(appt);
-    if (error) throw error;
-    clearHiddenBookAgain(bkc.client.code, bkc.pro.code);
-    renderBkcSuccess(appt);
-    showBkcStep('success');
-    // Best-effort: let the barber know a new booking came in. Never blocks or
-    // fails the booking itself if this doesn't go through (e.g. they haven't
-    // turned notifications on, or opted out of just this kind of alert).
-    try{ const nres = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: appt.id, event: 'booked' },
-      fallback: { appointment_id: appt.id, recipient_code: appt.barber_code, recipient_role: 'professional', sender_role: 'client', sender_name: null,
-        message: `New booking: ${appt.client_name}, ${qmWhen(appt.appt_date, appt.start_time)}.` } }); 
-      if (!(nres && nres.backupSaved)) console.warn('booking notice: popup not saved', nres && nres.backupError);
-    }catch(e){ console.warn('booking notification failed', e); }
-  }catch(e){
-    console.warn('booking failed', e);
-    statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
+    if (!bkc.client && bkc.mode === 'new'){
+      statusEl.textContent = 'Creating your passport…';
+      const ok = await bkcCreatePassport();
+      statusEl.textContent = ' ';
+      if (!ok) return;
+    }
+    if (!bkc.client){ statusEl.textContent = 'Look up or create your Vono Passport first.'; return; }
+    const svcs = selectedServices();
+    const totalPrice = svcs.reduce((a,s)=>a+effectivePrice(s),0);
+    const totalMins = svcs.reduce((a,s)=>a+Number(s.duration||0),0);
+    const appt = {
+      id: genId(),
+      barber_code: bkc.pro.code,
+      barber_name: bkc.pro.name,
+      client_code: bkc.client.code,
+      client_name: bkc.client.name,
+      services: svcs.map(s=>({name:s.name, price:effectivePrice(s), duration:s.duration})),
+      total_price: totalPrice,
+      total_minutes: totalMins,
+      appt_date: bkc.date,
+      start_time: bkc.startTime,
+      end_time: bkc.endTime,
+      status: 'booked',
+      is_vip: !!bkc.isVip
+    };
+    if (!dbAvailable){ statusEl.textContent = "Live booking isn't connected right now. This wasn't saved."; return; }
+    statusEl.textContent = 'Booking…';
+    try{
+      const { error } = await supabaseClient.from('appointments').insert(appt);
+      if (error) throw error;
+      clearHiddenBookAgain(bkc.client.code, bkc.pro.code);
+      renderBkcSuccess(appt);
+      showBkcStep('success');
+      // Best-effort: let the barber know a new booking came in. Never blocks or
+      // fails the booking itself if this doesn't go through (e.g. they haven't
+      // turned notifications on, or opted out of just this kind of alert).
+      try{ const nres = await supabaseClient.functions.invoke('send-quick-message', { body: { appointment_id: appt.id, event: 'booked' },
+        fallback: { appointment_id: appt.id, recipient_code: appt.barber_code, recipient_role: 'professional', sender_role: 'client', sender_name: null,
+          message: `New booking: ${appt.client_name}, ${qmWhen(appt.appt_date, appt.start_time)}.` } });
+        if (!(nres && nres.backupSaved)) console.warn('booking notice: popup not saved', nres && nres.backupError);
+      }catch(e){ console.warn('booking notification failed', e); }
+    }catch(e){
+      console.warn('booking failed', e);
+      statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
+    }
+  } finally {
+    bkc.busy = false;
+    updateConfirmEnabled();
   }
 });
 
 function renderBkcSuccess(appt){
   const dateLabel = new Date(appt.appt_date+'T00:00:00').toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'});
   const vipPrefix = appt.is_vip ? '<span class="vip-badge" style="margin-bottom:6px;">✨ VIP Hours</span><br>' : '';
-  document.getElementById('bkc-success-summary').innerHTML = `${vipPrefix}${appt.services.map(s=>s.name).join(', ')} with ${bkc.pro.name}, ${dateLabel}, ${fmtTime12(appt.start_time)}. Total: $${appt.total_price}.`;
+  document.getElementById('bkc-success-summary').innerHTML = `${vipPrefix}${esc(appt.services.map(s=>s.name).join(', '))} with ${esc(bkc.pro.name)}, ${dateLabel}, ${fmtTime12(appt.start_time)}. Total: $${appt.total_price}.`;
 
   const pay = bkc.pro.payment_links || {};
   const payHolder = document.getElementById('bkc-pay-links');
   const links = [];
-  if (pay.venmo) links.push(`<a class="btn btn-outline" style="text-decoration:none; text-align:center;" href="https://venmo.com/u/${encodeURIComponent(pay.venmo.replace(/^@/,''))}" target="_blank" rel="noopener">Pay with Venmo (@${pay.venmo.replace(/^@/,'')})</a>`);
-  if (pay.cashapp) links.push(`<a class="btn btn-outline" style="text-decoration:none; text-align:center;" href="https://cash.app/${encodeURIComponent(pay.cashapp.replace(/^\$/,'$'))}" target="_blank" rel="noopener">Pay with Cash App (${pay.cashapp.startsWith('$')?pay.cashapp:'$'+pay.cashapp})</a>`);
-  if (pay.zelle) links.push(`<div class="detail-row"><span>Zelle</span><span>${pay.zelle}</span></div>`);
-  if (pay.applepay) links.push(`<div class="detail-row"><span>Apple Pay / Cash</span><span>${pay.applepay}</span></div>`);
+  if (pay.venmo) links.push(`<a class="btn btn-outline" style="text-decoration:none; text-align:center;" href="https://venmo.com/u/${encodeURIComponent(pay.venmo.replace(/^@/,''))}" target="_blank" rel="noopener">Pay with Venmo (@${esc(pay.venmo.replace(/^@/,''))})</a>`);
+  if (pay.cashapp) links.push(`<a class="btn btn-outline" style="text-decoration:none; text-align:center;" href="https://cash.app/${encodeURIComponent(pay.cashapp.replace(/^\$/,'$'))}" target="_blank" rel="noopener">Pay with Cash App (${esc(pay.cashapp.startsWith('$')?pay.cashapp:'$'+pay.cashapp)})</a>`);
+  if (pay.zelle) links.push(`<div class="summary-row"><span>Zelle</span><span>${esc(pay.zelle)}</span></div>`);
+  if (pay.applepay) links.push(`<div class="summary-row"><span>Apple Pay / Cash</span><span>${esc(pay.applepay)}</span></div>`);
   payHolder.innerHTML = links.length ? (`<p class="eyebrow-mini2" style="margin:0;">Total due: $${appt.total_price}</p>` + links.join('')) : '';
 
+  document.getElementById('btn-bkc-back-page').textContent = `Back to ${firstNameOf(bkc.pro)}'s page`;
   document.getElementById('btn-bkc-add-calendar').onclick = ()=> downloadIcs(appt, bkc.pro.name);
   document.getElementById('btn-bkc-book-again').onclick = ()=>{
-    bkc.selectedIds = []; bkc.date = null; bkc.startTime = null; bkc.isVip = false;
-    if (!bkc.fromFamilyPicker) bkc.client = null; // family selection carries over to a second booking
-    document.querySelectorAll('.bkc-svc-check').forEach(cb=>cb.checked=false);
-    updateBkcTotal();
-    showBkcStep('services');
+    resetBkcSelection();
+    closeBooking(true);
+  };
+  document.getElementById('btn-bkc-back-page').onclick = ()=>{
+    resetBkcSelection();
+    closeBooking();
   };
 }
 
@@ -1494,38 +1885,52 @@ if (arrivedFromHome){
 }
 document.getElementById('btn-back-list').addEventListener('click', ()=>{
   if (arrivedFromHome){ window.location.href = 'passport.html'; return; }
+  detailToken++;
   document.getElementById('detail-screen').hidden = true;
+  document.getElementById('booking-screen').hidden = true;
   document.getElementById('list-screen').hidden = false;
   renderList();
 });
-document.getElementById('filter-city').addEventListener('change', renderList);
-document.getElementById('filter-state').addEventListener('change', renderList);
-document.getElementById('btn-prof-toggle').addEventListener('click', function(){
-  const panel = document.getElementById('prof-panel');
-  const open = panel.hidden;
-  panel.hidden = !open;
-  this.setAttribute('aria-expanded', open ? 'true' : 'false');
+document.getElementById('btn-detail-book').addEventListener('click', ()=>{
+  if (bkc.selectedIds.length){ goToBkcSlots(); return; }
+  document.getElementById('bkc-pick-hint').hidden = false;
+  const blk = document.getElementById('detail-booking-block');
+  if (blk.scrollIntoView) blk.scrollIntoView({ block:'start', behavior:'smooth' });
 });
+document.getElementById('btn-bio-more').addEventListener('click', function(){
+  const bio = document.getElementById('detail-bio');
+  const open = bio.classList.toggle('bio-clamp') === false;
+  this.textContent = open ? 'Less' : 'More';
+});
+document.getElementById('btn-see-all-reviews').addEventListener('click', ()=> renderReviewList(true));
+document.getElementById('detail-about').addEventListener('click', (e)=>{
+  const b = e.target.closest('.about-row');
+  if (!b) return;
+  const key = b.dataset.about;
+  const body = document.getElementById('about-' + key + '-body');
+  const open = body.hidden;
+  body.hidden = !open;
+  b.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (key === 'address' && open){
+    const f = document.getElementById('detail-map-frame');
+    if (f.dataset.src && f.dataset.loaded !== f.dataset.src){ f.src = f.dataset.src; f.dataset.loaded = f.dataset.src; }
+  }
+});
+document.getElementById('filter-where').addEventListener('change', renderList);
 document.getElementById('prof-chips').addEventListener('click', function(e){
   const b = e.target.closest('.prof-chip');
   if (!b) return;
   const f = b.dataset.prof;
-  if (selectedProfessions.has(f)) selectedProfessions.delete(f); else selectedProfessions.add(f);
+  if (!f) selectedProfessions = new Set();
+  else if (selectedProfessions.has(f)) selectedProfessions.delete(f);
+  else selectedProfessions.add(f);
   renderProfessionBar();
   renderList();
-});
-document.getElementById('btn-prof-clear').addEventListener('click', function(){
-  selectedProfessions = new Set();
-  renderProfessionBar();
-  renderList();
-});
-document.getElementById('btn-hours-toggle').addEventListener('click', function(){
-  this.classList.toggle('open');
-  document.getElementById('detail-hours-list').classList.toggle('open');
 });
 document.getElementById('btn-directory-exit').addEventListener('click', ()=>{
   window.location.href = 'index.html';
 });
+
 
 // Shared standalone check (running installed, not in a regular browser tab) -- iOS
 // Safari sets navigator.standalone; every other installable browser reflects it
