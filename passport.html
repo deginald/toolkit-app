@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-13T02-00-00Z">
+<meta name="app-build" content="2026-10-14T18-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -150,6 +150,47 @@
   .open-chip b{ font-size:14px; }
   .open-chip .oc-sub{ font-size:12px; color:var(--muted); line-height:1.35; }
   .open-chip .oc-t{ color:var(--good); font-weight:700; font-size:12.5px; margin-top:2px; }
+  /* Account page: short list of rows, each opens one part */
+  #acct-hub{ display:flex; flex-direction:column; gap:14px; }
+  #acct-hub.off{ display:none; }
+  .ac-pane{ display:none; flex-direction:column; gap:16px; }
+  .ac-pane.on{ display:flex; }
+  .ac-who{ display:flex; align-items:center; gap:14px; padding:6px 2px 4px; }
+  .ac-av{ width:54px; height:54px; border-radius:50%; background:linear-gradient(135deg,var(--surface),var(--paper)); border:1px solid var(--line); color:var(--brass); display:flex; align-items:center; justify-content:center; font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:20px; flex:none; }
+  .ac-who b{ font-family:'Libre Franklin',sans-serif; font-size:17px; display:block; }
+  .ac-who span{ color:var(--muted); font-size:12.5px; }
+  .ac-glabel{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:6px 2px -6px; }
+  .ac-group{ display:flex; flex-direction:column; border:1px solid var(--line); border-radius:16px; background:var(--paper); overflow:hidden; }
+  .ac-row{ display:flex; align-items:center; gap:12px; padding:14px; border:0; border-top:1px solid var(--line); background:transparent; color:var(--ink); font-family:inherit; text-align:left; text-decoration:none; cursor:pointer; width:100%; }
+  .ac-group > .ac-row:first-child{ border-top:0; }
+  .ac-row[hidden]{ display:none !important; }
+  .ac-row:focus-visible, .ac-danger-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:-2px; }
+  .ac-t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .ac-t b{ font-size:14.5px; font-weight:700; }
+  .ac-t span{ color:var(--muted); font-size:12.5px; line-height:1.35; }
+  .ac-chev{ width:16px; height:16px; color:var(--brass); flex:none; }
+  .ac-pill{ font-size:10.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; border-radius:999px; padding:3px 9px; flex:none; }
+  .ac-pill:empty{ display:none; }
+  .ac-pill.good{ background:rgba(111,207,151,.14); color:#6FCF97; }
+  .ac-pill.warn{ background:var(--brass-tint); color:var(--brass); }
+  .ac-pill.muted{ background:var(--surface); color:var(--muted); border:1px solid var(--line); }
+  .ac-danger{ display:flex; flex-direction:column; align-items:center; gap:4px; margin-top:6px; text-align:center; }
+  .ac-danger-btn{ background:transparent; border:0; color:var(--behind); font-family:inherit; font-weight:700; font-size:13px; padding:8px 12px; cursor:pointer; }
+  .ac-danger small{ color:var(--muted); font-size:11.5px; line-height:1.45; max-width:34ch; }
+  .ac-card{ border:1px solid var(--line); border-radius:16px; background:var(--paper); padding:14px; display:flex; flex-direction:column; gap:12px; }
+  .ac-card-title{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:15px; margin:0; }
+  .ac-hr{ height:1px; background:var(--line); }
+  .ac-sw{ display:flex; align-items:center; gap:12px; cursor:pointer; }
+  .ac-sw-t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .ac-sw-t b{ font-size:14px; font-weight:700; }
+  .ac-sw-t span{ color:var(--muted); font-size:12px; line-height:1.4; }
+  .ac-switch{ appearance:none; -webkit-appearance:none; width:44px; height:26px; border-radius:999px; background:var(--surface); border:1px solid var(--line); position:relative; flex:none; margin:0; cursor:pointer; transition:background .15s; }
+  .ac-switch::after{ content:""; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:var(--muted); transition:left .15s, background .15s; }
+  .ac-switch:checked{ background:var(--brass); border-color:var(--brass); }
+  .ac-switch:checked::after{ left:20px; background:#241A0C; }
+  .ac-switch:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .ac-switch:disabled{ opacity:.5; cursor:not-allowed; }
+  @media (prefers-reduced-motion: reduce){ .ac-switch, .ac-switch::after{ transition:none; } }
   .home-tiles{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; }
   .home-tile{ border:1px solid var(--line); border-radius:14px; background:var(--paper); padding:14px 12px; display:flex; align-items:center; gap:10px; font-family:'Public Sans',sans-serif; font-weight:700; font-size:13.5px; color:var(--ink); text-decoration:none; cursor:pointer; text-align:left; }
   .home-tile svg{ width:22px; height:22px; color:var(--brass); flex:none; }
@@ -533,40 +574,52 @@
       <div class="screen-body" data-screen="account">
         <div class="walk-header">
           <button class="back-btn" id="btn-back-home-from-account" aria-label="Back">&larr;</button>
-          <div><div class="vc-date">Account</div></div>
+          <div><div class="vc-date" id="acct-title">Account</div></div>
         </div>
-        <div id="add-home-screen-section">
-          <p class="eyebrow-mini">Quick access</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Add to Home Screen</h2>
-          <p class="screen-sub">Install your Vono Passport like an app: faster to open, and full-screen with no browser bar.</p>
-          <button type="button" class="btn btn-primary" id="btn-install-app" style="display:none; margin-top:10px; width:100%;">Install on this device</button>
-          <div class="mode-toggle" style="margin-top:10px;">
-            <button type="button" class="mode-btn" id="btn-add-home-ios">iPhone</button>
-            <button type="button" class="mode-btn" id="btn-add-home-android">Android</button>
+        <div id="acct-hub">
+          <div class="ac-who"><div class="ac-av" id="acct-avatar">?</div><div><b id="acct-who-name">&nbsp;</b><span id="acct-who-sub">&nbsp;</span></div></div>
+          <p class="ac-glabel">You</p>
+          <div class="ac-group">
+            <button type="button" class="ac-row" data-acct-open="profile"><span class="ac-t"><b>Profile</b><span>Name and recovery email</span></span><svg class="ac-chev" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button type="button" class="ac-row" data-acct-open="family" id="acct-row-family"><span class="ac-t"><b id="acct-family-title">Family profiles</b><span id="acct-sub-family">Add family members to this account</span></span><svg class="ac-chev" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           </div>
-          <div id="add-home-steps-ios" style="display:none; flex-direction:column; margin-top:8px;">
-            <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the &bull;&bull;&bull; icon in Safari's toolbar.<br>2. Tap the Share icon (the square with an arrow pointing up).<br>3. Scroll down and tap "Add to Home Screen."<br>4. Tap "Add" in the top right.</p>
+          <p class="ac-glabel">Preferences</p>
+          <div class="ac-group">
+            <button type="button" class="ac-row" data-acct-open="notifications"><span class="ac-t"><b>Notifications &amp; privacy</b><span>Messages, announcements, photos</span></span><span class="ac-pill" id="acct-pill-notifications"></span><svg class="ac-chev" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button type="button" class="ac-row" data-acct-open="home" id="acct-row-home"><span class="ac-t"><b>Add to Home Screen</b><span>Opens faster, works like an app</span></span><span class="ac-pill warn">Not yet</span><svg class="ac-chev" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           </div>
-          <div id="add-home-steps-android" style="display:none; flex-direction:column; margin-top:8px;">
-            <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the three-dot menu in the top right of Chrome.<br>2. Tap "Add to Home screen" or "Install app."<br>3. Tap "Add" or "Install" to confirm.</p>
+          <p class="ac-glabel">Help</p>
+          <div class="ac-group">
+            <a class="ac-row" href="mailto:vonosupport@gmail.com"><span class="ac-t"><b>Questions or feedback</b><span>vonosupport@gmail.com</span></span><svg class="ac-chev" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+          </div>
+          <div class="ac-danger">
+            <button class="ac-danger-btn" id="btn-delete-account" type="button">Delete my account</button>
+            <small>Tap twice to confirm. This permanently deletes your Vono Passport and frees your code for someone else to use. It can't be undone.</small>
           </div>
         </div>
-        <div style="border-top:1px solid var(--line); padding-top:16px;">
-          <p class="eyebrow-mini">Support</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Questions or feedback?</h2>
-          <p class="screen-sub">Found a bug or have an idea? Email <a href="mailto:vonosupport@gmail.com" style="color:var(--brass);">vonosupport@gmail.com</a> any time.</p>
+
+        <div class="ac-pane" data-acct-pane="profile">
+          <div class="ac-card">
+            <div class="field">
+              <label for="account-name">Name</label>
+              <div class="input-row"><input id="account-name" type="text" placeholder="e.g. Jordan Smith" autocomplete="name"></div>
+              <p class="foot-note-small" style="margin:4px 0 0;">How your name shows to your barber.</p>
+            </div>
+            <div class="field">
+              <label for="account-email">Recovery email</label>
+              <div class="input-row"><input id="account-email" type="email" placeholder="e.g. jordan@email.com" autocomplete="email"></div>
+              <p class="foot-note-small" style="margin:4px 0 0;">If you ever lose your code, we'll email it here. Never shown to your barber.</p>
+            </div>
+            <button class="btn btn-primary" id="btn-save-profile" type="button">Save changes</button>
+            <button class="btn btn-primary" id="btn-save-name" type="button" hidden>Save name</button>
+            <button class="btn btn-primary" id="btn-save-account-email" type="button" hidden>Save</button>
+            <p class="foot-note-small" id="account-name-status" style="margin:0;">&nbsp;</p>
+            <p class="foot-note-small" id="account-email-status" style="margin:0;">&nbsp;</p>
+          </div>
         </div>
-        <div style="border-top:1px solid var(--line); padding-top:16px;">
-          <p class="eyebrow-mini">Your name</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Edit your name</h2>
-          <p class="screen-sub">Fix a typo or update how your name shows to your barber.</p>
-          <div class="input-row" style="margin-top:10px;"><input id="account-name" type="text" placeholder="e.g. Jordan Smith" autocomplete="name"></div>
-          <button class="btn btn-primary" id="btn-save-name" type="button" style="margin-top:10px;">Save name</button>
-          <p class="foot-note-small" id="account-name-status">&nbsp;</p>
-        </div>
-        <div style="border-top:1px solid var(--line); padding-top:16px;" id="fam-admin-section">
-          <p class="eyebrow-mini">Family account</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Manage family profiles</h2>
+
+        <div class="ac-pane" data-acct-pane="family">
+        <div id="fam-admin-section">
           <p class="screen-sub">Add up to <span id="fam-member-limit">6</span> family members under this account. Each gets their own Vono Passport and code, and you can switch between them without logging out.</p>
           <div id="fam-member-list" style="display:flex; flex-direction:column; margin-top:10px;"></div>
           <p class="screen-sub" id="fam-limit-note" style="display:none; margin-top:8px;">You've reached the family limit.</p>
@@ -583,14 +636,12 @@
             <p class="screen-sub" id="fam-add-status" style="margin:0;">&nbsp;</p>
           </div>
         </div>
-        <div style="border-top:1px solid var(--line); padding-top:16px; display:none;" id="fam-member-note-section">
-          <p class="eyebrow-mini">Family account</p>
+        <div style="display:none;" id="fam-member-note-section">
           <p class="screen-sub">This Vono Passport is part of a family account. Ask whoever set it up if you need another profile added.</p>
         </div>
-        <div style="border-top:1px solid var(--line); padding-top:16px;">
-          <p class="eyebrow-mini">Communication preferences</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Appointment &amp; service messages</h2>
-          <p class="screen-sub">Turn this on to get notified when your barber sends you a quick message about an appointment, and to send them one yourself. No phone number needed.</p>
+        </div>
+
+        <div class="ac-pane" data-acct-pane="notifications">
           <div id="ios-homescreen-tip" style="display:none; flex-direction:column; gap:6px; padding:12px 14px; border-radius:10px; background:var(--brass-tint); border:1px solid var(--brass);">
             <p class="screen-sub" style="margin:0;"><strong>On an iPhone, notifications only work once this is added to your Home Screen.</strong> Safari can't turn them on from inside a regular browser tab.</p>
             <button type="button" class="link-btn" id="btn-ios-homescreen-steps" style="padding:0; align-self:flex-start;">See how</button>
@@ -598,54 +649,57 @@
               <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the &bull;&bull;&bull; icon in Safari's toolbar.<br>2. Tap the Share icon (the square with an arrow pointing up).<br>3. Scroll down and tap "Add to Home Screen."<br>4. Tap "Add" in the top right.<br>5. Open Vono from that new icon from now on, then come back here to turn notifications on.</p>
             </div>
           </div>
-          <button class="btn btn-primary" id="btn-enable-notifications" type="button">Turn on notifications</button>
-          <p class="foot-note-small" id="notifications-status-note">&nbsp;</p>
-          <p class="foot-note-small">Not seeing the message text in a notification? On iPhone, check Settings &rarr; Notifications &rarr; Vono &rarr; Show Previews, and set it to Always.</p>
-        </div>
-        <div style="border-top:1px solid var(--line); padding-top:16px;">
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Shop announcements &amp; promotions</h2>
-          <p class="screen-sub">Separate from appointment messages above, and from each other: a professional you've actually had a visit with can ask to send you these, but only once you've turned each one on. Both are off by default, and turning one on never turns on the other. Only pros you've had a real visit with can ever reach you this way, never anyone else in the app.</p>
-          <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
-            <label class="check-row">
-              <input type="checkbox" id="account-notify-announcements">
-              <span>Shop announcements <span style="text-transform:none; font-weight:600;">(hours, closures, new services)</span></span>
-            </label>
-            <label class="check-row">
-              <input type="checkbox" id="account-notify-promotions">
-              <span>Promotions &amp; specials <span style="text-transform:none; font-weight:600;">(discounts and offers)</span></span>
-            </label>
+          <div class="ac-card">
+            <p class="ac-card-title">Appointment &amp; service messages</p>
+            <button class="btn btn-primary" id="btn-enable-notifications" type="button">Turn on notifications</button>
+            <p class="foot-note-small" id="notifications-status-note" style="margin:0;">&nbsp;</p>
+            <p class="foot-note-small" style="margin:0;">Not seeing the message text? On iPhone, go to Settings &rarr; Notifications &rarr; Vono &rarr; Show Previews and choose Always.</p>
           </div>
-          <p class="foot-note-small" id="notify-broadcast-status">&nbsp;</p>
-        </div>
-        <div style="border-top:1px solid var(--line); padding-top:16px;">
-          <p class="eyebrow-mini">Photo consent</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Before/after photos</h2>
-          <p class="screen-sub">Your barber may ask to take before/after photos and save them to your Vono Passport. These two permissions are separate. Agreeing to one doesn't turn on the other, and you can change either any time.</p>
-          <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
-            <label class="check-row">
-              <input type="checkbox" id="account-photo-consent-record">
-              <span>Save before/after photos to my Vono Passport</span>
+          <p class="ac-glabel">From pros you've visited</p>
+          <div class="ac-card">
+            <label class="ac-sw" for="account-notify-announcements">
+              <span class="ac-sw-t"><b>Shop announcements</b><span>Hours, closures, new services</span></span>
+              <input type="checkbox" class="ac-switch" id="account-notify-announcements">
             </label>
-            <label class="check-row">
-              <input type="checkbox" id="account-photo-consent-marketing">
-              <span>Also allow those photos in a professional's portfolio or marketing</span>
+            <div class="ac-hr"></div>
+            <label class="ac-sw" for="account-notify-promotions">
+              <span class="ac-sw-t"><b>Promotions and specials</b><span>Discounts and offers</span></span>
+              <input type="checkbox" class="ac-switch" id="account-notify-promotions">
             </label>
+            <p class="foot-note-small" style="margin:0;">Both are off until you turn them on, and each is separate. Only pros you've had a real visit with can ever reach you this way.</p>
+            <p class="foot-note-small" id="notify-broadcast-status" style="margin:0;">&nbsp;</p>
           </div>
-          <p class="foot-note-small" id="photo-consent-status">&nbsp;</p>
+          <p class="ac-glabel">Before and after photos</p>
+          <div class="ac-card">
+            <label class="ac-sw" for="account-photo-consent-record">
+              <span class="ac-sw-t"><b>Save them to my Vono Passport</b><span>Your barber can add before/after photos to your visits.</span></span>
+              <input type="checkbox" class="ac-switch" id="account-photo-consent-record">
+            </label>
+            <div class="ac-hr"></div>
+            <label class="ac-sw" for="account-photo-consent-marketing">
+              <span class="ac-sw-t"><b>Allow in a pro's portfolio</b><span>Lets them show those photos in their portfolio or marketing.</span></span>
+              <input type="checkbox" class="ac-switch" id="account-photo-consent-marketing">
+            </label>
+            <p class="foot-note-small" style="margin:0;">These two are separate. Agreeing to one doesn't turn on the other, and you can change either any time.</p>
+            <p class="foot-note-small" id="photo-consent-status" style="margin:0;">&nbsp;</p>
+          </div>
         </div>
-        <div style="border-top:1px solid var(--line); padding-top:16px; margin-top:16px;">
-          <p class="eyebrow-mini">Account recovery</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Recovery email</h2>
-          <p class="screen-sub">Add an email so you can always get your code back if you lose it. Never shown to your barber.</p>
-          <div class="input-row" style="margin-top:10px;"><input id="account-email" type="email" placeholder="e.g. jordan@email.com" autocomplete="email"></div>
-          <button class="btn btn-primary" id="btn-save-account-email" type="button" style="margin-top:10px;">Save</button>
-          <p class="foot-note-small" id="account-email-status">&nbsp;</p>
+
+        <div class="ac-pane" data-acct-pane="home">
+        <div id="add-home-screen-section" style="display:flex; flex-direction:column; gap:10px;">
+          <p class="screen-sub">Install your Vono Passport like an app: faster to open, and full-screen with no browser bar.</p>
+          <button type="button" class="btn btn-primary" id="btn-install-app" style="display:none; margin-top:10px; width:100%;">Install on this device</button>
+          <div class="mode-toggle" style="margin-top:10px;">
+            <button type="button" class="mode-btn" id="btn-add-home-ios">iPhone</button>
+            <button type="button" class="mode-btn" id="btn-add-home-android">Android</button>
+          </div>
+          <div id="add-home-steps-ios" style="display:none; flex-direction:column; margin-top:8px;">
+            <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the &bull;&bull;&bull; icon in Safari's toolbar.<br>2. Tap the Share icon (the square with an arrow pointing up).<br>3. Scroll down and tap "Add to Home Screen."<br>4. Tap "Add" in the top right.</p>
+          </div>
+          <div id="add-home-steps-android" style="display:none; flex-direction:column; margin-top:8px;">
+            <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the three-dot menu in the top right of Chrome.<br>2. Tap "Add to Home screen" or "Install app."<br>3. Tap "Add" or "Install" to confirm.</p>
+          </div>
         </div>
-        <div class="spacer"></div>
-        <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
-          <p class="eyebrow-mini" style="color:var(--behind);">Danger zone</p>
-          <button class="btn btn-danger" id="btn-delete-account">Delete my account</button>
-          <p class="foot-note-small">This permanently deletes your Vono Passport and frees your code for someone else to use. It can't be undone.</p>
         </div>
       </div>
 
@@ -902,7 +956,7 @@ function updateInstallNudgeBanner(){
 }
 document.getElementById('btn-install-nudge-open').addEventListener('click', ()=>{
   if (deferredInstallPrompt){ runInstallPrompt(); return; }
-  document.getElementById('btn-open-account').click();
+  openAccountPane('home');
 });
 document.getElementById('btn-install-nudge-dismiss').addEventListener('click', ()=>{
   try{ localStorage.setItem(installNudgeDismissKey(), '1'); }catch(e){}
@@ -2734,6 +2788,55 @@ document.getElementById('find-pro-input').addEventListener('keydown', function(e
   if (e.key === 'Enter'){ e.preventDefault(); goToProFromInput(); }
 });
 
+let acctPane = null;
+const ACCT_TITLES = { profile:'Profile', family:'Family profiles', notifications:'Notifications & privacy', home:'Add to Home Screen' };
+function showAcctPane(name){
+  if (!ACCT_TITLES[name]) { showAcctHub(); return; }
+  acctPane = name;
+  document.getElementById('acct-hub').classList.add('off');
+  document.querySelectorAll('.ac-pane').forEach(el=>{ el.classList.toggle('on', el.dataset.acctPane === name); });
+  let title = ACCT_TITLES[name];
+  if (name === 'family' && client && client.familyRole === 'member') title = 'Family account';
+  document.getElementById('acct-title').textContent = title;
+  scrollAppToTop();
+}
+function showAcctHub(){
+  acctPane = null;
+  document.getElementById('acct-hub').classList.remove('off');
+  document.querySelectorAll('.ac-pane').forEach(el=> el.classList.remove('on'));
+  document.getElementById('acct-title').textContent = 'Account';
+  renderAcctHub();
+  scrollAppToTop();
+}
+function setAcctPill(id, text, kind){
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text || '';
+  el.className = 'ac-pill' + (kind ? ' ' + kind : '');
+}
+async function renderAcctHub(){
+  if (!client) return;
+  document.getElementById('acct-who-name').textContent = client.name || '';
+  document.getElementById('acct-who-sub').textContent = 'Your code \u00b7 ' + (clientCode || '');
+  document.getElementById('acct-avatar').textContent = ((client.name || '?').trim().charAt(0) || '?').toUpperCase();
+  // Family: admins (or a passport that hasn't started a family) manage it; members just see a note.
+  const isMember = client.familyRole === 'member';
+  document.getElementById('acct-family-title').textContent = isMember ? 'Family account' : 'Family profiles';
+  const n = (client.familyId && familyRoster && familyRoster.length) ? familyRoster.length : 0;
+  document.getElementById('acct-sub-family').textContent = isMember ? 'Part of a family account' : (n > 1 ? (n + ' people on this account') : 'Add family members to this account');
+  // Add to Home Screen disappears once the app is installed
+  document.getElementById('acct-row-home').hidden = !!isAppStandalone();
+  let on = false;
+  try{ on = pushSupported() && !!(await getExistingPushSubscription()); }catch(e){}
+  setAcctPill('acct-pill-notifications', on ? 'On' : 'Off', on ? 'good' : 'warn');
+}
+document.querySelectorAll('[data-acct-open]').forEach(btn=> btn.addEventListener('click', ()=> showAcctPane(btn.dataset.acctOpen)));
+document.getElementById('btn-save-profile').addEventListener('click', ()=>{
+  document.getElementById('btn-save-name').click();
+  document.getElementById('btn-save-account-email').click();
+});
+let pendingAcctPane = null;
+function openAccountPane(pane){ pendingAcctPane = pane; document.getElementById('btn-open-account').click(); }
 document.getElementById('btn-open-account').addEventListener('click', ()=>{
   populateNotificationsStatus();
   document.getElementById('account-email').value = (client && client.email) || '';
@@ -2746,8 +2849,10 @@ document.getElementById('btn-open-account').addEventListener('click', ()=>{
   document.getElementById('account-photo-consent-record').checked = !!(client && client.photoConsentRecord);
   document.getElementById('account-photo-consent-marketing').checked = !!(client && client.photoConsentMarketing);
   document.getElementById('photo-consent-status').textContent = ' ';
-  renderFamilySection();
+  renderFamilySection().then(()=>{ if (!acctPane) renderAcctHub(); });
   showScreen('account');
+  const wantPane = pendingAcctPane; pendingAcctPane = null;
+  if (wantPane && ACCT_TITLES[wantPane]) { renderAcctHub(); showAcctPane(wantPane); } else showAcctHub();
 });
 
 /* ---- Family account management (admin view) ---- */
@@ -2986,7 +3091,7 @@ document.getElementById('btn-enable-notifications').addEventListener('click', as
     note.textContent = result.message || "Couldn't turn on notifications. Try again.";
   }
 });
-document.getElementById('btn-back-home-from-account').addEventListener('click', ()=> showScreen('home'));
+document.getElementById('btn-back-home-from-account').addEventListener('click', ()=>{ if (acctPane) showAcctHub(); else showScreen('home'); });
 // A brief, dismissible nudge shown on the home screen (not buried in Account) so new clients
 // notice notifications exist at all. Hides itself once notifications are on, or once dismissed
 // (remembered per device so it doesn't keep reappearing).
@@ -3002,7 +3107,7 @@ async function updateNotifNudgeBanner(){
   el.hidden = !!existing;
 }
 document.getElementById('btn-notif-nudge-open').addEventListener('click', ()=>{
-  document.getElementById('btn-open-account').click();
+  openAccountPane('notifications');
 });
 document.getElementById('btn-notif-nudge-dismiss').addEventListener('click', ()=>{
   try{ localStorage.setItem(notifNudgeDismissKey(), '1'); }catch(e){}

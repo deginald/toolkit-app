@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-14T15-00-00Z">
+<meta name="app-build" content="2026-10-14T18-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -29,6 +29,44 @@
   html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   html,body{ height:100%; overscroll-behavior-y:none; }
   body{ margin:0; background:var(--bg); color:var(--ink); font-family:'Public Sans', ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+  /* Account page: short list of rows, each opens one part */
+  #acct-hub{ display:flex; flex-direction:column; gap:14px; }
+  #acct-hub.off{ display:none; }
+  .ac-pane{ display:none; flex-direction:column; gap:16px; }
+  .ac-pane.on{ display:flex; }
+  .ac-who{ display:flex; align-items:center; gap:14px; padding:6px 2px 4px; }
+  .ac-av{ width:54px; height:54px; border-radius:50%; background:linear-gradient(135deg,var(--surface),var(--paper)); border:1px solid var(--line); color:var(--brass); display:flex; align-items:center; justify-content:center; font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:20px; flex:none; }
+  .ac-who b{ font-family:'Libre Franklin',sans-serif; font-size:17px; display:block; }
+  .ac-who span{ color:var(--muted); font-size:12.5px; }
+  .ac-glabel{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:6px 2px -6px; }
+  .ac-group{ display:flex; flex-direction:column; border:1px solid var(--line); border-radius:16px; background:var(--paper); overflow:hidden; }
+  .ac-row{ display:flex; align-items:center; gap:12px; padding:14px; border:0; border-top:1px solid var(--line); background:transparent; color:var(--ink); font-family:inherit; text-align:left; text-decoration:none; cursor:pointer; width:100%; }
+  .ac-group > .ac-row:first-child{ border-top:0; }
+  .ac-row:focus-visible, .ac-danger-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:-2px; }
+  .ac-t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .ac-t b{ font-size:14.5px; font-weight:700; }
+  .ac-t span{ color:var(--muted); font-size:12.5px; line-height:1.35; }
+  .ac-chev{ width:16px; height:16px; color:var(--brass); flex:none; }
+  .ac-pill{ font-size:10.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; border-radius:999px; padding:3px 9px; flex:none; }
+  .ac-pill:empty{ display:none; }
+  .ac-pill.good{ background:rgba(111,207,151,.14); color:#6FCF97; }
+  .ac-pill.warn{ background:var(--brass-tint, #3D2E15); color:var(--brass); }
+  .ac-pill.muted{ background:var(--surface); color:var(--muted); border:1px solid var(--line); }
+  .ac-danger{ display:flex; flex-direction:column; align-items:center; gap:4px; margin-top:6px; text-align:center; }
+  .ac-danger-btn{ background:transparent; border:0; color:var(--behind); font-family:inherit; font-weight:700; font-size:13px; padding:8px 12px; cursor:pointer; }
+  .ac-danger small{ color:var(--muted); font-size:11.5px; line-height:1.45; max-width:34ch; }
+  .ac-card{ border:1px solid var(--line); border-radius:16px; background:var(--paper); padding:14px; display:flex; flex-direction:column; gap:12px; }
+  .ac-sw{ display:flex; align-items:center; gap:12px; cursor:pointer; }
+  .ac-sw-t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .ac-sw-t b{ font-size:14px; font-weight:700; }
+  .ac-sw-t span{ color:var(--muted); font-size:12px; line-height:1.4; }
+  .ac-switch{ appearance:none; -webkit-appearance:none; width:44px; height:26px; border-radius:999px; background:var(--surface); border:1px solid var(--line); position:relative; flex:none; margin:0; cursor:pointer; transition:background .15s; }
+  .ac-switch::after{ content:""; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:var(--muted); transition:left .15s, background .15s; }
+  .ac-switch:checked{ background:var(--brass); border-color:var(--brass); }
+  .ac-switch:checked::after{ left:20px; background:#241A0C; }
+  .ac-switch:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .ac-switch:disabled{ opacity:.5; cursor:not-allowed; }
+  @media (prefers-reduced-motion: reduce){ .ac-switch, .ac-switch::after{ transition:none; } }
   .eyebrow-mini{ font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin:0; }
   .screen-title{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.01em; margin:2px 0 0; }
   .screen-sub{ font-size:13.5px; color:var(--muted); line-height:1.5; margin:0; }
@@ -2476,161 +2514,95 @@
   <div id="account-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100svh;">
     <header class="topbar">
       <button type="button" class="link-btn" id="btn-account-back">&larr; Back</button>
-      <div class="tb-name">Account</div>
+      <div class="tb-name" id="acct-topbar-title">Account</div>
       <div style="width:40px;"></div>
     </header>
-    <main class="tab-content" style="display:flex; flex-direction:column; gap:16px;">
-      <div>
-        <p class="eyebrow-mini">Support</p>
-        <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Questions or feedback?</h2>
-        <p class="screen-sub">Found a bug or have an idea? Email <a href="mailto:vonosupport@gmail.com" style="color:var(--brass);">vonosupport@gmail.com</a> any time.</p>
-      </div>
-      <div class="tab-head" id="account-plan-section" style="border-top:1px solid var(--line); padding-top:16px;">
-        <p class="eyebrow-mini">Plan</p>
-        <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Your Vono subscription</h2>
-        <p class="screen-sub" id="account-plan-status">&nbsp;</p>
-        <div id="account-plan-offer" style="display:none; flex-direction:column; gap:10px; margin-top:10px;">
-          <p class="screen-sub" style="margin:0; font-weight:700; color:var(--ink);">Try either plan free: you won't be charged until your trial ends, and you can cancel any time before that.</p>
-          <div class="card" style="gap:6px;">
-            <strong>Vono Pro ($20/month)</strong>
-            <span class="screen-sub" style="margin:0;">Messaging clients, Business tools, your Find a Pro listing, and notifications. Booking itself is free on every plan.</span>
-          </div>
-          <button class="btn btn-primary" id="btn-subscribe-pro" type="button">Start Vono Pro free trial</button>
-          <div class="card" style="gap:6px;">
-            <strong>Vono Studio ($30/month)</strong>
-            <span class="screen-sub" style="margin:0;">Everything in Pro, plus shop management for a team of stylists or barbers.</span>
-          </div>
-          <button class="btn btn-primary" id="btn-subscribe-studio" type="button">Start Vono Studio free trial</button>
-          <p class="foot-note-small" id="account-plan-offer-note">&nbsp;</p>
+    <main class="tab-content" id="acct-main" style="display:flex; flex-direction:column; gap:16px;">
+      <div id="acct-hub">
+        <div class="ac-who"><div class="ac-av" id="acct-avatar">?</div><div><b id="acct-who-name">&nbsp;</b><span id="acct-who-sub">&nbsp;</span></div></div>
+        <p class="ac-glabel">You</p>
+        <div class="ac-group">
+          <button type="button" class="ac-row" data-acct-open="profile"><span class="ac-t"><b>Profile</b><span id="acct-sub-profile">Name, status, license number</span></span><svg class="ac-chev" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="ac-row" data-acct-open="listing"><span class="ac-t"><b>Public listing</b><span>Your Find a Pro profile</span></span><span class="ac-pill" id="acct-pill-listing"></span><svg class="ac-chev" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         </div>
-        <div id="account-plan-manage" style="display:none; flex-direction:column; gap:10px; margin-top:10px;">
-          <button class="btn btn-outline" id="btn-manage-subscription" type="button">Manage subscription</button>
-          <p class="foot-note-small" id="account-plan-manage-note">&nbsp;</p>
+        <p class="ac-glabel" id="acct-business-label">Business</p>
+        <div class="ac-group" id="acct-business-group">
+          <button type="button" class="ac-row" data-acct-open="plan" id="acct-row-plan"><span class="ac-t"><b>Subscription</b><span id="acct-sub-plan">&nbsp;</span></span><span class="ac-pill" id="acct-pill-plan"></span><svg class="ac-chev" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="ac-row" data-acct-open="notifications" id="acct-row-notifications"><span class="ac-t"><b>Notifications</b><span id="acct-sub-notifications">&nbsp;</span></span><span class="ac-pill" id="acct-pill-notifications"></span><svg class="ac-chev" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+        <p class="ac-glabel">Help</p>
+        <div class="ac-group">
+          <a class="ac-row" href="mailto:vonosupport@gmail.com"><span class="ac-t"><b>Questions or feedback</b><span>vonosupport@gmail.com</span></span><svg class="ac-chev" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </div>
+        <div class="ac-danger">
+          <button class="ac-danger-btn" id="btn-delete-account" type="button">Delete my account</button>
+          <small>Tap twice to confirm. This permanently deletes your profile and signs you out. It can't be undone. Your login itself (email and password) isn't removed automatically; contact support if you'd like that cleared too.</small>
         </div>
       </div>
-      <div class="tab-head" style="border-top:1px solid var(--line); padding-top:16px;">
-        <p class="eyebrow-mini">Your name</p>
-        <h2>Edit your name</h2>
-        <p class="screen-sub">Fix a typo or update how your name shows to clients and shops.</p>
-      </div>
-      <div class="field">
-        <div class="input-row"><input id="account-name" type="text" placeholder="e.g. Jordan Smith" autocomplete="name"></div>
-      </div>
-      <button class="btn btn-primary" id="btn-save-name" type="button">Save name</button>
-      <p class="foot-note-small" id="name-save-note">&nbsp;</p>
-      <div class="tab-head" style="border-top:1px solid var(--line); padding-top:16px;">
-        <p class="eyebrow-mini">Your role</p>
-        <h2>Change your status</h2>
-        <p class="screen-sub">This controls which tabs you can see.</p>
-      </div>
-      <div class="field">
-        <select class="title-select" id="account-title-select" style="width:100%;"></select>
-      </div>
-      <div class="field" id="account-student-field-field" style="display:none;">
-        <label>What are you studying?</label>
-        <select class="title-select" id="account-student-field" style="width:100%;">
-          <option value="" disabled>Select your field</option>
-          <option value="Barber">Barber</option>
-          <option value="Cosmetologist">Cosmetology</option>
-          <option value="Nail Tech">Nail</option>
-          <option value="Braider">Braider</option>
-          <option value="Massage Therapist">Massage</option>
-          <option value="Esthetician">Esthetician</option>
-          <option value="MUA">MUA</option>
-        </select>
-        <p class="foot-note-small" id="student-field-save-note" style="margin-top:4px;">&nbsp;</p>
-      </div>
-      <div class="field" id="account-barber-level-field" style="display:none;">
-        <label>Level</label>
-        <select class="title-select" id="account-barber-level" style="width:100%;">
-          <option value="" disabled>Select your level</option>
-          <option value="Master Barber">Master Barber</option>
-          <option value="Apprentice Barber">Apprentice Barber</option>
-        </select>
-        <p class="foot-note-small" id="barber-level-save-note" style="margin-top:4px;">&nbsp;</p>
-      </div>
-      <div class="card tip" id="account-subfield-tip-note" hidden>
-        <p class="screen-sub" style="margin:0; color:var(--ink);">This is what shows on your Jobs Board listing under your name, for example "Student- Barber" or "Barber-Apprentice." Pick the one that matches you best.</p>
-        <button type="button" class="link-btn" id="btn-account-subfield-tip-dismiss" style="align-self:flex-end; padding:0;">Got it</button>
-      </div>
-      <div id="account-role-warning" class="foot-note-small" style="display:none; border:1px solid var(--behind); background:var(--behind-tint); border-radius:10px; padding:12px; color:var(--ink);"></div>
-      <div id="account-role-confirm-row" class="btn-row" style="display:none;">
-        <button class="btn btn-ghost" id="btn-role-change-cancel" style="flex:1;">Cancel</button>
-        <button class="btn btn-danger" id="btn-role-change-confirm" style="flex:1;">Yes, make this change</button>
-      </div>
-      <div id="account-license-field" style="display:none; border-top:1px solid var(--line); padding-top:16px;">
-        <p class="eyebrow-mini">License</p>
-        <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Your license number</h2>
-        <p class="screen-sub">Needed to appear on Find a Pro. Add it here if you graduated from Student status in the app, or if you left it blank when you signed up.</p>
+      <div class="ac-pane" data-acct-pane="profile">
+      <div class="ac-card">
         <div class="field">
-          <div class="input-row"><input id="account-license" type="text" placeholder="e.g. BB-123456" autocomplete="off"></div>
+          <label for="account-name">Name</label>
+          <div class="input-row"><input id="account-name" type="text" placeholder="e.g. Jordan Smith" autocomplete="name"></div>
         </div>
-        <button class="btn btn-primary" id="btn-save-license" type="button">Save license number</button>
-        <p class="foot-note-small" id="license-save-note">&nbsp;</p>
-      </div>
-      <div id="account-notifications-section" style="border-top:1px solid var(--line); padding-top:16px;">
-        <p class="eyebrow-mini">Notifications</p>
-        <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Quick message alerts</h2>
-        <p class="screen-sub">Turn this on to get notified when a client sends you a quick message about an appointment, and to send them one yourself. No phone number needed.</p>
-        <div id="ios-homescreen-tip" class="card tip" style="display:none; gap:6px;">
-          <p class="screen-sub" style="margin:0;"><strong>On an iPhone, notifications only work once this is added to your Home Screen.</strong> Safari can't turn them on from inside a regular browser tab.</p>
-          <button type="button" class="link-btn" id="btn-ios-homescreen-steps" style="padding:0; align-self:flex-start;">See how</button>
-          <div id="ios-homescreen-steps" style="display:none; flex-direction:column;">
-            <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the &bull;&bull;&bull; icon in Safari's toolbar.<br>2. Tap the Share icon (the square with an arrow pointing up).<br>3. Scroll down and tap "Add to Home Screen."<br>4. Tap "Add" in the top right.<br>5. Open Vono from that new icon from now on, then come back here to turn notifications on.</p>
-          </div>
+        <div class="field">
+          <label for="account-title-select">Status</label>
+          <select class="title-select" id="account-title-select" style="width:100%;"></select>
+          <p class="foot-note-small" style="margin:4px 0 0;">Your status controls which tabs you can see.</p>
         </div>
-        <div id="notifications-locked-note" class="card tip" style="display:none; gap:6px;">
-          <p class="screen-sub" style="margin:0;"><strong>Notifications are part of a paid Vono plan.</strong> Subscribe above to turn these on.</p>
-        </div>
-        <button class="btn btn-primary" id="btn-enable-notifications" type="button">Turn on notifications</button>
-        <p class="foot-note-small" id="notifications-status-note">&nbsp;</p>
-        <p class="foot-note-small">Not seeing the message text in a notification? On iPhone, check Settings &rarr; Notifications &rarr; Vono &rarr; Show Previews, and set it to Always.</p>
-        <label class="check-row" style="margin-top:10px;">
-          <input type="checkbox" id="notify-appt-events-toggle">
-          <span>Notify me when a client books, changes or cancels an appointment</span>
-        </label>
-        <p class="foot-note-small">Turn this off if you'd rather not be pinged for these, like after hours. Your other notifications (quick messages) aren't affected.</p>
-        <label class="check-row" style="margin-top:10px;">
-          <input type="checkbox" id="notify-rebook-toggle">
-          <span>Nudge clients who haven't booked in a while to come back</span>
-        </label>
-        <p class="foot-note-small">Sends a client a gentle reminder to rebook with you once it's been about 90 days since their last visit, if they have notifications turned on. Checked once a day; a client who already has an upcoming appointment with you, or who's already gotten this reminder since their last visit, won't be nudged again. Turn this off if you'd rather not.</p>
-        <label class="check-row" style="margin-top:10px;">
-          <input type="checkbox" id="notify-appt-reminder-toggle">
-          <span>Remind clients before their appointment</span>
-        </label>
-        <div id="appt-reminder-hours-row" class="field" style="margin-top:6px;">
-          <label for="appt-reminder-hours">Send the reminder</label>
-          <select class="title-select" id="appt-reminder-hours" style="width:100%;">
-            <option value="1">1 hour before</option>
-            <option value="2">2 hours before</option>
-            <option value="4">4 hours before</option>
-            <option value="12">12 hours before</option>
-            <option value="24">24 hours before</option>
-            <option value="48">48 hours before</option>
+        <div class="field" id="account-student-field-field" style="display:none;">
+          <label for="account-student-field">What are you studying?</label>
+          <select class="title-select" id="account-student-field" style="width:100%;">
+            <option value="" disabled>Select your field</option>
+            <option value="Barber">Barber</option>
+            <option value="Cosmetologist">Cosmetology</option>
+            <option value="Nail Tech">Nail</option>
+            <option value="Braider">Braider</option>
+            <option value="Massage Therapist">Massage</option>
+            <option value="Esthetician">Esthetician</option>
+            <option value="MUA">MUA</option>
           </select>
+          <p class="foot-note-small" id="student-field-save-note" style="margin-top:4px;">&nbsp;</p>
         </div>
-        <div id="appt-reminder-tz-row" class="field" style="margin-top:6px;">
-          <label for="appt-reminder-tz">Your time zone</label>
-          <select class="title-select" id="appt-reminder-tz" style="width:100%;"></select>
-          <p class="foot-note-small" id="appt-reminder-tz-note" style="margin:4px 0 0;">Reminders go out by this clock. It was set from your phone; change it here if it's wrong.</p>
+        <div class="field" id="account-barber-level-field" style="display:none;">
+          <label for="account-barber-level">Level</label>
+          <select class="title-select" id="account-barber-level" style="width:100%;">
+            <option value="" disabled>Select your level</option>
+            <option value="Master Barber">Master Barber</option>
+            <option value="Apprentice Barber">Apprentice Barber</option>
+          </select>
+          <p class="foot-note-small" id="barber-level-save-note" style="margin-top:4px;">&nbsp;</p>
         </div>
-        <p class="foot-note-small">Sends the client a push with your name, the service, the time, and your address, once per appointment, if they have notifications turned on. Turn this off if you'd rather not.</p>
+        <div class="card tip" id="account-subfield-tip-note" hidden>
+          <p class="screen-sub" style="margin:0; color:var(--ink);">This is what shows on your Jobs Board listing under your name, for example "Student- Barber" or "Barber-Apprentice." Pick the one that matches you best.</p>
+          <button type="button" class="link-btn" id="btn-account-subfield-tip-dismiss" style="align-self:flex-end; padding:0;">Got it</button>
+        </div>
+        <div id="account-role-warning" class="foot-note-small" style="display:none; border:1px solid var(--behind); background:var(--behind-tint); border-radius:10px; padding:12px; color:var(--ink);"></div>
+        <div id="account-role-confirm-row" class="btn-row" style="display:none;">
+          <button class="btn btn-ghost" id="btn-role-change-cancel" style="flex:1;">Cancel</button>
+          <button class="btn btn-danger" id="btn-role-change-confirm" style="flex:1;">Yes, make this change</button>
+        </div>
+        <div id="account-license-field" class="field" style="display:none;">
+          <label for="account-license">License number</label>
+          <div class="input-row"><input id="account-license" type="text" placeholder="e.g. BB-123456" autocomplete="off"></div>
+          <p class="foot-note-small" style="margin:4px 0 0;">Needed to appear on Find a Pro. Add it here if you graduated from Student status in the app, or left it blank when you signed up.</p>
+        </div>
+        <button class="btn btn-primary" id="btn-save-profile" type="button">Save changes</button>
+        <button class="btn btn-primary" id="btn-save-name" type="button" hidden>Save name</button>
+        <button class="btn btn-primary" id="btn-save-license" type="button" hidden>Save license number</button>
+        <p class="foot-note-small" id="name-save-note" style="margin:0;">&nbsp;</p>
+        <p class="foot-note-small" id="license-save-note" style="margin:0;">&nbsp;</p>
       </div>
-      <div id="listing-ineligible" style="display:none; border-top:1px solid var(--line); padding-top:16px;">
-        <p class="eyebrow-mini">Public directory</p>
-        <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Your public listing</h2>
+</div>
+      <div class="ac-pane" data-acct-pane="listing">
+      <div id="listing-ineligible" style="display:none;">
         <p class="screen-sub">Public listings on Find a Pro are available once you're no longer a Student and have a license number on file.</p>
       </div>
-      <div id="listing-locked" style="display:none; border-top:1px solid var(--line); padding-top:16px;">
-        <p class="eyebrow-mini">Public directory</p>
-        <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Your public listing</h2>
-        <p class="screen-sub">Your Find a Pro listing, and clients being able to open your booking link or QR code at all, is part of a paid Vono plan. Subscribe above to turn it on.</p>
+      <div id="listing-locked" style="display:none;">
+        <p class="screen-sub">Your Find a Pro listing, and clients being able to open your booking link or QR code at all, is part of a paid Vono plan. Choose a plan under Subscription to turn it on.</p>
       </div>
-      <div id="listing-eligible" style="display:none; border-top:1px solid var(--line); padding-top:16px; flex-direction:column; gap:14px;">
+      <div id="listing-eligible" style="display:none; flex-direction:column; gap:14px;">
         <div>
-          <p class="eyebrow-mini">Public directory</p>
-          <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">Your public listing</h2>
           <p class="screen-sub">Let clients find you and rate real visits on the Find a Pro directory. Any phone number or address you add here should be your shop's, not your personal contact info.</p>
         </div>
         <label class="check-row">
@@ -2651,6 +2623,7 @@
           </div>
         </div>
         <div id="listing-fields" style="display:none; flex-direction:column; gap:14px;">
+          <p class="ac-glabel" style="margin:0;">Basics</p>
           <div class="field">
             <label>Shop / business name</label>
             <div class="input-row"><input id="listing-shop-name" type="text" placeholder="e.g. Fresh Cuts Barbershop"></div>
@@ -2671,6 +2644,7 @@
             <label>Shop address <span style="text-transform:none; font-weight:600;">(optional)</span></label>
             <div class="input-row"><input id="listing-address" type="text" placeholder="e.g. 123 Main St, Your City, ST"></div>
           </div>
+          <p class="ac-glabel" style="margin:6px 0 0;">Links and bio</p>
           <div class="field">
             <label>Instagram <span style="text-transform:none; font-weight:600;">(optional)</span></label>
             <div class="input-row"><input id="listing-instagram" type="text" placeholder="e.g. https://instagram.com/yourshop"></div>
@@ -2701,12 +2675,79 @@
         <p class="foot-note-small" id="listing-save-note">&nbsp;</p>
         <a class="btn btn-outline" id="btn-view-listing" style="display:none; text-align:center; text-decoration:none;" target="_blank" rel="noopener">View my public listing</a>
       </div>
-      <div class="spacer"></div>
-      <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
-        <p class="eyebrow-mini" style="color:var(--behind);">Danger zone</p>
-        <button class="btn btn-danger" id="btn-delete-account">Delete my account</button>
-        <p class="foot-note-small">This permanently deletes your profile and signs you out. It can't be undone. Your login itself (email and password) isn't removed automatically; contact support if you'd like that cleared too.</p>
+</div>
+      <div class="ac-pane" data-acct-pane="plan">
+      <div id="account-plan-section" style="display:flex; flex-direction:column; gap:10px;">
+        <p class="screen-sub" id="account-plan-status">&nbsp;</p>
+        <div id="account-plan-offer" style="display:none; flex-direction:column; gap:10px; margin-top:10px;">
+          <p class="screen-sub" style="margin:0; font-weight:700; color:var(--ink);">Try either plan free: you won't be charged until your trial ends, and you can cancel any time before that.</p>
+          <div class="card" style="gap:6px;">
+            <strong>Vono Pro ($20/month)</strong>
+            <span class="screen-sub" style="margin:0;">Messaging clients, Business tools, your Find a Pro listing, and notifications. Booking itself is free on every plan.</span>
+          </div>
+          <button class="btn btn-primary" id="btn-subscribe-pro" type="button">Start Vono Pro free trial</button>
+          <div class="card" style="gap:6px;">
+            <strong>Vono Studio ($30/month)</strong>
+            <span class="screen-sub" style="margin:0;">Everything in Pro, plus shop management for a team of stylists or barbers.</span>
+          </div>
+          <button class="btn btn-primary" id="btn-subscribe-studio" type="button">Start Vono Studio free trial</button>
+          <p class="foot-note-small" id="account-plan-offer-note">&nbsp;</p>
+        </div>
+        <div id="account-plan-manage" style="display:none; flex-direction:column; gap:10px; margin-top:10px;">
+          <button class="btn btn-outline" id="btn-manage-subscription" type="button">Manage subscription</button>
+          <p class="foot-note-small" id="account-plan-manage-note">&nbsp;</p>
+        </div>
       </div>
+      </div>
+      <div class="ac-pane" data-acct-pane="notifications">
+      <div id="account-notifications-section" style="display:flex; flex-direction:column; gap:14px;">
+        <div id="ios-homescreen-tip" class="card tip" style="display:none; gap:6px;">
+          <p class="screen-sub" style="margin:0;"><strong>On an iPhone, notifications only work once this is added to your Home Screen.</strong> Safari can't turn them on from inside a regular browser tab.</p>
+          <button type="button" class="link-btn" id="btn-ios-homescreen-steps" style="padding:0; align-self:flex-start;">See how</button>
+          <div id="ios-homescreen-steps" style="display:none; flex-direction:column;">
+            <p class="screen-sub" style="margin:0; text-align:left;">1. Tap the &bull;&bull;&bull; icon in Safari's toolbar.<br>2. Tap the Share icon (the square with an arrow pointing up).<br>3. Scroll down and tap "Add to Home Screen."<br>4. Tap "Add" in the top right.<br>5. Open Vono from that new icon from now on, then come back here to turn notifications on.</p>
+          </div>
+        </div>
+        <div id="notifications-locked-note" class="card tip" style="display:none; gap:6px;">
+          <p class="screen-sub" style="margin:0;"><strong>Notifications are part of a paid Vono plan.</strong> Choose a plan under Subscription to turn these on.</p>
+        </div>
+        <div class="ac-card">
+          <button class="btn btn-primary" id="btn-enable-notifications" type="button">Turn on notifications</button>
+          <p class="foot-note-small" id="notifications-status-note" style="margin:0;">&nbsp;</p>
+          <p class="foot-note-small" style="margin:0;">Not seeing the message text? On iPhone, go to Settings &rarr; Notifications &rarr; Vono &rarr; Show Previews and choose Always.</p>
+        </div>
+        <p class="ac-glabel">Alerts for you</p>
+        <div class="ac-card">
+          <label class="ac-sw" for="notify-appt-events-toggle">
+            <span class="ac-sw-t"><b>Bookings, changes and cancels</b><span>When a client books, moves or cancels an appointment. Turn off if you'd rather not be pinged after hours.</span></span>
+            <input type="checkbox" class="ac-switch" id="notify-appt-events-toggle">
+          </label>
+        </div>
+        <p class="ac-glabel">Reminders for your clients</p>
+        <div class="ac-card">
+          <label class="ac-sw" for="notify-appt-reminder-toggle">
+            <span class="ac-sw-t"><b>Remind clients before their appointment</b><span>Includes your name, the service, the time and your address.</span></span>
+            <input type="checkbox" class="ac-switch" id="notify-appt-reminder-toggle">
+          </label>
+          <div id="appt-reminder-hours-row" class="field">
+            <label for="appt-reminder-hours">Send the reminder</label>
+            <select class="title-select" id="appt-reminder-hours" style="width:100%;">
+              <option value="1">1 hour before</option>
+              <option value="2">2 hours before</option>
+              <option value="4">4 hours before</option>
+              <option value="12">12 hours before</option>
+              <option value="24">24 hours before</option>
+              <option value="48">48 hours before</option>
+            </select>
+          </div>
+          <div id="appt-reminder-tz-row" class="field">
+            <label for="appt-reminder-tz">Your time zone</label>
+            <select class="title-select" id="appt-reminder-tz" style="width:100%;"></select>
+            <p class="foot-note-small" id="appt-reminder-tz-note" style="margin:4px 0 0;">Reminders go out by this clock. It was set from your phone; change it here if it's wrong.</p>
+          </div>
+        </div>
+      </div>
+</div>
     </main>
   </div>
   <div id="shared-view" class="shared-wrap" hidden>
@@ -4003,7 +4044,7 @@ function renderPlanStatus(){
     updateTrialNudgeBanner();
     return;
   }
-  section.style.display = '';
+  section.style.display = 'flex';
   const status = profile.subscriptionStatus || 'none';
   const tier = planTierLabel(profile.planTier);
   let text = "You're on Vono Basic -- Booking, Consult, and Refresher are yours free. Subscribe below to also message clients, unlock Business, your Find a Pro listing, and notifications.";
@@ -4078,7 +4119,7 @@ async function openBillingPortal(triggerBtn){
 document.getElementById('btn-subscribe-pro').addEventListener('click', (e)=> startCheckout('pro', e.currentTarget));
 document.getElementById('btn-subscribe-studio').addEventListener('click', (e)=> startCheckout('studio', e.currentTarget));
 document.getElementById('btn-manage-subscription').addEventListener('click', (e)=> openBillingPortal(e.currentTarget));
-document.getElementById('btn-booking-paywall-account').addEventListener('click', showAccountScreen);
+document.getElementById('btn-booking-paywall-account').addEventListener('click', ()=> showAccountScreen('plan'));
 document.getElementById('btn-business-paywall-account').addEventListener('click', (e)=> startCheckout('pro', e.currentTarget));
 document.getElementById('btn-bk-payment-paywall-trial').addEventListener('click', (e)=> startCheckout('pro', e.currentTarget));
 document.getElementById('btn-bk-link-paywall-trial').addEventListener('click', (e)=> startCheckout('pro', e.currentTarget));
@@ -10570,7 +10611,7 @@ document.getElementById('btn-account-subfield-tip-dismiss').addEventListener('cl
 function updateAccountLicenseVisibility(){
   const sel = document.getElementById('account-title-select');
   const title = sel && sel.value ? sel.value : profile.title;
-  document.getElementById('account-license-field').style.display = (title !== 'Student') ? 'block' : 'none';
+  document.getElementById('account-license-field').style.display = (title !== 'Student') ? 'flex' : 'none';
   const showStudentField = (title === 'Student');
   const showBarberLevel = (title === 'Barber');
   document.getElementById('account-student-field-field').style.display = showStudentField ? '' : 'none';
@@ -10619,11 +10660,11 @@ async function populateNotificationsStatus(){
     section.style.display = 'none';
     return;
   }
-  section.style.display = 'block';
+  section.style.display = 'flex';
   const btn = document.getElementById('btn-enable-notifications');
   const note = document.getElementById('notifications-status-note');
   const lockedNote = document.getElementById('notifications-locked-note');
-  const toggleIds = ['notify-appt-events-toggle', 'notify-rebook-toggle', 'notify-appt-reminder-toggle', 'appt-reminder-hours', 'appt-reminder-tz'];
+  const toggleIds = ['notify-appt-events-toggle', 'notify-appt-reminder-toggle', 'appt-reminder-hours', 'appt-reminder-tz'];
   if (!hasActiveAccess()){
     if (lockedNote) lockedNote.style.display = 'flex';
     document.getElementById('ios-homescreen-tip').style.display = 'none';
@@ -10659,7 +10700,6 @@ async function populateNotificationsStatus(){
     note.textContent = ' ';
   }
   document.getElementById('notify-appt-events-toggle').checked = profile.notifyApptEvents !== false;
-  document.getElementById('notify-rebook-toggle').checked = profile.notifyRebookNudges !== false;
   document.getElementById('notify-appt-reminder-toggle').checked = profile.notifyApptReminders !== false;
   document.getElementById('appt-reminder-hours').value = String(profile.apptReminderHours || 24);
   document.getElementById('appt-reminder-hours-row').style.display = (profile.notifyApptReminders !== false) ? '' : 'none';
@@ -10675,10 +10715,6 @@ document.getElementById('btn-ios-homescreen-steps').addEventListener('click', fu
 document.getElementById('notify-appt-events-toggle').addEventListener('change', function(){
   profile.notifyApptEvents = this.checked;
   persistProfile({ notifyApptEvents: this.checked });
-});
-document.getElementById('notify-rebook-toggle').addEventListener('change', function(){
-  profile.notifyRebookNudges = this.checked;
-  persistProfile({ notifyRebookNudges: this.checked });
 });
 document.getElementById('notify-appt-reminder-toggle').addEventListener('change', function(){
   profile.notifyApptReminders = this.checked;
@@ -10727,7 +10763,7 @@ async function updateNotifNudgeBanner(){
   el.hidden = !!existing;
 }
 document.getElementById('btn-notif-nudge-open').addEventListener('click', ()=>{
-  showAccountScreen();
+  showAccountScreen('notifications');
 });
 document.getElementById('btn-notif-nudge-dismiss').addEventListener('click', ()=>{
   try{ localStorage.setItem(notifNudgeDismissKey(), '1'); }catch(e){}
@@ -10973,7 +11009,69 @@ document.getElementById('btn-save-listing').addEventListener('click', async ()=>
   }
   updateListingViewLink();
 });
-function showAccountScreen(){
+let acctPane = null;
+function acctScrollTop(){
+  try{ window.scrollTo(0,0); const m = document.getElementById('acct-main'); if (m) m.scrollTop = 0; document.documentElement.scrollTop = 0; document.body.scrollTop = 0; }catch(e){}
+}
+const ACCT_TITLES = { profile:'Profile', listing:'Public listing', plan:'Subscription', notifications:'Notifications' };
+function showAcctPane(name){
+  if (!ACCT_TITLES[name]) { showAcctHub(); return; }
+  acctPane = name;
+  document.getElementById('acct-hub').classList.add('off');
+  document.querySelectorAll('.ac-pane').forEach(el=>{ el.classList.toggle('on', el.dataset.acctPane === name); });
+  document.getElementById('acct-topbar-title').textContent = ACCT_TITLES[name];
+  acctScrollTop();
+}
+function showAcctHub(){
+  acctPane = null;
+  document.getElementById('acct-hub').classList.remove('off');
+  document.querySelectorAll('.ac-pane').forEach(el=> el.classList.remove('on'));
+  document.getElementById('acct-topbar-title').textContent = 'Account';
+  renderAcctHub();
+  acctScrollTop();
+}
+function setAcctPill(id, text, kind){
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text || '';
+  el.className = 'ac-pill' + (kind ? ' ' + kind : '');
+}
+async function renderAcctHub(){
+  if (!profile) return;
+  const student = isStudent();
+  document.getElementById('acct-who-name').textContent = profile.name || '';
+  document.getElementById('acct-who-sub').textContent = tbTitleText() || '';
+  document.getElementById('acct-avatar').textContent = ((profile.name || '?').trim().charAt(0) || '?').toUpperCase();
+  document.getElementById('acct-sub-profile').textContent = student ? 'Name and status' : 'Name, status, license number';
+  // Public listing
+  if (!listingEligible()) setAcctPill('acct-pill-listing', 'Not available yet', 'muted');
+  else if (!hasActiveAccess()) setAcctPill('acct-pill-listing', 'Plan needed', 'warn');
+  else if (profile.publicListing) setAcctPill('acct-pill-listing', 'Live', 'good');
+  else setAcctPill('acct-pill-listing', 'Not listed', 'warn');
+  // Business rows are for non-students only
+  document.getElementById('acct-business-label').style.display = student ? 'none' : '';
+  document.getElementById('acct-business-group').style.display = student ? 'none' : '';
+  if (student) return;
+  const status = profile.subscriptionStatus || 'none';
+  const tier = planTierLabel(profile.planTier);
+  if (status === 'active'){ setAcctPill('acct-pill-plan','Active','good'); document.getElementById('acct-sub-plan').textContent = tier; }
+  else if (status === 'trialing'){
+    let sub = tier + ' free trial';
+    if (profile.trialEndsAt){ const d = Math.max(0, Math.ceil((new Date(profile.trialEndsAt).getTime() - Date.now())/86400000)); sub += ', ' + d + ' day' + (d === 1 ? '' : 's') + ' left'; }
+    setAcctPill('acct-pill-plan','Trial','good'); document.getElementById('acct-sub-plan').textContent = sub;
+  }
+  else if (status === 'past_due'){ setAcctPill('acct-pill-plan','Payment issue','warn'); document.getElementById('acct-sub-plan').textContent = tier; }
+  else { setAcctPill('acct-pill-plan','Upgrade','warn'); document.getElementById('acct-sub-plan').textContent = 'Vono Basic'; }
+  // Notifications
+  const hrs = Number(profile.apptReminderHours) || 24;
+  document.getElementById('acct-sub-notifications').textContent = (profile.notifyApptReminders !== false) ? ('Client reminders ' + hrs + ' hour' + (hrs === 1 ? '' : 's') + ' before') : 'Client reminders off';
+  if (!hasActiveAccess()){ setAcctPill('acct-pill-notifications','Plan needed','warn'); return; }
+  let on = false;
+  try{ on = pushSupported() && !!(await getExistingPushSubscription()); }catch(e){}
+  setAcctPill('acct-pill-notifications', on ? 'On' : 'Off', on ? 'good' : 'warn');
+}
+document.querySelectorAll('[data-acct-open]').forEach(btn=> btn.addEventListener('click', ()=> showAcctPane(btn.dataset.acctOpen)));
+function showAccountScreen(pane){
   populateAccountName();
   populateAccountTitleSelect();
   resetRoleChangePrompt();
@@ -10983,6 +11081,7 @@ function showAccountScreen(){
   populateAccountListing();
   document.getElementById('app-shell').hidden = true;
   document.getElementById('account-screen').hidden = false;
+  if (typeof pane === 'string' && ACCT_TITLES[pane]) { renderAcctHub(); showAcctPane(pane); } else showAcctHub();
 }
 function populateAccountName(){
   document.getElementById('account-name').value = (profile && profile.name) || '';
@@ -11004,8 +11103,12 @@ function hideAccountScreen(){
   document.getElementById('account-screen').hidden = true;
   document.getElementById('app-shell').hidden = false;
 }
-document.getElementById('btn-open-account').addEventListener('click', showAccountScreen);
-document.getElementById('btn-account-back').addEventListener('click', hideAccountScreen);
+document.getElementById('btn-open-account').addEventListener('click', ()=> showAccountScreen());
+document.getElementById('btn-account-back').addEventListener('click', ()=>{ if (acctPane) showAcctHub(); else hideAccountScreen(); });
+document.getElementById('btn-save-profile').addEventListener('click', ()=>{
+  document.getElementById('btn-save-name').click();
+  if (document.getElementById('account-license-field').style.display !== 'none') document.getElementById('btn-save-license').click();
+});
 document.getElementById('account-title-select').addEventListener('change', function(){
   const newTitle = this.value;
   if (newTitle === profile.title){ resetRoleChangePrompt(); return; }
