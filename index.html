@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-15T15-00-00Z">
+<meta name="app-build" content="2026-10-16T15-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -170,6 +170,50 @@
   .home-more-item:active{ background:var(--paper); }
   .biz-pane{ display:none; flex-direction:column; gap:16px; }
   .biz-pane.show{ display:flex; }
+  /* Business home + grouped rows */
+  .biz-hero{ border:1px solid var(--line); border-radius:16px; background:linear-gradient(160deg,var(--surface),var(--paper)); padding:16px; display:flex; flex-direction:column; gap:10px; }
+  .biz-hero .lab{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:0; }
+  .biz-hero .big{ font-weight:800; font-size:32px; letter-spacing:-0.02em; line-height:1; font-variant-numeric:tabular-nums; margin:0; }
+  .biz-hero .split{ display:flex; gap:18px; flex-wrap:wrap; }
+  .biz-hero .split div{ display:flex; flex-direction:column; gap:2px; }
+  .biz-hero .split b{ font-size:15px; font-variant-numeric:tabular-nums; }
+  .biz-hero .split span{ font-size:11.5px; color:var(--muted); }
+  .biz-hero .tipline{ border-top:1px solid var(--line); padding-top:10px; display:flex; justify-content:space-between; align-items:baseline; gap:10px; font-size:13px; }
+  .biz-hero .tipline span{ color:var(--muted); font-size:11.5px; }
+  .biz-glabel{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:6px 2px -6px; }
+  .biz-group{ display:flex; flex-direction:column; border:1px solid var(--line); border-radius:16px; background:var(--paper); overflow:hidden; }
+  .biz-row{ display:flex; align-items:center; gap:12px; padding:14px; border:0; border-top:1px solid var(--line); background:transparent; color:var(--ink); font-family:'Public Sans',sans-serif; text-align:left; cursor:pointer; width:100%; }
+  .biz-group > .biz-row:first-child{ border-top:0; }
+  .biz-row:focus-visible{ outline:2px solid var(--brass); outline-offset:-2px; }
+  .biz-row .t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .biz-row .t b{ font-size:14.5px; font-weight:700; }
+  .biz-row .t span{ color:var(--muted); font-size:12.5px; line-height:1.35; }
+  .biz-chev{ width:16px; height:16px; color:var(--brass); flex:none; }
+  .biz-pill{ font-size:10.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; border-radius:999px; padding:3px 9px; flex:none; background:var(--brass-tint); color:var(--brass); }
+  .biz-pill.good{ background:rgba(111,207,151,.14); color:#6FCF97; }
+  .biz-pill[hidden]{ display:none; }
+  .biz-pane-head{ display:flex; flex-direction:column; gap:2px; }
+  .biz-pane-head .link-btn{ align-self:flex-start; padding:0 0 4px; font-size:13px; }
+  .biz-pane-head h2{ margin:0; }
+  .biz-tiles{ display:flex; gap:8px; }
+  .biz-tiles div{ flex:1; min-width:0; border:1px solid var(--line); border-radius:12px; padding:10px; background:var(--surface); display:flex; flex-direction:column; gap:2px; }
+  .biz-tiles b{ font-size:15px; font-variant-numeric:tabular-nums; }
+  .biz-tiles span{ font-size:11px; color:var(--muted); font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+  .biz-fold{ border:1px solid var(--line); border-radius:16px; background:var(--paper); }
+  .biz-fold > summary{ list-style:none; display:flex; align-items:center; gap:12px; padding:14px; cursor:pointer; }
+  .biz-fold > summary::-webkit-details-marker{ display:none; }
+  .biz-fold > summary .t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .biz-fold > summary .t b{ font-size:14.5px; font-weight:700; }
+  .biz-fold > summary .t span{ color:var(--muted); font-size:12.5px; }
+  .biz-fold > summary .biz-chev{ transition:transform .15s; }
+  .biz-fold[open] > summary .biz-chev{ transform:rotate(90deg); }
+  .biz-fold-body{ display:flex; flex-direction:column; gap:10px; padding:0 14px 14px; border-top:1px solid var(--line); padding-top:14px; }
+  .biz-datebar{ display:flex; align-items:baseline; gap:10px; font-size:12.5px; color:var(--muted); flex-wrap:wrap; }
+  .biz-datebar b{ color:var(--ink); }
+  .biz-datebar .link-btn{ padding:0; font-size:12.5px; }
+  .biz-actionbar{ position:sticky; bottom:12px; z-index:5; border:1px solid var(--brass); border-radius:14px; background:var(--brass-tint); padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13.5px; font-weight:700; box-shadow:0 10px 24px -12px rgba(0,0,0,.7); }
+  .biz-actionbar .btn{ padding:9px 14px; font-size:13px; flex:none; }
+  .biz-actionbar[hidden]{ display:none; }
   .jobs-pane{ display:none; flex-direction:column; gap:16px; }
   .jobs-pane.show{ display:flex; }
   .jobs-listing-card{ display:flex; flex-direction:column; gap:6px; border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:12px 14px; cursor:pointer; }
@@ -1691,23 +1735,40 @@
           <button class="btn btn-primary" type="button" id="btn-business-paywall-account">Start free trial</button>
         </div>
         <div id="business-real-content">
-        <div class="tab-head">
+        <div class="tab-head" id="biz-tab-head">
           <p class="eyebrow-mini">Rewards &amp; income</p>
           <h2>Business</h2>
         </div>
-        <div class="mode-toggle-scroll-wrap">
-          <div class="mode-toggle" id="business-mode-toggle">
-            <button type="button" class="mode-btn active" data-biz-mode="loyalty">Loyalty</button>
-            <button type="button" class="mode-btn" data-biz-mode="earnings">Earnings</button>
-            <button type="button" class="mode-btn" data-biz-mode="walkins">Walk-ins</button>
-            <button type="button" class="mode-btn" data-biz-mode="tips">Tips</button>
-            <button type="button" class="mode-btn" data-biz-mode="clients">My Clients</button>
-            <button type="button" class="mode-btn" data-biz-mode="inventory">Inventory</button>
-            <button type="button" class="mode-btn" data-biz-mode="shop">Shop</button>
-            <button type="button" class="mode-btn" data-biz-mode="rentcomm">Rent &amp; Commission</button>
+        <div class="biz-pane show" data-biz="home" id="tab-bizhome">
+          <div class="biz-hero">
+            <p class="lab" id="bh-month-label">This month so far</p>
+            <p class="big" id="bh-month-total">&mdash;</p>
+            <div class="split">
+              <div><b id="bh-month-appt">&mdash;</b><span>Appointments</span></div>
+              <div><b id="bh-month-walk">&mdash;</b><span>Walk-ins</span></div>
+            </div>
+            <div class="tipline"><b id="bh-month-tips">Tips &mdash;</b><span>Kept separate, never added in</span></div>
+          </div>
+          <p class="biz-glabel">Money</p>
+          <div class="biz-group">
+          <button type="button" class="biz-row" data-biz-open="earnings"><span class="t"><b>Earnings</b><span id="bh-earn-sub">Year to date</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="biz-row" data-biz-open="walkins"><span class="t"><b>Walk-ins</b><span id="bh-walk-sub">Today</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="biz-row" data-biz-open="tips"><span class="t"><b>Tips</b><span id="bh-tips-sub">Today</span></span><span class="biz-pill" id="bh-tips-pill" hidden></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="biz-row" data-biz-open="rentcomm"><span class="t"><b>Rent &amp; commission</b><span id="bh-rent-sub">What you pay for your chair</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+          <p class="biz-glabel">Clients</p>
+          <div class="biz-group">
+          <button type="button" class="biz-row" data-biz-open="clients"><span class="t"><b>My Clients</b><span id="bh-clients-sub">Your saved clients</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="biz-row" data-biz-open="loyalty"><span class="t"><b>Loyalty</b><span id="bh-loy-sub">Reward tiers for repeat clients</span></span><span class="biz-pill" id="bh-loy-pill" hidden></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+          <p class="biz-glabel">Team &amp; stock</p>
+          <div class="biz-group">
+          <button type="button" class="biz-row" data-biz-open="shop"><span class="t"><b>Shop</b><span id="bh-shop-sub">Your team and shop</span></span><span class="biz-pill good" id="bh-shop-pill" hidden></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="biz-row" data-biz-open="inventory"><span class="t"><b>Inventory</b><span id="bh-inv-sub">Your products</span></span><span class="biz-pill" id="bh-inv-pill" hidden></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           </div>
         </div>
-        <div class="biz-pane show" data-biz="loyalty" id="tab-loyalty">
+        <div class="biz-pane" data-biz="loyalty" id="tab-loyalty">
+          <div class="biz-pane-head"><button type="button" class="link-btn" data-biz-back>&larr; Business</button><h2>Loyalty</h2></div>
           <div class="screen-body show" data-screen="dashboard" style="gap:20px;">
             <div style="display:flex; flex-direction:column; gap:10px;">
               <p class="eyebrow-mini">Your reward tiers</p>
@@ -1730,6 +1791,7 @@
           </div>
         </div>
         <div class="biz-pane" data-biz="earnings" id="tab-earnings">
+          <div class="biz-pane-head"><button type="button" class="link-btn" data-biz-back>&larr; Business</button><h2>Earnings</h2></div>
           <div class="screen-body show" data-screen="dashboard" style="gap:16px;">
             <div style="border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px; display:flex; flex-direction:column; gap:4px;">
               <p class="eyebrow-mini2" id="earn-year-label" style="margin:0;">Year to date</p>
@@ -1739,47 +1801,52 @@
             </div>
             <div id="earn-month-list" style="display:flex; flex-direction:column; gap:2px;"></div>
             <p class="screen-sub" id="earn-empty-note" style="display:none; margin:0;">No completed appointments yet this year.</p>
-            <p class="foot-note-small">Appointments counts bookings saved in Vono once their date has passed (cancelled ones don't count); Walk-ins adds in whatever you've logged on the Walk-ins tab. Neither can see payments made outside the app that aren't logged one of those two ways. Tips you log on the Tips tab are shown on their own line and are never added into these totals.</p>
-            <div id="earn-download-row" style="display:none; flex-direction:column; gap:10px; border-top:1px solid var(--line); padding-top:16px;">
+            <p class="foot-note-small" style="margin:0;">Totals only include bookings saved in Vono (once their date has passed) and walk-ins you've logged. Tips stay separate.</p>
+            <div id="earn-download-row" style="display:none; flex-direction:column; gap:10px;">
+              <details class="biz-fold"><summary><span class="t"><b>Yearly record</b><span>Download CSV or print, for your taxes</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><div class="biz-fold-body">
               <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-                <p class="eyebrow-mini" style="margin:0;">Yearly record</p>
+                <p class="eyebrow-mini" style="margin:0;">Year</p>
                 <select id="earn-year-select" class="title-select" style="width:auto;" aria-label="Year"></select>
               </div>
               <div class="btn-row" style="gap:10px;">
                 <button class="btn btn-outline" id="btn-earn-download" type="button" style="flex:1;">Download CSV</button>
                 <button class="btn btn-outline" id="btn-earn-print" type="button" style="flex:1;">Print</button>
               </div>
+              </div></details>
             </div>
           </div>
         </div>
         <div class="biz-pane" data-biz="walkins" id="tab-walkins">
+          <div class="biz-pane-head"><button type="button" class="link-btn" data-biz-back>&larr; Business</button><h2>Walk-ins</h2></div>
           <div class="screen-body show" data-screen="dashboard" style="gap:16px;">
-            <p class="screen-sub" style="margin:0;">Log walk-in clients you took payment from outside the app. Pulls your services and prices straight from Booking &gt; Services.</p>
-
             <div id="wi-no-services" style="display:none; flex-direction:column; gap:10px; border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px;">
               <p class="screen-sub" style="margin:0;">You haven't set up any services yet, so there's nothing to log walk-ins against.</p>
               <button class="btn btn-outline" id="btn-wi-go-services" type="button">Set up services</button>
             </div>
 
             <div id="wi-entry-section" style="display:none; flex-direction:column; gap:14px;">
-              <div class="field">
-                <label>Logging for</label>
+              <div class="biz-hero">
+                <p class="lab" id="wi-day-label">Today's walk-in total</p>
+                <p class="big" id="wi-day-total">$0.00</p>
+              </div>
+              <div class="biz-datebar">
+                <span>Logging for <b id="wi-logging-for">Today</b></span>
+                <button type="button" class="link-btn" id="btn-wi-pick-day">Pick another day</button>
+              </div>
+              <div class="field" id="wi-date-field" style="display:none;">
+                <label for="wi-entry-date">Logging for</label>
                 <div class="input-row"><input id="wi-entry-date" type="date"></div>
               </div>
               <div id="wi-service-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-              <div style="border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px; display:flex; flex-direction:column; gap:4px;">
-                <p class="eyebrow-mini2" id="wi-day-label" style="margin:0;">Today's walk-in total</p>
-                <p class="screen-title" id="wi-day-total" style="margin:0;">$0.00</p>
+              <p class="foot-note-small" style="margin:0;">Tap a service each time you take a walk-in. Prices come from Booking &gt; Services.</p>
+
+              <div class="biz-tiles">
+                <div><b id="wi-total-week">$0.00</b><span>Week</span></div>
+                <div><b id="wi-total-month">$0.00</b><span>Month</span></div>
+                <div><b id="wi-total-year">$0.00</b><span>Year</span></div>
               </div>
 
-              <div style="display:flex; flex-direction:column; gap:6px; border-top:1px solid var(--line); padding-top:16px;">
-                <p class="eyebrow-mini" style="margin:0;">Totals</p>
-                <div class="summary-row"><span>This week</span><span id="wi-total-week">$0.00</span></div>
-                <div class="summary-row"><span>This month</span><span id="wi-total-month">$0.00</span></div>
-                <div class="summary-row"><span>This year</span><span id="wi-total-year">$0.00</span></div>
-              </div>
-
-              <div style="display:flex; flex-direction:column; gap:10px; border-top:1px solid var(--line); padding-top:16px;">
+              <details class="biz-fold"><summary><span class="t"><b>Yearly record</b><span>Download CSV or print, for your taxes</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><div class="biz-fold-body">
                 <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
                   <p class="eyebrow-mini" style="margin:0;">Yearly record</p>
                   <select id="wi-year-select" class="title-select" style="width:auto;"></select>
@@ -1789,13 +1856,14 @@
                   <button class="btn btn-outline" id="btn-wi-print" type="button" style="flex:1;">Print</button>
                 </div>
                 <p class="foot-note-small" style="margin:0;">This is your own record for your taxes. Vono doesn't verify these payments actually happened. If a service's price changes later, days already logged keep the price they were logged at.</p>
-              </div>
+              </div></details>
             </div>
           </div>
         </div>
         <div class="biz-pane" data-biz="tips" id="tab-tips">
+          <div class="biz-pane-head"><button type="button" class="link-btn" data-biz-back>&larr; Business</button><h2>Tips</h2></div>
           <div class="screen-body show" data-screen="dashboard" style="gap:16px;">
-            <p class="screen-sub" style="margin:0;">Log the tips you got each day, including ones you were handed outside the app. Tips are tracked on their own and are never added into your Earnings or Walk-ins totals.</p>
+            <p class="foot-note-small" style="margin:0;">Log each day's tips, including ones handed to you outside the app. They're never added into Earnings or Walk-ins totals.</p>
 
             <div style="border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px; display:flex; flex-direction:column; gap:4px;">
               <p class="eyebrow-mini2" id="tip-ytd-label" style="margin:0;">Year to date</p>
@@ -1820,12 +1888,11 @@
               <p class="foot-note-small" id="tip-save-note" style="margin:0;" aria-live="polite">&nbsp;</p>
             </div>
 
-            <div style="display:flex; flex-direction:column; gap:6px; border-top:1px solid var(--line); padding-top:16px;">
-              <p class="eyebrow-mini" style="margin:0;">Totals</p>
-              <div class="summary-row"><span>Selected day</span><span id="tip-total-day">$0.00</span></div>
-              <div class="summary-row"><span>This week</span><span id="tip-total-week">$0.00</span></div>
-              <div class="summary-row"><span>This month</span><span id="tip-total-month">$0.00</span></div>
-              <div class="summary-row"><span>This year</span><span id="tip-total-year">$0.00</span></div>
+            <div class="biz-tiles">
+              <div><b id="tip-total-day">$0.00</b><span>Day</span></div>
+              <div><b id="tip-total-week">$0.00</b><span>Week</span></div>
+              <div><b id="tip-total-month">$0.00</b><span>Month</span></div>
+              <div><b id="tip-total-year">$0.00</b><span>Year</span></div>
             </div>
 
             <div style="display:flex; flex-direction:column; gap:6px; border-top:1px solid var(--line); padding-top:16px;">
@@ -1834,9 +1901,9 @@
               <p class="screen-sub" id="tip-recent-empty" style="margin:0;">No tips logged yet.</p>
             </div>
 
-            <div style="display:flex; flex-direction:column; gap:10px; border-top:1px solid var(--line); padding-top:16px;">
+            <details class="biz-fold"><summary><span class="t"><b>Yearly record</b><span>Download CSV or print, for your taxes</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><div class="biz-fold-body">
               <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-                <p class="eyebrow-mini" style="margin:0;">Yearly record</p>
+                <p class="eyebrow-mini" style="margin:0;">Year</p>
                 <select id="tip-year-select" class="title-select" style="width:auto;" aria-label="Year"></select>
               </div>
               <div id="tip-month-list" style="display:flex; flex-direction:column; gap:2px;"></div>
@@ -1845,20 +1912,18 @@
                 <button class="btn btn-outline" id="btn-tip-print" type="button" style="flex:1;">Print</button>
               </div>
               <p class="foot-note-small" style="margin:0;">This is your own record for your taxes. Vono doesn't verify these tips. The running total adds each month to the ones before it.</p>
-            </div>
+            </div></details>
           </div>
         </div>
         <div class="biz-pane" data-biz="clients" id="tab-my-clients">
+          <div class="biz-pane-head"><button type="button" class="link-btn" data-biz-back>&larr; Business</button><h2>My Clients</h2></div>
           <div class="screen-body show" data-screen="dashboard" id="myclients-list-view" style="gap:14px;">
-            <p class="screen-sub" style="margin:0;">Clients you've saved a visit for through Consult, in one searchable list. Tap a client to look them up again in Consult, or check the box to send a message.</p>
+            <p class="foot-note-small" style="margin:0;">Tap a client to look them up again in Consult, or tick the box to message them.</p>
             <div class="input-row"><input id="myclients-search" type="text" placeholder="Search by name or code"></div>
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-              <label class="check-row" style="padding:8px 12px; flex:none; gap:7px;">
-                <input type="checkbox" id="myclients-select-all">
-                <span>Select all</span>
-              </label>
-              <button type="button" class="link-btn" id="btn-myclients-message" style="padding:0; display:none;">Message selected (<span id="myclients-selected-count">0</span>)</button>
-            </div>
+            <label class="check-row" style="padding:6px 2px; flex:none; gap:7px; align-self:flex-start; background:transparent; border:0;">
+              <input type="checkbox" id="myclients-select-all">
+              <span>Select all</span>
+            </label>
             <div id="myclients-compose-panel" style="display:none; flex-direction:column; gap:10px; padding:12px; border:1px solid var(--line); border-radius:10px; background:var(--paper);">
               <p class="screen-sub" id="myclients-compose-target" style="margin:0;">Sending to 0 clients.</p>
               <div>
@@ -1882,6 +1947,10 @@
             </div>
             <div id="myclients-list" style="display:flex; flex-direction:column; gap:8px;"></div>
             <p class="screen-sub" id="myclients-empty" style="display:none; margin:0;">No clients yet. They'll show up here once you save a visit for them through Consult.</p>
+            <div class="biz-actionbar" id="myclients-actionbar" hidden>
+              <span><span id="myclients-selected-count">0</span> selected</span>
+              <button type="button" class="btn btn-primary" id="btn-myclients-message">Message them</button>
+            </div>
             <p class="foot-note-small" style="margin:0;">This list only ever holds clients you've actually served through the app. Vono has no way to import contacts from your phone or elsewhere to build a marketing list.</p>
           </div>
           <div id="myclients-routine-view" style="display:none; flex-direction:column; gap:14px;">
@@ -1921,6 +1990,7 @@
           </div>
         </div>
         <div class="biz-pane" data-biz="inventory" id="tab-inventory">
+          <div class="biz-pane-head"><button type="button" class="link-btn" data-biz-back>&larr; Business</button><h2>Inventory</h2></div>
           <div class="screen-body show" data-screen="dashboard" style="gap:14px;">
             <div class="card tip" id="inv-tip-note" hidden>
               <p class="screen-sub" style="margin:0; color:var(--ink);">Add a product and track how many you have on hand. Use the &minus; and + buttons to keep its count up to date.</p>
@@ -1943,6 +2013,7 @@
           </div>
         </div>
         <div class="biz-pane" data-biz="shop" id="tab-shop">
+          <div class="biz-pane-head"><button type="button" class="link-btn" data-biz-back>&larr; Business</button><h2>Shop</h2></div>
           <div class="screen-body show" data-screen="dashboard" style="gap:16px;">
 
             <!-- Shop management is a Vono Studio feature -- shown instead of the sections
@@ -1982,16 +2053,29 @@
 
             <!-- Part of a shop, as its owner -->
             <div id="shop-owner-section" style="display:none; flex-direction:column; gap:16px;">
+              <div id="shop-owner-hub" style="display:flex; flex-direction:column; gap:16px;">
               <div class="detail-card">
                 <strong id="shop-owner-name">&nbsp;</strong>
                 <span class="screen-sub" id="shop-owner-address" style="margin:0;">&nbsp;</span>
               </div>
-
+              <div class="biz-group">
+                <button type="button" class="biz-row" data-shop-open="team"><span class="t"><b>Team</b><span id="shop-hub-team-sub">Just you so far</span></span><span class="biz-pill good" id="shop-hub-team-pill" hidden></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button type="button" class="biz-row" data-shop-open="invite"><span class="t"><b>Invite a barber</b><span id="shop-hub-invite-sub">Add someone by their booking code</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button type="button" class="biz-row" data-shop-open="rent"><span class="t"><b>Rent &amp; commission</b><span id="shop-hub-rent-sub">What your team owes you</span></span><span class="biz-pill" id="shop-hub-rent-pill" hidden></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button type="button" class="biz-row" data-shop-open="records"><span class="t"><b>Shop records</b><span id="shop-hub-records-sub">CSV and print</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              </div>
+              <p class="foot-note-small" style="margin:0;">Your barbers' own clients, bookings and consults stay private to them. You only see the team list and what you've logged here.</p>
+              </div>
+              <div id="shop-sub-team" style="display:none; flex-direction:column; gap:12px;">
+                <button type="button" class="link-btn" data-shop-back style="padding:0 0 4px; align-self:flex-start; font-size:13px;">&larr; Shop</button>
               <div style="display:flex; flex-direction:column; gap:8px;">
                 <p class="eyebrow-mini">Team</p>
                 <div id="shop-team-list" style="display:flex; flex-direction:column; gap:8px;"></div>
               </div>
 
+              </div>
+              <div id="shop-sub-invite" style="display:none; flex-direction:column; gap:12px;">
+                <button type="button" class="link-btn" data-shop-back style="padding:0 0 4px; align-self:flex-start; font-size:13px;">&larr; Shop</button>
               <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
                 <p class="eyebrow-mini">Invite a barber</p>
                 <p class="screen-sub" style="margin:0;">Enter the public booking code they already use to sign in -- they'll see your invite next time they open the Shop tab, and nothing changes for them until they accept it.</p>
@@ -2005,7 +2089,10 @@
                 <div id="shop-pending-invites-list" style="display:flex; flex-direction:column; gap:8px;"></div>
               </div>
 
-              <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:16px;">
+              </div>
+              <div id="shop-sub-rent" style="display:none; flex-direction:column; gap:12px;">
+                <button type="button" class="link-btn" data-shop-back style="padding:0 0 4px; align-self:flex-start; font-size:13px;">&larr; Shop</button>
+              <div style="display:flex; flex-direction:column; gap:16px;">
                 <div>
                   <p class="eyebrow-mini" style="margin:0;">Rent &amp; Commission</p>
                   <p class="screen-sub" style="margin:4px 0 0;">Set up what each team member owes and log their payments. This is your own record for your taxes. Vono doesn't process these payments or verify they happened, and staff don't need to confirm their side.</p>
@@ -2059,6 +2146,10 @@
                 <div id="shop-rent-list" style="display:flex; flex-direction:column; gap:10px;"></div>
                 <p class="screen-sub" id="shop-rent-empty" style="display:none; margin:0;">Invite a team member above to start setting up rent or commission for them.</p>
 
+              </div>
+              </div>
+              <div id="shop-sub-records" style="display:none; flex-direction:column; gap:12px;">
+                <button type="button" class="link-btn" data-shop-back style="padding:0 0 4px; align-self:flex-start; font-size:13px;">&larr; Shop</button>
                 <div style="border-top:1px solid var(--line); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
                   <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
                     <p class="eyebrow-mini" style="margin:0;">Shop records</p>
@@ -2090,6 +2181,7 @@
           </div>
         </div>
         <div class="biz-pane" data-biz="rentcomm" id="tab-rentcomm">
+          <div class="biz-pane-head"><button type="button" class="link-btn" data-biz-back>&larr; Business</button><h2>Rent &amp; commission</h2></div>
           <div class="screen-body show" data-screen="dashboard" style="gap:16px;">
             <p class="screen-sub" style="margin:0;">Track what you pay out for your chair, booth, or commission: to a Vono Studio owner, an independent landlord, or a shop that's never used Vono. This is your own record, separate from anything a shop owner tracks on their side.</p>
 
@@ -3466,12 +3558,20 @@ window.openPrintPreview = function(opts){
 // unseen in the background.
 window.__activeScanStoppers = window.__activeScanStoppers || [];
 function getActiveBizMode(){
-  const active = document.querySelector('#business-mode-toggle .mode-btn.active');
-  return (active && active.dataset.bizMode) || 'loyalty';
+  const active = document.querySelector('.biz-pane.show');
+  return (active && active.dataset.biz) || 'home';
 }
 function showBusinessSubtab(mode){
   document.querySelectorAll('.biz-pane').forEach(p=> p.classList.toggle('show', p.dataset.biz===mode));
-  document.querySelectorAll('#business-mode-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.bizMode===mode));
+  // The "Rewards & income / Business" heading belongs to the home screen only; each
+  // pane has its own back link and title.
+  const head = document.getElementById('biz-tab-head');
+  if (head) head.style.display = mode === 'home' ? '' : 'none';
+  const pane = document.getElementById('tab-business');
+  const scroller = pane && pane.closest('.tab-content');
+  if (scroller) scroller.scrollTop = 0;
+  try{ window.scrollTo(0, 0); }catch(e){}
+  if (mode === 'home' && window.initBizHome) window.initBizHome();
   if (mode === 'earnings' && window.initEarningsTab) window.initEarningsTab();
   if (mode === 'walkins' && window.initWalkinsTab) window.initWalkinsTab();
   if (mode === 'tips' && window.initTipsTab) window.initTipsTab();
@@ -3481,8 +3581,12 @@ function showBusinessSubtab(mode){
   if (mode === 'shop' && window.initShopTab) window.initShopTab();
   if (mode === 'rentcomm' && window.initRentCommTab) window.initRentCommTab();
 }
-document.querySelectorAll('#business-mode-toggle .mode-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=> showBusinessSubtab(btn.dataset.bizMode));
+// Rows on the Business home open their pane; every pane's back link returns home.
+document.querySelectorAll('[data-biz-open]').forEach(btn=>{
+  btn.addEventListener('click', ()=> showBusinessSubtab(btn.dataset.bizOpen));
+});
+document.querySelectorAll('[data-biz-back]').forEach(btn=>{
+  btn.addEventListener('click', ()=> showBusinessSubtab('home'));
 });
 function getActiveBookingMode(){
   const active = document.querySelector('#booking-mode-toggle .mode-btn.active');
@@ -3518,7 +3622,7 @@ function showTab(name){
     if (window.initBookingTab) window.initBookingTab();
     updateBookingLandingNote();
   }
-  if (name === 'business' && hasActiveAccess()) showBusinessSubtab(getActiveBizMode());
+  if (name === 'business' && hasActiveAccess()) showBusinessSubtab('home');
   if (name === 'jobs' && window.initJobsTab) window.initJobsTab();
 }
 // One-time note on the Booking tab explaining it's the new landing tab, since a pro who's
@@ -7861,6 +7965,34 @@ async function saveAppointmentChange(id, core, extras){
     note.textContent = result.ok ? 'Saved.' : ("Couldn't save: " + (result.message || 'try again.'));
     loadReady();
   });
+  // The clients who've earned a reward that hasn't been given yet. Shared by the
+  // "Rewards ready to give" list and the count on the Business home.
+  async function computeReadyClients(tiers){
+    const [apptsRes, redRes] = await Promise.all([
+      supabaseClient.from('appointments').select('*').eq('barber_code', profileCode).eq('status','booked'),
+      supabaseClient.from('loyalty_redemptions').select('*').eq('barber_code', profileCode)
+    ]);
+    if (apptsRes.error) throw apptsRes.error;
+    if (redRes.error) throw redRes.error;
+    const today = todayIso();
+    const completedAppts = (apptsRes.data || []).filter(a=> a.appt_date && a.appt_date <= today);
+    const clients = {};
+    completedAppts.forEach(a=>{
+      if (!clients[a.client_code]) clients[a.client_code] = { name: a.client_name, count: 0 };
+      clients[a.client_code].count++;
+    });
+    const redByClient = {};
+    (redRes.data || []).forEach(r=>{
+      if (!redByClient[r.client_code]) redByClient[r.client_code] = {};
+      redByClient[r.client_code][r.tier_id] = (redByClient[r.client_code][r.tier_id] || 0) + 1;
+    });
+    const readyClients = Object.keys(clients).map(code=>{
+      const state = computeTierState(tiers, clients[code].count, redByClient[code] || {});
+      return { code, name: clients[code].name, pendingTiers: state.pendingTiers };
+    }).filter(c=> c.pendingTiers.length);
+    return readyClients;
+  }
+
   async function loadReady(){
     const listEl = root.querySelector('#loy-ready-list');
     const emptyEl = root.querySelector('#loy-ready-empty');
@@ -7879,28 +8011,7 @@ async function saveAppointmentChange(id, core, extras){
       return;
     }
     try{
-      const [apptsRes, redRes] = await Promise.all([
-        supabaseClient.from('appointments').select('*').eq('barber_code', profileCode).eq('status','booked'),
-        supabaseClient.from('loyalty_redemptions').select('*').eq('barber_code', profileCode)
-      ]);
-      if (apptsRes.error) throw apptsRes.error;
-      if (redRes.error) throw redRes.error;
-      const today = todayIso();
-      const completedAppts = (apptsRes.data || []).filter(a=> a.appt_date && a.appt_date <= today);
-      const clients = {};
-      completedAppts.forEach(a=>{
-        if (!clients[a.client_code]) clients[a.client_code] = { name: a.client_name, count: 0 };
-        clients[a.client_code].count++;
-      });
-      const redByClient = {};
-      (redRes.data || []).forEach(r=>{
-        if (!redByClient[r.client_code]) redByClient[r.client_code] = {};
-        redByClient[r.client_code][r.tier_id] = (redByClient[r.client_code][r.tier_id] || 0) + 1;
-      });
-      const readyClients = Object.keys(clients).map(code=>{
-        const state = computeTierState(tiers, clients[code].count, redByClient[code] || {});
-        return { code, name: clients[code].name, pendingTiers: state.pendingTiers };
-      }).filter(c=> c.pendingTiers.length);
+      const readyClients = await computeReadyClients(tiers);
       emptyEl.style.display = readyClients.length ? 'none' : 'block';
       listEl.innerHTML = readyClients.map(c=>{
         const rows = c.pendingTiers.map(t=> `<div class="detail-row"><span>${t.reward}</span><button type="button" class="btn btn-outline" data-redeem-client="${c.code}" data-redeem-tier="${t.id}" data-redeem-name="${c.name}" style="flex:none; padding:6px 12px;">Mark redeemed</button></div>`).join('');
@@ -7932,6 +8043,13 @@ async function saveAppointmentChange(id, core, extras){
     }
     loadReady();
   });
+  window.bizLoyaltySummary = async function(){
+    const tiers = sortedTiers();
+    const out = { tiers: tiers.length, ready: 0 };
+    if (!tiers.length || !dbAvailable || !profileCode) return out;
+    try{ out.ready = (await computeReadyClients(tiers)).length; }catch(e){ console.warn('loyalty summary failed', e); }
+    return out;
+  };
   window.initLoyaltyTab = function(){
     renderTiersList();
     loadReady();
@@ -8090,6 +8208,30 @@ async function saveAppointmentChange(id, core, extras){
   }
   root.querySelector('#btn-earn-download').addEventListener('click', downloadYearCsv);
   root.querySelector('#btn-earn-print').addEventListener('click', printYear);
+  // Numbers for the Business home: this month and the year so far, worked out by the
+  // same function the Earnings screen uses so the two always agree. Tips stay separate.
+  window.bizEarningsSummary = async function(){
+    if (!dbAvailable || !profileCode) return null;
+    try{
+      const appts = await fetchBookedAppointments();
+      const walkinLogs = window.fetchAllWalkinLogsForBarber ? await window.fetchAllWalkinLogsForBarber() : [];
+      const tipLogs = window.fetchAllTipLogsForBarber ? await window.fetchAllTipLogsForBarber() : [];
+      cache = { appts, walkinLogs, tipLogs };
+      const now = new Date();
+      const n = yearNumbers(now.getFullYear());
+      const m = now.getMonth();
+      const today = todayIso();
+      const sumDay = (rows, f)=> (rows || []).filter(r => r.entry_date === today).reduce((s, r)=> s + f(r), 0);
+      return {
+        monthName: MONTH_NAMES[m],
+        monthAppt: n.appt[m], monthWalk: n.walk[m], monthTips: n.tips[m],
+        ytd: n.apptTotal + n.walkTotal,
+        todayWalk: sumDay(walkinLogs, r => (Number(r.count)||0) * (Number(r.price)||0)),
+        todayTips: sumDay(tipLogs, r => Number(r.amount)||0),
+        todayTipsLogged: (tipLogs || []).some(r => r.entry_date === today)
+      };
+    }catch(e){ console.warn('earnings summary failed', e); return null; }
+  };
   window.initEarningsTab = function(){
     renderEarnings();
   };
@@ -8202,7 +8344,12 @@ async function saveAppointmentChange(id, core, extras){
   function renderDayTotal(){
     const labelEl = root.querySelector('#wi-day-label');
     const totalEl = root.querySelector('#wi-day-total');
-    labelEl.textContent = (wiSelectedDate === todayIso() ? "Today's" : wiFmtDate(wiSelectedDate) + "'s") + ' walk-in total';
+    const isToday = wiSelectedDate === todayIso();
+    let longDay = wiSelectedDate;
+    try{ longDay = new Date(wiSelectedDate + 'T00:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'}); }catch(e){}
+    labelEl.textContent = (isToday ? 'Today' : 'Day') + ' \u00b7 ' + longDay;
+    const forEl = root.querySelector('#wi-logging-for');
+    if (forEl) forEl.textContent = isToday ? 'Today' : wiFmtDate(wiSelectedDate);
     totalEl.textContent = wiFmtMoney(totalForRows(rowsForDate(wiSelectedDate)));
   }
   function renderTotalsSummary(){
@@ -8242,6 +8389,11 @@ async function saveAppointmentChange(id, core, extras){
     const minusId = e.target.dataset.wiMinus;
     if (plusId) adjustWalkinCount(plusId, 1);
     else if (minusId) adjustWalkinCount(minusId, -1);
+  });
+  root.querySelector('#btn-wi-pick-day').addEventListener('click', ()=>{
+    const f = root.querySelector('#wi-date-field');
+    f.style.display = f.style.display === 'none' ? '' : 'none';
+    if (f.style.display !== 'none') root.querySelector('#wi-entry-date').focus();
   });
   root.querySelector('#wi-entry-date').addEventListener('change', function(){
     wiSelectedDate = this.value || todayIso();
@@ -8802,10 +8954,10 @@ async function saveAppointmentChange(id, core, extras){
   }
   function updateSelectionUI(){
     const count = selectedClients.size;
-    const msgBtn = root.querySelector('#btn-myclients-message');
+    const bar = root.querySelector('#myclients-actionbar');
     const countEl = root.querySelector('#myclients-selected-count');
     countEl.textContent = String(count);
-    msgBtn.style.display = count > 0 ? 'inline' : 'none';
+    bar.hidden = count === 0;
     const targetEl = root.querySelector('#myclients-compose-target');
     if (targetEl) targetEl.textContent = `Sending to ${count} client${count===1?'':'s'}.`;
     if (count === 0){
@@ -9137,6 +9289,14 @@ async function saveAppointmentChange(id, core, extras){
     }
   });
   root.querySelector('#btn-routine-back').addEventListener('click', closeRoutine);
+  window.bizClientsSummary = async function(){
+    if (!dbAvailable || !profileCode) return null;
+    try{
+      const { data, error } = await supabaseClient.from('clients').select('code').contains('barber_codes', [profileCode]);
+      if (error) throw error;
+      return { count: (data || []).length };
+    }catch(e){ console.warn('clients summary failed', e); return null; }
+  };
   window.initMyClientsTab = function(){
     // Cheap to call every time the tab is opened -- keeps the list current without
     // needing a manual refresh button, and the query is scoped to this professional
@@ -9301,6 +9461,15 @@ async function saveAppointmentChange(id, core, extras){
       statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
     }
   });
+  window.bizInventorySummary = async function(){
+    if (!dbAvailable || !profileCode) return null;
+    try{
+      const { data, error } = await supabaseClient.from('inventory_items').select('quantity').eq('profile_code', profileCode);
+      if (error) throw error;
+      const rows = data || [];
+      return { products: rows.length, out: rows.filter(r => (Number(r.quantity)||0) <= 0).length };
+    }catch(e){ console.warn('inventory summary failed', e); return null; }
+  };
   window.initInventoryTab = function(){
     updateInvTipNote();
     loadInventory();
@@ -9985,6 +10154,65 @@ async function saveAppointmentChange(id, core, extras){
     loadShopState();
   });
 
+  // ---- Owner view: a short list of rows, each opening one page ----
+  const SHOP_SUBS = ['team','invite','rent','records'];
+  function showShopSub(which){
+    root.querySelector('#shop-owner-hub').style.display = which ? 'none' : 'flex';
+    SHOP_SUBS.forEach(k=>{ root.querySelector('#shop-sub-' + k).style.display = (k === which) ? 'flex' : 'none'; });
+    const scroller = root.closest('.tab-content');
+    if (scroller) scroller.scrollTop = 0;
+  }
+  root.querySelectorAll('[data-shop-open]').forEach(b=> b.addEventListener('click', ()=> showShopSub(b.dataset.shopOpen)));
+  root.querySelectorAll('[data-shop-back]').forEach(b=> b.addEventListener('click', ()=> showShopSub(null)));
+  function setHubPill(id, text){
+    const el = root.querySelector('#' + id);
+    if (!el) return;
+    if (text){ el.textContent = text; el.hidden = false; } else { el.hidden = true; }
+  }
+  // Reads what the team, invite and rent sections already show, so the rows never
+  // need their own copy of that data.
+  function updateShopHub(){
+    const staff = teamMembers.filter(m => m.code !== profileCode);
+    const firstNames = staff.map(m => String(m.name || m.code).split(' ')[0]);
+    root.querySelector('#shop-hub-team-sub').textContent = staff.length ? firstNames.join(', ') : 'Just you so far';
+    setHubPill('shop-hub-team-pill', staff.length ? String(staff.length) : '');
+    const pending = root.querySelectorAll('#shop-pending-invites-list [data-invite-cancel]').length;
+    root.querySelector('#shop-hub-invite-sub').textContent = pending
+      ? pending + (pending === 1 ? ' invite' : ' invites') + ' waiting for an answer'
+      : 'Add someone by their booking code';
+    const unpaid = root.querySelectorAll('#shop-rent-list [data-rent-log]').length;
+    setHubPill('shop-hub-rent-pill', unpaid ? unpaid + ' unpaid' : '');
+    const yearTotal = (root.querySelector('#shop-rent-year-total') || {}).textContent || '';
+    root.querySelector('#shop-hub-records-sub').textContent = (yearTotal ? 'Year total ' + yearTotal + ' \u00b7 ' : '') + 'CSV and print';
+  }
+  (function(){
+    let queued = false;
+    const kick = ()=>{ if (queued) return; queued = true; Promise.resolve().then(()=>{ queued = false; updateShopHub(); }); };
+    const mo = new MutationObserver(kick);
+    ['#shop-team-list','#shop-pending-invites-list','#shop-rent-list','#shop-rent-year-total'].forEach(sel=>{
+      const el = root.querySelector(sel);
+      if (el) mo.observe(el, { childList:true, subtree:true, characterData:true });
+    });
+  })();
+  // For the Business home: which kind of shop situation this pro is in.
+  window.bizShopSummary = async function(){
+    if (!hasStudioAccess()) return { state:'locked' };
+    if (!dbAvailable || !profileCode) return null;
+    try{
+      let code = profile.shopCode, role = profile.shopRole;
+      const { data } = await supabaseClient.from('profiles').select('shop_code, shop_role').eq('code', profileCode).maybeSingle();
+      if (data){ code = data.shop_code || null; role = data.shop_role || null; }
+      if (!code) return { state:'none' };
+      const shop = await fetchShopByCode(code);
+      let staff = 0;
+      if (role === 'owner'){
+        const { data: team } = await supabaseClient.from('profiles').select('code').eq('shop_code', code);
+        staff = (team || []).filter(m => m.code !== profileCode).length;
+      }
+      return { state: role === 'owner' ? 'owner' : 'staff', name: shop ? shop.name : '', staff };
+    }catch(e){ console.warn('shop summary failed', e); return null; }
+  };
+
   // ---- Entry point ----
   async function loadShopState(){
     if (!hasStudioAccess()){
@@ -10018,7 +10246,66 @@ async function saveAppointmentChange(id, core, extras){
     }
   }
   window.initShopTab = function(){
+    showShopSub(null);
     loadShopState();
+  };
+})();
+/* =========================================================
+   BUSINESS HOME (Business tab landing screen)
+   A month-so-far summary plus one row per tool. Every number comes from the
+   same helpers the tool's own screen uses (see window.biz*Summary above), so
+   the home screen and each tool always agree. Tips are shown on their own line
+   and are never added into the total.
+   ========================================================= */
+(function(){
+  const root = document.getElementById('tab-bizhome');
+  const $ = id => root.querySelector('#' + id);
+  let token = 0;
+  function money(n){ n = Math.round((Number(n)||0) * 100) / 100; return '$' + (Number.isInteger(n) ? n : n.toFixed(2)); }
+  function plural(n, one, many){ return n + ' ' + (n === 1 ? one : many); }
+  function setPill(id, text){
+    const el = $(id);
+    if (text){ el.textContent = text; el.hidden = false; } else { el.hidden = true; }
+  }
+  window.initBizHome = function(){
+    const mine = ++token;
+    const live = fn => (typeof fn === 'function' ? fn().catch(()=> null) : Promise.resolve(null));
+    live(window.bizEarningsSummary).then(e=>{
+      if (mine !== token) return;
+      if (!e) return;
+      $('bh-month-label').textContent = e.monthName + ' so far';
+      $('bh-month-total').textContent = money(e.monthAppt + e.monthWalk);
+      $('bh-month-appt').textContent = money(e.monthAppt);
+      $('bh-month-walk').textContent = money(e.monthWalk);
+      $('bh-month-tips').textContent = 'Tips ' + money(e.monthTips);
+      $('bh-earn-sub').textContent = 'Year to date ' + money(e.ytd);
+      $('bh-walk-sub').textContent = e.todayWalk > 0 ? 'Today ' + money(e.todayWalk) : 'Nothing logged today';
+      $('bh-tips-sub').textContent = e.todayTipsLogged ? 'Today ' + money(e.todayTips) : 'Not logged today';
+      setPill('bh-tips-pill', e.todayTipsLogged ? '' : 'Add');
+    });
+    live(window.bizClientsSummary).then(c=>{
+      if (mine !== token || !c) return;
+      $('bh-clients-sub').textContent = c.count ? plural(c.count, 'client', 'clients') : 'No clients yet';
+    });
+    live(window.bizLoyaltySummary).then(l=>{
+      if (mine !== token || !l) return;
+      $('bh-loy-sub').textContent = l.tiers ? plural(l.tiers, 'tier', 'tiers') + ' set up' : 'Set up rewards for repeat clients';
+      setPill('bh-loy-pill', l.ready ? l.ready + ' ready' : '');
+    });
+    live(window.bizInventorySummary).then(i=>{
+      if (mine !== token || !i) return;
+      $('bh-inv-sub').textContent = i.products ? plural(i.products, 'product', 'products') : 'No products yet';
+      setPill('bh-inv-pill', i.out ? i.out + ' out' : '');
+    });
+    live(window.bizShopSummary).then(s=>{
+      if (mine !== token || !s) return;
+      if (s.state === 'locked'){ $('bh-shop-sub').textContent = 'Part of Vono Studio'; setPill('bh-shop-pill', ''); }
+      else if (s.state === 'none'){ $('bh-shop-sub').textContent = 'Create or join a shop'; setPill('bh-shop-pill', ''); }
+      else {
+        $('bh-shop-sub').textContent = s.name || 'Your shop';
+        setPill('bh-shop-pill', s.state === 'owner' && s.staff ? plural(s.staff, 'barber', 'barbers') : '');
+      }
+    });
   };
 })();
 /* =========================================================
