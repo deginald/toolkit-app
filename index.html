@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-18T15-00-00Z">
+<meta name="app-build" content="2026-10-19T15-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -458,6 +458,9 @@
   .break-item .bi-remove:hover{ color:var(--behind); }
   .delta-chip{ font-size:12px; font-weight:700; color:var(--behind); background:var(--behind-tint); padding:4px 9px; border-radius:8px; width:fit-content; font-variant-numeric:tabular-nums; }
   .recover-card{ border:1px solid var(--brass); background:var(--brass-tint); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:10px; }
+  .recover-card[hidden]{ display:none; }
+  #tab-pace.pace-sub .tab-head, #tab-pace.pace-sub #pace-mode-toggle, #tab-pace.pace-sub .pace-disc{ display:none; }
+  #tab-pace .switch:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
   .recover-title{ font-family:'Libre Franklin',sans-serif; font-weight:700; font-size:15px; margin:0; }
   .recover-text{ font-size:13px; line-height:1.5; color:var(--ink); margin:0; }
   .toggle-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
@@ -600,6 +603,24 @@
   .overview-stats{ display:flex; flex-direction:column; gap:3px; min-width:0; }
   .overview-stats .os-big{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:18px; }
   .overview-stats .os-label{ font-size:11.5px; color:var(--muted); }
+  .led-next{ display:flex; align-items:center; gap:12px; width:100%; padding:11px 14px; border:1px solid var(--brass); border-radius:12px; background:var(--brass-tint); color:var(--ink); font-family:'Public Sans',sans-serif; text-align:left; cursor:pointer; }
+  .led-next[hidden]{ display:none; }
+  .led-next .t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .led-next .t span{ font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+  .led-next .t b{ font-size:14.5px; font-weight:700; }
+  .led-next:focus-visible, .led-cat > summary:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .led-cat{ border:1px solid var(--line); border-radius:16px; background:var(--paper); }
+  .led-cat > summary{ list-style:none; display:flex; align-items:center; gap:12px; padding:14px; cursor:pointer; }
+  .led-cat > summary::-webkit-details-marker{ display:none; }
+  .led-cat > summary .t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .led-cat > summary .t b{ font-size:14.5px; font-weight:700; }
+  .led-cat > summary .t span{ color:var(--muted); font-size:12.5px; line-height:1.35; }
+  .led-cat > summary .biz-chev{ transition:transform .15s; }
+  .led-cat[open] > summary .biz-chev{ transform:rotate(90deg); }
+  .led-mini{ display:flex; gap:2px; width:44px; flex:none; }
+  .led-mini i{ flex:1; height:6px; border-radius:2px; background:var(--line); }
+  .led-mini i.f{ background:var(--brass); }
+  .led-cat-body{ display:flex; flex-direction:column; gap:8px; padding:0 14px 14px; }
   .cat-section{ display:flex; flex-direction:column; gap:8px; }
   .cat-header{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
   .cat-title{ font-family:'Libre Franklin',sans-serif; font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); }
@@ -1003,45 +1024,77 @@
       <!-- ============ PACE ============ -->
       <section class="tab-pane" data-tab="pace" id="tab-pace">
         <div class="tab-head">
-          <p class="eyebrow-mini">Real-Time Pace &amp; Projected Graduation Tracker</p>
-          <h2>Pace</h2>
+          <p class="eyebrow-mini">Pace</p>
+          <h2 id="pace-title">Hours</h2>
         </div>
-        <p class="foot-note-small" style="max-width:none;">This is a planning projection, calculated from the hours, services, absences, holidays, and schedule you enter here. It isn't your school's official record. Your actual completion and graduation requirements are determined by your school or licensing authority.</p>
         <div class="mode-toggle" id="pace-mode-toggle" style="margin-bottom:2px;">
           <button type="button" class="mode-btn active" data-pace-mode="hours">Hours</button>
           <button type="button" class="mode-btn" data-pace-mode="services">Services</button>
         </div>
         <div id="pace-mode-hours">
-        <nav class="steps">
-          <button class="step-btn active" data-goto="setup"><span class="n">1</span>Set up</button>
-          <button class="step-btn" data-goto="calendar"><span class="n">2</span>Calendar</button>
-          <button class="step-btn" data-goto="dashboard"><span class="n">3</span>Overview</button>
-          <button class="step-btn" data-goto="absence"><span class="n">4</span>Absence</button>
-          <button class="step-btn" data-goto="result"><span class="n">5</span>Updated</button>
-        </nav>
-        <div class="screen-body" data-screen="setup">
-          <p class="screen-sub">Enter the numbers from your school's latest report or time-clock printout. From there Vono counts your hours for you each day, using your schedule below. It skips school breaks and any absence you log, and adds any make-up hours. When your school gives you a new official count, enter it here with its date.</p>
-          <div class="field">
-            <label>Total hours required</label>
-            <div class="input-row"><input id="in-total" type="number" placeholder="e.g. 1500"><span class="suffix">hrs</span></div>
+        <!-- HOURS HOME: the answer first, set-up in rows underneath -->
+        <div class="screen-body" data-screen="dashboard">
+          <div class="card" style="gap:14px;">
+            <div style="display:flex; align-items:center; gap:18px;">
+              <div class="pace-ring-wrap" style="position:relative; width:104px; height:104px; flex:none;">
+                <svg viewBox="0 0 120 120" width="104" height="104" style="transform:rotate(-90deg); display:block;">
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="var(--line)" stroke-width="14"></circle>
+                  <circle id="db-ring-fill" cx="60" cy="60" r="50" fill="none" stroke="var(--brass)" stroke-width="14" stroke-linecap="round" stroke-dasharray="314.159" stroke-dashoffset="314.159"></circle>
+                  <g stroke="var(--bg)" stroke-width="7">
+                    <line x1="60" y1="0" x2="60" y2="20" transform="rotate(0 60 60)"></line>
+                    <line x1="60" y1="0" x2="60" y2="20" transform="rotate(45 60 60)"></line>
+                    <line x1="60" y1="0" x2="60" y2="20" transform="rotate(90 60 60)"></line>
+                    <line x1="60" y1="0" x2="60" y2="20" transform="rotate(135 60 60)"></line>
+                    <line x1="60" y1="0" x2="60" y2="20" transform="rotate(180 60 60)"></line>
+                    <line x1="60" y1="0" x2="60" y2="20" transform="rotate(225 60 60)"></line>
+                    <line x1="60" y1="0" x2="60" y2="20" transform="rotate(270 60 60)"></line>
+                    <line x1="60" y1="0" x2="60" y2="20" transform="rotate(315 60 60)"></line>
+                  </g>
+                </svg>
+                <div id="db-ring-pct" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:21px; color:var(--brass); font-variant-numeric:tabular-nums;">0%</div>
+              </div>
+              <div style="flex:1; min-width:0;">
+                <p class="eyebrow-mini2">Graduation</p>
+                <div class="big-date" id="db-date">&nbsp;</div>
+                <span class="chip-status good" id="db-chip" style="margin-top:8px;">On pace</span>
+              </div>
+            </div>
+            <div class="meter">
+              <div class="meter-track"><div class="meter-fill" id="db-meter"></div></div>
+              <div class="meter-labels"><span id="db-hours">0 / 0 hrs</span><span id="db-pct">0 to go</span></div>
+            </div>
+            <p class="screen-sub" id="db-est-note" style="margin:0; font-size:12px;"></p>
           </div>
-          <div class="field">
-            <label>Date of that report</label>
-            <div class="input-row"><input id="in-asof" type="date"></div>
+          <div class="recover-card" id="recover-card" hidden>
+            <p class="recover-title">Recover this time</p>
+            <p class="recover-text" id="recover-text">Add a 4-hour Saturday session each week to land back on your original date.</p>
+            <div class="toggle-row"><span class="switch-label">Add Saturday session</span><div class="switch" id="recover-switch" role="switch" aria-checked="false" tabindex="0"><div class="knob"></div></div></div>
           </div>
-          <div class="field">
-            <label>Hours on that report</label>
-            <div class="input-row"><input id="in-earned" type="number" placeholder="e.g. 400"><span class="suffix">hrs</span></div>
+          <p class="biz-glabel">Your numbers</p>
+          <div class="biz-group">
+            <button type="button" class="biz-row" data-goto="schedule"><span class="t"><b>Weekly schedule</b><span id="row-sched-sub">&nbsp;</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button type="button" class="biz-row" data-goto="calendar"><span class="t"><b>School calendar</b><span id="row-cal-sub">&nbsp;</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button type="button" class="biz-row" data-goto="absence"><span class="t"><b>Absences and make-up time</b><span id="row-abs-sub">&nbsp;</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button type="button" class="biz-row" data-goto="report"><span class="t"><b>Update from my school report</b><span id="row-rep-sub">&nbsp;</span></span><span class="biz-pill" id="row-rep-due" hidden>Due</span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           </div>
-          <div class="field">
-            <label>Your normal weekly schedule</label>
-            <div class="day-grid" id="day-grid"></div>
-            <p class="screen-sub" style="margin-top:2px;">Half-hours are fine (e.g. 6.5)</p>
-          </div>
-          <div class="spacer"></div>
-          <button class="btn btn-primary" data-goto="calendar">Next: school calendar</button>
         </div>
+        <!-- WEEKLY SCHEDULE -->
+        <div class="screen-body" data-screen="schedule">
+          <div class="biz-pane-head">
+            <button type="button" class="link-btn" data-goto="dashboard">&larr; Pace</button>
+            <h2>Weekly schedule</h2>
+          </div>
+          <p class="screen-sub">The hours you normally attend each day. Vono counts these for you from the date of your last school report. Half-hours are fine (e.g. 6.5).</p>
+          <div class="day-grid" id="day-grid"></div>
+          <div class="spacer"></div>
+          <button class="btn btn-primary" data-goto="dashboard">Done</button>
+        </div>
+        <!-- SCHOOL CALENDAR -->
         <div class="screen-body" data-screen="calendar">
+          <div class="biz-pane-head">
+            <button type="button" class="link-btn" data-goto="dashboard">&larr; Pace</button>
+            <h2>School calendar</h2>
+          </div>
           <p class="screen-sub">Add breaks and holidays already on your school's calendar. These don't count against you.</p>
           <div class="field">
             <label>Upcoming breaks</label>
@@ -1056,61 +1109,22 @@
             <button class="btn btn-ghost" id="btn-cancel-edit-break" type="button" style="display:none; padding:10px;">Cancel</button>
           </div>
           <div class="spacer"></div>
-          <button class="btn btn-primary" data-goto="dashboard">Calculate my pace</button>
+          <button class="btn btn-primary" data-goto="dashboard">Done</button>
         </div>
-        <div class="screen-body" data-screen="dashboard">
-          <div style="display:flex; align-items:center; gap:18px;">
-            <div class="pace-ring-wrap" style="position:relative; width:104px; height:104px; flex:none;">
-              <svg viewBox="0 0 120 120" width="104" height="104" style="transform:rotate(-90deg); display:block;">
-                <circle cx="60" cy="60" r="50" fill="none" stroke="var(--line)" stroke-width="14"></circle>
-                <circle id="db-ring-fill" cx="60" cy="60" r="50" fill="none" stroke="var(--brass)" stroke-width="14" stroke-linecap="round" stroke-dasharray="314.159" stroke-dashoffset="314.159"></circle>
-                <g stroke="var(--bg)" stroke-width="7">
-                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(0 60 60)"></line>
-                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(45 60 60)"></line>
-                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(90 60 60)"></line>
-                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(135 60 60)"></line>
-                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(180 60 60)"></line>
-                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(225 60 60)"></line>
-                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(270 60 60)"></line>
-                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(315 60 60)"></line>
-                </g>
-              </svg>
-              <div id="db-ring-pct" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:21px; color:var(--brass); font-variant-numeric:tabular-nums;">0%</div>
-            </div>
-            <div style="flex:1; min-width:0;">
-              <p class="eyebrow-mini2">Your pace</p>
-              <div class="big-date" id="db-date">&nbsp;</div>
-              <span class="chip-status good" id="db-chip" style="margin-top:8px;">On pace</span>
-            </div>
-          </div>
-          <p class="screen-sub" id="db-breaks-note" style="margin-top:2px;">&nbsp;</p>
-          <p class="screen-sub" id="db-absence-note" style="margin-top:2px; color:var(--behind);">&nbsp;</p>
-          <div class="meter">
-            <div class="meter-track"><div class="meter-fill" id="db-meter"></div></div>
-            <div class="meter-labels"><span id="db-hours">0 / 0 hrs</span><span id="db-pct">0%</span></div>
-          </div>
-          <p class="screen-sub" id="db-est-note" style="margin:0; font-size:12px;"></p>
-          <div class="card" style="flex-direction:row; align-items:center; justify-content:space-between;">
-            <div><p class="eyebrow-mini2">Hours remaining</p><div class="big-date" id="db-remaining" style="font-size:20px;">&nbsp;</div></div>
-            <div style="text-align:right;"><p class="eyebrow-mini2">Hours earned (est.)</p><div class="big-date" id="db-earned-stat" style="font-size:20px; color:var(--muted);">&nbsp;</div></div>
-          </div>
-          <div class="card">
-            <p class="eyebrow-mini2" style="margin-bottom:2px;">Weekly schedule</p>
-            <div class="sched-row" id="db-sched"></div>
-          </div>
-          <div class="spacer"></div>
-          <button class="btn btn-primary" data-goto="absence">Log an absence</button>
-          <button class="btn btn-ghost" data-goto="setup">Edit my hours</button>
-        </div>
+        <!-- ABSENCES AND MAKE-UP TIME -->
         <div class="screen-body" data-screen="absence">
-          <p class="screen-sub">Add every absence as it happens. This is a planning entry, not an official absence report.</p>
-          <div class="field">
-            <label>Logged absences</label>
-            <div id="absence-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+          <div class="biz-pane-head">
+            <button type="button" class="link-btn" data-goto="dashboard">&larr; Pace</button>
+            <h2>Absences and make-up time</h2>
           </div>
+          <p class="screen-sub">Add every absence as it happens. This is a planning entry, not an official absence report.</p>
           <div class="card" style="flex-direction:row; align-items:center; justify-content:space-between;">
             <div><p class="eyebrow-mini2">Days absent</p><div class="big-date" id="ab-total-count" style="font-size:18px;">0</div></div>
             <div style="text-align:right;"><p class="eyebrow-mini2">Hours missed</p><div class="big-date" id="ab-total-hours" style="font-size:18px; color:var(--behind);">0 hrs</div></div>
+          </div>
+          <div class="field">
+            <label>Logged absences</label>
+            <div id="absence-list" style="display:flex; flex-direction:column; gap:8px;"></div>
           </div>
           <div class="card" style="gap:10px;">
             <p class="eyebrow-mini2">Add an absence</p>
@@ -1162,33 +1176,84 @@
             <button class="btn btn-outline" id="btn-add-extra" style="padding:10px;">+ Add extra hours</button>
           </div>
           <div class="spacer"></div>
-          <button class="btn btn-primary" data-goto="result">See updated date</button>
+          <button class="btn btn-primary" data-goto="dashboard">Done</button>
         </div>
-        <div class="screen-body" data-screen="result">
-          <p class="eyebrow-mini2">Updated projection</p>
-          <div class="card">
-            <span class="compare-old" id="res-old">&nbsp;</span>
-            <div class="big-date" id="res-new" style="font-size:24px;">&nbsp;</div>
-            <div class="delta-chip" id="res-delta">+0 days</div>
-            <span class="chip-status behind" id="res-chip" style="margin-top:4px;">Behind pace</span>
-            <p class="screen-sub" id="res-tally" style="margin-top:2px;">&nbsp;</p>
+        <!-- SCHOOL REPORT -->
+        <div class="screen-body" data-screen="report">
+          <div class="biz-pane-head">
+            <button type="button" class="link-btn" data-goto="dashboard">&larr; Pace</button>
+            <h2>School report</h2>
           </div>
-          <div class="recover-card">
-            <p class="recover-title">Recover this time</p>
-            <p class="recover-text" id="recover-text">Add one 4-hour Saturday session to land back on your original date.</p>
-            <div class="toggle-row"><span class="switch-label">Add Saturday session</span><div class="switch" id="recover-switch"><div class="knob"></div></div></div>
+          <p class="screen-sub">Copy the numbers from your school's latest report or time-clock printout. From that date on, Vono counts your hours for you each day. When your school gives you a new count, enter it here with its date.</p>
+          <div class="card" style="gap:14px;">
+            <div class="field">
+              <label for="in-earned">Hours on that report</label>
+              <div class="input-row"><input id="in-earned" type="number" placeholder="e.g. 400"><span class="suffix">hrs</span></div>
+            </div>
+            <div class="field">
+              <label for="in-asof">Date of that report</label>
+              <div class="input-row"><input id="in-asof" type="date"></div>
+            </div>
+            <div class="field">
+              <label for="in-total">Total hours required</label>
+              <div class="input-row"><input id="in-total" type="number" placeholder="e.g. 1500"><span class="suffix">hrs</span></div>
+            </div>
           </div>
-          <div class="spacer"></div>
-          <button class="btn btn-primary" data-goto="dashboard">Back to overview</button>
+          <button class="btn btn-primary" id="btn-report-save">Save</button>
+          <p class="screen-sub" id="report-saved" style="text-align:center;" hidden>&nbsp;</p>
         </div>
         </div>
         <div id="pace-mode-services" style="display:none;">
-        <nav class="steps">
-          <button class="step-btn active" data-svc-goto="setup"><span class="n">1</span>Set up</button>
-          <button class="step-btn" data-svc-goto="log"><span class="n">2</span>Log</button>
-          <button class="step-btn" data-svc-goto="dashboard"><span class="n">3</span>Overview</button>
-        </nav>
-        <div class="screen-body show" data-svc-screen="setup">
+        <!-- SERVICES HOME -->
+        <div class="screen-body show" data-svc-screen="dashboard">
+          <div class="card" style="gap:14px;">
+            <div style="display:flex; align-items:center; gap:18px;">
+              <div class="pace-ring-wrap" style="position:relative; width:104px; height:104px; flex:none;">
+                <svg viewBox="0 0 120 120" width="104" height="104" style="transform:rotate(-90deg); display:block;">
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="var(--line)" stroke-width="14"></circle>
+                  <circle id="svc-ring-fill" cx="60" cy="60" r="50" fill="none" stroke="var(--brass)" stroke-width="14" stroke-linecap="round" stroke-dasharray="314.159" stroke-dashoffset="314.159"></circle>
+                  <g stroke="var(--bg)" stroke-width="7">
+                    <line x1="60" y1="0" x2="60" y2="20" transform="rotate(0 60 60)"></line>
+                    <line x1="60" y1="0" x2="60" y2="20" transform="rotate(45 60 60)"></line>
+                    <line x1="60" y1="0" x2="60" y2="20" transform="rotate(90 60 60)"></line>
+                    <line x1="60" y1="0" x2="60" y2="20" transform="rotate(135 60 60)"></line>
+                    <line x1="60" y1="0" x2="60" y2="20" transform="rotate(180 60 60)"></line>
+                    <line x1="60" y1="0" x2="60" y2="20" transform="rotate(225 60 60)"></line>
+                    <line x1="60" y1="0" x2="60" y2="20" transform="rotate(270 60 60)"></line>
+                    <line x1="60" y1="0" x2="60" y2="20" transform="rotate(315 60 60)"></line>
+                  </g>
+                </svg>
+                <div id="svc-ring-pct" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:21px; color:var(--brass); font-variant-numeric:tabular-nums;">0%</div>
+              </div>
+              <div style="flex:1; min-width:0;">
+                <p class="eyebrow-mini2">At this pace</p>
+                <div class="big-date" id="svc-db-date" style="font-size:19px;">&nbsp;</div>
+                <span class="chip-status good" id="svc-db-chip" style="margin-top:8px;">On pace</span>
+              </div>
+            </div>
+            <div class="meter">
+              <div class="meter-track"><div class="meter-fill" id="svc-db-meter"></div></div>
+              <div class="meter-labels"><span id="svc-db-count">0 / 0 svcs</span><span id="svc-db-pct">0 to go</span></div>
+            </div>
+            <p class="screen-sub" id="svc-db-note" style="margin:0; font-size:12px;">&nbsp;</p>
+            <div class="biz-tiles">
+              <div><span>Your pace so far</span><b id="svc-db-rate">&nbsp;</b></div>
+              <div><span>Needed to finish on time</span><b id="svc-db-needed">&nbsp;</b></div>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="btn-svc-log-today" data-svc-goto="log">+ Log today's services</button>
+          <p class="biz-glabel">Your numbers</p>
+          <div class="biz-group">
+            <button type="button" class="biz-row" data-svc-goto="setup"><span class="t"><b>Requirement and target</b><span id="svc-row-req-sub">&nbsp;</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button type="button" class="biz-row" data-svc-goto="log"><span class="t"><b>Daily log</b><span id="svc-row-log-sub">&nbsp;</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+        </div>
+        <!-- REQUIREMENT AND TARGET -->
+        <div class="screen-body" data-svc-screen="setup">
+          <div class="biz-pane-head">
+            <button type="button" class="link-btn" data-svc-goto="dashboard">&larr; Pace</button>
+            <h2>Requirement and target</h2>
+          </div>
           <p class="screen-sub">Copy these numbers off your last monthly report, or start fresh.</p>
           <div class="field">
             <label>Total number of services required</label>
@@ -1208,14 +1273,15 @@
             <button type="button" class="link-btn" id="btn-svc-use-grad-date" style="align-self:flex-start; padding:4px 0 0;">Use my projected graduation date</button>
           </div>
           <div class="spacer"></div>
-          <button class="btn btn-primary" data-svc-goto="log">Next: log services</button>
+          <button class="btn btn-primary" data-svc-goto="dashboard">Done</button>
         </div>
+        <!-- DAILY LOG -->
         <div class="screen-body" data-svc-screen="log">
-          <p class="screen-sub">Log each day's completed services here. Every entry adds on top of the "completed so far" count above.</p>
-          <div class="field">
-            <label>Logged days</label>
-            <div id="svc-log-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+          <div class="biz-pane-head">
+            <button type="button" class="link-btn" data-svc-goto="dashboard">&larr; Pace</button>
+            <h2>Daily log</h2>
           </div>
+          <p class="screen-sub">Log each day's completed services here. Every entry adds on top of the "completed so far" count in Requirement and target.</p>
           <div class="card" style="gap:10px;">
             <p class="eyebrow-mini2" id="svc-log-form-title">Add today's services</p>
             <div class="input-row"><span class="suffix">Date</span><input id="svc-log-date" type="date"></div>
@@ -1224,52 +1290,15 @@
             <button class="btn btn-primary" id="btn-add-svc-log" style="padding:10px;">+ Add entry</button>
             <button class="btn btn-ghost" id="btn-cancel-edit-svc-log" type="button" style="display:none; padding:10px;">Cancel</button>
           </div>
-          <div class="spacer"></div>
-          <button class="btn btn-primary" data-svc-goto="dashboard">See my pace</button>
-        </div>
-        <div class="screen-body" data-svc-screen="dashboard">
-          <div style="display:flex; align-items:center; gap:18px;">
-            <div class="pace-ring-wrap" style="position:relative; width:104px; height:104px; flex:none;">
-              <svg viewBox="0 0 120 120" width="104" height="104" style="transform:rotate(-90deg); display:block;">
-                <circle cx="60" cy="60" r="50" fill="none" stroke="var(--line)" stroke-width="14"></circle>
-                <circle id="svc-ring-fill" cx="60" cy="60" r="50" fill="none" stroke="var(--brass)" stroke-width="14" stroke-linecap="round" stroke-dasharray="314.159" stroke-dashoffset="314.159"></circle>
-                <g stroke="var(--bg)" stroke-width="7">
-                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(0 60 60)"></line>
-                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(45 60 60)"></line>
-                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(90 60 60)"></line>
-                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(135 60 60)"></line>
-                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(180 60 60)"></line>
-                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(225 60 60)"></line>
-                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(270 60 60)"></line>
-                  <line x1="60" y1="0" x2="60" y2="20" transform="rotate(315 60 60)"></line>
-                </g>
-              </svg>
-              <div id="svc-ring-pct" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:21px; color:var(--brass); font-variant-numeric:tabular-nums;">0%</div>
-            </div>
-            <div style="flex:1; min-width:0;">
-              <p class="eyebrow-mini2">Your pace</p>
-              <div class="big-date" id="svc-db-date" style="font-size:19px;">&nbsp;</div>
-              <span class="chip-status good" id="svc-db-chip" style="margin-top:8px;">On pace</span>
-            </div>
-          </div>
-          <p class="screen-sub" id="svc-db-note" style="margin-top:2px;">&nbsp;</p>
-          <div class="meter">
-            <div class="meter-track"><div class="meter-fill" id="svc-db-meter"></div></div>
-            <div class="meter-labels"><span id="svc-db-count">0 / 0 svcs</span><span id="svc-db-pct">0%</span></div>
-          </div>
-          <div class="card" style="flex-direction:row; align-items:center; justify-content:space-between;">
-            <div><p class="eyebrow-mini2">Services remaining</p><div class="big-date" id="svc-db-remaining" style="font-size:20px;">&nbsp;</div></div>
-            <div style="text-align:right;"><p class="eyebrow-mini2">Completed to date</p><div class="big-date" id="svc-db-earned-stat" style="font-size:20px; color:var(--muted);">&nbsp;</div></div>
-          </div>
-          <div class="card" style="flex-direction:row; align-items:center; justify-content:space-between;">
-            <div><p class="eyebrow-mini2">Your pace so far</p><div class="big-date" id="svc-db-rate" style="font-size:16px;">&nbsp;</div></div>
-            <div style="text-align:right;"><p class="eyebrow-mini2">Needed to finish on time</p><div class="big-date" id="svc-db-needed" style="font-size:16px; color:var(--muted);">&nbsp;</div></div>
+          <div class="field">
+            <label>Logged days</label>
+            <div id="svc-log-list" style="display:flex; flex-direction:column; gap:8px;"></div>
           </div>
           <div class="spacer"></div>
-          <button class="btn btn-primary" data-svc-goto="log">Log more services</button>
-          <button class="btn btn-ghost" data-svc-goto="setup">Edit my numbers</button>
+          <button class="btn btn-primary" data-svc-goto="dashboard">Done</button>
         </div>
         </div>
+        <p class="foot-note-small pace-disc" style="max-width:none;">A planning estimate, not your school's official record. <button type="button" class="link-btn" id="btn-pace-disc-more" style="padding:0; font-size:inherit;">More</button><span id="pace-disc-full" hidden> It's calculated from the hours, services, absences, holidays, and schedule you enter here. Your actual completion and graduation requirements are determined by your school or licensing authority.</span></p>
       </section>
       <!-- ============ COACH ============ -->
       <section class="tab-pane" data-tab="coach" id="tab-coach">
@@ -2308,20 +2337,19 @@
           <h2>Ledger</h2>
         </div>
         <div class="screen-body show" data-screen="dashboard">
-          <p class="screen-sub" style="margin:0;">Tap a technique below and rate your own confidence on it, 1 (just starting) to 10 (expert). It's self-rated, not instructor-verified, and builds into a portfolio you can share.</p>
-          <div>
-            <p class="eyebrow-mini2">Your Skill Graph</p>
-            <h2 class="screen-title" id="ledger-name">&nbsp;</h2>
-          </div>
-          <div class="overview-card">
-            <div class="ring" id="progress-ring"><div class="ring-inner" id="progress-ring-label">-</div></div>
-            <div class="overview-stats">
-              <span class="os-big" id="overview-verified">No self-ratings yet</span>
-              <span class="os-label" id="overview-pending">&nbsp;</span>
+          <p class="screen-sub" style="margin:0;">Rate your own confidence, 1 (just starting) to 10 (expert). Self-rated, never instructor-verified.</p>
+          <div class="overview-card" style="flex-direction:column; align-items:stretch; gap:12px;">
+            <div style="display:flex; align-items:center; gap:14px;">
+              <div class="ring" id="progress-ring"><div class="ring-inner" id="progress-ring-label">-</div></div>
+              <div class="overview-stats">
+                <span class="os-big" id="overview-verified">No self-ratings yet</span>
+                <span class="os-label" id="overview-pending">&nbsp;</span>
+              </div>
             </div>
+            <button type="button" class="led-next" id="btn-ledger-next" hidden><span class="t"><span>Next to rate</span><b id="ledger-next-name">&nbsp;</b></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button class="btn btn-outline" id="btn-view-portfolio">View shareable portfolio</button>
           </div>
-          <div id="category-list" style="display:flex; flex-direction:column; gap:16px;"></div>
-          <button class="btn btn-outline" id="btn-view-portfolio">View shareable portfolio</button>
+          <div id="category-list" style="display:flex; flex-direction:column; gap:12px;"></div>
         </div>
         <div class="screen-body" data-screen="technique">
           <div class="walk-header">
@@ -4072,7 +4100,7 @@ function showTab(name){
       if (pace.weekly <= 0){
         asofEl.textContent = 'Add your weekly schedule so Vono can count your hours.';
         asofEl.style.color = 'var(--brass)';
-        updBtn.textContent = 'Add schedule'; updateTarget = 'setup';
+        updBtn.textContent = 'Add schedule'; updateTarget = 'schedule';
       } else {
         asofEl.style.color = '';
         updBtn.textContent = 'Log absence'; updateTarget = 'absence';
@@ -4120,7 +4148,7 @@ function showTab(name){
     if (kind === 'services'){
       const b = document.querySelector('#pace-mode-toggle [data-pace-mode="services"]'); if (b) b.click();
     } else if (window.__ahcPaceGoto){
-      window.__ahcPaceGoto('setup');
+      window.__ahcPaceGoto('schedule');
     }
   }
   root.querySelectorAll('[data-shome-stat]').forEach(card=>{
@@ -4510,6 +4538,43 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       });
     });
   }
+  function todayDiff(iso){ return Math.round((new Date(todayIso()+'T00:00:00') - new Date(iso+'T00:00:00')) / 86400000); }
+  function fmtBreakRange(b){
+    const s = new Date(b.start+'T00:00:00'), e = new Date(b.end+'T00:00:00');
+    const mo = d=> d.toLocaleDateString('en-US', {month:'short'});
+    if (b.start === b.end) return `${mo(s)} ${s.getDate()}`;
+    if (mo(s) === mo(e) && s.getFullYear() === e.getFullYear()) return `${mo(s)} ${s.getDate()}–${e.getDate()}`;
+    return `${mo(s)} ${s.getDate()} – ${mo(e)} ${e.getDate()}`;
+  }
+  function schedSummary(){
+    const sched = P().schedule || {};
+    const order = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const on = order.filter(d=> (Number(sched[d])||0) > 0);
+    if (!on.length) return 'Not set yet';
+    const weekly = on.reduce((sum,d)=> sum + Number(sched[d]), 0);
+    const idx = on.map(d=> order.indexOf(d));
+    const contiguous = idx[idx.length-1] - idx[0] === idx.length - 1;
+    const days = on.length === 1 ? on[0] : (contiguous ? `${on[0]}–${on[on.length-1]}` : on.join(', '));
+    const same = on.every(d=> Number(sched[d]) === Number(sched[on[0]]));
+    return same ? `${days} · ${fmtNum(sched[on[0]])} hrs a day · ${fmtNum(weekly)} a week` : `${days} · ${fmtNum(weekly)} hrs a week`;
+  }
+  function calSummary(){
+    const today = todayIso();
+    const all = P().breaks || [];
+    const up = all.filter(b=> b.end >= today).sort((a,b)=> a.start < b.start ? -1 : 1);
+    if (!up.length) return all.length ? 'No breaks coming up' : 'No breaks added yet';
+    return `${up.length} break${up.length===1?'':'s'} coming up · next: ${up[0].label}, ${fmtBreakRange(up[0])}`;
+  }
+  function absSummary(){
+    const ab = P().absences || [], ex = P().extras || [];
+    const parts = [];
+    if (ab.length){
+      parts.push(`${ab.length} absence${ab.length===1?'':'s'}`);
+      parts.push(`${fmtNum(ab.reduce((sum,a)=> sum + (Number(a.amount)||0), 0))} hrs missed`);
+    }
+    if (ex.length) parts.push(`${fmtNum(ex.reduce((sum,x)=> sum + (Number(x.amount)||0), 0))} hrs make-up`);
+    return parts.length ? parts.join(' · ') : 'None logged';
+  }
   function recalcDashboard(){
     const total = parseFloat(root.querySelector('#in-total').value)||0;
     const asOf = root.querySelector('#in-asof').value || todayIso();
@@ -4521,21 +4586,15 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const blocked = P().breaks.concat(P().absences.filter(a=>a.type==='full').map(a=>({start:a.start, end:a.end})));
     const partials = P().absences.filter(a=>a.type==='partial').map(a=>({date:a.date, amount:a.amount}));
     const currentDate = simulate(asOf, reported, total, P().schedule, blocked, partials, null, 0, pExtras());
+    const slipDays = total>0 ? Math.round((currentDate - baselineDate) / 86400000) : 0;
     root.querySelector('#db-date').textContent = total>0 ? fmtDate(currentDate) : 'Add your hours to begin';
-    const totalBreakDays = P().breaks.reduce((sum,b)=> sum + daysBetween(b.start,b.end), 0);
-    root.querySelector('#db-breaks-note').textContent = P().breaks.length
-      ? `Includes ${P().breaks.length} school break${P().breaks.length===1?'':'s'} (${totalBreakDays} days) already factored in` : '';
-    const absDays = absenceDayCount(P().absences);
-    const slipDays = Math.round((currentDate - baselineDate) / 86400000);
-    root.querySelector('#db-absence-note').textContent = absDays
-      ? `${slipDays > 0 ? `Pushed back ${slipDays} day${slipDays===1?'':'s'} by ` : 'Includes '}${absDays} day${absDays===1?'':'s'} absent so far` : '';
     root.querySelector('#db-hours').textContent = `${fmtNum(earned)} / ${total.toLocaleString()} hrs`;
+    root.querySelector('#db-pct').textContent = total>0 ? `${fmtNum(Math.max(0, total - earned))} to go` : '';
     const dbEst = root.querySelector('#db-est-note');
-    if (dbEst) dbEst.textContent = (est.added > 0 ? 'Estimated from your schedule. ' : '') + (reported > 0 ? `Last reported: ${fmtNum(reported)} hrs on ${fmtSingleDate(asOf)}.` : '');
+    if (dbEst) dbEst.textContent = (est.added > 0 ? 'Estimated from your schedule. ' : '') + (reported > 0 ? `Your last report: ${fmtNum(reported)} hrs on ${fmtSingleDate(asOf)}.` : '');
     const pct = total>0 ? Math.min(100, Math.round((earned/total)*100)) : 0;
-    root.querySelector('#db-pct').textContent = pct + '%';
     root.querySelector('#db-meter').style.width = pct + '%';
-    const ringColor = currentDate > baselineDate ? 'var(--behind)' : 'var(--brass)';
+    const ringColor = slipDays > 0 ? 'var(--behind)' : 'var(--brass)';
     const ringFill = root.querySelector('#db-ring-fill');
     const ringCircumference = 2 * Math.PI * 50;
     ringFill.style.strokeDashoffset = ringCircumference - (pct/100) * ringCircumference;
@@ -4543,24 +4602,38 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const ringPctEl = root.querySelector('#db-ring-pct');
     ringPctEl.textContent = pct + '%';
     ringPctEl.style.color = ringColor;
-    root.querySelector('#db-remaining').textContent = `${fmtNum(Math.max(0, total - earned))} hrs`;
-    root.querySelector('#db-earned-stat').textContent = `${fmtNum(earned)} hrs`;
-    const schedRow = root.querySelector('#db-sched');
-    schedRow.innerHTML = '';
-    DAYS.forEach((d,i)=>{
-      const hrs = P().schedule[d];
-      const pill = document.createElement('span');
-      pill.className = 'sched-pill' + (hrs>0 ? ' active' : '');
-      pill.textContent = `${SHORT[i]} ${hrs>0 ? hrs+'h' : '-'}`;
-      schedRow.appendChild(pill);
-    });
     const chip = root.querySelector('#db-chip');
-    if (currentDate > baselineDate){ chip.textContent = 'Behind pace'; chip.className = 'chip-status behind'; }
+    if (!total){ chip.textContent = 'Not set up yet'; chip.className = 'chip-status neutral'; }
+    else if (slipDays > 0){ chip.textContent = `${slipDays} day${slipDays===1?'':'s'} behind`; chip.className = 'chip-status behind'; }
     else { chip.textContent = 'On pace'; chip.className = 'chip-status good'; }
+    // Recover card: only when behind, and only if a Saturday session would actually help.
+    const card = root.querySelector('#recover-card');
+    const sw = root.querySelector('#recover-switch');
+    let showRec = false;
+    if (slipDays > 0){
+      const recDate = simulate(asOf, reported, total, P().schedule, blocked, partials, 'Sat', 4, pExtras());
+      if (recDate < currentDate){
+        showRec = true;
+        const on = sw.classList.contains('on');
+        const back = recDate <= baselineDate;
+        const target = fmtDate(back ? baselineDate : recDate);
+        root.querySelector('#recover-text').textContent = on
+          ? (back ? `With a 4-hour Saturday session each week, you're back on ${target}.` : `With a 4-hour Saturday session each week, you'd finish ${target}.`)
+          : (back ? `Add a 4-hour Saturday session each week to land back on ${target}.` : `Add a 4-hour Saturday session each week to finish ${target}.`);
+      }
+    }
+    card.hidden = !showRec;
+    if (!showRec){ sw.classList.remove('on'); sw.setAttribute('aria-checked','false'); }
+    // Rows
+    root.querySelector('#row-sched-sub').textContent = schedSummary();
+    root.querySelector('#row-cal-sub').textContent = calSummary();
+    root.querySelector('#row-abs-sub').textContent = absSummary();
+    root.querySelector('#row-rep-sub').textContent = reported > 0 ? `Last: ${fmtNum(reported)} hrs on ${fmtSingleDate(asOf)}` : 'Add the numbers from your school';
+    root.querySelector('#row-rep-due').hidden = !(reported > 0 && todayDiff(asOf) > 21);
   }
   function setAbsenceMode(mode){
     pstate.absenceMode = mode;
-    root.querySelectorAll('.mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.mode===mode));
+    root.querySelectorAll('.mode-toggle [data-mode]').forEach(b=> b.classList.toggle('active', b.dataset.mode===mode));
     root.querySelector('#ab-full-fields').style.display = mode==='full' ? '' : 'none';
     root.querySelector('#ab-partial-fields').style.display = mode==='partial' ? '' : 'none';
     root.querySelector('#ab-estimate-card').style.display = mode==='full' ? '' : 'none';
@@ -4573,41 +4646,49 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const hrs = hoursInRange(start, end, P().schedule);
     root.querySelector('#ab-estimate').textContent = `${hrs} hrs`;
   }
-  function recalcResult(){
-    const total = parseFloat(root.querySelector('#in-total').value)||0;
-    const asOf = root.querySelector('#in-asof').value || todayIso();
-    const earned = parseFloat(root.querySelector('#in-earned').value)||0;
-    const blocked = P().breaks.concat(P().absences.filter(a=>a.type==='full').map(a=>({start:a.start, end:a.end})));
-    const partials = P().absences.filter(a=>a.type==='partial').map(a=>({date:a.date, amount:a.amount}));
-    const recoverOn = root.querySelector('#recover-switch').classList.contains('on');
-    const newDate = simulate(asOf, earned, total, P().schedule, blocked, partials, recoverOn ? 'Sat' : null, 4, pExtras());
-    root.querySelector('#res-old').textContent = pstate.originalDate ? fmtDate(pstate.originalDate) : '-';
-    root.querySelector('#res-new').textContent = fmtDate(newDate);
-    const absDays = absenceDayCount(P().absences);
-    const absHours = P().absences.reduce((sum,a)=> sum + a.amount, 0);
-    root.querySelector('#res-tally').textContent = absDays ? `Across ${absDays} day${absDays===1?'':'s'} absent · ${fmtHours(absHours)} missed` : 'No absences logged yet';
-    const deltaDays = pstate.originalDate ? Math.round((newDate - pstate.originalDate) / 86400000) : 0;
-    const deltaEl = root.querySelector('#res-delta');
-    const chipEl = root.querySelector('#res-chip');
-    if (deltaDays <= 0){
-      deltaEl.textContent = 'On original date'; deltaEl.style.color = 'var(--good)'; deltaEl.style.background = 'var(--good-tint)';
-      chipEl.textContent = 'On pace'; chipEl.className = 'chip-status good';
-    } else {
-      deltaEl.textContent = `+${deltaDays} day${deltaDays===1?'':'s'}`; deltaEl.style.color = 'var(--behind)'; deltaEl.style.background = 'var(--behind-tint)';
-      chipEl.textContent = 'Behind pace'; chipEl.className = 'chip-status behind';
-    }
+  // Pace home, plus one page behind each row. Old names are kept as aliases so callers keep working.
+  function firstRun(){ return !(parseFloat(P().total) > 0); }
+  function syncSub(){
+    const inHours = root.querySelector('#pace-mode-hours').style.display !== 'none';
+    const cur = root.querySelector(inHours ? '#pace-mode-hours [data-screen].show' : '#pace-mode-services [data-svc-screen].show');
+    const key = cur ? (cur.dataset.screen || cur.dataset.svcScreen) : 'dashboard';
+    const home = key === 'dashboard' || (inHours && key === 'report' && firstRun()) || (!inHours && key === 'setup' && !((parseFloat(profile.services && profile.services.total)||0) > 0));
+    root.classList.toggle('pace-sub', !home);
+    const t = root.querySelector('#pace-title'); if (t) t.textContent = inHours ? 'Hours' : 'Services';
+  }
+  window.__ahcPaceSyncSub = syncSub;
+  function scrollTopPace(){
+    const scroller = root.closest('.tab-content'); if (scroller) scroller.scrollTop = 0;
+    try{ window.scrollTo(0, 0); }catch(e){}
   }
   function goto(step){
-    root.querySelectorAll('.step-btn').forEach(b=>b.classList.toggle('active', b.dataset.goto===step));
+    if (step === 'setup') step = 'report';
+    if (root.querySelector('[data-screen="report"].show') && step !== 'report') window._paceSyncBeforeSave();
     root.querySelectorAll('[data-screen]').forEach(p=>p.classList.toggle('show', p.dataset.screen===step));
     if (step !== 'calendar' && pstate.editingBreakIdx !== null) exitBreakEditMode();
     if (step === 'dashboard') recalcDashboard();
     if (step === 'absence') updateAbsenceEstimate();
-    if (step === 'result') recalcResult();
+    if (step === 'report'){ const n = root.querySelector('#report-saved'); if (n) n.hidden = true; }
     persistProfile({pace:P()});
+    syncSub();
+    scrollTopPace();
   }
   root.querySelectorAll('[data-goto]').forEach(el=> el.addEventListener('click', ()=> goto(el.dataset.goto)));
-  root.querySelector('#recover-switch').addEventListener('click', function(){ this.classList.toggle('on'); recalcResult(); });
+  root.querySelector('#recover-switch').addEventListener('click', function(){ this.classList.toggle('on'); this.setAttribute('aria-checked', this.classList.contains('on') ? 'true' : 'false'); recalcDashboard(); });
+  root.querySelector('#recover-switch').addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); this.click(); } });
+  root.querySelector('#btn-report-save').addEventListener('click', ()=>{
+    if (!root.querySelector('#in-asof').value) root.querySelector('#in-asof').value = todayIso();
+    window._paceSyncBeforeSave();
+    persistProfile({pace:P()});
+    recalcDashboard();
+    const n = root.querySelector('#report-saved');
+    n.textContent = `Saved · your estimate now starts from ${fmtNum(P().earned)} hrs`;
+    n.hidden = false;
+  });
+  ['#in-total','#in-earned','#in-asof'].forEach(sel=> root.querySelector(sel).addEventListener('input', ()=>{ const n = root.querySelector('#report-saved'); if (n) n.hidden = true; }));
+  root.querySelector('#btn-pace-disc-more').addEventListener('click', function(){
+    root.querySelector('#pace-disc-full').hidden = false; this.hidden = true;
+  });
   root.querySelector('#btn-add-break').addEventListener('click', ()=>{
     const label = root.querySelector('#brk-label').value.trim();
     const start = root.querySelector('#brk-start').value;
@@ -4625,7 +4706,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   root.querySelector('#btn-cancel-edit-break').addEventListener('click', exitBreakEditMode);
   root.querySelector('#ab-start').addEventListener('input', updateAbsenceEstimate);
   root.querySelector('#ab-end').addEventListener('input', updateAbsenceEstimate);
-  root.querySelectorAll('.mode-btn').forEach(btn=> btn.addEventListener('click', ()=> setAbsenceMode(btn.dataset.mode)));
+  root.querySelectorAll('.mode-toggle [data-mode]').forEach(btn=> btn.addEventListener('click', ()=> setAbsenceMode(btn.dataset.mode)));
   root.querySelector('#btn-add-extra').addEventListener('click', ()=>{
     const date = root.querySelector('#ex-date').value;
     const hrs = parseFloat(root.querySelector('#ex-hours').value)||0;
@@ -4704,7 +4785,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     renderAbsences();
     renderExtras();
     setAbsenceMode('full');
-    goto('setup');
+    goto(firstRun() ? 'report' : 'dashboard');
   };
   // Lets the student Home open a specific step of the Hours flow (used by the Log absence button).
   window.__ahcPaceGoto = function(step){
@@ -4733,6 +4814,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       // finished filling in) -- re-check whether it's still worth auto-filling
       // the Services target date now, same as a fresh visit to its setup step.
       if (mode === 'services' && typeof window.__ahcRefreshServicesTarget === 'function') window.__ahcRefreshServicesTarget();
+      syncSub();
     });
   });
 })();
@@ -4836,10 +4918,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const pct = total>0 ? Math.min(100, Math.round((toDate/total)*100)) : 0;
 
     root.querySelector('#svc-db-count').textContent = `${toDate.toLocaleString()} / ${total.toLocaleString()} svcs`;
-    root.querySelector('#svc-db-pct').textContent = pct + '%';
+    root.querySelector('#svc-db-pct').textContent = total>0 ? `${Math.max(0, total-toDate).toLocaleString()} to go` : '';
     root.querySelector('#svc-db-meter').style.width = pct + '%';
-    root.querySelector('#svc-db-remaining').textContent = `${Math.max(0, total-toDate).toLocaleString()} svcs`;
-    root.querySelector('#svc-db-earned-stat').textContent = `${toDate.toLocaleString()} svcs`;
 
     const elapsedDays = Math.max(1, diffDaysSvc(asOf, today));
     const addedSoFar = Math.max(0, toDate - earned);
@@ -4895,6 +4975,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     ringPctEl.textContent = pct + '%';
     ringPctEl.style.color = ringColor;
     root.querySelector('#svc-db-note').textContent = (total && target) ? `Targeting ${fmtDateSvc(target)}` : '';
+    // Rows under the summary
+    root.querySelector('#svc-row-req-sub').textContent = total
+      ? `${total.toLocaleString()} service${total===1?'':'s'}${target ? ' \u00b7 finish by ' + fmtDateSvc(target) : ' \u00b7 no target date yet'}`
+      : 'Add your required total';
+    const logRows = (S().log||[]).slice().sort((a,b)=> b.date.localeCompare(a.date));
+    root.querySelector('#svc-row-log-sub').textContent = logRows.length
+      ? `${logRows.length} day${logRows.length===1?'':'s'} logged \u00b7 last: ${fmtSingleDateSvc(logRows[0].date)}, ${logRows[0].count} service${logRows[0].count===1?'':'s'}`
+      : 'Nothing logged yet';
   }
 
   // Default the target date from the Hours tracker's projected graduation date
@@ -4911,13 +4999,15 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
   window.__ahcRefreshServicesTarget = maybeAutofillTargetDate;
   function svcGoto(step){
-    root.querySelectorAll('#pace-mode-services .step-btn').forEach(b=> b.classList.toggle('active', b.dataset.svcGoto===step));
     root.querySelectorAll('#pace-mode-services [data-svc-screen]').forEach(p=> p.classList.toggle('show', p.dataset.svcScreen===step));
     if (step !== 'log' && sstate.editingLogId !== null) exitLogEditMode();
     if (step === 'setup') maybeAutofillTargetDate();
     if (step === 'dashboard') recalcServicesDashboard();
     svcSyncBeforeSave();
     persistProfile({services:S()});
+    if (window.__ahcPaceSyncSub) window.__ahcPaceSyncSub();
+    const scroller = root.closest('.tab-content'); if (scroller) scroller.scrollTop = 0;
+    try{ window.scrollTo(0, 0); }catch(e){}
   }
   root.querySelectorAll('#pace-mode-services [data-svc-goto]').forEach(el=> el.addEventListener('click', ()=> svcGoto(el.dataset.svcGoto)));
 
@@ -4966,7 +5056,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#svc-target').value = S().targetDate || '';
     root.querySelector('#svc-log-date').value = todayIsoSvc();
     renderLog();
-    svcGoto('setup');
+    svcGoto((parseFloat(S().total)||0) > 0 ? 'dashboard' : 'setup');
   };
 })();
 /* =========================================================
@@ -5868,30 +5958,51 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     return { items, rated, pct };
   }
   function renderDashboard(){
-    root.querySelector('#ledger-name').textContent = profile.name;
     const { overallPct, ratedCount } = computeOverall();
     root.querySelector('#progress-ring').style.setProperty('--pct', overallPct===null ? 0 : overallPct);
     root.querySelector('#progress-ring-label').textContent = overallPct===null ? '-' : overallPct + '%';
-    root.querySelector('#overview-verified').textContent = overallPct===null ? 'No self-ratings yet' : overallPct + '% overall skill level';
+    root.querySelector('#overview-verified').textContent = overallPct===null ? 'No self-ratings yet' : overallPct + '% overall';
     root.querySelector('#overview-pending').textContent = ratedCount + ' of ' + profile.techniques.length + ' techniques rated';
+    // Next to rate: the first technique, in category order, that has no rating yet.
+    let nextTech = null;
+    CATEGORY_ORDER.forEach(catId=>{ if (!nextTech) nextTech = profile.techniques.find(t=> t.category===catId && !t.rated) || null; });
+    const nextBtn = root.querySelector('#btn-ledger-next');
+    nextBtn.hidden = !nextTech;
+    if (nextTech){
+      root.querySelector('#ledger-next-name').textContent = nextTech.name;
+      nextBtn.onclick = ()=>{ lstate.selectedTechniqueId = nextTech.id; renderTechnique(); showScreen('technique'); };
+    }
     const list = root.querySelector('#category-list');
     list.innerHTML = '';
+    // Groups open on their own the first time: the first one that still has something to rate.
+    if (!lstate.openCats){
+      lstate.openCats = new Set();
+      const firstOpen = CATEGORY_ORDER.find(catId=> categoryStats(catId).items.some(t=> !t.rated)) || CATEGORY_ORDER.find(catId=> categoryStats(catId).items.length);
+      if (firstOpen) lstate.openCats.add(firstOpen);
+    }
     CATEGORY_ORDER.forEach(catId=>{
-      const { items, pct } = categoryStats(catId);
-      const section = document.createElement('div');
-      section.className = 'cat-section';
-      const header = document.createElement('div');
-      header.className = 'cat-header';
-      header.innerHTML = '<span class="cat-title">' + CATEGORY_NAMES[catId] + '</span><span class="cat-count">' + (pct===null ? 'Not yet rated' : pct + '% self-rated') + '</span>';
-      section.appendChild(header);
+      const { items, rated, pct } = categoryStats(catId);
+      if (!items.length) return;
+      const det = document.createElement('details');
+      det.className = 'led-cat';
+      det.dataset.cat = catId;
+      if (lstate.openCats.has(catId)) det.open = true;
+      det.addEventListener('toggle', ()=>{ if (det.open) lstate.openCats.add(catId); else lstate.openCats.delete(catId); });
+      const sum = document.createElement('summary');
+      const segs = items.map(t=> '<i' + (t.rated ? ' class="f"' : '') + '></i>').join('');
+      sum.innerHTML = '<span class="t"><b>' + CATEGORY_NAMES[catId] + '</b><span>' + rated.length + ' of ' + items.length + ' rated' + (pct===null ? '' : ' \u00b7 ' + pct + '% self-rated') + '</span></span><span class="led-mini">' + segs + '</span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      det.appendChild(sum);
+      const body = document.createElement('div');
+      body.className = 'led-cat-body';
       items.forEach(t=>{
         const row = document.createElement('div');
         row.className = 'tech-row';
         row.innerHTML = '<span class="tr-name">' + t.name + '</span><span class="status-chip ' + (t.rated ? 'rated' : 'unrated') + '">' + (t.rated ? (t.rating + '/10') : 'Not rated') + '</span>';
         row.addEventListener('click', ()=>{ lstate.selectedTechniqueId = t.id; renderTechnique(); showScreen('technique'); });
-        section.appendChild(row);
+        body.appendChild(row);
       });
-      list.appendChild(section);
+      det.appendChild(body);
+      list.appendChild(det);
     });
   }
   root.querySelector('#btn-view-portfolio').addEventListener('click', ()=>{ renderPortfolio(); showScreen('portfolio'); });
