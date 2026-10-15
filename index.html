@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-23T16-00-00Z">
+<meta name="app-build" content="2026-10-24T14-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -226,6 +226,19 @@
   .jobs-pane.show{ display:flex; }
   .jobs-listing-card{ display:flex; flex-direction:column; gap:6px; border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:12px 14px; cursor:pointer; }
   .jobs-listing-card:hover{ border-color:var(--brass); }
+  .jobs-chips{ display:flex; gap:6px; flex-wrap:wrap; margin-top:2px; }
+  .jobs-chip{ font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:3px 9px; border-radius:999px; background:var(--paper); color:var(--muted); border:1px solid var(--line); }
+  .jobs-chip.field{ background:var(--brass-tint, rgba(217,174,94,.14)); color:var(--brass); border-color:transparent; }
+  .jobs-loc{ display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:12.5px; color:var(--muted); }
+  .jobs-loc b{ color:var(--ink); }
+  .jobs-widen{ display:flex; flex-direction:column; gap:8px; }
+  .jobs-empty-box{ border:1px dashed var(--line); border-radius:14px; padding:16px 14px; text-align:center; color:var(--muted); font-size:13px; line-height:1.5; }
+  .jobs-empty-box b{ display:block; color:var(--ink); font-size:14px; margin-bottom:2px; }
+  .jobs-pos-opts{ display:flex; gap:6px; }
+  .jobs-pos-opts button{ flex:1; border:1px solid var(--line); border-radius:11px; padding:10px 4px; font-family:'Public Sans',sans-serif; font-size:12.5px; font-weight:700; color:var(--muted); background:var(--paper); cursor:pointer; }
+  .jobs-pos-opts button[aria-pressed="true"]{ border-color:var(--brass); color:var(--brass); background:var(--brass-tint, rgba(217,174,94,.14)); }
+  .jobs-pos-opts button:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .jobs-prefill-note{ font-size:12px; font-weight:700; color:var(--good); margin:0; line-height:1.4; }
   /* ---- Appointment edit sheet (pro) ---- */
   .sheet-overlay{ position:fixed; inset:0; z-index:400; background:rgba(5,9,15,0.72); display:flex; align-items:flex-end; justify-content:center; }
   .sheet-overlay[hidden]{ display:none; }
@@ -2464,12 +2477,16 @@
               <button type="button" class="mode-btn active" data-jobs-type="looking">Looking</button>
               <button type="button" class="mode-btn" data-jobs-type="hiring">Hiring</button>
             </div>
-            <div style="display:flex; gap:8px;">
-              <div class="input-row" style="flex:1;"><input id="jobs-search-city" type="text" placeholder="City"></div>
-              <div class="input-row" style="width:76px;"><input id="jobs-search-state" type="text" maxlength="2" style="text-transform:uppercase;" placeholder="State"></div>
+            <div class="jobs-loc">
+              <span>Showing <b id="jobs-loc-label">everywhere</b></span>
+              <button type="button" class="link-btn" id="btn-jobs-loc-change" style="padding:0;">Change</button>
+            </div>
+            <div id="jobs-loc-edit" style="display:none; gap:8px;">
+              <div class="input-row" style="flex:1;"><input id="jobs-search-city" type="text" placeholder="City" aria-label="City"></div>
+              <div class="input-row" style="width:76px;"><input id="jobs-search-state" type="text" maxlength="2" style="text-transform:uppercase;" placeholder="State" aria-label="State"></div>
             </div>
             <div class="input-row" id="jobs-search-specialty-row">
-              <select id="jobs-search-specialty">
+              <select id="jobs-search-specialty" aria-label="Field">
                 <option value="">All fields</option>
                 <option value="Barber">Barber</option>
                 <option value="Cosmetologist">Cosmetologist</option>
@@ -2480,9 +2497,10 @@
                 <option value="MUA">MUA</option>
               </select>
             </div>
-            <button class="btn btn-outline" id="btn-jobs-search" type="button">Search</button>
             <div id="jobs-browse-list" style="display:flex; flex-direction:column; gap:10px;"></div>
-            <p class="screen-sub" id="jobs-browse-empty" style="display:none; margin:0;">No listings match yet. Try a different city or state, or check back soon.</p>
+            <div class="jobs-empty-box" id="jobs-browse-empty" style="display:none;"></div>
+            <div class="jobs-widen" id="jobs-browse-widen" hidden></div>
+            <p class="foot-note-small" id="jobs-browse-count" style="margin:0; text-align:center;"></p>
           </div>
           <div class="screen-body" data-screen="detail" id="jobs-detail-screen">
             <div class="walk-header">
@@ -2569,15 +2587,27 @@
                 <span>Hiring is <span id="jobs-hiring-toggle-label">off</span></span>
               </label>
               <div id="jobs-hiring-fields" style="display:none; flex-direction:column; gap:14px;">
-                <div class="field"><label>Business / shop name</label><div class="input-row"><input id="jobs-hiring-name" type="text"></div></div>
-                <div class="field"><label>Address</label><div class="input-row"><input id="jobs-hiring-address" type="text"></div></div>
-                <div class="field"><label>City</label><div class="input-row"><input id="jobs-hiring-city" type="text"></div></div>
-                <div class="field"><label>State</label><div class="input-row"><input id="jobs-hiring-state" type="text" maxlength="2" style="text-transform:uppercase;"></div></div>
-                <div class="field"><label>Website or social link <span style="text-transform:none; font-weight:600;">(optional)</span></label><div class="input-row"><input id="jobs-hiring-website" type="text" placeholder="e.g. instagram.com/yourshop"></div></div>
-                <div class="field"><label>Who are you hiring for?</label><div class="input-row"><input id="jobs-hiring-role" type="text" placeholder="e.g. Licensed barber"></div></div>
-                <div class="field"><label>How many positions?</label><div class="input-row"><input id="jobs-hiring-count" type="number" min="1" step="1"></div></div>
+                <p class="jobs-prefill-note" id="jobs-hiring-prefill-note" hidden>&#10003; Filled in from your shop details. Change anything that differs for this listing.</p>
+                <div class="field"><label for="jobs-hiring-name">Business / shop name</label><div class="input-row"><input id="jobs-hiring-name" type="text"></div></div>
+                <div class="field"><label for="jobs-hiring-address">Address</label><div class="input-row"><input id="jobs-hiring-address" type="text"></div></div>
+                <div style="display:flex; gap:8px;">
+                  <div class="field" style="flex:1;"><label for="jobs-hiring-city">City</label><div class="input-row"><input id="jobs-hiring-city" type="text"></div></div>
+                  <div class="field" style="width:76px;"><label for="jobs-hiring-state">State</label><div class="input-row"><input id="jobs-hiring-state" type="text" maxlength="2" style="text-transform:uppercase;"></div></div>
+                </div>
+                <div class="field"><label for="jobs-hiring-website">Website or social link <span style="text-transform:none; font-weight:600;">(optional)</span></label><div class="input-row"><input id="jobs-hiring-website" type="text" placeholder="e.g. instagram.com/yourshop"></div></div>
+                <div class="field"><label for="jobs-hiring-field">Who are you hiring?</label><div class="input-row"><select id="jobs-hiring-field"><option value="">Choose a field</option></select></div><p class="foot-note-small" id="jobs-hiring-oldrole" hidden style="margin-top:4px;"></p></div>
+                <div class="field"><label for="jobs-hiring-count">How many positions?</label><div class="input-row"><input id="jobs-hiring-count" type="number" min="1" step="1"></div></div>
+                <div class="field"><label>Type of position <span style="text-transform:none; font-weight:600;">(optional)</span></label>
+                  <div class="jobs-pos-opts" id="jobs-hiring-postype" role="group" aria-label="Type of position">
+                    <button type="button" data-pos="employee" aria-pressed="false">Employee</button>
+                    <button type="button" data-pos="commission" aria-pressed="false">Commission</button>
+                    <button type="button" data-pos="booth_rent" aria-pressed="false">Booth rent</button>
+                  </div>
+                </div>
+                <div class="field"><label for="jobs-hiring-desc">About the job <span style="text-transform:none; font-weight:600;">(optional)</span></label><div class="input-row"><textarea id="jobs-hiring-desc" rows="3" maxlength="140" placeholder="e.g. Busy four-chair shop. Licensed barber who can fade."></textarea></div><p class="foot-note-small" style="margin-top:4px;">140 characters or less is plenty.</p></div>
               </div>
               <button class="btn btn-primary" id="btn-jobs-save-hiring" type="button">Save Hiring listing</button>
+              <button class="btn btn-outline" id="btn-jobs-hiring-preview" type="button">Preview listing</button>
               <p class="foot-note-small" id="jobs-hiring-save-note">&nbsp;</p>
             </div>
           </div>
@@ -2595,7 +2625,7 @@
       <div id="jobs-looking-preview-panel" style="display:none; position:fixed; inset:0; z-index:600; background:var(--bg); overflow-y:auto;">
         <div style="max-width:420px; margin:0 auto; padding:max(20px, env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));">
           <button type="button" class="link-btn" id="btn-jobs-looking-preview-close" style="padding:6px 0 14px;">&larr; Back to editing</button>
-          <p class="eyebrow-mini" style="margin:0 0 8px; text-align:center;">This is how shops see your listing</p>
+          <p class="eyebrow-mini" id="jobs-preview-lead" style="margin:0 0 8px; text-align:center;">This is how shops see your listing</p>
           <div class="card" id="jobs-looking-preview-body" style="display:flex; flex-direction:column; gap:8px;"></div>
         </div>
       </div>
@@ -6278,45 +6308,92 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       browseType = btn.dataset.jobsType;
       root.querySelectorAll('#jobs-browse-type-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b===btn));
-      root.querySelector('#jobs-search-specialty-row').style.display = browseType === 'looking' ? 'flex' : 'none';
       searchListings();
     });
   });
+  // Browse starts in the person's own city and state (from their shop details) and narrows as they change it.
+  let browseDefaultsApplied = false;
+  function applyBrowseDefaults(){
+    if (browseDefaultsApplied) return;
+    browseDefaultsApplied = true;
+    const c = root.querySelector('#jobs-search-city'), st = root.querySelector('#jobs-search-state');
+    if (!c.value && !st.value && profile && profile.shopCity && profile.shopState){
+      c.value = profile.shopCity; st.value = String(profile.shopState).toUpperCase();
+    }
+  }
+  function browseLocLabel(){
+    const city = root.querySelector('#jobs-search-city').value.trim();
+    const state = root.querySelector('#jobs-search-state').value.trim().toUpperCase();
+    return [city, state].filter(Boolean).join(', ') || 'everywhere';
+  }
+  const FIELD_PLURAL = { 'Barber':'Barber', 'Cosmetologist':'Cosmetologist', 'Nail Tech':'Nail Tech', 'Braider':'Braider', 'Massage Therapist':'Massage Therapist', 'Esthetician':'Esthetician', 'MUA':'MUA' };
+  function hiringMatchesField(r, specialty){
+    if (r.specialty) return r.specialty === specialty;
+    // older listings only have free text for the role
+    const word = specialty.toLowerCase().split(' ')[0];
+    return (r.hiring_role || '').toLowerCase().includes(word);
+  }
   async function searchListings(){
+    applyBrowseDefaults();
     const listEl = root.querySelector('#jobs-browse-list');
     const emptyEl = root.querySelector('#jobs-browse-empty');
+    const label = browseLocLabel();
+    root.querySelector('#jobs-loc-label').textContent = label;
     if (!dbAvailable){
       listEl.innerHTML = '';
-      emptyEl.textContent = "Live search isn't connected right now.";
+      emptyEl.innerHTML = "Live search isn't connected right now.";
       emptyEl.style.display = 'block';
+      root.querySelector('#jobs-browse-widen').hidden = true;
+      root.querySelector('#jobs-browse-count').textContent = '';
       return;
     }
     const city = root.querySelector('#jobs-search-city').value.trim().toLowerCase();
     const state = root.querySelector('#jobs-search-state').value.trim().toLowerCase();
     const specialty = root.querySelector('#jobs-search-specialty').value;
     let rows = [];
+    const myToken = ++browseToken;
     try{
       const { data, error } = await supabaseClient.from('job_listings').select('*').eq('type', browseType).eq('active', true);
       if (error) throw error;
       rows = data || [];
     }catch(e){ console.warn('jobs search failed', e); }
+    if (myToken !== browseToken) return; // a newer search is already on its way
     rows = rows.filter(r => r.profile_code !== profileCode);
     if (city) rows = rows.filter(r => (r.city||'').toLowerCase().includes(city));
-    if (state) rows = rows.filter(r => (r.state||'').toLowerCase() === state);
-    if (specialty && browseType === 'looking') rows = rows.filter(r => r.specialty === specialty);
+    if (state.length === 2) rows = rows.filter(r => (r.state||'').toLowerCase() === state);
+    if (specialty) rows = rows.filter(r => browseType === 'looking' ? r.specialty === specialty : hiringMatchesField(r, specialty));
     browseResults = rows;
-    renderBrowseList(rows);
+    renderBrowseList(rows, { city, state, specialty, label });
   }
-  function renderBrowseList(rows){
+  let browseToken = 0;
+  function renderBrowseList(rows, ctx){
+    ctx = ctx || { city:'', state:'', specialty:'', label:'everywhere' };
     const listEl = root.querySelector('#jobs-browse-list');
     const emptyEl = root.querySelector('#jobs-browse-empty');
+    const widenEl = root.querySelector('#jobs-browse-widen');
+    const countEl = root.querySelector('#jobs-browse-count');
     if (!rows.length){
       listEl.innerHTML = '';
-      emptyEl.textContent = "No listings match yet. Try a different city or state, or check back soon.";
+      const what = ctx.specialty ? (ctx.specialty + ' listings') : (browseType === 'looking' ? 'people looking' : 'shops hiring');
+      const where = ctx.label !== 'everywhere' ? (' in ' + escapeHtml(ctx.label)) : '';
+      emptyEl.innerHTML = `<b>No ${escapeHtml(what)}${where} yet</b>${ctx.label !== 'everywhere' ? 'Try a wider search.' : 'Check back soon.'}`;
       emptyEl.style.display = 'block';
+      // never a dead end: one tap widens the search
+      const btns = [];
+      if (ctx.city && ctx.state.length === 2) btns.push(`<button type="button" class="btn btn-outline" data-widen="state">Show all of ${escapeHtml(ctx.state.toUpperCase())}</button>`);
+      if (ctx.city || ctx.state) btns.push('<button type="button" class="btn btn-outline" data-widen="all">Show everywhere</button>');
+      if (ctx.specialty) btns.push('<button type="button" class="btn btn-outline" data-widen="field">Show all fields</button>');
+      widenEl.innerHTML = btns.join('');
+      widenEl.hidden = !btns.length;
+      countEl.textContent = '';
       return;
     }
     emptyEl.style.display = 'none';
+    widenEl.hidden = true; widenEl.innerHTML = '';
+    const n = rows.length;
+    countEl.textContent = browseType === 'looking'
+      ? `${n} ${n === 1 ? 'person' : 'people'} looking${ctx.label !== 'everywhere' ? ' · ' + ctx.label : ''}`
+      : `${n} ${n === 1 ? 'shop' : 'shops'} hiring${ctx.label !== 'everywhere' ? ' · ' + ctx.label : ''}`;
     listEl.innerHTML = rows.map((r,idx)=>{
       if (r.type === 'looking'){
         const locBits = [r.city || '', r.state || ''].filter(Boolean).join(', ');
@@ -6333,19 +6410,45 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         </div>`;
       }
       const locBits = [r.city ? escapeHtml(r.city) : '', r.state ? escapeHtml(r.state) : ''].filter(Boolean).join(', ');
+      const cnt = r.hiring_count ? (escapeHtml(String(r.hiring_count)) + ' position' + (Number(r.hiring_count) === 1 ? '' : 's')) : '';
+      const sub = [escapeHtml(r.hiring_role || r.specialty || ''), cnt, locBits].filter(Boolean).join(' · ');
+      const chips = (r.specialty ? `<span class="jobs-chip field">${escapeHtml(r.specialty)}</span>` : '') + (POSITION_LABELS[r.position_type] ? `<span class="jobs-chip">${escapeHtml(POSITION_LABELS[r.position_type])}</span>` : '');
       return `<div class="jobs-listing-card" data-jobs-idx="${idx}">
         <strong>${escapeHtml(r.business_name || 'Hiring')}</strong>
-        <span class="screen-sub" style="margin:0;">${escapeHtml(r.hiring_role || '')}${locBits ? (' · ' + locBits) : ''}</span>
+        <span class="screen-sub" style="margin:0;">${sub}</span>
+        ${chips ? `<div class="jobs-chips">${chips}</div>` : ''}
       </div>`;
     }).join('');
   }
+  const POSITION_LABELS = { employee:'Employee', commission:'Commission', booth_rent:'Booth rent' };
+  // Change: show the city and state boxes. Typing narrows the list as you go (no Search button).
+  root.querySelector('#btn-jobs-loc-change').addEventListener('click', function(){
+    const edit = root.querySelector('#jobs-loc-edit');
+    const showing = edit.style.display !== 'none';
+    edit.style.display = showing ? 'none' : 'flex';
+    this.textContent = showing ? 'Change' : 'Done';
+    if (!showing) root.querySelector('#jobs-search-city').focus();
+  });
+  let browseTimer = null;
+  ['#jobs-search-city', '#jobs-search-state'].forEach(sel=> root.querySelector(sel).addEventListener('input', ()=>{
+    clearTimeout(browseTimer); browseTimer = setTimeout(searchListings, 250);
+  }));
+  root.querySelector('#jobs-search-specialty').addEventListener('change', searchListings);
+  root.querySelector('#jobs-browse-widen').addEventListener('click', e=>{
+    const b = e.target.closest('[data-widen]');
+    if (!b) return;
+    const w = b.dataset.widen;
+    if (w === 'state') root.querySelector('#jobs-search-city').value = '';
+    if (w === 'all'){ root.querySelector('#jobs-search-city').value = ''; root.querySelector('#jobs-search-state').value = ''; }
+    if (w === 'field') root.querySelector('#jobs-search-specialty').value = '';
+    searchListings();
+  });
   root.querySelector('#jobs-browse-list').addEventListener('click', e=>{
     const card = e.target.closest('[data-jobs-idx]');
     if (!card) return;
     const listing = browseResults[Number(card.dataset.jobsIdx)];
     if (listing) openListingDetail(listing);
   });
-  root.querySelector('#btn-jobs-search').addEventListener('click', searchListings);
 
   function formatGradDateMDY(iso){
     if (!iso) return '';
@@ -6421,6 +6524,24 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       loadMessages();
     }
   });
+  function renderHiringDetailHtml(listing){
+    const fullAddress = [listing.address, listing.city, listing.state].map(x => x ? escapeHtml(x) : '').filter(Boolean).join(', ');
+    const link = listing.website ? sanitizeSocialUrl(listing.website) : null;
+    const cnt = listing.hiring_count ? (escapeHtml(String(listing.hiring_count)) + ' position' + (Number(listing.hiring_count) === 1 ? '' : 's')) : '';
+    const chips = (listing.specialty ? `<span class="jobs-chip field">${escapeHtml(listing.specialty)}</span>` : '')
+      + (POSITION_LABELS[listing.position_type] ? `<span class="jobs-chip">${escapeHtml(POSITION_LABELS[listing.position_type])}</span>` : '')
+      + (cnt ? `<span class="jobs-chip">${cnt}</span>` : '');
+    const lbl = 'font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted);';
+    const hiringFor = (!listing.specialty && listing.hiring_role) ? `<p style="margin:0;"><strong>Hiring for:</strong> ${escapeHtml(listing.hiring_role)}${cnt && !chips.includes(cnt) ? ' (' + cnt + ')' : ''}</p>` : '';
+    return `
+      <h2 class="screen-title" style="margin:0; text-align:center;">${escapeHtml(listing.business_name || 'Hiring')}</h2>
+      ${chips ? `<div class="jobs-chips" style="justify-content:center;">${chips}</div>` : ''}
+      ${hiringFor}
+      ${listing.description ? `<div style="display:flex; flex-direction:column; gap:3px;"><span style="${lbl}">About the job</span><p style="margin:0; line-height:1.5;">${escapeHtml(listing.description)}</p></div>` : ''}
+      ${fullAddress ? `<div style="display:flex; flex-direction:column; gap:3px;"><span style="${lbl}">Address</span><p style="margin:0;">${fullAddress}</p></div>` : ''}
+      ${listing.website ? `<div style="display:flex; flex-direction:column; gap:3px;"><span style="${lbl}">Website or social</span><p style="margin:0;">${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(listing.website)}</a>` : escapeHtml(listing.website)}</p></div>` : ''}
+    `;
+  }
   function openListingDetail(listing){
     detailListing = listing;
     replyInProgress = false;
@@ -6430,13 +6551,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (listing.type === 'looking'){
       body.innerHTML = renderLookingDetailHtml(listing);
     } else {
-      const fullAddress = [listing.address, listing.city, listing.state].map(s => s ? escapeHtml(s) : '').filter(Boolean).join(', ');
-      body.innerHTML = `
-        <h2 class="screen-title" style="margin:0; text-align:center;">${escapeHtml(listing.business_name || 'Hiring')}</h2>
-        <p style="margin:8px 0 0;"><strong>Hiring for:</strong> ${escapeHtml(listing.hiring_role || 'Not specified')}${listing.hiring_count ? (' (' + escapeHtml(String(listing.hiring_count)) + ' position' + (Number(listing.hiring_count) === 1 ? '' : 's') + ')') : ''}</p>
-        ${fullAddress ? `<p style="margin:0;"><strong>Address:</strong> ${fullAddress}</p>` : ''}
-        ${listing.website ? `<p style="margin:0;"><strong>Website/social:</strong> ${escapeHtml(listing.website)}</p>` : ''}
-      `;
+      body.innerHTML = renderHiringDetailHtml(listing);
     }
     const msgBox = root.querySelector('#jobs-message-box');
     msgBox.style.display = (listing.profile_code !== profileCode) ? 'flex' : 'none';
@@ -6496,7 +6611,27 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       social_link: isStudent() ? root.querySelector('#jobs-looking-social').value.trim() : '',
       photo_url: lookingPhotoUrl || ''
     };
+    document.getElementById('jobs-preview-lead').textContent = 'This is how shops see your listing';
     document.getElementById('jobs-looking-preview-body').innerHTML = renderLookingDetailHtml(previewListing);
+    document.getElementById('jobs-looking-preview-panel').style.display = 'block';
+  });
+  root.querySelector('#btn-jobs-hiring-preview').addEventListener('click', ()=>{
+    const countVal = root.querySelector('#jobs-hiring-count').value;
+    const field = root.querySelector('#jobs-hiring-field').value;
+    const previewListing = {
+      business_name: root.querySelector('#jobs-hiring-name').value.trim(),
+      address: root.querySelector('#jobs-hiring-address').value.trim(),
+      city: root.querySelector('#jobs-hiring-city').value.trim(),
+      state: root.querySelector('#jobs-hiring-state').value.trim().toUpperCase(),
+      website: root.querySelector('#jobs-hiring-website').value.trim(),
+      hiring_role: field || hiringOldRole,
+      specialty: field || '',
+      hiring_count: countVal ? Number(countVal) : null,
+      position_type: hiringPosType,
+      description: root.querySelector('#jobs-hiring-desc').value.trim()
+    };
+    document.getElementById('jobs-preview-lead').textContent = 'This is how job-seekers see your listing';
+    document.getElementById('jobs-looking-preview-body').innerHTML = renderHiringDetailHtml(previewListing);
     document.getElementById('jobs-looking-preview-panel').style.display = 'block';
   });
   document.getElementById('btn-jobs-looking-preview-close').addEventListener('click', ()=>{
@@ -6556,6 +6691,41 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (auto) specSel.value = auto;
     updateJobsSpecialtyTipNote();
   }
+  // The field pick list uses the same list as everywhere else.
+  (function fillHiringFieldOptions(){
+    const sel = root.querySelector('#jobs-hiring-field');
+    if (!sel || sel.options.length > 1) return;
+    CRAFTS.forEach(c=>{ const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
+  })();
+  let hiringOldRole = '';
+  let hiringPosType = '';
+  let hiringHadExtras = false;
+  function setHiringPosType(v){
+    hiringPosType = v || '';
+    root.querySelectorAll('#jobs-hiring-postype button').forEach(b=> b.setAttribute('aria-pressed', b.dataset.pos === hiringPosType ? 'true' : 'false'));
+  }
+  root.querySelector('#jobs-hiring-postype').addEventListener('click', e=>{
+    const b = e.target.closest('button[data-pos]');
+    if (!b) return;
+    setHiringPosType(hiringPosType === b.dataset.pos ? '' : b.dataset.pos); // tap again to clear
+  });
+  // First time through (or any blank box), the hiring form starts from the shop details.
+  function prefillHiringFromShop(){
+    let filled = false;
+    const put = (id, val)=>{ const el = root.querySelector(id); if (el && !el.value.trim() && val){ el.value = val; filled = true; } };
+    const soc = (profile && profile.social) || {};
+    put('#jobs-hiring-name', profile && profile.shopName);
+    put('#jobs-hiring-address', profile && profile.shopAddress);
+    put('#jobs-hiring-city', profile && profile.shopCity);
+    put('#jobs-hiring-state', profile && profile.shopState ? String(profile.shopState).toUpperCase() : '');
+    put('#jobs-hiring-website', soc.website || soc.instagram || soc.facebook || '');
+    const note = root.querySelector('#jobs-hiring-prefill-note');
+    if (note) note.hidden = !filled;
+  }
+  function hiringFriendlyError(e){
+    const m = (e && e.message) || 'unknown error';
+    return /position_type|description/i.test(m) ? 'the position type and description need a one-time database update first.' : m;
+  }
   async function loadMyListings(){
     updateLookingStatusFields();
     const hiringCard = root.querySelector('#jobs-hiring-card');
@@ -6598,9 +6768,22 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         root.querySelector('#jobs-hiring-city').value = hiring.city || '';
         root.querySelector('#jobs-hiring-state').value = hiring.state || '';
         root.querySelector('#jobs-hiring-website').value = hiring.website || '';
-        root.querySelector('#jobs-hiring-role').value = hiring.hiring_role || '';
         root.querySelector('#jobs-hiring-count').value = hiring.hiring_count || '';
+        hiringHadExtras = ('position_type' in hiring) || ('description' in hiring);
+        setHiringPosType(hiring.position_type || '');
+        root.querySelector('#jobs-hiring-desc').value = hiring.description || '';
+        // field: the saved pick, or a pick-list match for an older free-text role
+        const fieldSel = root.querySelector('#jobs-hiring-field');
+        const oldRole = (hiring.hiring_role || '').trim();
+        let pick = hiring.specialty && CRAFTS.includes(hiring.specialty) ? hiring.specialty : '';
+        if (!pick && oldRole){ const m = CRAFTS.find(c=> c.toLowerCase() === oldRole.toLowerCase()); if (m) pick = m; }
+        fieldSel.value = pick;
+        const oldNote = root.querySelector('#jobs-hiring-oldrole');
+        if (!pick && oldRole){ oldNote.textContent = 'Your listing currently says "' + oldRole + '". Pick a field to update it.'; oldNote.hidden = false; }
+        else { oldNote.hidden = true; }
+        hiringOldRole = pick ? '' : oldRole;
       }
+      prefillHiringFromShop();
     }catch(e){ console.warn('load jobs listings failed', e); }
   }
   root.querySelector('#btn-jobs-save-looking').addEventListener('click', async ()=>{
@@ -6637,6 +6820,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (!dbAvailable || !profileCode){ noteEl.textContent = "Not connected right now. This wasn't saved."; return; }
     const active = root.querySelector('#jobs-hiring-toggle').checked;
     const countVal = root.querySelector('#jobs-hiring-count').value;
+    const field = root.querySelector('#jobs-hiring-field').value;
+    if (active && !field && !hiringOldRole){ noteEl.textContent = 'Pick the field you are hiring for.'; return; }
+    const desc = root.querySelector('#jobs-hiring-desc').value.trim();
     const row = {
       id: jobsListingId('hiring'),
       profile_code: profileCode,
@@ -6647,16 +6833,22 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       city: root.querySelector('#jobs-hiring-city').value.trim(),
       state: root.querySelector('#jobs-hiring-state').value.trim().toUpperCase(),
       website: root.querySelector('#jobs-hiring-website').value.trim(),
-      hiring_role: root.querySelector('#jobs-hiring-role').value.trim(),
+      // an older free-text role stays as it was until a field is picked
+      hiring_role: field || hiringOldRole,
+      specialty: field || null,
       hiring_count: countVal ? Number(countVal) : null
     };
+    // The two newer columns are only sent when they are in use, so saving still works before the database update.
+    if (hiringPosType || desc || hiringHadExtras){ row.position_type = hiringPosType || null; row.description = desc || null; }
     try{
       const { error } = await supabaseClient.from('job_listings').upsert(row, { onConflict: 'id' });
       if (error) throw error;
+      if (row.specialty){ hiringOldRole = ''; root.querySelector('#jobs-hiring-oldrole').hidden = true; }
+      if ('position_type' in row) hiringHadExtras = true;
       noteEl.textContent = active ? 'Saved. Your listing is visible in Jobs Board searches.' : 'Saved. Your listing is hidden.';
     }catch(e){
       console.warn('save hiring listing failed', e);
-      noteEl.textContent = "Couldn't save: " + ((e && e.message) || 'unknown error') + ". Try again.";
+      noteEl.textContent = "Couldn't save: " + hiringFriendlyError(e) + " Try again.";
     }
   });
 
