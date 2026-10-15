@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-22T15-00-00Z">
+<meta name="app-build" content="2026-10-23T14-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -268,6 +268,30 @@
   .bk-hr .bk-switch{ padding-bottom:0; }
   .bk-hr-edit{ display:flex; gap:10px; padding:0 14px 14px; }
   .bk-hr-edit[hidden]{ display:none; }
+  .bk-kinds .bk-kind{ display:flex; align-items:center; gap:12px; padding:14px; border-top:1px solid var(--line); }
+  .bk-kinds .bk-kind:first-child{ border-top:0; }
+  .bk-kinds .bk-kind .t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .bk-kinds .bk-kind .t b{ font-size:14.5px; font-weight:700; }
+  .bk-kinds .bk-kind .t span{ color:var(--muted); font-size:12.5px; line-height:1.35; }
+  .bk-kinds .bk-switch{ padding-bottom:0; }
+  .bk-hr2 .bk-hr-sum2{ display:flex; flex-direction:column; align-items:flex-end; gap:3px; }
+  .bk-hr2 .bk-hr-line{ display:flex; align-items:baseline; gap:8px; }
+  .bk-hr2 .bk-hr-line i{ font-style:normal; font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+  .bk-hr2 .bk-hr-chev{ flex:none; color:var(--muted); width:18px; height:18px; }
+  .bk-hr2 .bk-hr-top{ padding-right:12px; }
+  .bk-hr-edit2{ flex-direction:column; gap:10px; }
+  .bk-hr-block{ display:flex; flex-direction:column; gap:10px; border:1px solid var(--line); border-radius:12px; padding:12px; background:var(--surface); }
+  .bk-hr-block-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; font-weight:700; font-size:14px; }
+  .bk-hr-times{ display:flex; gap:10px; }
+  .bk-hr-block.off .bk-hr-times{ opacity:.55; }
+  .bk-hr-overlap{ margin:0; }
+  #bk-setup-body.bk-off .bk-onlyon{ display:none !important; }
+  #bk-setup-body.bk-off .bk-onlyon + .biz-row{ border-top:0; }
+  .bk-offwalk{ display:flex; align-items:center; gap:12px; padding:14px; border:1px solid var(--line); border-radius:16px; background:var(--paper); }
+  .bk-offwalk .t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .bk-offwalk .t b{ font-size:14.5px; font-weight:700; }
+  .bk-offwalk .t span{ color:var(--muted); font-size:12.5px; line-height:1.35; }
+  .bk-offwalk .bk-switch{ padding-bottom:0; }
   .bk-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; }
   .bk-switch{ position:relative; display:inline-flex; align-items:center; gap:8px; cursor:pointer; padding-bottom:4px; flex:none; }
   .bk-switch input{ position:absolute; inset:0; width:100%; height:100%; opacity:0; margin:0; cursor:pointer; }
@@ -1496,17 +1520,21 @@
         </div>
         <div class="screen-body show" data-screen="setup" style="gap:16px;">
           <p class="screen-sub" id="bk-enable-hint">Off. Clients can't book with you yet. Turn this on to set up your services, hours, and get your booking link.</p>
+          <div class="bk-offwalk" id="bk-offwalk" style="display:none;">
+            <span class="t"><b>Walk-in hours</b><span>Only take walk-ins? Show clients when you do, without online booking.</span></span>
+            <label class="bk-switch" id="bk-offwalk-sw"><input type="checkbox" id="bk-offwalk-toggle" aria-label="Show walk-in hours"><span class="bk-switch-track" aria-hidden="true"></span></label>
+          </div>
           <p class="foot-note-small" id="bk-save-note" style="margin:-8px 0 0;"></p>
           <div id="bk-setup-body" style="display:none; flex-direction:column; gap:16px;">
 
             <!-- HOME: link, add, appointments, set-up rows -->
             <div class="bk-pane show" data-bk="home" id="bk-appts-section" style="gap:16px;">
-              <div id="bk-link-paywall" style="display:none; flex-direction:column; gap:10px; align-items:center; border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--surface); text-align:center;">
+              <div id="bk-link-paywall" class="bk-onlyon" style="display:none; flex-direction:column; gap:10px; align-items:center; border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--surface); text-align:center;">
                 <p class="eyebrow-mini2" style="margin:0;">Your booking link</p>
                 <p class="screen-sub" style="margin:0;">Letting clients open this link and book you online is part of a paid Vono plan. On Basic, appointments still work, but the page this link leads to won't load for them. Try it free: you won't be charged until the trial ends.</p>
                 <button class="btn btn-primary" type="button" id="btn-bk-link-paywall-trial">Start free trial</button>
               </div>
-              <div id="bk-link-real" class="bk-linkcard">
+              <div id="bk-link-real" class="bk-linkcard bk-onlyon">
                 <button type="button" class="bk-qr-btn" id="btn-bk-qr-enlarge" aria-label="Enlarge QR code"><canvas id="bk-qr-canvas" width="220" height="220"></canvas></button>
                 <div class="bk-linkcard-body">
                   <div class="bk-linkcard-top">
@@ -1520,8 +1548,8 @@
                   <p class="foot-note-small bk-copy-note" id="bk-copy-note"></p>
                 </div>
               </div>
-              <button class="btn btn-primary bk-add-btn" id="btn-bk-manual-open" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>Add an appointment</span></button>
-              <div style="display:flex; flex-direction:column; gap:10px;">
+              <button class="btn btn-primary bk-add-btn bk-onlyon" id="btn-bk-manual-open" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>Add an appointment</span></button>
+              <div class="bk-onlyon" style="display:flex; flex-direction:column; gap:10px;">
                 <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
                   <p class="eyebrow-mini" style="margin:0;">Upcoming appointments</p>
                   <button type="button" class="link-btn" id="btn-bk-view-calendar" style="padding:0;">View calendar</button>
@@ -1531,13 +1559,13 @@
               </div>
               <p class="biz-glabel" style="margin-bottom:-6px;">Set up booking</p>
               <div class="biz-group">
-                <button type="button" class="biz-row" data-bk-open="services"><span class="t"><b>Services</b><span id="bk-row-services-sub">&nbsp;</span></span><span class="biz-pill" id="bk-row-services-pill" hidden>Add</span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button type="button" class="biz-row bk-onlyon" data-bk-open="services"><span class="t"><b>Services</b><span id="bk-row-services-sub">&nbsp;</span></span><span class="biz-pill" id="bk-row-services-pill" hidden>Add</span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                 <button type="button" class="biz-row" data-bk-open="hours"><span class="t"><b>Hours</b><span id="bk-row-hours-sub">&nbsp;</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                 <button type="button" class="biz-row" data-bk-open="special"><span class="t"><b>Special dates</b><span id="bk-row-special-sub">&nbsp;</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                <button type="button" class="biz-row" data-bk-open="payment"><span class="t"><b>Payment links</b><span id="bk-row-payment-sub">&nbsp;</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                <button type="button" class="biz-row" data-bk-open="policy"><span class="t"><b>Cancellation policy</b><span id="bk-row-policy-sub">&nbsp;</span></span><span class="biz-pill" id="bk-row-policy-pill" hidden>Add</span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button type="button" class="biz-row bk-onlyon" data-bk-open="payment"><span class="t"><b>Payment links</b><span id="bk-row-payment-sub">&nbsp;</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button type="button" class="biz-row bk-onlyon" data-bk-open="policy"><span class="t"><b>Cancellation policy</b><span id="bk-row-policy-sub">&nbsp;</span></span><span class="biz-pill" id="bk-row-policy-pill" hidden>Add</span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
               </div>
-              <div class="biz-group">
+              <div class="biz-group bk-onlyon">
                 <button type="button" class="biz-row" data-bk-open="lookup"><span class="t"><b>Look up a client</b><span id="bk-row-lookup-sub">Photo history and notes</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
               </div>
             </div>
@@ -1726,8 +1754,13 @@
                 <button type="button" class="link-btn" data-bk-go="home">&larr; Booking</button>
                 <div class="bk-title-row"><h2>Hours</h2><span class="biz-pill good" id="bk-hours-pill">&#10003; Saved</span></div>
               </div>
-              <p class="screen-sub" style="margin:0;">When clients can book you each week. Tap a day to change its hours. Switch a day off to close it.</p>
+              <p class="screen-sub" id="bk-hours-sub" style="margin:0;">When clients can book you each week. Tap a day to change its hours. Switch a day off to close it.</p>
+              <div class="biz-group bk-kinds" id="bk-kinds">
+                <div class="bk-kind"><span class="t"><b>Take appointments</b><span>Clients can book you online during your appointment hours.</span></span><label class="bk-switch" id="bk-hours-appt-sw"><input type="checkbox" id="bk-hours-appt-toggle" aria-label="Take appointments"><span class="bk-switch-track" aria-hidden="true"></span></label></div>
+                <div class="bk-kind"><span class="t"><b>Welcome walk-ins</b><span>Clients see when you take people without an appointment.</span></span><label class="bk-switch" id="bk-hours-walk-sw"><input type="checkbox" id="bk-hours-walk-toggle" aria-label="Welcome walk-ins"><span class="bk-switch-track" aria-hidden="true"></span></label></div>
+              </div>
               <div id="bk-hours-list" class="biz-group"></div>
+              <p class="foot-note-small bk-hr-overlap" id="bk-hours-overlap" hidden>Walk-in and appointment times can overlap. Only appointment hours open booking slots.</p>
               <button class="btn btn-primary" id="btn-bk-save-hours" type="button">Save hours</button>
               <p class="foot-note-small" id="bk-hours-note" style="margin:0;">&nbsp;</p>
             </div>
@@ -1750,6 +1783,14 @@
                 </div>
                 <p class="foot-note-small" id="bk-special-type-help" style="margin:0;">Clients can't book you at all that day.</p>
                 <div class="field"><label for="bk-sp-date">Date</label><div class="input-row"><input id="bk-sp-date" type="date"></div></div>
+                <div class="field" id="bk-sp-applies-row" style="display:none;">
+                  <label>Applies to</label>
+                  <div class="mode-toggle" id="bk-sp-applies" role="group" aria-label="What this date changes">
+                    <button type="button" class="mode-btn active" data-sp-applies="both"><span>Both</span></button>
+                    <button type="button" class="mode-btn" data-sp-applies="appt"><span>Appointments</span></button>
+                    <button type="button" class="mode-btn" data-sp-applies="walk"><span>Walk-ins</span></button>
+                  </div>
+                </div>
                 <div id="bk-sp-hours-row" style="display:none; gap:8px;">
                   <div class="field" style="flex:1;"><label for="bk-sp-open">Open</label><div class="input-row"><input id="bk-sp-open" type="time" value="09:00"></div></div>
                   <div class="field" style="flex:1;"><label for="bk-sp-close">Close</label><div class="input-row"><input id="bk-sp-close" type="time" value="18:00"></div></div>
@@ -3290,6 +3331,7 @@ function defaultProfile(name){
     bookingEnabled: false,
     bookingServices: [],
     bookingHours: defaultBookingHours(),
+    walkin: { on:false, hours:{}, overrides:[] },
     bookingOverrides: [],
     vipDates: [],
     bookingPolicy: '',
@@ -3304,6 +3346,15 @@ function defaultProfile(name){
     planTier: null,
     trialEndsAt: null
   };
+}
+// Walk-in hours live beside the appointment hours: { on, hours:{day:{closed,open,close}}, overrides:[{date,closed,open,close}] }.
+// Walk-ins are information for clients only; they never create or block booking slots.
+function normalizeWalkin(w){
+  w = (w && typeof w === 'object') ? w : {};
+  return { on: !!w.on, hours: (w.hours && typeof w.hours === 'object') ? w.hours : {}, overrides: Array.isArray(w.overrides) ? w.overrides : [] };
+}
+function walkinHasData(w){
+  return !!(w && (w.on || (w.hours && Object.keys(w.hours).length) || (w.overrides && w.overrides.length)));
 }
 function defaultBookingHours(){
   return {
@@ -3360,6 +3411,7 @@ async function persistProfile(fields){
   if (fields.bookingEnabled !== undefined) row.booking_enabled = fields.bookingEnabled;
   if (fields.bookingServices !== undefined) row.booking_services = fields.bookingServices;
   if (fields.bookingHours !== undefined) row.booking_hours = fields.bookingHours;
+  if (fields.walkin !== undefined) row.walkin = fields.walkin;
   if (fields.bookingOverrides !== undefined) row.booking_overrides = fields.bookingOverrides;
   if (fields.vipDates !== undefined) row.vip_dates = fields.vipDates;
   if (fields.bookingPolicy !== undefined) row.booking_policy = fields.bookingPolicy;
@@ -6750,31 +6802,91 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   });
     const shortTime = t => fmtTimeBk(t).replace(':00 ', ' ');
   function hoursLine(d){ return d.closed ? 'Closed' : `${fmtTimeBk(d.open)} – ${fmtTimeBk(d.close)}`; }
+  function walkLine(d){ return d.closed ? 'None' : `${fmtTimeBk(d.open)} – ${fmtTimeBk(d.close)}`; }
+  // Draft of both sets of hours while the Hours screen is open (walkOn is the walk-in switch).
+  let hrDraft = { walkOn:false, appt:{}, walk:{} };
+  function dayVal(src, k){
+    const d = (src && src[k]) || { closed:true, open:'09:00', close:'18:00' };
+    return { closed:!!d.closed, open:d.open || '09:00', close:d.close || '18:00' };
+  }
+  function resetHoursDraft(){
+    const w = normalizeWalkin(profile.walkin);
+    hrDraft = { walkOn: w.on, appt: JSON.parse(JSON.stringify(profile.bookingHours || defaultBookingHours())), walk: JSON.parse(JSON.stringify(w.hours)) };
+  }
+  function syncHoursDraft(){
+    root.querySelectorAll('#bk-hours-list [data-day]').forEach(row=>{
+      const k = row.dataset.day;
+      const a = row.querySelector('.bk-hour-on');
+      if (a) hrDraft.appt[k] = { closed:!a.checked, open: row.querySelector('.bk-hour-open').value || '09:00', close: row.querySelector('.bk-hour-close').value || '18:00' };
+      const w = row.querySelector('.bk-wi-on');
+      if (w) hrDraft.walk[k] = { closed:!w.checked, open: row.querySelector('.bk-wi-open').value || '09:00', close: row.querySelector('.bk-wi-close').value || '18:00' };
+    });
+  }
+  const BK_CHEV_SM = '<svg class="bk-hr-chev" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function switchHtml(cls, label, on, extra){
+    return `<label class="bk-switch bk-hr-sw${on?' on':''}"><input type="checkbox" class="${cls}" aria-label="${label}" ${on?'checked':''}><span class="bk-switch-track" aria-hidden="true"></span></label>`;
+  }
+  function timesHtml(pfx, d){
+    return `<div class="field" style="flex:1;"><label>${pfx==='wi'?'From':'Open'}</label><div class="input-row"><input type="time" class="bk-${pfx==='wi'?'wi':'hour'}-open" value="${d.open}"></div></div>
+          <div class="field" style="flex:1;"><label>${pfx==='wi'?'To':'Close'}</label><div class="input-row"><input type="time" class="bk-${pfx==='wi'?'wi':'hour'}-close" value="${d.close}"></div></div>`;
+  }
   function renderHours(){
     const list = root.querySelector('#bk-hours-list');
-    const hours = profile.bookingHours || defaultBookingHours();
+    const A = !!profile.bookingEnabled, W = !!hrDraft.walkOn;
+    root.querySelector('#bk-hours-appt-toggle').checked = A;
+    root.querySelector('#bk-hours-appt-sw').classList.toggle('on', A);
+    root.querySelector('#bk-hours-walk-toggle').checked = W;
+    root.querySelector('#bk-hours-walk-sw').classList.toggle('on', W);
+    const sub = root.querySelector('#bk-hours-sub');
+    const both = A && W;
+    sub.textContent = both ? 'Set when you take appointments and when you take walk-ins. Tap a day to change it.'
+      : W ? 'Set when you take walk-ins. Tap a day to change its hours. Switch a day off to show no walk-ins.'
+      : A ? 'When clients can book you each week. Tap a day to change its hours. Switch a day off to close it.'
+      : 'Both are off, so clients see no hours. Turn on appointments or walk-ins to set them.';
+    root.querySelector('#bk-hours-overlap').hidden = !both;
+    list.hidden = !(A || W);
+    if (!(A || W)){ list.innerHTML = ''; return; }
     list.innerHTML = DAY_ORDER.map(k=>{
-      const d = hours[k] || {closed:true, open:'09:00', close:'18:00'};
-      const open = d.open || '09:00', close = d.close || '18:00';
-      return `<div class="bk-hr" data-day="${k}">
+      const a = dayVal(hrDraft.appt, k), w = dayVal(hrDraft.walk, k);
+      if (both){
+        return `<div class="bk-hr bk-hr2" data-day="${k}">
         <div class="bk-hr-top">
-          <button type="button" class="bk-hr-main" aria-expanded="false"><span class="bk-hr-day">${DAY_LABELS[k]}</span><span class="bk-hr-sum">${hoursLine({closed:d.closed, open, close})}</span></button>
-          <label class="bk-switch bk-hr-sw${d.closed?'':' on'}"><input type="checkbox" class="bk-hour-on" aria-label="${DAY_LABELS[k]} is open" ${d.closed?'':'checked'}><span class="bk-switch-track" aria-hidden="true"></span></label>
+          <button type="button" class="bk-hr-main" aria-expanded="false"><span class="bk-hr-day">${DAY_LABELS[k]}</span><span class="bk-hr-sum2"><span class="bk-hr-line"><i>Appts</i><span class="bk-hr-sum">${hoursLine(a)}</span></span><span class="bk-hr-line"><i>Walk-ins</i><span class="bk-wi-sum">${walkLine(w)}</span></span></span>${BK_CHEV_SM}</button>
+        </div>
+        <div class="bk-hr-edit bk-hr-edit2" hidden>
+          <div class="bk-hr-block${a.closed?' off':''}" data-kind="appt"><div class="bk-hr-block-top"><span>Appointments</span>${switchHtml('bk-hour-on', DAY_LABELS[k]+' appointments', !a.closed)}</div><div class="bk-hr-times">${timesHtml('hour', a)}</div></div>
+          <div class="bk-hr-block${w.closed?' off':''}" data-kind="walk"><div class="bk-hr-block-top"><span>Walk-ins</span>${switchHtml('bk-wi-on', DAY_LABELS[k]+' walk-ins', !w.closed)}</div><div class="bk-hr-times">${timesHtml('wi', w)}</div></div>
+        </div>
+      </div>`;
+      }
+      const isW = W && !A;
+      const d = isW ? w : a;
+      const pfx = isW ? 'wi' : 'hour';
+      return `<div class="bk-hr${d.closed?' off':''}" data-day="${k}">
+        <div class="bk-hr-top">
+          <button type="button" class="bk-hr-main" aria-expanded="false"><span class="bk-hr-day">${DAY_LABELS[k]}</span><span class="bk-hr-sum">${isW ? walkLine(d) : hoursLine(d)}</span></button>
+          <label class="bk-switch bk-hr-sw${d.closed?'':' on'}"><input type="checkbox" class="bk-${pfx}-on" aria-label="${DAY_LABELS[k]} ${isW?'has walk-ins':'is open'}" ${d.closed?'':'checked'}><span class="bk-switch-track" aria-hidden="true"></span></label>
         </div>
         <div class="bk-hr-edit" hidden>
-          <div class="field" style="flex:1;"><label>Open</label><div class="input-row"><input type="time" class="bk-hour-open" value="${open}"></div></div>
-          <div class="field" style="flex:1;"><label>Close</label><div class="input-row"><input type="time" class="bk-hour-close" value="${close}"></div></div>
+          ${timesHtml(pfx, d)}
         </div>
       </div>`;
     }).join('');
   }
   function refreshHourRow(row){
-    const on = row.querySelector('.bk-hour-on').checked;
-    const open = row.querySelector('.bk-hour-open').value || '09:00';
-    const close = row.querySelector('.bk-hour-close').value || '18:00';
-    row.querySelector('.bk-hr-sum').textContent = hoursLine({closed:!on, open, close});
-    row.querySelector('.bk-hr-sw').classList.toggle('on', on);
-    row.classList.toggle('off', !on);
+    [['hour','.bk-hr-sum', hoursLine], ['wi', null, walkLine]].forEach(([pfx, sel, fmt])=>{
+      const inp = row.querySelector('.bk-'+pfx+'-on');
+      if (!inp) return;
+      const on = inp.checked;
+      const open = row.querySelector('.bk-'+pfx+'-open').value || '09:00';
+      const close = row.querySelector('.bk-'+pfx+'-close').value || '18:00';
+      const sumEl = pfx === 'hour' ? row.querySelector('.bk-hr-sum') : (row.querySelector('.bk-wi-sum') || row.querySelector('.bk-hr-sum'));
+      sumEl.textContent = fmt({closed:!on, open, close});
+      inp.closest('.bk-switch').classList.toggle('on', on);
+      const block = inp.closest('.bk-hr-block');
+      if (block) block.classList.toggle('off', !on);
+      else row.classList.toggle('off', !on);
+    });
   }
   root.querySelector('#bk-hours-list').addEventListener('click', e=>{
     const main = e.target.closest('.bk-hr-main');
@@ -6787,59 +6899,104 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   root.querySelector('#bk-hours-list').addEventListener('change', e=>{
     const row = e.target.closest('.bk-hr');
     if (!row) return;
-    if (e.target.classList.contains('bk-hour-on') && e.target.checked){
+    const isOn = e.target.classList.contains('bk-hour-on') || e.target.classList.contains('bk-wi-on');
+    if (isOn && e.target.checked && !row.classList.contains('bk-hr2')){
       // switching a day on: open the editor so the hours it will use are visible
       const edit = row.querySelector('.bk-hr-edit');
       edit.hidden = false;
       row.querySelector('.bk-hr-main').setAttribute('aria-expanded', 'true');
     }
     refreshHourRow(row);
+    syncHoursDraft();
     bkMarkDirty('hours');
   });
+  // Walk-in switch: part of the Save hours page, so it waits for Save like the times do.
+  root.querySelector('#bk-hours-walk-toggle').addEventListener('change', function(){
+    syncHoursDraft();
+    hrDraft.walkOn = this.checked;
+    renderHours();
+    bkMarkDirty('hours');
+  });
+  // Appointment switch: the same switch as "Booking is on" at the top of Booking, saved right away.
+  root.querySelector('#bk-hours-appt-toggle').addEventListener('change', async function(){
+    syncHoursDraft();
+    const note = root.querySelector('#bk-hours-note');
+    await setBookingEnabled(this.checked);
+    note.textContent = bkEnableNote ? bkEnableNote : ' ';
+    renderHours();
+  });
   function collectHours(){
+    syncHoursDraft();
     const out = {};
-    root.querySelectorAll('#bk-hours-list [data-day]').forEach(row=>{
-      out[row.dataset.day] = {
-        closed: !row.querySelector('.bk-hour-on').checked,
-        open: row.querySelector('.bk-hour-open').value || '09:00',
-        close: row.querySelector('.bk-hour-close').value || '18:00'
-      };
-    });
+    DAY_ORDER.forEach(k=>{ out[k] = dayVal(hrDraft.appt, k); });
+    return out;
+  }
+  function collectWalk(){
+    syncHoursDraft();
+    const out = {};
+    DAY_ORDER.forEach(k=>{ out[k] = dayVal(hrDraft.walk, k); });
     return out;
   }
   root.querySelector('#btn-bk-save-hours').addEventListener('click', async ()=>{
     const note = root.querySelector('#bk-hours-note');
     const next = collectHours();
+    const nextW = collectWalk();
+    const showDay = k=>{ const row = root.querySelector(`#bk-hours-list [data-day="${k}"]`); if (row){ row.querySelector('.bk-hr-edit').hidden = false; row.querySelector('.bk-hr-main').setAttribute('aria-expanded','true'); } };
     for (const k of DAY_ORDER){
       if (!next[k].closed && next[k].close <= next[k].open){
         note.textContent = `Closing time has to be after opening time on ${DAY_LABELS[k]}.`;
-        const row = root.querySelector(`#bk-hours-list [data-day="${k}"]`);
-        row.querySelector('.bk-hr-edit').hidden = false;
+        showDay(k);
+        return;
+      }
+      if (hrDraft.walkOn && !nextW[k].closed && nextW[k].close <= nextW[k].open){
+        note.textContent = `Walk-in end time has to be after the start time on ${DAY_LABELS[k]}.`;
+        showDay(k);
         return;
       }
     }
-    const prev = profile.bookingHours;
+    const prev = profile.bookingHours, prevW = profile.walkin;
     profile.bookingHours = next;
+    const fields = { bookingHours: next };
+    const nextWalkin = { on: !!hrDraft.walkOn, hours: nextW, overrides: normalizeWalkin(prevW).overrides };
+    // Only touch the walk-in column when walk-ins are in use, so nothing changes for pros who never use them.
+    if (nextWalkin.on || walkinHasData(prevW)){ fields.walkin = nextWalkin; profile.walkin = nextWalkin; }
     note.textContent = ' ';
-    const r = await bkSave(root.querySelector('#btn-bk-save-hours'), { bookingHours: next }, 'Save hours');
-    if (!r.ok){ profile.bookingHours = prev; note.textContent = "Couldn't save: " + (r.message || 'try again.'); return; }
+    const r = await bkSave(root.querySelector('#btn-bk-save-hours'), fields, 'Save hours');
+    if (!r.ok){
+      profile.bookingHours = prev; profile.walkin = prevW;
+      note.textContent = "Couldn't save: " + (/walkin/i.test(r.message || '') ? 'walk-in hours need a one-time database update first.' : (r.message || 'try again.'));
+      return;
+    }
     bkMarkSaved('hours');
     note.textContent = 'Saved.';
+    renderBkHome();
   });
 
   // ---- Special dates: closed days, different hours, and VIP dates in one list ----
+  // A date can change appointments, walk-ins, or both. "Closed" always closes both.
   let spType = 'closed';
+  let spApplies = 'both';
   function spItems(){
     const today = todayIso();
-    const vip = (profile.vipDates||[]).map(v=>({ kind:'vip', date:v.date, open:v.open, close:v.close }));
-    const ov = (profile.bookingOverrides||[]).map(o=>({ kind:o.closed?'closed':'hours', date:o.date, open:o.open, close:o.close }));
-    return vip.concat(ov).filter(x=> x.date >= today).sort((a,b)=> a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+    const wk = normalizeWalkin(profile.walkin);
+    const vip = (profile.vipDates||[]).map(v=>({ kind:'vip', date:v.date, open:v.open, close:v.close, applies:'appt' }));
+    const ov = (profile.bookingOverrides||[]).map(o=>({ kind:o.closed?'closed':'hours', date:o.date, open:o.open, close:o.close, applies:'appt' }));
+    const wov = wk.overrides.map(o=>({ kind:o.closed?'closed':'hours', date:o.date, open:o.open, close:o.close, applies:'walk' }));
+    // The same change on both sides shows as one line that applies to both.
+    const merged = [], usedW = new Set();
+    ov.forEach(a=>{
+      const wi = wov.findIndex((w,i)=> !usedW.has(i) && w.date===a.date && w.kind===a.kind && (a.kind==='closed' || (w.open===a.open && w.close===a.close)));
+      if (wi >= 0){ usedW.add(wi); merged.push(Object.assign({}, a, { applies:'both' })); } else merged.push(a);
+    });
+    wov.forEach((w,i)=>{ if (!usedW.has(i)) merged.push(w); });
+    return vip.concat(merged).filter(x=> x.date >= today).sort((a,b)=> a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
   }
   function spDateLabel(iso){
     const d = new Date(iso+'T00:00:00');
     const sameYear = d.getFullYear() === new Date().getFullYear();
     return d.toLocaleDateString('en-US', sameYear ? {weekday:'short', month:'short', day:'numeric'} : {weekday:'short', month:'short', day:'numeric', year:'numeric'});
   }
+  function spWalkInPlay(){ return !!(profile.walkin && profile.walkin.on) || normalizeWalkin(profile.walkin).overrides.length > 0; }
   function renderSpecial(){
     const list = root.querySelector('#bk-special-list');
     const items = spItems();
@@ -6848,44 +7005,78 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       list.innerHTML = '<p class="screen-sub" style="margin:0;">No special dates yet.</p>';
       return;
     }
+    const showApplies = spWalkInPlay();
+    const appliesLabel = { both:'Appointments and walk-ins', appt:'Appointments', walk:'Walk-ins' };
     list.className = 'biz-group';
     list.innerHTML = items.map(x=>{
-      const detail = x.kind === 'closed' ? 'Closed all day' : `${fmtTimeBk(x.open)} – ${fmtTimeBk(x.close)}`;
-      return `<div class="bk-sp"><span class="t"><b>${bkEsc(spDateLabel(x.date))}</b><span>${bkEsc(detail)}</span></span>${x.kind==='vip' ? '<span class="vip-badge">✨ VIP</span>' : ''}<button type="button" class="link-btn" data-sp-remove="${bkEsc(x.kind)}" data-sp-date="${bkEsc(x.date)}">Remove</button></div>`;
+      let detail = x.kind === 'closed' ? 'Closed all day' : `${fmtTimeBk(x.open)} – ${fmtTimeBk(x.close)}`;
+      if (showApplies && x.kind !== 'vip') detail += ' · ' + appliesLabel[x.applies];
+      return `<div class="bk-sp"><span class="t"><b>${bkEsc(spDateLabel(x.date))}</b><span>${bkEsc(detail)}</span></span>${x.kind==='vip' ? '<span class="vip-badge">✨ VIP</span>' : ''}<button type="button" class="link-btn" data-sp-remove="${bkEsc(x.kind)}" data-sp-date="${bkEsc(x.date)}" data-sp-applies="${bkEsc(x.applies)}">Remove</button></div>`;
     }).join('');
   }
-  async function saveSpecial(nextVip, nextOv, btn, idleText){
-    const prevVip = profile.vipDates, prevOv = profile.bookingOverrides;
+  // nextWalkin is null when the walk-in side is untouched, so nothing extra is saved for pros who don't use walk-ins.
+  async function saveSpecial(nextVip, nextOv, nextWalkin, btn, idleText){
+    const prevVip = profile.vipDates, prevOv = profile.bookingOverrides, prevW = profile.walkin;
     profile.vipDates = nextVip; profile.bookingOverrides = nextOv;
-    const r = btn ? await bkSave(btn, { vipDates: nextVip, bookingOverrides: nextOv }, idleText)
-                  : await persistProfile({ vipDates: nextVip, bookingOverrides: nextOv });
-    if (!r.ok){ profile.vipDates = prevVip; profile.bookingOverrides = prevOv; }
+    const fields = { vipDates: nextVip, bookingOverrides: nextOv };
+    if (nextWalkin){ fields.walkin = nextWalkin; profile.walkin = nextWalkin; }
+    const r = btn ? await bkSave(btn, fields, idleText) : await persistProfile(fields);
+    if (!r.ok){
+      profile.vipDates = prevVip; profile.bookingOverrides = prevOv; profile.walkin = prevW;
+      if (/walkin/i.test(r.message || '')) r.message = 'walk-in hours need a one-time database update first.';
+    }
     return r;
   }
   root.querySelector('#bk-special-list').addEventListener('click', async e=>{
     const b = e.target.closest('[data-sp-remove]');
     if (!b) return;
-    const kind = b.dataset.spRemove, date = b.dataset.spDate;
-    const vip = (profile.vipDates||[]).filter(v=> !(kind==='vip' && v.date===date));
-    const ov = (profile.bookingOverrides||[]).filter(o=> !(kind!=='vip' && o.date===date));
+    const kind = b.dataset.spRemove, date = b.dataset.spDate, applies = b.dataset.spApplies || 'appt';
+    let vip = profile.vipDates||[], ov = profile.bookingOverrides||[], nextW = null;
+    if (applies === 'appt' || applies === 'both'){
+      vip = vip.filter(v=> !(kind==='vip' && v.date===date));
+      ov = ov.filter(o=> !(kind!=='vip' && o.date===date));
+    }
+    if (applies === 'walk' || applies === 'both'){
+      const wk = normalizeWalkin(profile.walkin);
+      nextW = Object.assign({}, wk, { overrides: wk.overrides.filter(o=> o.date !== date) });
+    }
     b.disabled = true;
-    const r = await saveSpecial(vip, ov, null);
+    const r = await saveSpecial(vip, ov, nextW, null);
     b.disabled = false;
     renderSpecial(); renderBkHome();
     bkPill('special', r.ok ? 'saved' : 'error');
   });
+  // The "Applies to" choice only matters when both appointments and walk-ins are on.
+  function spBothKinds(){ return !!profile.bookingEnabled && !!(profile.walkin && profile.walkin.on); }
+  function spEffectiveApplies(){
+    if (spType === 'closed') return 'both';
+    if (spType === 'vip') return 'appt';
+    if (spBothKinds()) return spApplies;
+    if (profile.walkin && profile.walkin.on && !profile.bookingEnabled) return 'walk';
+    return 'appt';
+  }
+  function refreshSpecialHelp(){
+    const eff = spEffectiveApplies();
+    root.querySelector('#bk-special-type-help').textContent =
+      spType === 'closed' ? (spWalkInPlay() ? "Clients can't book you, and you won't show walk-ins, that day." : "Clients can't book you at all that day.")
+      : spType === 'hours' ? (eff === 'walk' ? 'Clients see these as your walk-in hours that day.' : eff === 'both' ? 'Clients can book you, and see your walk-in times, within these hours that day.' : 'Clients can only book you during these hours that day.')
+      : 'A premium after-hours window. Clients see it called out on your profile, and services with a VIP price charge that instead.';
+  }
   function setSpecialType(t){
     spType = t;
     root.querySelectorAll('#bk-special-type .mode-btn').forEach(x=> x.classList.toggle('active', x.dataset.spType===t));
     root.querySelector('#bk-sp-hours-row').style.display = t === 'closed' ? 'none' : 'flex';
-    root.querySelector('#bk-special-type-help').textContent =
-      t === 'closed' ? "Clients can't book you at all that day."
-      : t === 'hours' ? 'Clients can only book you during these hours that day.'
-      : 'A premium after-hours window. Clients see it called out on your profile, and services with a VIP price charge that instead.';
+    root.querySelector('#bk-sp-applies-row').style.display = (t === 'hours' && spBothKinds()) ? '' : 'none';
+    refreshSpecialHelp();
     if (t === 'vip'){ root.querySelector('#bk-sp-open').value = '19:00'; root.querySelector('#bk-sp-close').value = '21:00'; }
     else if (t === 'hours'){ root.querySelector('#bk-sp-open').value = '09:00'; root.querySelector('#bk-sp-close').value = '18:00'; }
   }
   root.querySelectorAll('#bk-special-type .mode-btn').forEach(btn=> btn.addEventListener('click', ()=> setSpecialType(btn.dataset.spType)));
+  root.querySelectorAll('#bk-sp-applies .mode-btn').forEach(btn=> btn.addEventListener('click', ()=>{
+    spApplies = btn.dataset.spApplies;
+    root.querySelectorAll('#bk-sp-applies .mode-btn').forEach(x=> x.classList.toggle('active', x===btn));
+    refreshSpecialHelp();
+  }));
   function closeSpecialForm(){
     root.querySelector('#bk-special-form').style.display = 'none';
     root.querySelector('#btn-bk-special-new').style.display = '';
@@ -6893,6 +7084,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#bk-sp-status').textContent = ' ';
   }
   root.querySelector('#btn-bk-special-new').addEventListener('click', function(){
+    spApplies = 'both';
+    root.querySelectorAll('#bk-sp-applies .mode-btn').forEach(x=> x.classList.toggle('active', x.dataset.spApplies==='both'));
     setSpecialType('closed');
     root.querySelector('#bk-special-form').style.display = 'flex';
     this.style.display = 'none';
@@ -6906,13 +7099,23 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const close = root.querySelector('#bk-sp-close').value || '18:00';
     if (!date){ statusEl.textContent = 'Pick a date first.'; return; }
     if (spType !== 'closed' && close <= open){ statusEl.textContent = 'Close time has to be after open time.'; return; }
-    // One entry per date: adding a new one replaces whatever that date had before.
-    let vip = (profile.vipDates||[]).filter(v=> v.date !== date);
-    let ov = (profile.bookingOverrides||[]).filter(o=> o.date !== date);
-    if (spType === 'vip') vip = vip.concat([{ date, open, close }]).sort((a,b)=> a.date<b.date?-1:1);
-    else ov = ov.concat([{ date, closed: spType==='closed', open, close }]).sort((a,b)=> a.date<b.date?-1:1);
+    const eff = spEffectiveApplies();
+    const wk = normalizeWalkin(profile.walkin);
+    // One entry per date and kind: adding a new one replaces what that date had before for what it applies to.
+    let vip = profile.vipDates||[], ov = profile.bookingOverrides||[], nextW = null;
+    if (eff === 'appt' || eff === 'both'){
+      vip = vip.filter(v=> v.date !== date);
+      ov = ov.filter(o=> o.date !== date);
+      if (spType === 'vip') vip = vip.concat([{ date, open, close }]).sort((a,b)=> a.date<b.date?-1:1);
+      else ov = ov.concat([{ date, closed: spType==='closed', open, close }]).sort((a,b)=> a.date<b.date?-1:1);
+    }
+    // The walk-in side is only written when walk-ins are in use (or this date is walk-ins only).
+    if (eff === 'walk' || (eff === 'both' && (wk.on || walkinHasData(wk)))){
+      const wov = wk.overrides.filter(o=> o.date !== date).concat([{ date, closed: spType==='closed', open, close }]).sort((a,b)=> a.date<b.date?-1:1);
+      nextW = Object.assign({}, wk, { overrides: wov });
+    }
     statusEl.textContent = ' ';
-    const r = await saveSpecial(vip, ov, root.querySelector('#btn-bk-add-special'), 'Add date');
+    const r = await saveSpecial(vip, ov, nextW, root.querySelector('#btn-bk-add-special'), 'Add date');
     if (!r.ok){ statusEl.textContent = "Couldn't save: " + (r.message || 'try again.'); return; }
     closeSpecialForm();
     renderSpecial(); renderBkHome();
@@ -6931,12 +7134,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       setSub('bk-row-services-sub', `${svcs.length} service${svcs.length===1?'':'s'} · ${lo===hi ? '$'+lo : '$'+lo+'–$'+hi}`);
     }
     const sp = root.querySelector('#bk-row-services-pill'); if (sp) sp.hidden = svcs.length > 0;
-    // hours
-    const hours = profile.bookingHours || defaultBookingHours();
-    const openDays = DAY_ORDER.filter(k=> hours[k] && !hours[k].closed);
-    let hs;
-    if (!openDays.length) hs = 'Closed every day';
-    else {
+    // hours: appointments, and walk-ins when they are on
+    const summarize = (hours, none)=>{
+      const openDays = DAY_ORDER.filter(k=> hours[k] && !hours[k].closed);
+      if (!openDays.length) return none;
       const sameHours = openDays.every(k=> hours[k].open === hours[openDays[0]].open && hours[k].close === hours[openDays[0]].close);
       const idx = openDays.map(k=> DAY_ORDER.indexOf(k));
       const contiguous = idx[idx.length-1] - idx[0] === idx.length - 1;
@@ -6944,7 +7145,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const range = openDays.length === 1 ? short(openDays[0])
         : contiguous ? short(openDays[0])+'–'+short(openDays[openDays.length-1])
         : `${openDays.length} days a week`;
-      hs = range + ' · ' + (sameHours ? shortTime(hours[openDays[0]].open)+'–'+shortTime(hours[openDays[0]].close) : 'hours vary');
+      return range + ' · ' + (sameHours ? shortTime(hours[openDays[0]].open)+'–'+shortTime(hours[openDays[0]].close) : 'hours vary');
+    };
+    const wk = normalizeWalkin(profile.walkin);
+    const apptSum = summarize(profile.bookingHours || defaultBookingHours(), 'Closed every day');
+    let hs = apptSum;
+    if (wk.on){
+      const wSum = summarize(wk.hours, 'no days set yet');
+      hs = profile.bookingEnabled ? `${apptSum} · Walk-ins ${wSum}` : `Walk-ins ${wSum}`;
     }
     setSub('bk-row-hours-sub', hs);
     // special dates
@@ -7017,6 +7225,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#bk-enable-toggle').checked = !!profile.bookingEnabled;
     updateEnabledVisibility();
     renderServices();
+    resetHoursDraft();
     renderHours();
     renderSpecial();
     renderLinkAndQR();
@@ -7030,31 +7239,65 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     bkPill('services','saved'); bkPill('special','saved');
     renderBkHome();
   }
+  // The setup screens show when booking is on, or when walk-in hours are on (booking off = walk-in only).
   function updateEnabledVisibility(){
     const on = root.querySelector('#bk-enable-toggle').checked;
-    root.querySelector('#bk-setup-body').style.display = on ? 'flex' : 'none';
+    const walk = !!(profile.walkin && profile.walkin.on);
+    // Never pull the screen out from under someone who is still inside Hours or Special dates.
+    const inside = (typeof bkCurrentMode !== 'undefined') && bkCurrentMode !== 'home';
+    const visible = on || walk || inside;
+    const body = root.querySelector('#bk-setup-body');
+    body.style.display = visible ? 'flex' : 'none';
+    body.classList.toggle('bk-off', !on);
     root.querySelector('#bk-enable-hint').style.display = on ? 'none' : 'block';
+    root.querySelector('#bk-offwalk').style.display = (!on && !walk) ? 'flex' : 'none';
+    root.querySelector('#bk-offwalk-toggle').checked = walk;
+    root.querySelector('#bk-offwalk-sw').classList.toggle('on', walk);
     const sw = root.querySelector('.bk-switch');
     if (sw) sw.classList.toggle('on', on);
     const swl = root.querySelector('#bk-switch-label');
     if (swl) swl.textContent = on ? 'Booking is on' : 'Booking is off';
   }
-  // The on/off switch saves the moment it's flipped (there's no separate Save for it).
-  root.querySelector('#bk-enable-toggle').addEventListener('change', async function(){
-    const on = this.checked, prev = !!profile.bookingEnabled;
+  let bkEnableNote = '';
+  // Turning booking on or off saves the moment it's flipped (there's no separate Save for it).
+  async function setBookingEnabled(on){
+    const master = root.querySelector('#bk-enable-toggle');
+    const prev = !!profile.bookingEnabled;
     const note = root.querySelector('#bk-save-note');
+    master.checked = on;
     profile.bookingEnabled = on;
     updateEnabledVisibility();
     note.textContent = 'Saving…';
     let r;
     try{ r = await persistProfile({ bookingEnabled: on }); }catch(e){ r = { ok:false, message:(e && e.message) || '' }; }
     if (!r.ok){
-      profile.bookingEnabled = prev; this.checked = prev; updateEnabledVisibility();
-      note.textContent = "Couldn't save: " + (r.message || 'try again.');
+      profile.bookingEnabled = prev; master.checked = prev; updateEnabledVisibility();
+      note.textContent = bkEnableNote = "Couldn't save: " + (r.message || 'try again.');
+      return r;
+    }
+    note.textContent = bkEnableNote = on ? 'Booking is on. Clients can book you from your link.' : 'Booking is off. Clients can no longer book you online.';
+    if (on) loadAppointments();
+    renderBkHome();
+    return r;
+  }
+  root.querySelector('#bk-enable-toggle').addEventListener('change', function(){ setBookingEnabled(this.checked); });
+  // Booking off: a walk-in-only pro can still turn on walk-in hours from this screen.
+  root.querySelector('#bk-offwalk-toggle').addEventListener('change', async function(){
+    const on = this.checked, prev = profile.walkin;
+    const note = root.querySelector('#bk-save-note');
+    profile.walkin = Object.assign(normalizeWalkin(prev), { on });
+    resetHoursDraft();
+    updateEnabledVisibility();
+    renderBkHome();
+    note.textContent = 'Saving…';
+    let r;
+    try{ r = await persistProfile({ walkin: profile.walkin }); }catch(e){ r = { ok:false, message:(e && e.message) || '' }; }
+    if (!r.ok){
+      profile.walkin = prev; resetHoursDraft(); updateEnabledVisibility(); renderBkHome();
+      note.textContent = "Couldn't save: " + (/walkin/i.test(r.message || '') ? 'walk-in hours need a one-time database update first.' : (r.message || 'try again.'));
       return;
     }
-    note.textContent = on ? 'Booking is on. Clients can book you from your link.' : 'Booking is off. Clients can no longer book you online.';
-    if (on) loadAppointments();
+    note.textContent = on ? 'Walk-in hours are on. Open Hours to set your times.' : 'Walk-in hours are off.';
   });
   root.querySelector('#btn-bk-save-payment').addEventListener('click', async ()=>{
     const note = root.querySelector('#bk-payment-note');
@@ -7094,7 +7337,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         if (n) n.textContent = 'You have unsaved changes. Tap Save, or tap Back again to leave without saving.';
         return;
       }
-      if (cur === 'hours') renderHours();
+      if (cur === 'hours'){ resetHoursDraft(); renderHours(); }
       else if (cur === 'payment' || cur === 'policy') renderSetupFromProfile();
       bkMarkSaved(cur);
     }
@@ -7103,7 +7346,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   };
   window.onBookingPaneShown = function(mode){
     bkLeaveWarned = false;
-    if (mode === 'home') renderBkHome();
+    if (mode === 'home'){ renderBkHome(); updateEnabledVisibility(); }
     if (mode === 'services') renderServices();
     if (mode === 'special') renderSpecial();
   };
@@ -10817,6 +11060,7 @@ function applyProfileRow(data){
   profile.bookingEnabled = !!data.booking_enabled;
   profile.bookingServices = Array.isArray(data.booking_services) ? data.booking_services : [];
   profile.bookingHours = Object.assign(defaultBookingHours(), data.booking_hours || {});
+  profile.walkin = normalizeWalkin(data.walkin);
   profile.bookingOverrides = Array.isArray(data.booking_overrides) ? data.booking_overrides : [];
   profile.vipDates = Array.isArray(data.vip_dates) ? data.vip_dates : [];
   profile.bookingPolicy = data.booking_policy || '';

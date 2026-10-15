@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono: Find a Pro</title>
-<meta name="app-build" content="2026-10-22T15-00-00Z">
+<meta name="app-build" content="2026-10-23T14-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -192,6 +192,14 @@
   .pro-badge{ font-size:10px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; padding:3px 9px; border-radius:999px; background:var(--surface); color:var(--muted); }
   .pro-badge.good{ background:var(--good-tint); color:var(--good); }
   .pro-price{ font-size:12px; color:var(--muted); }
+  .pro-badge.walk{ display:inline-flex; align-items:center; gap:6px; background:var(--good-tint); color:var(--good); }
+  .pro-badge.walk::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--good); flex:none; }
+  .pro-today{ display:flex; gap:10px; align-items:baseline; margin-top:6px; font-size:12.5px; color:var(--ink); line-height:1.45; }
+  .pro-today .lbl{ font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); flex:none; }
+  .pro-today .ln{ display:block; }
+  .hours-row.two{ align-items:flex-start; gap:12px; }
+  .hours-row .hd-times{ display:flex; flex-direction:column; align-items:flex-end; gap:2px; text-align:right; }
+  .hours-row .hd-times i{ font-style:normal; color:var(--muted); font-size:11px; font-weight:700; margin-right:6px; }
 
   /* ---- Find a Pro: a pro's page ---- */
   .profile-hero{ height:170px; }
@@ -330,6 +338,7 @@
         </div>
         <div class="rating-line" id="detail-rating-line"></div>
         <div class="status-line" id="detail-status"></div>
+        <div class="status-line" id="detail-walk-status" hidden></div>
         <div class="act-row" id="detail-actions">
           <button type="button" class="btn btn-primary btn-grow" id="btn-detail-book" hidden>Book an appointment</button>
           <a class="btn btn-outline" id="btn-detail-call" href="#" hidden>Call</a>
@@ -896,6 +905,18 @@ function renderList(){
     const badges = isBookable(p)
       ? `<span class="pro-badge good">Books online</span>${price ? `<span class="pro-price">${esc(price)}</span>` : ''}`
       : `<span class="pro-badge">Call or visit</span>`;
+    const wti = walkTodayInfo(p);
+    let badgesHtml = badges, todayHtml = '';
+    if (wti){
+      if (wti.now) badgesHtml = `<span class="pro-badge walk">Walk-ins welcome now</span>` + badges;
+      const lines = [];
+      lines.push(wti.open ? `Walk-ins ${wti.label}` : 'No walk-ins today');
+      if (isBookable(p)){
+        const ah = hoursForPro(p, wti.iso);
+        if (ah && !ah.closed) lines.push(`Appointments ${fmtTimeShort(ah.open || '09:00')}–${fmtTimeShort(ah.close || '18:00')}`);
+      }
+      todayHtml = `<div class="pro-today"><span class="lbl">Today</span><span>${lines.map(l=>`<span class="ln">${esc(l)}</span>`).join('')}</span></div>`;
+    }
     card.innerHTML = `
       <div class="pro-card-body">
         <div class="pro-avatar-col">
@@ -907,7 +928,8 @@ function renderList(){
           <div class="pro-title">${esc(p.title || '')}</div>
           ${p.shop_name ? `<div class="pro-shop">${esc(p.shop_name)}</div>` : ''}
           ${locationLine(p) ? `<div class="pro-loc">${esc(locationLine(p))}</div>` : ''}
-          <div class="pro-badges">${badges}</div>
+          <div class="pro-badges">${badgesHtml}</div>
+          ${todayHtml}
         </div>
       </div>
       ${photoHtml}
@@ -945,6 +967,37 @@ function hoursForPro(p, dateStr){
   if (ov) return ov;
   const dayKey = DAY_KEYS[new Date(dateStr + 'T00:00:00').getDay()];
   return (p.booking_hours || {})[dayKey] || { closed:true };
+}
+
+// ---- Walk-in hours (information only: they never open or block booking slots) ----
+function walkinOn(p){ return !!(p && p.walkin && p.walkin.on); }
+function walkHoursFor(p, dateStr){
+  const w = (p && p.walkin) || {};
+  const ov = (w.overrides || []).find(o=>o.date === dateStr);
+  if (ov) return ov;
+  const dayKey = DAY_KEYS[new Date(dateStr + 'T00:00:00').getDay()];
+  return (w.hours || {})[dayKey] || { closed:true };
+}
+// "Now" on the pro's own clock when they have a time zone saved, otherwise on this device's.
+function proNow(p){
+  const d = new Date();
+  try{
+    if (p && p.timezone){
+      const parts = {};
+      new Intl.DateTimeFormat('en-CA', { timeZone:p.timezone, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hourCycle:'h23' }).formatToParts(d).forEach(x=>{ parts[x.type] = x.value; });
+      const hh = String(Number(parts.hour) % 24).padStart(2, '0');
+      return { iso: `${parts.year}-${parts.month}-${parts.day}`, hhmm: `${hh}:${parts.minute}` };
+    }
+  }catch(e){}
+  return { iso: todayIso(), hhmm: String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') };
+}
+function walkTodayInfo(p){
+  if (!walkinOn(p)) return null;
+  const now = proNow(p);
+  const h = walkHoursFor(p, now.iso);
+  const open = !!h && !h.closed;
+  const o = (h && h.open) || '09:00', c = (h && h.close) || '18:00';
+  return { open, label: open ? `${fmtTimeShort(o)}–${fmtTimeShort(c)}` : '', now: open && now.hhmm >= o && now.hhmm < c, iso: now.iso };
 }
 
 let detailToken = 0;
@@ -1050,6 +1103,15 @@ async function showDetail(code){
     statusEl.className = 'status-line';
     statusEl.innerHTML = '<span class="status-dot"></span><span>Not taking online bookings</span>';
   }
+  const walkEl = document.getElementById('detail-walk-status');
+  const wti = walkTodayInfo(p);
+  if (wti){
+    walkEl.hidden = false;
+    const wh = walkHoursFor(p, wti.iso);
+    walkEl.className = 'status-line' + (wti.now ? ' open' : '');
+    walkEl.innerHTML = '<span class="status-dot"></span><span>' + (wti.now ? `<b>Walk-ins welcome now</b> · until ${fmtTimeShort(wh.close || '18:00')}`
+      : wti.open ? `Walk-ins today · ${wti.label}` : 'No walk-ins today') + '</span>';
+  } else { walkEl.hidden = true; walkEl.innerHTML = ''; }
   const bookBtn = document.getElementById('btn-detail-book');
   const callBtn = document.getElementById('btn-detail-call');
   const mapBtn = document.getElementById('btn-detail-map');
@@ -1104,18 +1166,30 @@ async function showDetail(code){
   }
 
   const hoursList = document.getElementById('detail-hours-list');
-  if (p.booking_enabled && p.booking_hours && Object.keys(p.booking_hours).length){
+  const showAppt = !!(p.booking_enabled && p.booking_hours && Object.keys(p.booking_hours).length);
+  const showWalk = walkinOn(p);
+  if (showAppt || showWalk){
     rows.hours = true;
     const todayKey = DAY_KEYS[new Date().getDay()];
     const DAY_LABELS = { sun:'Sunday', mon:'Monday', tue:'Tuesday', wed:'Wednesday', thu:'Thursday', fri:'Friday', sat:'Saturday' };
+    const lbl = h => (!h || h.closed) ? 'Closed' : `${fmtTime12(h.open||'09:00')} - ${fmtTime12(h.close||'18:00')}`;
     hoursList.innerHTML = DAY_KEYS.map(key=>{
-      const h = p.booking_hours[key];
       const rowClass = key === todayKey ? 'hours-row is-today' : 'hours-row';
-      const timeLabel = (!h || h.closed) ? 'Closed' : `${fmtTime12(h.open||'09:00')} - ${fmtTime12(h.close||'18:00')}`;
-      return `<div class="${rowClass}"><span class="hd-day">${DAY_LABELS[key]}</span><span>${timeLabel}</span></div>`;
+      if (showAppt && showWalk){
+        const a = p.booking_hours[key], w = (p.walkin.hours || {})[key];
+        const wl = (!w || w.closed) ? 'None' : lbl(w);
+        return `<div class="${rowClass} two"><span class="hd-day">${DAY_LABELS[key]}</span><span class="hd-times"><span><i>Walk-ins</i>${wl}</span><span><i>Appointments</i>${lbl(a)}</span></span></div>`;
+      }
+      if (showWalk){
+        const w = (p.walkin.hours || {})[key];
+        return `<div class="${rowClass}"><span class="hd-day">${DAY_LABELS[key]}</span><span>${(!w || w.closed) ? 'No walk-ins' : lbl(w)}</span></div>`;
+      }
+      return `<div class="${rowClass}"><span class="hd-day">${DAY_LABELS[key]}</span><span>${lbl(p.booking_hours[key])}</span></div>`;
     }).join('');
-    const th = hoursForPro(p, todayIso());
-    document.getElementById('about-hours-sub').textContent = (!th || th.closed) ? 'Closed today' : `Today ${fmtTime12(th.open||'09:00')} - ${fmtTime12(th.close||'18:00')}`;
+    const subBits = [];
+    if (showWalk){ const wi = walkTodayInfo(p); subBits.push(wi.open ? `Walk-ins ${fmtTime12(walkHoursFor(p, wi.iso).open||'09:00')} - ${fmtTime12(walkHoursFor(p, wi.iso).close||'18:00')}` : 'No walk-ins today'); }
+    if (showAppt){ const th = hoursForPro(p, todayIso()); subBits.push((!th || th.closed) ? (showWalk ? 'No appointments today' : 'Closed today') : `${showWalk ? 'Appointments' : 'Today'} ${fmtTime12(th.open||'09:00')} - ${fmtTime12(th.close||'18:00')}`); }
+    document.getElementById('about-hours-sub').textContent = subBits.join(' · ');
   }
 
   if (p.booking_policy && p.booking_policy.trim()){
