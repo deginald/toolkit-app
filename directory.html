@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono: Find a Pro</title>
-<meta name="app-build" content="2026-10-18T15-00-00Z">
+<meta name="app-build" content="2026-10-21T15-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -451,6 +451,11 @@
             <div class="input-row"><input id="bkc-client-new-code" type="text" placeholder="e.g. jordan-4719" autocapitalize="none" autocorrect="off"></div>
             <div class="code-sugs" id="bkc-client-code-sugs"></div>
             <p class="screen-sub" id="bkc-client-code-say" style="margin:0;"></p>
+          </div>
+          <div class="field">
+            <label for="bkc-client-new-email">Email</label>
+            <div class="input-row"><input id="bkc-client-new-email" type="email" placeholder="e.g. jordan@email.com" autocomplete="email" autocapitalize="none" autocorrect="off"></div>
+            <p class="screen-sub" style="margin:0;">Lets you get your code back if you lose it. Never shown to your barber.</p>
           </div>
           <div class="field">
             <label for="bkc-client-new-phone">Mobile number <span style="text-transform:none; font-weight:600;">(optional)</span></label>
@@ -1659,6 +1664,7 @@ function renderBkcConfirm(){
   document.getElementById('bkc-confirm-status').textContent = ' ';
   bkcCodeFields.reset('');
   document.getElementById('bkc-client-new-phone').value = '';
+  document.getElementById('bkc-client-new-email').value = '';
   if (!bkc.fromFamilyPicker) bkc.client = null;
   const policyBlock = document.getElementById('bkc-policy-block');
   if (bkc.pro.booking_policy){
@@ -1726,6 +1732,8 @@ document.getElementById('btn-bkc-client-change').addEventListener('click', ()=>{
 });
 document.getElementById('bkc-client-new-name').addEventListener('input', updateConfirmEnabled);
 document.getElementById('bkc-client-new-code').addEventListener('input', updateConfirmEnabled);
+document.getElementById('bkc-client-new-email').addEventListener('input', updateConfirmEnabled);
+function bkcEmailOk(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v||'').trim()); }
 
 // Creates the passport row for a first-time client. Returns true when it worked (bkc.client is
 // then set), false after showing what to fix.
@@ -1734,8 +1742,10 @@ async function bkcCreatePassport(){
   const name = document.getElementById('bkc-client-new-name').value.trim();
   const phone = document.getElementById('bkc-client-new-phone').value.trim();
   const code = sanitizeCode(document.getElementById('bkc-client-new-code').value);
+  const email = document.getElementById('bkc-client-new-email').value.trim();
   if (!name){ statusEl.textContent = 'Enter your name first.'; return false; }
   if (!code){ statusEl.textContent = 'Enter a code first.'; return false; }
+  if (!bkcEmailOk(email)){ statusEl.textContent = 'Enter your email so you can get your code back if you lose it.'; return false; }
   if (!dbAvailable){ statusEl.textContent = "Live save isn't connected right now."; return false; }
   statusEl.textContent = 'Checking that code…';
   const titleName = toTitleCase(name);
@@ -1747,7 +1757,7 @@ async function bkcCreatePassport(){
       return false;
     }
     const uid = await currentAuthUid();
-    const { error } = await supabaseClient.from('clients').insert({ code, name: titleName, visits: [], phone, user_id: uid || null });
+    const { error } = await supabaseClient.from('clients').insert({ code, name: titleName, email, visits: [], phone, user_id: uid || null });
     if (error) throw error;
   }catch(e){
     console.warn('create client failed', e);
@@ -1766,7 +1776,7 @@ function updateConfirmEnabled(){
   let whoOk = !!bkc.client;
   const creating = !bkc.client && bkc.mode === 'new';
   if (creating){
-    whoOk = !!document.getElementById('bkc-client-new-name').value.trim() && !!sanitizeCode(document.getElementById('bkc-client-new-code').value);
+    whoOk = !!document.getElementById('bkc-client-new-name').value.trim() && !!sanitizeCode(document.getElementById('bkc-client-new-code').value) && bkcEmailOk(document.getElementById('bkc-client-new-email').value);
   }
   const btn = document.getElementById('btn-bkc-confirm');
   btn.disabled = !(whoOk && policyOk) || !!bkc.busy;
