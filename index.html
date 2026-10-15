@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-27T14-00-00Z">
+<meta name="app-build" content="2026-10-28T14-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -231,11 +231,6 @@
   .jobs-chip.field{ background:var(--brass-tint, rgba(217,174,94,.14)); color:var(--brass); border-color:transparent; }
   .jobs-where{ display:flex; flex-direction:column; gap:5px; }
   .jobs-where label{ font-size:11.5px; font-weight:700; color:var(--muted); }
-  .jobs-fields{ display:flex; gap:8px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; flex:none; padding-bottom:2px; }
-  .jobs-fields::-webkit-scrollbar{ display:none; }
-  .jobs-fchip{ flex:none; border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--ink); font-family:'Public Sans',sans-serif; font-size:13.5px; font-weight:700; padding:0 14px; min-height:36px; display:inline-flex; align-items:center; cursor:pointer; }
-  .jobs-fchip[aria-pressed="true"]{ border-color:var(--brass); background:var(--brass-tint); color:var(--brass); }
-  .jobs-fchip:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
   .jobs-widen{ display:flex; flex-direction:column; gap:8px; }
   .jobs-empty-box{ border:1px dashed var(--line); border-radius:14px; padding:16px 14px; text-align:center; color:var(--muted); font-size:13px; line-height:1.5; }
   .jobs-empty-box b{ display:block; color:var(--ink); font-size:14px; margin-bottom:2px; }
@@ -2522,7 +2517,10 @@
               <label for="jobs-where">Where</label>
               <div class="input-row"><select id="jobs-where" aria-label="Where"><option value="">All locations</option></select></div>
             </div>
-            <div class="jobs-fields" id="jobs-field-chips" role="group" aria-label="Choose a field"></div>
+            <div class="jobs-where">
+              <label for="jobs-field">Field</label>
+              <div class="input-row"><select id="jobs-field" aria-label="Field"></select></div>
+            </div>
             <div id="jobs-browse-list" style="display:flex; flex-direction:column; gap:10px;"></div>
             <div class="jobs-empty-box" id="jobs-browse-empty" style="display:none;"></div>
             <div class="jobs-widen" id="jobs-browse-widen" hidden></div>
@@ -6391,10 +6389,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const w = parseWhere(browseWhere);
     return [w.city, w.state].filter(Boolean).join(', ') || 'everywhere';
   }
-  function renderFieldChips(){
-    const el = root.querySelector('#jobs-field-chips');
-    el.innerHTML = [['All','']].concat(JOB_FIELDS.map(f=>[f,f])).map(([label,val])=>
-      `<button type="button" class="jobs-fchip" data-field="${escapeHtml(val)}" aria-pressed="${browseField === val ? 'true' : 'false'}">${escapeHtml(label)}</button>`).join('');
+  function renderFieldSelect(){
+    const sel = root.querySelector('#jobs-field');
+    if (!sel.options.length){
+      sel.innerHTML = '<option value="">All fields</option>' + JOB_FIELDS.map(f=>`<option value="${escapeHtml(f)}">${escapeHtml(f)}</option>`).join('');
+    }
+    sel.value = browseField;
   }
   // Fills the Where dropdown from the listings that are actually on the board right now,
   // so nobody picks a place that comes back empty. Keeps the current pick even at zero.
@@ -6414,7 +6414,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const cityVal = (c, st)=> 'c|' + c + '|' + st;
     const opts = [];
     const used = new Set();
-    const add = (val, label, n)=>{ if (used.has(val)) return; used.add(val); opts.push({ val, text: label + (n != null ? ' · ' + n : '') }); };
+    const add = (val, label, n)=>{ if (used.has(val)) return; used.add(val); opts.push({ val, text: label }); };
     const sameCity = (a,b)=> a.toLowerCase() === b.toLowerCase();
     const cur = parseWhere(browseWhere);
     // own city first (it is the starting pick), then everywhere, then whole states, then other places
@@ -6451,7 +6451,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const listEl = root.querySelector('#jobs-browse-list');
     const emptyEl = root.querySelector('#jobs-browse-empty');
     const label = browseLocLabel();
-    renderFieldChips();
+    renderFieldSelect();
     if (!dbAvailable){
       listEl.innerHTML = '';
       emptyEl.innerHTML = "Live search isn't connected right now.";
@@ -6542,12 +6542,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
   const POSITION_LABELS = { employee:'Employee', commission:'Commission', booth_rent:'Booth rent' };
   root.querySelector('#jobs-where').addEventListener('change', function(){ browseWhere = this.value; searchListings(); });
-  root.querySelector('#jobs-field-chips').addEventListener('click', e=>{
-    const b = e.target.closest('[data-field]');
-    if (!b) return;
-    browseField = b.dataset.field;
-    searchListings();
-  });
+  root.querySelector('#jobs-field').addEventListener('change', function(){ browseField = this.value; searchListings(); });
   root.querySelector('#jobs-browse-widen').addEventListener('click', e=>{
     const b = e.target.closest('[data-widen]');
     if (!b) return;
