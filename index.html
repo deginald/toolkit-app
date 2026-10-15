@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-24T14-00-00Z">
+<meta name="app-build" content="2026-10-25T14-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -238,6 +238,42 @@
   .jobs-pos-opts button{ flex:1; border:1px solid var(--line); border-radius:11px; padding:10px 4px; font-family:'Public Sans',sans-serif; font-size:12.5px; font-weight:700; color:var(--muted); background:var(--paper); cursor:pointer; }
   .jobs-pos-opts button[aria-pressed="true"]{ border-color:var(--brass); color:var(--brass); background:var(--brass-tint, rgba(217,174,94,.14)); }
   .jobs-pos-opts button:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .jobs-mine-screen{ display:none; flex-direction:column; gap:16px; }
+  .jobs-mine-screen.show{ display:flex; }
+  .jobs-sum{ border:1px solid var(--line); border-radius:16px; background:var(--paper); padding:14px; display:flex; flex-direction:column; gap:10px; }
+  .jobs-sum-h{ display:flex; align-items:center; gap:10px; }
+  .jobs-sum-h .t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .jobs-sum-h .t small{ font-size:10.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+  .jobs-sum-h .t b{ font-family:'Libre Franklin',sans-serif; font-size:16px; }
+  .jobs-sum-line{ font-size:13px; color:var(--muted); line-height:1.5; }
+  .jobs-sum-line b{ color:var(--ink); font-weight:600; }
+  .jobs-sum-btns{ display:flex; gap:8px; }
+  .jobs-sum-btns .btn{ flex:1; padding:10px 8px; font-size:13px; }
+  .jobs-pill{ font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:3px 9px; border-radius:999px; flex:none; background:var(--surface); color:var(--muted); }
+  .jobs-pill.on{ background:rgba(111,207,151,.14); color:var(--good); }
+  .jobs-pill.hid{ background:#4A2630; color:#F2B6B6; }
+  .jobs-banner{ border:1px solid var(--brass); border-radius:14px; background:var(--brass-tint, rgba(217,174,94,.12)); padding:12px 14px; display:flex; flex-direction:column; gap:8px; }
+  .jobs-banner.gray{ border-color:var(--line); background:var(--paper); }
+  .jobs-banner b{ font-size:14px; } .jobs-banner span.m{ font-size:12.5px; color:var(--muted); line-height:1.45; }
+  .jobs-msg{ display:flex; flex-direction:column; gap:7px; border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:12px 14px; }
+  .jobs-msg-top{ display:flex; align-items:center; gap:8px; }
+  .jobs-msg-top strong{ flex:1; min-width:0; }
+  .jobs-new{ font-size:9.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; background:var(--brass); color:#241A0C; border-radius:999px; padding:2px 8px; }
+  .jobs-msg-about{ font-size:10px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; color:var(--brass); }
+  .jobs-msg-text{ font-size:13.5px; line-height:1.5; }
+  .jobs-msg-meta{ font-size:11.5px; color:var(--muted); }
+  .jobs-msg-acts{ display:flex; gap:16px; align-items:center; margin-top:2px; }
+  .jobs-msg-acts .more{ margin-left:auto; padding:0 4px; letter-spacing:.1em; color:var(--muted); }
+  .jobs-msg-menu{ display:flex; flex-direction:column; gap:6px; border-top:1px solid var(--line); padding-top:8px; }
+  .jobs-msg-menu[hidden]{ display:none; }
+  .jobs-msg-menu button{ text-align:left; border:1px solid var(--line); border-radius:11px; background:var(--paper); color:var(--ink); font-family:'Public Sans',sans-serif; padding:10px 12px; cursor:pointer; display:flex; flex-direction:column; gap:2px; }
+  .jobs-msg-menu button b{ font-size:13.5px; } .jobs-msg-menu button span{ font-size:11.5px; color:var(--muted); line-height:1.4; }
+  .jobs-msg-menu button.danger b{ color:var(--behind); }
+  .jobs-report{ display:flex; flex-direction:column; gap:8px; border-top:1px solid var(--line); padding-top:8px; }
+  .jobs-report[hidden]{ display:none; }
+  .jobs-report label{ display:flex; align-items:center; gap:10px; font-size:13.5px; font-weight:600; padding:9px 12px; border:1px solid var(--line); border-radius:11px; background:var(--paper); cursor:pointer; }
+  .jobs-blocked{ display:flex; align-items:center; gap:10px; padding:11px 12px; border:1px solid var(--line); border-radius:12px; background:var(--surface); font-size:13.5px; font-weight:600; }
+  .jobs-blocked .link-btn{ margin-left:auto; padding:0; }
   .jobs-prefill-note{ font-size:12px; font-weight:700; color:var(--good); margin:0; line-height:1.4; }
   /* ---- Appointment edit sheet (pro) ---- */
   .sheet-overlay{ position:fixed; inset:0; z-index:400; background:rgba(5,9,15,0.72); display:flex; align-items:flex-end; justify-content:center; }
@@ -2519,7 +2555,14 @@
 
         <!-- ---- MY LISTINGS ---- -->
         <div class="jobs-pane" data-jobs="mine" id="jobs-mine-pane">
-          <div style="display:flex; flex-direction:column; gap:20px;">
+          <div class="jobs-mine-screen show" id="jobs-mine-home" data-mine="home">
+            <div id="jobs-mine-banners" style="display:flex; flex-direction:column; gap:10px;"></div>
+            <div class="jobs-sum" id="jobs-sum-looking"></div>
+            <div class="jobs-sum" id="jobs-sum-hiring"></div>
+            <p class="foot-note-small" id="jobs-mine-note" style="margin:0;">&nbsp;</p>
+          </div>
+          <div class="jobs-mine-screen" data-mine="looking">
+            <button type="button" class="link-btn" data-mine-back style="align-self:flex-start; padding:0;">&larr; My Listings</button>
             <div style="display:flex; flex-direction:column; gap:12px;">
               <div>
                 <p class="eyebrow-mini">For professionals &amp; students</p>
@@ -2576,7 +2619,10 @@
               <button class="btn btn-outline" id="btn-jobs-looking-preview" type="button">Preview profile</button>
               <p class="foot-note-small" id="jobs-looking-save-note">&nbsp;</p>
             </div>
-            <div id="jobs-hiring-card" style="display:flex; flex-direction:column; gap:12px; border-top:1px solid var(--line); padding-top:20px;">
+            </div>
+          <div class="jobs-mine-screen" data-mine="hiring">
+            <button type="button" class="link-btn" data-mine-back style="align-self:flex-start; padding:0;">&larr; My Listings</button>
+            <div id="jobs-hiring-card" style="display:flex; flex-direction:column; gap:12px;">
               <div>
                 <p class="eyebrow-mini">For shop owners</p>
                 <h2 style="font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:17px; margin:4px 0 6px;">I'm Hiring</h2>
@@ -2616,9 +2662,11 @@
         <!-- ---- MESSAGES ---- -->
         <div class="jobs-pane" data-jobs="messages" id="jobs-messages-pane">
           <div style="display:flex; flex-direction:column; gap:10px;">
-            <p class="screen-sub" style="margin:0;">Intro messages people have sent to your Jobs Board listings.</p>
+            <p class="screen-sub" style="margin:0;">People who answered your listings.</p>
+            <p class="foot-note-small" id="jobs-messages-status" style="margin:0;" hidden></p>
             <div id="jobs-messages-list" style="display:flex; flex-direction:column; gap:8px;"></div>
             <p class="screen-sub" id="jobs-messages-empty" style="display:none; margin:0;">No messages yet.</p>
+            <div id="jobs-blocked-wrap" style="display:none; flex-direction:column; gap:8px;"></div>
           </div>
         </div>
       </section>
@@ -6289,12 +6337,30 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     return shortCraft;
   }
 
+  // ---- how fresh a listing is: a nudge at 60 days, off the board at 90 ----
+  const NUDGE_DAYS = 60, HIDE_DAYS = 90;
+  function listingAgeDays(r){
+    if (!r || !r.updated_at) return null; // before the database update there is no date, so nothing expires
+    const t = new Date(r.updated_at).getTime();
+    if (!isFinite(t)) return null;
+    return Math.max(0, Math.floor((Date.now() - t) / 86400000));
+  }
+  function agoText(days){ return days === 0 ? 'Updated today' : days === 1 ? 'Updated 1 day ago' : 'Updated ' + days + ' days ago'; }
+  function listingState(r){
+    if (!r) return 'none';
+    if (!r.active) return 'off';
+    const d = listingAgeDays(r);
+    if (d != null && d >= HIDE_DAYS) return 'hidden';
+    if (d != null && d >= NUDGE_DAYS) return 'nudge';
+    return 'visible';
+  }
+
   // ---- sub-mode (Browse / My Listings / Messages) ----
   function showJobsMode(mode){
     root.querySelectorAll('.jobs-pane').forEach(p=> p.classList.toggle('show', p.dataset.jobs===mode));
     root.querySelectorAll('#jobs-mode-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.jobsMode===mode));
     if (mode === 'browse'){ showScreen('dashboard'); searchListings(); }
-    if (mode === 'mine') loadMyListings();
+    if (mode === 'mine'){ showMineScreen('home'); loadMyListings(); }
     if (mode === 'messages') loadMessages();
   }
   root.querySelectorAll('#jobs-mode-toggle .mode-btn').forEach(btn=>{
@@ -6359,6 +6425,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }catch(e){ console.warn('jobs search failed', e); }
     if (myToken !== browseToken) return; // a newer search is already on its way
     rows = rows.filter(r => r.profile_code !== profileCode);
+    // a listing nobody has updated in 90 days is left off the board
+    rows = rows.filter(r => { const d = listingAgeDays(r); return d == null || d < HIDE_DAYS; });
     if (city) rows = rows.filter(r => (r.city||'').toLowerCase().includes(city));
     if (state.length === 2) rows = rows.filter(r => (r.state||'').toLowerCase() === state);
     if (specialty) rows = rows.filter(r => browseType === 'looking' ? r.specialty === specialty : hiringMatchesField(r, specialty));
@@ -6401,18 +6469,21 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         const thumb = r.photo_url
           ? `<img src="${escapeHtml(r.photo_url)}" alt="" style="width:44px; height:44px; border-radius:50%; object-fit:cover; flex:none;">`
           : `<div style="width:44px; height:44px; border-radius:50%; background:var(--paper); border:1px solid var(--line); flex:none;"></div>`;
+        const ageL = listingAgeDays(r);
         return `<div class="jobs-listing-card" data-jobs-idx="${idx}" style="flex-direction:row; align-items:center; gap:12px;">
           ${thumb}
           <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
             <strong>${escapeHtml(r.name || 'Looking for work')}</strong>
             <span class="screen-sub" style="margin:0;">${escapeHtml(subLine)}</span>
+            ${ageL != null ? `<div class="jobs-chips"><span class="jobs-chip">${agoText(ageL)}</span></div>` : ''}
           </div>
         </div>`;
       }
       const locBits = [r.city ? escapeHtml(r.city) : '', r.state ? escapeHtml(r.state) : ''].filter(Boolean).join(', ');
       const cnt = r.hiring_count ? (escapeHtml(String(r.hiring_count)) + ' position' + (Number(r.hiring_count) === 1 ? '' : 's')) : '';
       const sub = [escapeHtml(r.hiring_role || r.specialty || ''), cnt, locBits].filter(Boolean).join(' · ');
-      const chips = (r.specialty ? `<span class="jobs-chip field">${escapeHtml(r.specialty)}</span>` : '') + (POSITION_LABELS[r.position_type] ? `<span class="jobs-chip">${escapeHtml(POSITION_LABELS[r.position_type])}</span>` : '');
+      const ageH = listingAgeDays(r);
+      const chips = (r.specialty ? `<span class="jobs-chip field">${escapeHtml(r.specialty)}</span>` : '') + (POSITION_LABELS[r.position_type] ? `<span class="jobs-chip">${escapeHtml(POSITION_LABELS[r.position_type])}</span>` : '') + (ageH != null ? `<span class="jobs-chip">${agoText(ageH)}</span>` : '');
       return `<div class="jobs-listing-card" data-jobs-idx="${idx}">
         <strong>${escapeHtml(r.business_name || 'Hiring')}</strong>
         <span class="screen-sub" style="margin:0;">${sub}</span>
@@ -6498,31 +6569,117 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#jobs-message-status').textContent = ' ';
     showScreen('detail');
   }
-  let armedDeleteMsgId = null;
+  let armedDeleteMsgId = null, armedBlockMsgId = null;
+  let myBlocks = [];
+  let senderListings = {};
+  function setMessagesStatus(txt){
+    const el = root.querySelector('#jobs-messages-status');
+    el.textContent = txt || '';
+    el.hidden = !txt;
+  }
+  function blockFriendlyError(e){
+    const m = (e && e.message) || 'unknown error';
+    return /job_blocks|job_reports|relation|schema cache/i.test(m) ? 'blocking and reporting need a one-time database update first.' : m;
+  }
+  async function blockSender(code, name){
+    const { error } = await supabaseClient.from('job_blocks').upsert({ blocker_code: profileCode, blocked_code: code, blocked_name: name || null }, { onConflict: 'blocker_code,blocked_code' });
+    if (error) throw error;
+    // their older messages stop counting as unread
+    try{ await supabaseClient.from('job_messages').update({ read: true }).eq('from_profile_code', code).eq('to_profile_code', profileCode); }catch(e){}
+  }
   root.querySelector('#jobs-messages-list').addEventListener('click', async (e)=>{
-    const replyId = e.target.dataset.replyId;
-    if (replyId){
-      const msg = lastLoadedMessages.find(m=> m.id === replyId);
+    const t = e.target.closest('button');
+    if (!t) return;
+    const d = t.dataset;
+    const first = n => String(n || 'this person').trim().split(/\s+/)[0];
+    if (d.replyId){
+      const msg = lastLoadedMessages.find(m=> m.id === d.replyId);
       if (msg) openReplyScreen(msg);
       return;
     }
-    const deleteId = e.target.dataset.deleteId;
-    if (deleteId){
-      // Same "tap again to confirm" pattern used for removing a shop team
-      // member -- a plain single tap can't permanently delete something.
-      if (armedDeleteMsgId !== deleteId){
-        armedDeleteMsgId = deleteId;
-        e.target.textContent = 'Tap again to delete';
-        setTimeout(()=>{ if (armedDeleteMsgId === deleteId){ armedDeleteMsgId = null; loadMessages(); } }, 4000);
+    if (d.viewCode){
+      const listing = senderListings[d.viewCode];
+      if (!listing) return;
+      // the detail screen lives in the Browse pane, so open it there; Back returns to Messages
+      root.querySelectorAll('.jobs-pane').forEach(p=> p.classList.toggle('show', p.dataset.jobs==='browse'));
+      root.querySelectorAll('#jobs-mode-toggle .mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.jobsMode==='browse'));
+      openListingDetail(listing);
+      replyInProgress = true;
+      return;
+    }
+    if (d.menuId){
+      const menu = root.querySelector(`[data-menu-for="${CSS.escape(d.menuId)}"]`);
+      if (menu){ menu.hidden = !menu.hidden; const rp = root.querySelector(`[data-report-for="${CSS.escape(d.menuId)}"]`); if (rp) rp.hidden = true; }
+      return;
+    }
+    if (d.deleteId){
+      // Same "tap again to confirm" pattern used for removing a shop team member.
+      if (armedDeleteMsgId !== d.deleteId){
+        armedDeleteMsgId = d.deleteId;
+        t.querySelector('b').textContent = 'Tap again to delete';
+        setTimeout(()=>{ if (armedDeleteMsgId === d.deleteId){ armedDeleteMsgId = null; loadMessages(); } }, 4000);
         return;
       }
       armedDeleteMsgId = null;
       try{
-        const { error } = await supabaseClient.from('job_messages').delete().eq('id', deleteId);
+        const { error } = await supabaseClient.from('job_messages').delete().eq('id', d.deleteId);
         if (error) throw error;
       }catch(err){ console.warn('delete job message failed', err); }
       loadMessages();
+      return;
     }
+    if (d.blockId){
+      const msg = lastLoadedMessages.find(m=> m.id === d.blockId);
+      if (!msg) return;
+      if (armedBlockMsgId !== d.blockId){
+        armedBlockMsgId = d.blockId;
+        t.querySelector('b').textContent = 'Tap again to block ' + first(msg.from_name);
+        setTimeout(()=>{ if (armedBlockMsgId === d.blockId){ armedBlockMsgId = null; const b = t.querySelector('b'); if (b && t.isConnected) b.textContent = 'Block ' + first(msg.from_name); } }, 4000);
+        return;
+      }
+      armedBlockMsgId = null;
+      try{ await blockSender(msg.from_profile_code, msg.from_name); setMessagesStatus(''); }
+      catch(err){ console.warn('block failed', err); setMessagesStatus("Couldn't block: " + blockFriendlyError(err)); return; }
+      loadMessages();
+      return;
+    }
+    if (d.reportId){
+      const menu = root.querySelector(`[data-menu-for="${CSS.escape(d.reportId)}"]`);
+      const rp = root.querySelector(`[data-report-for="${CSS.escape(d.reportId)}"]`);
+      if (menu) menu.hidden = true; if (rp) rp.hidden = false;
+      return;
+    }
+    if (d.reportCancel){
+      const rp = root.querySelector(`[data-report-for="${CSS.escape(d.reportCancel)}"]`); if (rp) rp.hidden = true;
+      return;
+    }
+    if (d.reportSend){
+      const msg = lastLoadedMessages.find(m=> m.id === d.reportSend);
+      const rp = root.querySelector(`[data-report-for="${CSS.escape(d.reportSend)}"]`);
+      if (!msg || !rp) return;
+      const picked = rp.querySelector('input[type="radio"]:checked');
+      if (!picked){ setMessagesStatus('Pick what is wrong with this message first.'); return; }
+      t.disabled = true;
+      try{
+        const { error } = await supabaseClient.from('job_reports').insert({ reporter_code: profileCode, reported_code: msg.from_profile_code, message_id: msg.id, message_text: msg.message, reason: picked.value });
+        if (error) throw error;
+        await blockSender(msg.from_profile_code, msg.from_name);
+        setMessagesStatus('Thanks. Your report was sent and ' + first(msg.from_name) + ' is blocked.');
+      }catch(err){ console.warn('report failed', err); setMessagesStatus("Couldn't send the report: " + blockFriendlyError(err)); t.disabled = false; return; }
+      await loadMessages(true);
+      return;
+    }
+  });
+  root.querySelector('#jobs-blocked-wrap').addEventListener('click', async (e)=>{
+    const b = e.target.closest('[data-unblock-code]');
+    if (!b) return;
+    b.disabled = true;
+    try{
+      const { error } = await supabaseClient.from('job_blocks').delete().eq('blocker_code', profileCode).eq('blocked_code', b.dataset.unblockCode);
+      if (error) throw error;
+      setMessagesStatus('');
+    }catch(err){ console.warn('unblock failed', err); setMessagesStatus("Couldn't unblock: " + blockFriendlyError(err)); }
+    loadMessages();
   });
   function renderHiringDetailHtml(listing){
     const fullAddress = [listing.address, listing.city, listing.state].map(x => x ? escapeHtml(x) : '').filter(Boolean).join(', ');
@@ -6564,6 +6721,11 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const text = root.querySelector('#jobs-message-text').value.trim();
     if (!text){ statusEl.textContent = 'Type a message first.'; return; }
     if (!dbAvailable || !detailListing){ statusEl.textContent = "Not connected right now. This wasn't saved."; return; }
+    // someone who blocked you does not get your message (the check is skipped before the database update)
+    try{
+      const bl = await supabaseClient.from('job_blocks').select('blocker_code').eq('blocker_code', detailListing.profile_code).eq('blocked_code', profileCode);
+      if (!bl.error && bl.data && bl.data.length){ statusEl.textContent = "This person isn't taking messages right now."; return; }
+    }catch(e){}
     try{
       const { data, error } = await supabaseClient.from('job_messages').insert({
         listing_id: detailListing.id,
@@ -6691,6 +6853,99 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (auto) specSel.value = auto;
     updateJobsSpecialtyTipNote();
   }
+  // ---- My Listings: two summary cards, each with Edit opening its form ----
+  let myLooking = null, myHiring = null;
+  function showMineScreen(name){
+    root.querySelectorAll('.jobs-mine-screen').forEach(el=> el.classList.toggle('show', el.dataset.mine === name));
+    if (name === 'home') renderMineCards();
+  }
+  function mineLine(r, type){
+    const loc = [r.city, r.state].filter(Boolean).map(escapeHtml).join(', ');
+    const age = listingAgeDays(r);
+    if (type === 'looking'){
+      return `<b>${escapeHtml(r.name || (profile && profile.name) || '')}</b>${craftStatusLine(r) ? ' · ' + escapeHtml(craftStatusLine(r)) : ''}${loc ? '<br>' + loc : ''}${age != null ? '<br>' + agoText(age) : ''}`;
+    }
+    const cnt = r.hiring_count ? (escapeHtml(String(r.hiring_count)) + ' position' + (Number(r.hiring_count) === 1 ? '' : 's')) : '';
+    const first = [escapeHtml(r.specialty || r.hiring_role || ''), cnt].filter(Boolean).join(' · ');
+    const second = [POSITION_LABELS[r.position_type] ? escapeHtml(POSITION_LABELS[r.position_type]) : '', loc].filter(Boolean).join(' · ');
+    return `<b>${escapeHtml(r.business_name || 'Your shop')}</b>${first ? ' · ' + first : ''}${second ? '<br>' + second : ''}${age != null ? '<br>' + agoText(age) : ''}`;
+  }
+  function sumCardHtml(type, r){
+    const isLook = type === 'looking';
+    const small = isLook ? (isStudent() ? 'For professionals &amp; students' : 'For professionals') : 'For shop owners';
+    const title = isLook ? "I'm Looking for work" : "I'm Hiring";
+    const st = listingState(r);
+    const pill = st === 'none' || st === 'off' ? '<span class="jobs-pill">Off</span>' : st === 'hidden' ? '<span class="jobs-pill hid">Hidden</span>' : '<span class="jobs-pill on">Visible</span>';
+    let body, btns;
+    if (!r){
+      body = isLook ? 'Not showing in searches. Turn it on so shops can find you.' : 'Not showing in searches. Turn it on to let job-seekers find your shop.';
+      btns = `<button type="button" class="btn btn-primary" data-mine-setup="${type}">Set up</button>`;
+    } else {
+      body = (st === 'off' ? '<span>Not showing in searches.</span><br>' : '') + mineLine(r, type);
+      btns = `<button type="button" class="btn btn-outline" data-mine-edit="${type}">Edit</button><button type="button" class="btn btn-outline" data-mine-preview="${type}">Preview</button>`;
+    }
+    return `<div class="jobs-sum-h"><div class="t"><small>${small}</small><b>${title}</b></div>${pill}</div><div class="jobs-sum-line">${body}</div><div class="jobs-sum-btns">${btns}</div>`;
+  }
+  function renderMineCards(){
+    const lookEl = root.querySelector('#jobs-sum-looking'), hireEl = root.querySelector('#jobs-sum-hiring');
+    lookEl.innerHTML = sumCardHtml('looking', myLooking);
+    hireEl.style.display = isStudent() ? 'none' : 'flex';
+    hireEl.innerHTML = sumCardHtml('hiring', myHiring);
+    // "Still hiring?" at 60 days, and a Show it again when it has come off the board
+    const bn = [];
+    [['hiring', myHiring, 'Hiring', 'hiring'], ['looking', myLooking, 'Looking', 'looking']].forEach(([type, r, word, verb])=>{
+      if (type === 'hiring' && isStudent()) return;
+      const st = listingState(r), days = listingAgeDays(r);
+      if (st === 'nudge'){
+        bn.push(`<div class="jobs-banner"><b>Still ${type === 'hiring' ? 'hiring' : 'looking'}?</b><span class="m">Your ${word} listing was last updated ${days} days ago. It hides from searches in ${Math.max(1, HIDE_DAYS - days)} days unless you keep it.</span><button type="button" class="btn btn-primary" data-keep="${type}">Yes, keep it listed</button><button type="button" class="link-btn" data-takedown="${type}" style="align-self:flex-start; padding:0;">No, take it down</button></div>`);
+      } else if (st === 'hidden'){
+        bn.push(`<div class="jobs-banner gray"><b>Your ${word} listing is hidden</b><span class="m">It was not updated for ${HIDE_DAYS} days, so it came off the board. Nothing was deleted.</span><button type="button" class="btn btn-primary" data-keep="${type}">Show it again</button></div>`);
+      }
+    });
+    root.querySelector('#jobs-mine-banners').innerHTML = bn.join('');
+  }
+  root.querySelector('#jobs-mine-home').addEventListener('click', async (e)=>{
+    const b = e.target.closest('button');
+    if (!b) return;
+    const note = root.querySelector('#jobs-mine-note');
+    const rowFor = t => t === 'looking' ? myLooking : myHiring;
+    if (b.dataset.mineEdit){ showMineScreen(b.dataset.mineEdit); return; }
+    if (b.dataset.mineSetup){
+      showMineScreen(b.dataset.mineSetup);
+      // Set up means turning it on
+      const tg = root.querySelector(b.dataset.mineSetup === 'looking' ? '#jobs-looking-toggle' : '#jobs-hiring-toggle');
+      if (tg && !tg.checked){ tg.checked = true; tg.dispatchEvent(new Event('change')); }
+      return;
+    }
+    if (b.dataset.minePreview){
+      const r = rowFor(b.dataset.minePreview);
+      if (!r) return;
+      const looking = b.dataset.minePreview === 'looking';
+      document.getElementById('jobs-preview-lead').textContent = looking ? 'This is how shops see your listing' : 'This is how job-seekers see your listing';
+      document.getElementById('jobs-looking-preview-body').innerHTML = looking ? renderLookingDetailHtml(r) : renderHiringDetailHtml(r);
+      document.getElementById('jobs-looking-preview-panel').style.display = 'block';
+      return;
+    }
+    const type = b.dataset.keep || b.dataset.takedown;
+    if (!type) return;
+    const r = rowFor(type);
+    if (!r) return;
+    const keep = !!b.dataset.keep;
+    const patch = { active: keep };
+    if ('updated_at' in r) patch.updated_at = new Date().toISOString();
+    b.disabled = true;
+    try{
+      const { error } = await supabaseClient.from('job_listings').update(patch).eq('id', r.id);
+      if (error) throw error;
+      Object.assign(r, patch);
+      note.textContent = keep ? 'Done. Your listing is visible for another ' + HIDE_DAYS + ' days.' : 'Done. Your listing is off the board.';
+    }catch(err){
+      console.warn('keep listing failed', err);
+      note.textContent = "Couldn't update that: " + ((err && err.message) || 'try again.');
+    }
+    renderMineCards();
+  });
+  root.querySelectorAll('[data-mine-back]').forEach(btn=> btn.addEventListener('click', ()=> showMineScreen('home')));
   // The field pick list uses the same list as everywhere else.
   (function fillHiringFieldOptions(){
     const sel = root.querySelector('#jobs-hiring-field');
@@ -6730,9 +6985,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     updateLookingStatusFields();
     const hiringCard = root.querySelector('#jobs-hiring-card');
     if (hiringCard) hiringCard.style.display = isStudent() ? 'none' : 'flex';
-    if (!dbAvailable || !profileCode) return;
+    if (!dbAvailable || !profileCode){ renderMineCards(); return; }
     try{
       const { data: looking } = await supabaseClient.from('job_listings').select('*').eq('id', jobsListingId('looking')).maybeSingle();
+      myLooking = looking || null;
       if (looking){
         root.querySelector('#jobs-looking-toggle').checked = !!looking.active;
         root.querySelector('#jobs-looking-fields').style.display = looking.active ? 'flex' : 'none';
@@ -6759,6 +7015,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         if (projected) root.querySelector('#jobs-looking-graddate').value = projected;
       }
       const { data: hiring } = await supabaseClient.from('job_listings').select('*').eq('id', jobsListingId('hiring')).maybeSingle();
+      myHiring = hiring || null;
       if (hiring){
         root.querySelector('#jobs-hiring-toggle').checked = !!hiring.active;
         root.querySelector('#jobs-hiring-fields').style.display = hiring.active ? 'flex' : 'none';
@@ -6785,6 +7042,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       }
       prefillHiringFromShop();
     }catch(e){ console.warn('load jobs listings failed', e); }
+    renderMineCards();
   }
   root.querySelector('#btn-jobs-save-looking').addEventListener('click', async ()=>{
     const noteEl = root.querySelector('#jobs-looking-save-note');
@@ -6806,9 +7064,11 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       photo_url: lookingPhotoUrl || null,
       photo_path: lookingPhotoPath || null
     };
+    if (myLooking && 'updated_at' in myLooking) row.updated_at = new Date().toISOString(); // saving counts as an update
     try{
       const { error } = await supabaseClient.from('job_listings').upsert(row, { onConflict: 'id' });
       if (error) throw error;
+      myLooking = Object.assign({}, myLooking || {}, row);
       noteEl.textContent = active ? "Saved. You're visible in Jobs Board searches." : 'Saved. Your listing is hidden.';
     }catch(e){
       console.warn('save looking listing failed', e);
@@ -6840,9 +7100,11 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     };
     // The two newer columns are only sent when they are in use, so saving still works before the database update.
     if (hiringPosType || desc || hiringHadExtras){ row.position_type = hiringPosType || null; row.description = desc || null; }
+    if (myHiring && 'updated_at' in myHiring) row.updated_at = new Date().toISOString(); // saving counts as an update
     try{
       const { error } = await supabaseClient.from('job_listings').upsert(row, { onConflict: 'id' });
       if (error) throw error;
+      myHiring = Object.assign({}, myHiring || {}, row);
       if (row.specialty){ hiringOldRole = ''; root.querySelector('#jobs-hiring-oldrole').hidden = true; }
       if ('position_type' in row) hiringHadExtras = true;
       noteEl.textContent = active ? 'Saved. Your listing is visible in Jobs Board searches.' : 'Saved. Your listing is hidden.';
@@ -6853,30 +7115,88 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   });
 
   // ---- Messages ----
-  async function loadMessages(){
+  async function loadMessages(keepStatus){
     const listEl = root.querySelector('#jobs-messages-list');
     const emptyEl = root.querySelector('#jobs-messages-empty');
-    if (!dbAvailable || !profileCode){ listEl.innerHTML = ''; emptyEl.style.display = 'block'; return; }
+    const blockedWrap = root.querySelector('#jobs-blocked-wrap');
+    if (!keepStatus) setMessagesStatus('');
+    if (!dbAvailable || !profileCode){ listEl.innerHTML = ''; emptyEl.style.display = 'block'; blockedWrap.style.display = 'none'; return; }
     try{
       const { data, error } = await supabaseClient.from('job_messages').select('*').eq('to_profile_code', profileCode);
       if (error) throw error;
-      const rows = (data || []).slice().sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+      // people you blocked (the table only exists after the database update; without it nobody is blocked)
+      myBlocks = [];
+      try{
+        const br = await supabaseClient.from('job_blocks').select('*').eq('blocker_code', profileCode);
+        if (!br.error && Array.isArray(br.data)) myBlocks = br.data;
+      }catch(e){}
+      const blocked = new Set(myBlocks.map(b=> b.blocked_code));
+      const all = (data || []).slice().sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+      const rows = all.filter(m=> !blocked.has(m.from_profile_code));
       lastLoadedMessages = rows;
+      const newIds = new Set(rows.filter(m=> !m.read).map(m=> m.id));
+      // who they are: their active listing, when they have one
+      senderListings = {};
+      const codes = new Set(rows.map(m=> m.from_profile_code));
+      if (codes.size){
+        try{
+          const lr = await supabaseClient.from('job_listings').select('*').in('profile_code', Array.from(codes)).eq('active', true);
+          (lr.data || []).filter(l=> codes.has(l.profile_code)).forEach(l=>{
+            const cur = senderListings[l.profile_code];
+            if (!cur || l.type === 'looking') senderListings[l.profile_code] = l;
+          });
+        }catch(e){}
+      }
+      const firstOf = n => String(n || 'Someone').trim().split(/\s+/)[0];
       if (!rows.length){
         listEl.innerHTML = '';
         emptyEl.style.display = 'block';
       } else {
         emptyEl.style.display = 'none';
-        listEl.innerHTML = rows.map(m=> `<div class="jobs-listing-card" style="cursor:default;">
-          <strong>${escapeHtml(m.from_name || 'Someone')}</strong>
-          <span style="margin:0;">${escapeHtml(m.message)}</span>
-          <span class="foot-note-small" style="margin:0;">${escapeHtml(new Date(m.created_at).toLocaleDateString())}</span>
-          <div style="display:flex; gap:16px; margin-top:2px;">
-            <button type="button" class="link-btn" data-reply-id="${escapeHtml(m.id)}" style="padding:0;">Reply</button>
-            <button type="button" class="link-btn" data-delete-id="${escapeHtml(m.id)}" style="padding:0; color:var(--behind);">Delete</button>
-          </div>
-        </div>`).join('');
+        listEl.innerHTML = rows.map(m=>{
+          const id = escapeHtml(m.id);
+          const kind = String(m.listing_id || '').endsWith('::hiring') ? 'Hiring' : 'Looking';
+          const owner = String(m.listing_id || '').split('::')[0];
+          const about = owner === profileCode ? `About your ${kind} listing` : `About ${escapeHtml(firstOf(m.from_name))}'s ${kind} listing`;
+          const sl = senderListings[m.from_profile_code];
+          let who = '';
+          if (sl){
+            const loc = [sl.city, sl.state].filter(Boolean).join(', ');
+            who = sl.type === 'looking' ? [craftStatusLine(sl), loc].filter(Boolean).join(' · ') : [sl.business_name, loc].filter(Boolean).join(' · ');
+          }
+          const dateTxt = m.created_at ? new Date(m.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '';
+          const meta = [who, dateTxt].filter(Boolean).map(escapeHtml).join(' · ');
+          const nm = escapeHtml(firstOf(m.from_name));
+          return `<div class="jobs-msg">
+            <div class="jobs-msg-top"><strong>${escapeHtml(m.from_name || 'Someone')}</strong>${newIds.has(m.id) ? '<span class="jobs-new">New</span>' : ''}</div>
+            <span class="jobs-msg-about">${about}</span>
+            <span class="jobs-msg-text">${escapeHtml(m.message)}</span>
+            <span class="jobs-msg-meta">${meta}</span>
+            <div class="jobs-msg-acts">
+              <button type="button" class="link-btn" data-reply-id="${id}" style="padding:0;">Reply</button>
+              ${sl ? `<button type="button" class="link-btn" data-view-code="${escapeHtml(m.from_profile_code)}" style="padding:0;">View their listing</button>` : ''}
+              <button type="button" class="link-btn more" data-menu-id="${id}" aria-label="More options for ${nm}">&bull;&bull;&bull;</button>
+            </div>
+            <div class="jobs-msg-menu" data-menu-for="${id}" hidden>
+              <button type="button" data-delete-id="${id}"><b>Delete this message</b><span>Removes it from your list.</span></button>
+              <button type="button" data-block-id="${id}"><b>Block ${nm}</b><span>You will not see their messages, and they cannot message you again.</span></button>
+              <button type="button" class="danger" data-report-id="${id}"><b>Report ${nm}</b><span>Tell us something is wrong. We also block them for you.</span></button>
+            </div>
+            <div class="jobs-report" data-report-for="${id}" hidden>
+              <strong style="font-size:14px;">Report ${nm}</strong>
+              <span class="jobs-msg-meta">What is wrong with this message?</span>
+              ${['Spam or an advertisement','Rude or threatening','Not a real job or person','Something else'].map(r=> `<label><input type="radio" name="rr-${id}" value="${escapeHtml(r)}"> ${escapeHtml(r)}</label>`).join('')}
+              <button type="button" class="btn btn-primary" data-report-send="${id}">Send report and block</button>
+              <button type="button" class="btn btn-outline" data-report-cancel="${id}">Cancel</button>
+              <span class="jobs-msg-meta">We see the report and the message. ${nm} is not told.</span>
+            </div>
+          </div>`;
+        }).join('');
       }
+      if (myBlocks.length){
+        blockedWrap.style.display = 'flex';
+        blockedWrap.innerHTML = `<p class="eyebrow-mini" style="margin:6px 2px 0;">Blocked (${myBlocks.length})</p>` + myBlocks.map(b=> `<div class="jobs-blocked">${escapeHtml(b.blocked_name || 'Someone')}<button type="button" class="link-btn" data-unblock-code="${escapeHtml(b.blocked_code)}">Unblock</button></div>`).join('');
+      } else { blockedWrap.style.display = 'none'; blockedWrap.innerHTML = ''; }
       const unread = rows.filter(m=> !m.read);
       if (unread.length){
         await Promise.all(unread.map(m=> supabaseClient.from('job_messages').update({ read: true }).eq('id', m.id)));
