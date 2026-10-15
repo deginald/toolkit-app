@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-19T15-00-00Z">
+<meta name="app-build" content="2026-10-20T15-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -563,6 +563,8 @@
   .auth-steps i.on{ background:var(--brass); }
   .auth-steps span{ font-size:11px; color:var(--muted); font-weight:700; letter-spacing:.06em; text-transform:uppercase; margin-left:6px; }
   .pw-toggle{ flex:none; padding:6px 0 6px 8px; }
+  .input-row .code-edit{ flex:none; padding:0 0 0 8px; font-size:12.5px; }
+  .input-row .code-edit[hidden]{ display:none; }
   .code-sugs{ display:flex; gap:6px; flex-wrap:wrap; }
   .code-sugs:empty{ display:none; }
   .code-sugs button{ border:1px solid var(--line); border-radius:999px; padding:5px 11px; font-size:12px; font-weight:700; color:var(--brass); background:var(--paper); font-family:'Public Sans',sans-serif; cursor:pointer; }
@@ -1383,10 +1385,10 @@
             </div>
             <div id="consult-client-attach-newname" style="display:none; flex-direction:column; gap:10px;">
               <div class="field"><label>Client's name</label><div class="input-row"><input id="consult-client-new-name" type="text" placeholder="e.g. Jordan Smith"></div></div>
-              <div class="field"><label>Last 4 of their phone</label><div class="input-row"><input id="consult-client-new-last4" type="tel" inputmode="numeric" autocomplete="off" placeholder="e.g. 4821"></div></div>
+              <div class="field"><label>Last 4 of their phone</label><div class="input-row"><input id="consult-client-new-last4" type="tel" inputmode="numeric" autocomplete="off" placeholder="e.g. 4821"></div><p class="foot-note-small" style="margin:0;">Makes the code easy for them to remember.</p></div>
               <div class="field">
                 <label>Their passport code</label>
-                <div class="input-row"><input id="consult-client-new-code" type="text" placeholder="e.g. jordan-4821"></div>
+                <div class="input-row"><input id="consult-client-new-code" type="text" placeholder="e.g. jordan-4821" readonly><button type="button" class="link-btn code-edit" id="consult-client-code-edit">Edit</button></div>
                 <div class="code-sugs" id="consult-client-code-sugs"></div>
                 <p class="foot-note-small" id="consult-client-code-say" style="margin:0;"></p>
               </div>
@@ -1599,10 +1601,10 @@
               </div>
               <div id="bk-manual-client-newname" style="display:none; flex-direction:column; gap:10px;">
                 <div class="field"><label>Client's name</label><div class="input-row"><input id="bk-manual-client-new-name" type="text" placeholder="e.g. Jordan Smith"></div></div>
-                <div class="field"><label>Last 4 of their phone</label><div class="input-row"><input id="bk-manual-client-new-last4" type="tel" inputmode="numeric" autocomplete="off" placeholder="e.g. 4821"></div></div>
+                <div class="field"><label>Last 4 of their phone</label><div class="input-row"><input id="bk-manual-client-new-last4" type="tel" inputmode="numeric" autocomplete="off" placeholder="e.g. 4821"></div><p class="foot-note-small" style="margin:0;">Makes the code easy for them to remember.</p></div>
                 <div class="field">
                   <label>Their passport code</label>
-                  <div class="input-row"><input id="bk-manual-client-new-code" type="text" placeholder="e.g. jordan-4821"></div>
+                  <div class="input-row"><input id="bk-manual-client-new-code" type="text" placeholder="e.g. jordan-4821" readonly><button type="button" class="link-btn code-edit" id="bk-manual-client-code-edit">Edit</button></div>
                   <div class="code-sugs" id="bk-manual-client-code-sugs"></div>
                   <p class="foot-note-small" id="bk-manual-client-code-say" style="margin:0;"></p>
                 </div>
@@ -3484,6 +3486,12 @@ function wireNewClientCodeFields(root, prefix){
   const codeEl = root.querySelector('#' + prefix + '-new-code');
   const sugsEl = root.querySelector('#' + prefix + '-code-sugs');
   const sayEl = root.querySelector('#' + prefix + '-code-say');
+  const editEl = root.querySelector('#' + prefix + '-code-edit');
+  // The code is built for them (name + last 4 digits), so it shows as a plain line with an Edit link
+  // until the pro chooses to change it.
+  function lock(on){ codeEl.readOnly = on; if (editEl) editEl.hidden = !on; }
+  if (editEl) editEl.addEventListener('click', ()=>{ lock(false); codeEl.focus(); });
+  lock(true);
   const SAY_DEFAULT = "They'll use this to log in to their own Vono Passport. We save the code only, never the phone number.";
   function updateSay(){
     const m = /^([a-z0-9_.~:@+-]+)-(\d{4})$/.exec(codeEl.value.trim());
@@ -3513,6 +3521,7 @@ function wireNewClientCodeFields(root, prefix){
   });
   codeEl.addEventListener('input', ()=>{ codeEl.dataset.touched = '1'; clearSugs(); updateSay(); });
   function showTaken(){
+    lock(false);
     const words = (nameEl.value || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
     const first = sanitizeCode(words[0] || '') || 'client';
     const d = l4El.value.replace(/\D/g, '');
@@ -3535,6 +3544,7 @@ function wireNewClientCodeFields(root, prefix){
     nameEl.value = '';
     l4El.value = '';
     setCode(prefill || '', !!prefill);
+    lock(!prefill);
   }
   updateSay();
   return { reset, showTaken };
