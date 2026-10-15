@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-28T14-00-00Z">
+<meta name="app-build" content="2026-10-29T14-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -229,6 +229,27 @@
   .jobs-chips{ display:flex; gap:6px; flex-wrap:wrap; margin-top:2px; }
   .jobs-chip{ font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:3px 9px; border-radius:999px; background:var(--paper); color:var(--muted); border:1px solid var(--line); }
   .jobs-chip.field{ background:var(--brass-tint, rgba(217,174,94,.14)); color:var(--brass); border-color:transparent; }
+  .cost-month{ display:flex; justify-content:space-between; font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); padding:8px 2px 0; }
+  .cost-row{ display:flex; align-items:center; gap:12px; width:100%; text-align:left; border:1px solid var(--line); border-radius:12px; background:var(--paper); color:var(--ink); padding:11px 12px; font-family:inherit; cursor:pointer; }
+  .cost-row .t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .cost-row .t b{ font-size:14px; } .cost-row .t span{ color:var(--muted); font-size:12px; line-height:1.35; overflow-wrap:anywhere; }
+  .cost-row .amt{ font-weight:700; font-variant-numeric:tabular-nums; flex:none; }
+  .cost-chip{ font-style:normal; font-size:9.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; border:1px solid var(--line); border-radius:999px; padding:1px 7px; margin-left:6px; color:var(--muted); vertical-align:1px; }
+  .pl-kpis{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .pl-kpis div{ border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:10px 12px; }
+  .pl-kpis small{ display:block; font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+  .pl-kpis b{ display:block; margin-top:3px; font-size:17px; font-variant-numeric:tabular-nums; }
+  .pl-kpis .neg b{ color:var(--behind, #E58B8B); }
+  .pl-wrap{ border:1px solid var(--line); border-radius:12px; background:var(--paper); overflow:hidden; }
+  .pl-table{ width:100%; border-collapse:collapse; font-size:13px; }
+  .pl-table td{ padding:7px 10px; border-top:1px solid var(--line); }
+  .pl-table tr:first-child td{ border-top:0; }
+  .pl-table .r{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; } .pl-table .mut{ color:var(--muted); width:44px; }
+  .pl-table tr.grp td{ font-size:10.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); background:var(--surface); }
+  .pl-table tr.in td:first-child{ padding-left:20px; }
+  .pl-table tr.subt td, .pl-table tr.one td{ font-weight:700; }
+  .pl-table tr.total td{ font-weight:800; border-top:2px solid var(--line); }
+  .pl-table tr.net td{ font-weight:800; font-size:14px; background:var(--surface); border-top:2px solid var(--brass); }
   .jobs-where{ display:flex; flex-direction:column; gap:5px; }
   .jobs-where label{ font-size:11.5px; font-weight:700; color:var(--muted); }
   .jobs-widen{ display:flex; flex-direction:column; gap:8px; }
@@ -2267,6 +2288,8 @@
                 <button type="button" class="biz-row" data-shop-open="team"><span class="t"><b>Team</b><span id="shop-hub-team-sub">Just you so far</span></span><span class="biz-pill good" id="shop-hub-team-pill" hidden></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                 <button type="button" class="biz-row" data-shop-open="invite"><span class="t"><b>Invite a barber</b><span id="shop-hub-invite-sub">Add someone by their booking code</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                 <button type="button" class="biz-row" data-shop-open="rent"><span class="t"><b>Rent &amp; commission</b><span id="shop-hub-rent-sub">What your team owes you</span></span><span class="biz-pill" id="shop-hub-rent-pill" hidden></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button type="button" class="biz-row" data-shop-open="costs"><span class="t"><b>Costs</b><span id="shop-hub-costs-sub">Rent, utilities, inventory, repairs</span></span><span class="biz-pill" id="shop-hub-costs-pill" hidden></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button type="button" class="biz-row" data-shop-open="pl"><span class="t"><b>Profit &amp; loss</b><span id="shop-hub-pl-sub">Income, costs and what's left</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                 <button type="button" class="biz-row" data-shop-open="records"><span class="t"><b>Shop records</b><span id="shop-hub-records-sub">CSV and print</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
               </div>
               <p class="foot-note-small" style="margin:0;">Your barbers' own clients, bookings and consults stay private to them. You only see the team list and what you've logged here.</p>
@@ -2352,6 +2375,66 @@
                 <p class="screen-sub" id="shop-rent-empty" style="display:none; margin:0;">Invite a team member above to start setting up rent or commission for them.</p>
 
               </div>
+              </div>
+              <div id="shop-sub-costs" style="display:none; flex-direction:column; gap:12px;">
+                <button type="button" class="link-btn" data-shop-back style="padding:0 0 4px; align-self:flex-start; font-size:13px;">&larr; Shop</button>
+                <div>
+                  <p class="eyebrow-mini" style="margin:0;">Costs</p>
+                  <p class="screen-sub" style="margin:4px 0 0;">Log what you pay out to run the shop: rent or mortgage, utilities, inventory, repairs and more. This is your own record for your taxes. Vono doesn't verify these amounts.</p>
+                </div>
+                <p class="screen-sub" id="shop-cost-setup-note" style="display:none; margin:0; color:var(--brass);">Costs needs a one-time database update before it can save. Run the new SQL file in Supabase, then come back.</p>
+                <div class="detail-card" id="shop-cost-nudge" style="display:none; flex-direction:column; gap:10px;">
+                  <span class="screen-sub" id="shop-cost-nudge-text" style="margin:0;"></span>
+                  <button type="button" class="btn btn-outline" id="btn-shop-cost-fill">Add them</button>
+                </div>
+                <div class="card" id="shop-cost-form-card" style="gap:12px;">
+                  <p class="eyebrow-mini2" id="shop-cost-form-heading" style="margin:0;">Add a cost</p>
+                  <div class="field"><label for="shop-cost-cat">What was it for</label><div class="input-row"><select id="shop-cost-cat" class="title-select" style="width:100%;"></select></div></div>
+                  <div class="field" id="shop-cost-other-wrap" style="display:none;"><label for="shop-cost-other">Name it</label><div class="input-row"><input id="shop-cost-other" type="text" placeholder="e.g. Parking"></div></div>
+                  <div class="field"><label for="shop-cost-date">Date</label><div class="input-row"><input id="shop-cost-date" type="date"></div></div>
+                  <div class="field"><label for="shop-cost-amount">Amount ($)</label><div class="input-row"><input id="shop-cost-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 184.00"></div></div>
+                  <div class="field"><label for="shop-cost-paidto">Paid to (optional)</label><div class="input-row"><input id="shop-cost-paidto" type="text" placeholder="e.g. Power company"></div></div>
+                  <div class="field"><label for="shop-cost-note">Note (optional)</label><div class="input-row"><input id="shop-cost-note" type="text" placeholder="e.g. Color and developer"></div></div>
+                  <label class="check-row" id="shop-cost-repeat-row"><input type="checkbox" id="shop-cost-repeat"><span>Repeats every month</span></label>
+                  <p class="screen-sub" style="margin:-4px 0 0;">Good for rent, internet and other bills that stay the same. Vono adds each month up to today.</p>
+                  <div class="btn-row" style="gap:10px;">
+                    <button class="btn btn-primary" id="btn-shop-cost-save" type="button" style="flex:1;">Save cost</button>
+                    <button class="btn btn-ghost" id="btn-shop-cost-cancel" type="button" style="flex:1; display:none;">Cancel</button>
+                  </div>
+                  <div class="btn-row" style="gap:10px;">
+                    <button class="btn btn-outline" id="btn-shop-cost-stop" type="button" style="flex:1; display:none;">Stop repeating</button>
+                    <button class="btn btn-outline" id="btn-shop-cost-delete" type="button" style="flex:1; display:none;">Delete</button>
+                  </div>
+                  <p class="screen-sub" id="shop-cost-status" style="margin:0;">&nbsp;</p>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                  <select id="shop-cost-year-select" class="title-select" style="width:auto;"></select>
+                  <span class="screen-sub" id="shop-cost-year-total" style="margin:0;"></span>
+                </div>
+                <div id="shop-cost-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+                <p class="screen-sub" id="shop-cost-empty" style="display:none; margin:0;">No costs logged for this year yet. Add your first one above.</p>
+              </div>
+              <div id="shop-sub-pl" style="display:none; flex-direction:column; gap:12px;">
+                <button type="button" class="link-btn" data-shop-back style="padding:0 0 4px; align-self:flex-start; font-size:13px;">&larr; Shop</button>
+                <div>
+                  <p class="eyebrow-mini" style="margin:0;">Profit &amp; loss</p>
+                  <p class="screen-sub" style="margin:4px 0 0;">What came in from your team, minus what you paid out. Your own record, not verified and not tax advice.</p>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                  <select id="shop-pl-year-select" class="title-select" style="width:auto;"></select>
+                  <div class="mode-toggle" id="shop-pl-view-toggle" style="flex:1;">
+                    <button type="button" class="mode-btn active" data-pl-view="year">Year</button>
+                    <button type="button" class="mode-btn" data-pl-view="month">Month</button>
+                  </div>
+                </div>
+                <div class="input-row" id="shop-pl-month-row" style="display:none;"><select id="shop-pl-month-select" class="title-select" style="width:100%;" aria-label="Month"></select></div>
+                <div class="pl-kpis" id="shop-pl-kpis"></div>
+                <div class="pl-wrap"><table class="pl-table"><tbody id="shop-pl-table"></tbody></table></div>
+                <p class="screen-sub" id="shop-pl-note" style="margin:0;"></p>
+                <div class="btn-row" style="gap:10px;">
+                  <button class="btn btn-outline" id="btn-shop-pl-print" type="button" style="flex:1;">Print</button>
+                  <button class="btn btn-outline" id="btn-shop-pl-csv" type="button" style="flex:1;">Download CSV</button>
+                </div>
               </div>
               <div id="shop-sub-records" style="display:none; flex-direction:column; gap:12px;">
                 <button type="button" class="link-btn" data-shop-back style="padding:0 0 4px; align-self:flex-start; font-size:13px;">&larr; Shop</button>
@@ -11353,6 +11436,7 @@ async function saveAppointmentChange(id, core, extras){
     if (!rentEditingCode) resetRentForm();
     renderRentList();
     renderRentYearView();
+    loadCostsData().then(()=> updateCostsHub()).catch(()=>{});
   }
   root.querySelector('#shop-team-list').addEventListener('click', async (e)=>{
     const removeCode = e.target.dataset.teamRemove;
@@ -11463,13 +11547,528 @@ async function saveAppointmentChange(id, core, extras){
     loadShopState();
   });
 
+  /* ---- Costs and Profit & Loss (owner view) ----
+     Income is the rent and commission payments already logged under Rent & commission
+     (counted by the period each one covers). Costs are logged here in shop_expenses.
+     Everything is the owner's own record: nothing is verified and it isn't tax advice. ---- */
+  const COST_GROUPS = [
+    { name:'Rent / Mortgage', lines:['Rent / Mortgage'] },
+    { name:'Utilities', lines:['Electric','Water & sewer','Internet','Cable / TV'] },
+    { name:'Inventory', lines:['Inventory & supplies'] },
+    { name:'Repairs & equipment', lines:['Repairs','Equipment'] },
+    { name:'Other expenses', lines:['Insurance','Laundry & cleaning'] }
+  ];
+  const COST_OTHER_GROUP = 'Other expenses';
+  const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const MONTHS_LONG = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let shopCosts = [];
+  let costsMissing = false;     // true until the one-time SQL has been run
+  let costEditingId = null;
+  let costYear = new Date().getFullYear();
+  let plView = 'year', plYear = new Date().getFullYear(), plMonth = new Date().getMonth();
+  let armedCostDelete = false;
+  const plSum = a => a.reduce((s,v)=> s + v, 0);
+  const plRound = n => Math.round((Number(n)||0) * 100) / 100;
+  function plFmt(n){
+    n = plRound(n);
+    const s = Math.abs(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+    return n < 0 ? '($' + s + ')' : '$' + s;
+  }
+  function plWhole(n){
+    n = Math.round(Number(n)||0);
+    const s = Math.abs(n).toLocaleString('en-US');
+    return n < 0 ? '(' + s + ')' : s;
+  }
+  function plPct(x, t){ return t > 0 ? Math.round(x / t * 100) + '%' : '–'; }
+  function costParts(iso){ const s = String(iso || ''); return { y: parseInt(s.slice(0,4), 10), m: parseInt(s.slice(5,7), 10) - 1, d: parseInt(s.slice(8,10), 10) || 1 }; }
+  function costIso(y, m, d){ return y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0'); }
+  function costDaysIn(y, m){ return new Date(y, m + 1, 0).getDate(); }
+  function costGroupOf(cat){ const g = COST_GROUPS.find(x => x.lines.includes(cat)); return g ? g.name : COST_OTHER_GROUP; }
+  function costDateLabel(iso){ const p = costParts(iso); return MONTHS_SHORT[p.m] + ' ' + p.d; }
+  function costsFriendlyError(e){
+    const m = String((e && e.message) || '') + ' ' + String((e && e.code) || '');
+    if (/42P01|PGRST205|shop_expenses/.test(m)) return "Costs needs a one-time database update first. Run the new SQL file in Supabase, then try again.";
+    return "Couldn't save. Try again.";
+  }
+  async function loadCostsData(){
+    costsMissing = false;
+    if (!dbAvailable || !profile.shopCode){ shopCosts = []; return; }
+    try{
+      const { data, error } = await supabaseClient.from('shop_expenses').select('*').eq('shop_code', profile.shopCode);
+      if (error) throw error;
+      shopCosts = data || [];
+    }catch(e){
+      console.warn('load costs failed', e);
+      shopCosts = [];
+      if (/42P01|PGRST205|shop_expenses/.test(String((e && e.message) || '') + ' ' + String((e && e.code) || ''))) costsMissing = true;
+    }
+  }
+
+  // ---- Costs screen ----
+  function populateCostCategories(){
+    const sel = root.querySelector('#shop-cost-cat');
+    if (sel.options.length) return;
+    sel.innerHTML = COST_GROUPS.map(g => `<optgroup label="${escapeHtmlShop(g.name)}">` + g.lines.map(l => `<option value="${escapeHtmlShop(l)}">${escapeHtmlShop(l)}</option>`).join('') + '</optgroup>').join('') + '<option value="__other">Other (name it)</option>';
+  }
+  function syncCostOther(){
+    root.querySelector('#shop-cost-other-wrap').style.display = root.querySelector('#shop-cost-cat').value === '__other' ? 'flex' : 'none';
+  }
+  function resetCostForm(){
+    costEditingId = null; armedCostDelete = false;
+    populateCostCategories();
+    root.querySelector('#shop-cost-cat').value = COST_GROUPS[0].lines[0];
+    root.querySelector('#shop-cost-other').value = '';
+    root.querySelector('#shop-cost-date').value = todayIso();
+    root.querySelector('#shop-cost-amount').value = '';
+    root.querySelector('#shop-cost-paidto').value = '';
+    root.querySelector('#shop-cost-note').value = '';
+    root.querySelector('#shop-cost-repeat').checked = false;
+    root.querySelector('#shop-cost-repeat-row').style.display = 'flex';
+    root.querySelector('#shop-cost-form-heading').textContent = 'Add a cost';
+    root.querySelector('#btn-shop-cost-save').textContent = 'Save cost';
+    ['#btn-shop-cost-cancel','#btn-shop-cost-delete','#btn-shop-cost-stop'].forEach(s => { root.querySelector(s).style.display = 'none'; });
+    root.querySelector('#btn-shop-cost-delete').textContent = 'Delete';
+    syncCostOther();
+  }
+  function loadCostIntoForm(c){
+    resetCostForm();
+    costEditingId = c.id;
+    const sel = root.querySelector('#shop-cost-cat');
+    const known = COST_GROUPS.some(g => g.lines.includes(c.category));
+    sel.value = known ? c.category : '__other';
+    root.querySelector('#shop-cost-other').value = known ? '' : c.category;
+    root.querySelector('#shop-cost-date').value = c.expense_date;
+    root.querySelector('#shop-cost-amount').value = Number(c.amount);
+    root.querySelector('#shop-cost-paidto').value = c.paid_to || '';
+    root.querySelector('#shop-cost-note').value = c.note || '';
+    root.querySelector('#shop-cost-repeat-row').style.display = 'none';
+    root.querySelector('#shop-cost-form-heading').textContent = 'Edit this cost';
+    root.querySelector('#btn-shop-cost-save').textContent = 'Save changes';
+    root.querySelector('#btn-shop-cost-cancel').style.display = '';
+    root.querySelector('#btn-shop-cost-delete').style.display = '';
+    root.querySelector('#btn-shop-cost-stop').style.display = c.series_id ? '' : 'none';
+    syncCostOther();
+    const card = root.querySelector('#shop-cost-form-card');
+    if (card && card.scrollIntoView) card.scrollIntoView({ block:'start' });
+  }
+  function costYears(){
+    const ys = new Set([new Date().getFullYear()]);
+    shopCosts.forEach(c => { const y = costParts(c.expense_date).y; if (y) ys.add(y); });
+    rentPayments.forEach(p => { const y = costParts(p.period_start).y; if (y) ys.add(y); });
+    return [...ys].sort((a,b)=> b - a);
+  }
+  function costNudgeRows(){
+    const today = todayIso(); const t = costParts(today);
+    const latest = {};
+    shopCosts.forEach(c => { if (!c.series_id) return; if (!latest[c.series_id] || c.expense_date > latest[c.series_id].expense_date) latest[c.series_id] = c; });
+    const rows = [];
+    Object.values(latest).forEach(last => {
+      let { y, m, d } = costParts(last.expense_date);
+      for (let i = 0; i < 24; i++){
+        m++; if (m > 11){ m = 0; y++; }
+        const iso = costIso(y, m, Math.min(d, costDaysIn(y, m)));
+        if (iso > today) break;
+        rows.push({ id: genRentId('cost'), shop_code: profile.shopCode, expense_date: iso, category: last.category, amount: Number(last.amount), paid_to: last.paid_to || null, note: last.note || null, series_id: last.series_id });
+      }
+    });
+    return rows;
+  }
+  function renderCostsScreen(){
+    populateCostCategories();
+    const ys = costYears();
+    if (!ys.includes(costYear)) costYear = ys[0];
+    const ysel = root.querySelector('#shop-cost-year-select');
+    ysel.innerHTML = ys.map(y => `<option value="${y}" ${y === costYear ? 'selected' : ''}>${y}</option>`).join('');
+    const rows = shopCosts.filter(c => costParts(c.expense_date).y === costYear).sort((a,b)=> (b.expense_date || '').localeCompare(a.expense_date || '') || String(b.id).localeCompare(String(a.id)));
+    root.querySelector('#shop-cost-year-total').textContent = costYear + ' total ' + plFmt(plSum(rows.map(c => Number(c.amount) || 0)));
+    const listEl = root.querySelector('#shop-cost-list');
+    const emptyEl = root.querySelector('#shop-cost-empty');
+    emptyEl.style.display = rows.length ? 'none' : 'block';
+    let html = '', curM = -1;
+    rows.forEach(c => {
+      const p = costParts(c.expense_date);
+      if (p.m !== curM){
+        curM = p.m;
+        const tot = plSum(rows.filter(r => costParts(r.expense_date).m === curM).map(r => Number(r.amount) || 0));
+        html += `<div class="cost-month"><span>${MONTHS_LONG[curM]}</span><span>${plFmt(tot)}</span></div>`;
+      }
+      const sub = [c.paid_to, costDateLabel(c.expense_date), c.note].filter(Boolean).map(escapeHtmlShop).join(' · ');
+      html += `<button type="button" class="cost-row" data-cost-id="${escapeHtmlShop(c.id)}"><span class="t"><b>${escapeHtmlShop(c.category)}${c.series_id ? ' <i class="cost-chip">Monthly</i>' : ''}</b><span>${sub}</span></span><span class="amt">${plFmt(c.amount)}</span></button>`;
+    });
+    listEl.innerHTML = html;
+    const nudge = costNudgeRows();
+    const nEl = root.querySelector('#shop-cost-nudge');
+    if (nudge.length){
+      const names = [...new Set(nudge.map(r => r.category))];
+      root.querySelector('#shop-cost-nudge-text').textContent = nudge.length + (nudge.length === 1 ? ' monthly bill is' : ' monthly bills are') + ' not added yet: ' + names.slice(0,4).join(', ') + (names.length > 4 ? ' and more' : '') + '.';
+      nEl.style.display = 'flex';
+    } else { nEl.style.display = 'none'; }
+    const note = root.querySelector('#shop-cost-setup-note');
+    note.style.display = costsMissing ? 'block' : 'none';
+    updateCostsHub(nudge.length);
+  }
+  function updateCostsHub(nudgeCount){
+    if (nudgeCount == null) nudgeCount = costNudgeRows().length;
+    setHubPill('shop-hub-costs-pill', nudgeCount ? nudgeCount + ' to add' : '');
+    const y = new Date().getFullYear();
+    const d = plCompute(y);
+    const any = shopCosts.length || rentPayments.some(p => costParts(p.period_start).y === y);
+    const net = plRound(plSum(d.net));
+    const el = root.querySelector('#shop-hub-pl-sub');
+    if (el) el.textContent = any ? (y + ' so far: ' + plFmt(Math.abs(net)) + (net < 0 ? ' loss' : ' profit')) : "Income, costs and what's left";
+  }
+  async function openCosts(){
+    resetCostForm();
+    root.querySelector('#shop-cost-status').innerHTML = '&nbsp;';
+    await loadCostsData();
+    renderCostsScreen();
+  }
+  root.querySelector('#shop-cost-cat').addEventListener('change', syncCostOther);
+  root.querySelector('#shop-cost-year-select').addEventListener('change', function(){ costYear = parseInt(this.value, 10); renderCostsScreen(); });
+  root.querySelector('#shop-cost-list').addEventListener('click', e => {
+    const b = e.target.closest('[data-cost-id]');
+    if (!b) return;
+    const c = shopCosts.find(x => String(x.id) === b.dataset.costId);
+    if (c) loadCostIntoForm(c);
+  });
+  root.querySelector('#btn-shop-cost-cancel').addEventListener('click', () => { resetCostForm(); root.querySelector('#shop-cost-status').innerHTML = '&nbsp;'; });
+  root.querySelector('#btn-shop-cost-save').addEventListener('click', async () => {
+    const statusEl = root.querySelector('#shop-cost-status');
+    const saveBtn = root.querySelector('#btn-shop-cost-save');
+    const sel = root.querySelector('#shop-cost-cat').value;
+    const category = sel === '__other' ? root.querySelector('#shop-cost-other').value.trim() : sel;
+    const date = root.querySelector('#shop-cost-date').value;
+    const amount = plRound(parseFloat(root.querySelector('#shop-cost-amount').value));
+    const paidTo = root.querySelector('#shop-cost-paidto').value.trim();
+    const note = root.querySelector('#shop-cost-note').value.trim();
+    if (!category){ statusEl.textContent = 'Name this cost.'; return; }
+    if (!date){ statusEl.textContent = 'Pick a date.'; return; }
+    if (!(amount > 0)){ statusEl.textContent = 'Enter an amount.'; return; }
+    if (!dbAvailable){ statusEl.textContent = "Live saving isn't connected right now."; return; }
+    saveBtn.disabled = true; statusEl.textContent = 'Saving…';
+    try{
+      if (costEditingId){
+        const patch = { expense_date: date, category, amount, paid_to: paidTo || null, note: note || null };
+        const { error } = await supabaseClient.from('shop_expenses').update(patch).eq('id', costEditingId);
+        if (error) throw error;
+        const c = shopCosts.find(x => x.id === costEditingId);
+        if (c) Object.assign(c, patch);
+        statusEl.textContent = 'Saved.';
+      } else {
+        const repeat = root.querySelector('#shop-cost-repeat').checked;
+        const seriesId = repeat ? genRentId('series') : null;
+        const base = { shop_code: profile.shopCode, category, amount, paid_to: paidTo || null, note: note || null, series_id: seriesId };
+        const rows = [Object.assign({ id: genRentId('cost'), expense_date: date }, base)];
+        if (repeat){
+          const t = costParts(todayIso());
+          let { y, m, d } = costParts(date);
+          for (let i = 0; i < 36; i++){
+            m++; if (m > 11){ m = 0; y++; }
+            if (y * 12 + m > t.y * 12 + t.m) break;
+            const iso = costIso(y, m, Math.min(d, costDaysIn(y, m)));
+            if (iso > todayIso()) break;
+            rows.push(Object.assign({ id: genRentId('cost'), expense_date: iso }, base));
+          }
+        }
+        const { error } = await supabaseClient.from('shop_expenses').insert(rows);
+        if (error) throw error;
+        shopCosts.push(...rows);
+        statusEl.textContent = rows.length > 1 ? 'Saved, and added each month up to now.' : 'Saved.';
+      }
+      costYear = costParts(date).y;
+      const msg = statusEl.textContent;
+      resetCostForm();
+      renderCostsScreen();
+      statusEl.textContent = msg;
+    }catch(e){
+      console.warn('save cost failed', e);
+      if (/42P01|PGRST205|shop_expenses/.test(String((e && e.message) || '') + ' ' + String((e && e.code) || ''))) costsMissing = true;
+      statusEl.textContent = costsFriendlyError(e);
+      renderCostsScreen();
+    }
+    saveBtn.disabled = false;
+  });
+  root.querySelector('#btn-shop-cost-delete').addEventListener('click', async function(){
+    if (!costEditingId) return;
+    const statusEl = root.querySelector('#shop-cost-status');
+    if (!armedCostDelete){
+      armedCostDelete = true; this.textContent = 'Tap again to delete';
+      setTimeout(() => { if (armedCostDelete){ armedCostDelete = false; this.textContent = 'Delete'; } }, 4000);
+      return;
+    }
+    armedCostDelete = false;
+    const id = costEditingId;
+    try{
+      const { error } = await supabaseClient.from('shop_expenses').delete().eq('id', id);
+      if (error) throw error;
+      shopCosts = shopCosts.filter(c => c.id !== id);
+      resetCostForm(); renderCostsScreen(); statusEl.textContent = 'Deleted.';
+    }catch(e){ console.warn('delete cost failed', e); statusEl.textContent = "Couldn't delete. Try again."; }
+  });
+  root.querySelector('#btn-shop-cost-stop').addEventListener('click', async () => {
+    const c = shopCosts.find(x => x.id === costEditingId);
+    const statusEl = root.querySelector('#shop-cost-status');
+    if (!c || !c.series_id) return;
+    const sid = c.series_id;
+    try{
+      const { error } = await supabaseClient.from('shop_expenses').update({ series_id: null }).eq('series_id', sid);
+      if (error) throw error;
+      shopCosts.forEach(x => { if (x.series_id === sid) x.series_id = null; });
+      resetCostForm(); renderCostsScreen(); statusEl.textContent = 'Stopped repeating. Past months stay in your records.';
+    }catch(e){ console.warn('stop repeat failed', e); statusEl.textContent = "Couldn't stop it. Try again."; }
+  });
+  root.querySelector('#btn-shop-cost-fill').addEventListener('click', async function(){
+    const rows = costNudgeRows();
+    const statusEl = root.querySelector('#shop-cost-status');
+    if (!rows.length) return;
+    this.disabled = true;
+    try{
+      const { error } = await supabaseClient.from('shop_expenses').insert(rows);
+      if (error) throw error;
+      shopCosts.push(...rows);
+      renderCostsScreen(); statusEl.textContent = 'Added ' + rows.length + (rows.length === 1 ? ' bill.' : ' bills.');
+    }catch(e){ console.warn('fill monthly bills failed', e); statusEl.textContent = costsFriendlyError(e); }
+    this.disabled = false;
+  });
+
+  // ---- Profit & loss: the numbers ----
+  function plCompute(year){
+    const z = () => new Array(12).fill(0);
+    const rent = z(), comm = z();
+    rentPayments.forEach(p => {
+      const q = costParts(p.period_start);
+      if (q.y !== year) return;
+      (p.kind === 'commission' ? comm : rent)[q.m] += Number(p.amount) || 0;
+    });
+    const groups = COST_GROUPS.map(g => ({ name: g.name, known: g.lines.length, lines: g.lines.map(l => ({ label: l, vals: z() })) }));
+    shopCosts.forEach(c => {
+      const q = costParts(c.expense_date);
+      if (q.y !== year) return;
+      const g = groups.find(x => x.name === costGroupOf(c.category));
+      let line = g.lines.find(l => l.label === c.category);
+      if (!line){ line = { label: c.category, vals: z() }; g.lines.push(line); }
+      line.vals[q.m] += Number(c.amount) || 0;
+    });
+    groups.forEach(g => { g.vals = z(); g.lines.forEach(l => l.vals.forEach((v,i) => { g.vals[i] += v; })); });
+    const income = rent.map((v,i) => v + comm[i]);
+    const expenses = z(); groups.forEach(g => g.vals.forEach((v,i) => { expenses[i] += v; }));
+    const net = income.map((v,i) => v - expenses[i]);
+    return { year, rent, comm, income, groups, expenses, net };
+  }
+  // scope: 'year' or a month index. Same markup on screen and in the printout.
+  function plStatementRows(d, scope, opts){
+    opts = opts || {};
+    const pick = a => scope === 'year' ? plSum(a) : a[scope];
+    const inc = pick(d.income);
+    const row = (label, v, cls) => `<tr class="${cls}"><td>${escapeHtmlShop(label)}</td><td class="r">${plFmt(v)}</td><td class="r mut">${plPct(v, inc)}</td></tr>`;
+    let h = '<tr class="grp"><td colspan="3">Income · collected from your team</td></tr>';
+    h += row('Booth & chair rent', pick(d.rent), 'in') + row('Commission', pick(d.comm), 'in');
+    h += `<tr class="subt"><td>Total income</td><td class="r">${plFmt(inc)}</td><td class="r mut">${inc > 0 ? '100%' : '–'}</td></tr>`;
+    d.groups.forEach(g => {
+      const gv = pick(g.vals);
+      const lines = g.lines.map((l, i) => ({ label: l.label, v: pick(l.vals), known: i < g.known })).filter(l => scope === 'year' ? (l.known || l.v !== 0) : l.v !== 0);
+      if (scope !== 'year' && !gv && !lines.length) return;
+      if (g.known === 1 && lines.length <= 1){ h += row(g.lines[0].label, gv, 'one'); return; }
+      h += `<tr class="grp"><td colspan="3">${escapeHtmlShop(g.name)}</td></tr>`;
+      lines.forEach(l => { h += row(l.label, l.v, 'in'); });
+      h += row('Total ' + g.name.toLowerCase(), gv, 'subt');
+    });
+    const exp = pick(d.expenses), net = pick(d.net);
+    h += row('Total expenses', exp, 'total');
+    h += `<tr class="net"><td>${net < 0 ? 'Net loss' : 'Net profit'}</td><td class="r">${plFmt(net)}</td><td class="r">${plPct(net, inc)}</td></tr>`;
+    return h;
+  }
+
+  // ---- Profit & loss: the screen ----
+  function renderPl(){
+    const ys = costYears();
+    if (!ys.includes(plYear)) plYear = ys[0];
+    root.querySelector('#shop-pl-year-select').innerHTML = ys.map(y => `<option value="${y}" ${y === plYear ? 'selected' : ''}>${y}</option>`).join('');
+    root.querySelector('#shop-pl-month-select').innerHTML = MONTHS_LONG.map((m,i) => `<option value="${i}" ${i === plMonth ? 'selected' : ''}>${m}</option>`).join('');
+    root.querySelectorAll('#shop-pl-view-toggle .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.plView === plView));
+    root.querySelector('#shop-pl-month-row').style.display = plView === 'month' ? 'flex' : 'none';
+    root.querySelector('#btn-shop-pl-csv').style.display = plView === 'year' ? '' : 'none';
+    const d = plCompute(plYear);
+    const scope = plView === 'year' ? 'year' : plMonth;
+    const pick = a => scope === 'year' ? plSum(a) : a[scope];
+    const inc = pick(d.income), exp = pick(d.expenses), net = pick(d.net);
+    root.querySelector('#shop-pl-kpis').innerHTML =
+      `<div><small>Income</small><b>${plFmt(inc)}</b></div><div><small>Expenses</small><b>${plFmt(exp)}</b></div>` +
+      `<div class="${net < 0 ? 'neg' : ''}"><small>${net < 0 ? 'Net loss' : 'Net profit'}</small><b>${plFmt(net)}</b></div><div><small>Profit margin</small><b>${plPct(net, inc)}</b></div>`;
+    root.querySelector('#shop-pl-table').innerHTML = plStatementRows(d, scope);
+    root.querySelector('#shop-pl-note').textContent = costsMissing
+      ? "Costs aren't set up yet. Run the new SQL file in Supabase, then log your costs and they will show here."
+      : (!shopCosts.length ? 'No costs logged yet. Add them under Costs and they will show here.' : 'Income counts by the period each payment covers. Costs count by the date you entered.');
+  }
+  async function openPl(){
+    await Promise.all([loadRentData(), loadCostsData()]);
+    renderPl();
+  }
+  root.querySelector('#shop-pl-year-select').addEventListener('change', function(){ plYear = parseInt(this.value, 10); renderPl(); });
+  root.querySelector('#shop-pl-month-select').addEventListener('change', function(){ plMonth = parseInt(this.value, 10); renderPl(); });
+  root.querySelectorAll('#shop-pl-view-toggle .mode-btn').forEach(b => b.addEventListener('click', () => { plView = b.dataset.plView; renderPl(); }));
+
+  // ---- Profit & loss: CSV ----
+  function costCsvText(v){
+    let s = v == null ? '' : String(v);
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+    return rentCsvEscape(s);
+  }
+  root.querySelector('#btn-shop-pl-csv').addEventListener('click', () => {
+    const d = plCompute(plYear);
+    const num = a => plRound(a).toFixed(2);
+    const line = (sec, label, vals) => [costCsvText(sec), costCsvText(label)].concat(vals.map(num), [num(plSum(vals))]).join(',');
+    const out = [['Section','Line'].concat(MONTHS_SHORT, ['Year']).join(',')];
+    out.push(line('Income', 'Booth & chair rent', d.rent), line('Income', 'Commission', d.comm), line('Income', 'Total income', d.income));
+    d.groups.forEach(g => {
+      g.lines.forEach(l => { if (plSum(l.vals) || g.lines.indexOf(l) < g.known) out.push(line(g.name, l.label, l.vals)); });
+      if (g.lines.length > 1) out.push(line(g.name, 'Total ' + g.name.toLowerCase(), g.vals));
+    });
+    out.push(line('', 'Total expenses', d.expenses), line('', 'Net profit', d.net));
+    const blob = new Blob([out.join('\r\n')], { type:'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'shop-profit-loss-' + plYear + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // ---- Profit & loss: printouts ----
+  const PL_PRINT_CSS = `
+    @page{ margin:.55in; } @page land{ size:landscape; margin:.45in; } .land{ page:land; } .brk{ page-break-before:always; }
+    body{ max-width:none; padding:0; }
+    .head{ display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid #1a1a1a; padding-bottom:10px; margin-bottom:14px; }
+    .head h1{ font-size:24px; margin:0; } .head .yr{ font-size:36px; font-weight:bold; line-height:1; text-align:right; }
+    .head .yr small{ display:block; font:700 10px Arial,sans-serif; letter-spacing:.1em; text-transform:uppercase; color:#666; margin-top:6px; }
+    .kpis{ display:flex; border:1px solid #1a1a1a; margin-bottom:16px; } .kpis div{ flex:1; padding:9px 12px; border-left:1px solid #d9d9d9; } .kpis div:first-child{ border-left:0; }
+    .kpis small{ display:block; font:700 10px Arial,sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#666; } .kpis b{ font-size:20px; display:block; margin-top:3px; } .kpis .net{ background:#f3f3f3; }
+    h2{ font:800 12px Arial,sans-serif; letter-spacing:.09em; text-transform:uppercase; margin:14px 0 6px; }
+    th, td{ padding:3px 6px; } th{ border-bottom:1px solid #1a1a1a; }
+    .r{ text-align:right; font-variant-numeric:tabular-nums; } .mut{ color:#666; } .sm{ font-size:11px; } .neg{ color:#9b1c1c; }
+    tr.grp td{ font:800 10.5px Arial,sans-serif; letter-spacing:.08em; text-transform:uppercase; padding-top:11px; border-bottom:1px solid #1a1a1a; }
+    tr.in td:first-child{ padding-left:18px; } tr.subt td, tr.one td{ font-weight:bold; } tr.subt td{ border-top:1px solid #1a1a1a; } tr.one td{ padding-top:6px; padding-bottom:6px; }
+    tr.total td{ font-weight:bold; border-top:1.5px solid #1a1a1a; border-bottom:0; font-size:14px; padding-top:8px; }
+    tr.net td{ font-weight:bold; border-top:2px solid #1a1a1a; border-bottom:3px double #1a1a1a; font-size:15px; padding:8px 6px; background:#f3f3f3; }
+    .bars{ display:flex; align-items:flex-end; gap:7px; height:62px; border-bottom:1px solid #1a1a1a; padding:0 4px; } .bars .m{ flex:1; display:flex; gap:2px; align-items:flex-end; height:100%; }
+    .bars i{ display:block; flex:1; min-width:0; } .bars .i{ background:#1a1a1a; } .bars .e{ background:#b8b8b8; }
+    .bl{ display:flex; gap:7px; padding:0 4px; font:700 9.5px Arial,sans-serif; color:#666; margin-top:3px; } .bl span{ flex:1; text-align:center; }
+    .legend{ font:700 10px Arial,sans-serif; color:#666; margin:8px 0 10px; } .legend i{ display:inline-block; width:10px; height:10px; margin-right:5px; vertical-align:-1px; } .legend span{ margin-right:16px; }
+    .grid{ table-layout:fixed; } .grid th:first-child, .grid td:first-child{ width:22%; white-space:normal; } .grid th, .grid td{ padding:3px 3px; font-size:9.5px; white-space:nowrap; } .grid th{ font-size:8.5px; }
+    .foot{ border-top:1px solid #d9d9d9; margin-top:18px; padding-top:8px; font-size:10.5px; color:#666; line-height:1.5; }
+    @media print{ tr{ page-break-inside:avoid; } }`;
+  function plFootHtml(){ return '<p class="foot">Your own record for your business, prepared via Vono. Income counts by the period each payment covers; costs count by the date you entered. Vono doesn\'t verify these figures and this isn\'t tax advice.</p>'; }
+  function plShopName(){ return escapeHtmlShop(myShop ? myShop.name : 'Your shop'); }
+  function plBars(inc, exp, labels){
+    const mx = Math.max(1, ...inc, ...exp);
+    const bars = inc.map((a,i) => `<div class="m"><i class="i" style="height:${Math.max(0, a / mx * 100).toFixed(0)}%"></i><i class="e" style="height:${Math.max(0, exp[i] / mx * 100).toFixed(0)}%"></i></div>`).join('');
+    return `<div class="bars">${bars}</div><div class="bl">${labels.map(l => `<span>${l}</span>`).join('')}</div><div class="legend"><span><i style="background:#1a1a1a"></i>Income</span><span><i style="background:#b8b8b8"></i>Expenses</span></div>`;
+  }
+  function plKpisHtml(inc, exp, net){
+    return `<div class="kpis"><div><small>Income</small><b>${plFmt(inc)}</b></div><div><small>Expenses</small><b>${plFmt(exp)}</b></div><div class="net"><small>${net < 0 ? 'Net loss' : 'Net profit'}</small><b>${plFmt(net)}</b></div><div><small>Profit margin</small><b>${plPct(net, inc)}</b></div></div>`;
+  }
+  function plPrintYear(){
+    const d = plCompute(plYear);
+    const inc = plSum(d.income), exp = plSum(d.expenses), net = plSum(d.net);
+    const best = d.net.indexOf(Math.max(...d.net)), worst = d.net.indexOf(Math.min(...d.net));
+    const bw = d.net[worst] < 0 ? 'loss' : 'profit';
+    const note = (inc || exp) ? `<div class="legend"><span>Best month: ${MONTHS_SHORT[best]}, ${plFmt(Math.abs(d.net[best]))} ${d.net[best] < 0 ? 'loss' : 'profit'}</span><span>Tightest: ${MONTHS_SHORT[worst]}, ${plFmt(Math.abs(d.net[worst]))} ${bw}</span></div>` : '';
+    const gridRow = (label, vals, cls) => `<tr class="${cls}"><td>${escapeHtmlShop(label)}</td>${vals.map(v => `<td class="r">${plWhole(v)}</td>`).join('')}<td class="r"><b>${plWhole(plSum(vals))}</b></td></tr>`;
+    let g = '<tr class="grp"><td colspan="14">Income</td></tr>' + gridRow('Booth & chair rent', d.rent, 'in') + gridRow('Commission', d.comm, 'in') + gridRow('Total income', d.income, 'subt');
+    d.groups.forEach(gr => {
+      if (gr.known === 1 && gr.lines.length === 1){ g += gridRow(gr.lines[0].label, gr.vals, 'one'); return; }
+      g += `<tr class="grp"><td colspan="14">${escapeHtmlShop(gr.name)}</td></tr>`;
+      gr.lines.forEach((l,i) => { if (i < gr.known || plSum(l.vals)) g += gridRow(l.label, l.vals, 'in'); });
+      g += gridRow('Total ' + gr.name.toLowerCase(), gr.vals, 'subt');
+    });
+    g += gridRow('Total expenses', d.expenses, 'total');
+    g += `<tr class="net"><td>${net < 0 ? 'Net loss' : 'Net profit'}</td>${d.net.map(v => `<td class="r ${v < 0 ? 'neg' : ''}">${plWhole(v)}</td>`).join('')}<td class="r">${plWhole(net)}</td></tr>`;
+    let run = 0; const runs = d.net.map(v => (run += v));
+    g += `<tr><td class="mut">Running profit</td>${runs.map(v => `<td class="r mut">${plWhole(v)}</td>`).join('')}<td></td></tr>`;
+    const entries = shopCosts.filter(c => costParts(c.expense_date).y === plYear).sort((a,b)=> (a.expense_date || '').localeCompare(b.expense_date || ''));
+    const detail = entries.map(c => `<tr><td>${escapeHtmlShop(costDateLabel(c.expense_date))}</td><td>${escapeHtmlShop(c.category)}${c.note ? ` <span class="mut sm">&middot; ${escapeHtmlShop(c.note)}</span>` : ''}</td><td class="mut">${escapeHtmlShop(c.paid_to || '')}</td><td class="r">${plFmt(c.amount)}</td></tr>`).join('');
+    const body = `
+      <div class="head"><div><h1>${plShopName()}</h1><p class="sub" style="margin:3px 0 0;">Profit &amp; loss &middot; what came in from your team, what went out to run the shop</p></div><div class="yr">${plYear}<small>Year ending Dec 31</small></div></div>
+      ${plKpisHtml(inc, exp, net)}
+      <h2>Month by month</h2>${plBars(d.income, d.expenses, MONTHS_SHORT)}${note}
+      <h2>Profit &amp; loss statement</h2>
+      <table><thead><tr><th>&nbsp;</th><th class="r">${plYear} total</th><th class="r">% of income</th></tr></thead><tbody>${plStatementRows(d, 'year')}</tbody></table>
+      ${plFootHtml()}
+      <div class="land brk">
+        <div class="head"><div><h1>Month-by-month grid</h1><p class="sub" style="margin:3px 0 0;">${plShopName()} &middot; ${plYear} &middot; whole dollars</p></div><div class="yr" style="font-size:22px">${plYear}</div></div>
+        <table class="grid"><thead><tr><th>&nbsp;</th>${MONTHS_SHORT.map(m => `<th class="r">${m}</th>`).join('')}<th class="r">Year</th></tr></thead><tbody>${g}</tbody></table>
+        ${plFootHtml()}
+      </div>
+      <div class="brk">
+        <div class="head"><div><h1>Cost detail</h1><p class="sub" style="margin:3px 0 0;">${plShopName()} &middot; ${plYear} &middot; every cost you logged, oldest first</p></div><div class="yr" style="font-size:22px">${entries.length} ${entries.length === 1 ? 'cost' : 'costs'}</div></div>
+        <table><thead><tr><th>Date</th><th>What</th><th>Paid to</th><th class="r">Amount</th></tr></thead><tbody>${detail || '<tr><td colspan="4">No costs logged for this year.</td></tr>'}</tbody>
+        <tfoot><tr><td colspan="3" style="font-weight:bold;">Total</td><td class="r" style="font-weight:bold;">${plFmt(exp)}</td></tr></tfoot></table>
+        ${plFootHtml()}
+      </div>`;
+    window.openPrintPreview({ title: 'Profit & Loss ' + plYear, css: PL_PRINT_CSS, body });
+  }
+  function plPrintMonth(){
+    const d = plCompute(plYear), mi = plMonth;
+    const inc = d.income[mi], exp = d.expenses[mi], net = d.net[mi];
+    const payments = rentPayments.filter(p => { const q = costParts(p.period_start); return q.y === plYear && q.m === mi; });
+    const byStaff = {};
+    payments.forEach(p => {
+      const s = byStaff[p.staff_code] || (byStaff[p.staff_code] = { n: 0, amt: 0, kind: p.kind, rate: p.rate });
+      s.n++; s.amt += Number(p.amount) || 0;
+    });
+    const irows = Object.keys(byStaff).map(code => {
+      const m = teamMembers.find(x => x.code === code);
+      const s = byStaff[code];
+      const how = s.kind === 'commission' ? 'Commission' + (s.rate != null ? ' ' + Number(s.rate) + '%' : '') : 'Flat rent';
+      return `<tr class="in"><td>${escapeHtmlShop(m ? (m.name || m.code) : code)}<span class="mut sm"> &middot; ${how}</span></td><td class="r mut">${s.n}</td><td class="r">${plFmt(s.amt)}</td></tr>`;
+    }).join('');
+    const entries = shopCosts.filter(c => { const q = costParts(c.expense_date); return q.y === plYear && q.m === mi; }).sort((a,b)=> (a.expense_date || '').localeCompare(b.expense_date || ''));
+    let erows = '';
+    COST_GROUPS.forEach(g => {
+      const mine = entries.filter(c => costGroupOf(c.category) === g.name);
+      if (!mine.length) return;
+      erows += `<tr class="grp"><td colspan="4">${escapeHtmlShop(g.name)}</td></tr>`;
+      mine.forEach(c => { erows += `<tr class="in"><td>${escapeHtmlShop(c.category)}${c.note ? ` <span class="mut sm">&middot; ${escapeHtmlShop(c.note)}</span>` : ''}</td><td class="mut">${escapeHtmlShop(costDateLabel(c.expense_date))}</td><td class="mut">${escapeHtmlShop(c.paid_to || '')}</td><td class="r">${plFmt(c.amount)}</td></tr>`; });
+      if (mine.length > 1) erows += `<tr class="subt"><td colspan="3">Total ${escapeHtmlShop(g.name.toLowerCase())}</td><td class="r">${plFmt(plSum(mine.map(c => Number(c.amount) || 0)))}</td></tr>`;
+    });
+    // compare with the month before (December of last year when this is January) and the year so far
+    const prevIdx = mi === 0 ? 11 : mi - 1;
+    const pd = mi === 0 ? plCompute(plYear - 1) : d;
+    const ytd = a => plSum(a.slice(0, mi + 1));
+    const crow = (label, cur, prev, y, cls) => `<tr class="${cls || ''}"><td>${escapeHtmlShop(label)}</td><td class="r">${plFmt(cur)}</td><td class="r mut">${plFmt(prev)}</td><td class="r mut">${plFmt(y)}</td></tr>`;
+    let cmp = crow('Income', inc, pd.income[prevIdx], ytd(d.income));
+    d.groups.forEach((g, gi) => { cmp += crow(g.name, g.vals[mi], pd.groups[gi].vals[prevIdx], ytd(g.vals)); });
+    cmp += crow('Total expenses', exp, pd.expenses[prevIdx], ytd(d.expenses), 'subt');
+    cmp += `<tr class="net"><td>${net < 0 ? 'Net loss' : 'Net profit'}</td><td class="r">${plFmt(net)}</td><td class="r mut">${plFmt(pd.net[prevIdx])}</td><td class="r mut">${plFmt(ytd(d.net))}</td></tr>`;
+    const body = `
+      <div class="head"><div><h1>${plShopName()}</h1><p class="sub" style="margin:3px 0 0;">Monthly profit &amp; loss</p></div><div class="yr" style="font-size:30px">${MONTHS_LONG[mi]}<small>${plYear}</small></div></div>
+      ${plKpisHtml(inc, exp, net)}
+      <h2>Income &middot; collected from your team</h2>
+      <table><thead><tr><th>Team member</th><th class="r">Payments</th><th class="r">Amount</th></tr></thead><tbody>${irows || '<tr><td colspan="3">No payments logged for this month.</td></tr>'}
+      <tr class="total"><td>Total income</td><td class="r mut">${payments.length}</td><td class="r">${plFmt(inc)}</td></tr></tbody></table>
+      <h2>Expenses &middot; what you paid out</h2>
+      <table><thead><tr><th>What</th><th>Date</th><th>Paid to</th><th class="r">Amount</th></tr></thead><tbody>${erows || '<tr><td colspan="4">No costs logged for this month.</td></tr>'}
+      <tr class="total"><td colspan="3">Total expenses</td><td class="r">${plFmt(exp)}</td></tr></tbody></table>
+      ${plFootHtml()}
+      <div class="brk">
+        <div class="head"><div><h1>${plShopName()}</h1><p class="sub" style="margin:3px 0 0;">Monthly profit &amp; loss &middot; how ${MONTHS_LONG[mi]} compares</p></div><div class="yr" style="font-size:30px">${MONTHS_LONG[mi]}<small>${plYear}</small></div></div>
+        <h2>How ${MONTHS_LONG[mi]} compares</h2>
+        <table><thead><tr><th>&nbsp;</th><th class="r">${MONTHS_LONG[mi]}</th><th class="r">${MONTHS_LONG[prevIdx]}${mi === 0 ? ' ' + (plYear - 1) : ''}</th><th class="r">Year to date</th></tr></thead><tbody>${cmp}</tbody></table>
+        <h2>Year to date by month</h2>${plBars(d.income.slice(0, mi + 1), d.expenses.slice(0, mi + 1), MONTHS_SHORT.slice(0, mi + 1))}
+        ${plFootHtml()}
+      </div>`;
+    window.openPrintPreview({ title: 'Profit & Loss ' + MONTHS_LONG[mi] + ' ' + plYear, css: PL_PRINT_CSS, body });
+  }
+  root.querySelector('#btn-shop-pl-print').addEventListener('click', () => { if (plView === 'year') plPrintYear(); else plPrintMonth(); });
+
   // ---- Owner view: a short list of rows, each opening one page ----
-  const SHOP_SUBS = ['team','invite','rent','records'];
+  const SHOP_SUBS = ['team','invite','rent','costs','pl','records'];
   function showShopSub(which){
     root.querySelector('#shop-owner-hub').style.display = which ? 'none' : 'flex';
     SHOP_SUBS.forEach(k=>{ root.querySelector('#shop-sub-' + k).style.display = (k === which) ? 'flex' : 'none'; });
     const scroller = root.closest('.tab-content');
     if (scroller) scroller.scrollTop = 0;
+    if (which === 'costs') openCosts();
+    if (which === 'pl') openPl();
   }
   root.querySelectorAll('[data-shop-open]').forEach(b=> b.addEventListener('click', ()=> showShopSub(b.dataset.shopOpen)));
   root.querySelectorAll('[data-shop-back]').forEach(b=> b.addEventListener('click', ()=> showShopSub(null)));
