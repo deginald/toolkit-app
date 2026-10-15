@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-20T15-00-00Z">
+<meta name="app-build" content="2026-10-22T15-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -331,7 +331,7 @@
       </div>
       <div class="field">
         <label>Personal code</label>
-        <div class="input-row"><input id="auth-code" type="text" placeholder="e.g. jordan-4821" autocomplete="off" required><button type="button" class="link-btn" id="auth-code-random" style="flex:none; padding:6px 0 6px 8px;">Random digits</button></div>
+        <div class="input-row"><input id="auth-code" type="text" placeholder="e.g. jordan4821" autocomplete="off" required><button type="button" class="link-btn" id="auth-code-random" style="flex:none; padding:6px 0 6px 8px;">Random digits</button></div>
         <p class="foot-note-small" id="auth-code-hint" style="margin:0;">Your first name plus four digits you'll remember, like the last 4 of your phone. Give this code to any barber or stylist and they can pull up your visits. We never ask for or store your phone number.</p>
       </div>
       <div class="field" id="auth-email-field">
@@ -1053,6 +1053,28 @@ function sanitizeCode(raw){
   if (c.length > 60) c = c.slice(0,60);
   return c;
 }
+// A passport code can be typed with or without the dash before its last four digits
+// (jordan-4821 or jordan4821). New codes are made without it; older ones keep theirs.
+function codeAltForm(code){
+  const c = String(code || '');
+  let m = /^(.+)-(\d{4})$/.exec(c);
+  if (m) return m[1] + m[2];
+  m = /^(.*[^\d-])(\d{4})$/.exec(c);
+  if (m) return m[1] + '-' + m[2];
+  return '';
+}
+// Runs a lookup with the code as typed, then once more in its other spelling. Returns the row and the
+// code that actually matched, so everything after uses the real, saved code.
+async function withCodeAlt(fn, code){
+  let data = await fn(code);
+  if (data) return { data, code };
+  const alt = codeAltForm(code);
+  if (alt){
+    data = await fn(alt);
+    if (data) return { data, code: alt };
+  }
+  return { data: null, code };
+}
 function toTitleCase(str){
   if (!str) return str;
   return str.trim().replace(/\s+/g, ' ').toLowerCase().replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
@@ -1128,12 +1150,19 @@ async function clientLogin(code){
 async function clientCodeTaken(code){
   const { data, error } = await supabaseClient.rpc('client_code_taken', { p_code: code });
   if (error) throw error;
-  return !!data;
+  if (data) return true;
+  // jordan4821 and jordan-4821 count as the same code, so a new one never sits next to an existing one.
+  const alt = codeAltForm(code);
+  if (!alt) return false;
+  const r2 = await supabaseClient.rpc('client_code_taken', { p_code: alt });
+  if (r2.error) throw r2.error;
+  return !!r2.data;
 }
 
 async function tryLoadClient(code){
   try{
-    const data = dbAvailable ? await clientLogin(code) : null;
+    let data = null;
+    if (dbAvailable){ const found = await withCodeAlt(clientLogin, code); data = found.data; code = found.code; }
     if (data){
       client = defaultClient(data.name);
       client.name = toTitleCase(data.name) || client.name;
@@ -1273,7 +1302,7 @@ function suggestFamilyMemberCode(name){
   const first = (name||'').trim().split(/\s+/)[0] || '';
   const base = sanitizeCode(first) || 'family';
   const suffix = Math.floor(10 + Math.random()*90);
-  return `${base}-${suffix}`;
+  return `${base}${suffix}`;
 }
 
 // Turns a standalone passport into a family admin the first time they add a
@@ -2633,14 +2662,14 @@ document.getElementById('auth-name').addEventListener('input', ()=>{
   const codeEl = document.getElementById('auth-code');
   if (!codeEl.value || codeEl.value === authCodeAuto){
     const base = authFirstNameCode();
-    authCodeAuto = base ? base + '-' : '';
+    authCodeAuto = base || '';
     codeEl.value = authCodeAuto;
   }
 });
 document.getElementById('auth-code-random').addEventListener('click', ()=>{
   const base = authFirstNameCode() || 'me';
   const codeEl = document.getElementById('auth-code');
-  codeEl.value = base + '-' + String(Math.floor(1000 + Math.random() * 9000));
+  codeEl.value = base + String(Math.floor(1000 + Math.random() * 9000));
   authCodeAuto = '';
 });
 document.getElementById('btn-auth-mode-new').addEventListener('click', ()=> setAuthMode('new'));
@@ -2667,7 +2696,7 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
   const errorEl = document.getElementById('auth-error');
   errorEl.textContent = ' ';
   const name = toTitleCase(document.getElementById('auth-name').value.trim()) || 'You';
-  const code = sanitizeCode(document.getElementById('auth-code').value);
+  let code = sanitizeCode(document.getElementById('auth-code').value);
   if (!code) return;
   const email = (document.getElementById('auth-email').value || '').trim();
   const isReturning = document.getElementById('btn-auth-mode-returning').classList.contains('active');
@@ -2689,6 +2718,7 @@ document.getElementById('auth-form').addEventListener('submit', async (e)=>{
       errorEl.textContent = 'We couldn’t find an account with that code. If you’re new, switch to "First time" above to create one.';
       return;
     }
+    code = clientCode; // the saved spelling of the code, with or without the dash
   } else {
     let taken = false;
     try{ taken = await clientCodeTaken(code); }catch(err){ console.warn('code check failed', err); }

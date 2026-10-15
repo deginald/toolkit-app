@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-20T15-00-00Z">
+<meta name="app-build" content="2026-10-22T15-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1388,7 +1388,7 @@
               <div class="field"><label>Last 4 of their phone</label><div class="input-row"><input id="consult-client-new-last4" type="tel" inputmode="numeric" autocomplete="off" placeholder="e.g. 4821"></div><p class="foot-note-small" style="margin:0;">Makes the code easy for them to remember.</p></div>
               <div class="field">
                 <label>Their passport code</label>
-                <div class="input-row"><input id="consult-client-new-code" type="text" placeholder="e.g. jordan-4821" readonly><button type="button" class="link-btn code-edit" id="consult-client-code-edit">Edit</button></div>
+                <div class="input-row"><input id="consult-client-new-code" type="text" placeholder="e.g. jordan4821" readonly><button type="button" class="link-btn code-edit" id="consult-client-code-edit">Edit</button></div>
                 <div class="code-sugs" id="consult-client-code-sugs"></div>
                 <p class="foot-note-small" id="consult-client-code-say" style="margin:0;"></p>
               </div>
@@ -1604,7 +1604,7 @@
                 <div class="field"><label>Last 4 of their phone</label><div class="input-row"><input id="bk-manual-client-new-last4" type="tel" inputmode="numeric" autocomplete="off" placeholder="e.g. 4821"></div><p class="foot-note-small" style="margin:0;">Makes the code easy for them to remember.</p></div>
                 <div class="field">
                   <label>Their passport code</label>
-                  <div class="input-row"><input id="bk-manual-client-new-code" type="text" placeholder="e.g. jordan-4821" readonly><button type="button" class="link-btn code-edit" id="bk-manual-client-code-edit">Edit</button></div>
+                  <div class="input-row"><input id="bk-manual-client-new-code" type="text" placeholder="e.g. jordan4821" readonly><button type="button" class="link-btn code-edit" id="bk-manual-client-code-edit">Edit</button></div>
                   <div class="code-sugs" id="bk-manual-client-code-sugs"></div>
                   <p class="foot-note-small" id="bk-manual-client-code-say" style="margin:0;"></p>
                 </div>
@@ -3406,6 +3406,28 @@ function sanitizeCode(raw){
   if (c.length > 60) c = c.slice(0,60);
   return c;
 }
+// A passport code can be typed with or without the dash before its last four digits
+// (jordan-4821 or jordan4821). New codes are made without it; older ones keep theirs.
+function codeAltForm(code){
+  const c = String(code || '');
+  let m = /^(.+)-(\d{4})$/.exec(c);
+  if (m) return m[1] + m[2];
+  m = /^(.*[^\d-])(\d{4})$/.exec(c);
+  if (m) return m[1] + '-' + m[2];
+  return '';
+}
+// Runs a lookup with the code as typed, then once more in its other spelling. Returns the row and the
+// code that actually matched, so everything after uses the real, saved code.
+async function withCodeAlt(fn, code){
+  let data = await fn(code);
+  if (data) return { data, code };
+  const alt = codeAltForm(code);
+  if (alt){
+    data = await fn(alt);
+    if (data) return { data, code: alt };
+  }
+  return { data: null, code };
+}
 // A client's passport is meant to be pulled up by any signed-in professional
 // who has their code -- that's the whole point of the code. Rather than an
 // open "read any client row" policy (which would let anyone holding the
@@ -3425,7 +3447,13 @@ async function clientCodeTaken(code){
   if (!dbAvailable) return false;
   const { data, error } = await supabaseClient.rpc('client_code_taken', { p_code: code });
   if (error) throw error;
-  return !!data;
+  if (data) return true;
+  // jordan4821 and jordan-4821 count as the same code, so a new one never sits next to an existing one.
+  const alt = codeAltForm(code);
+  if (!alt) return false;
+  const r2 = await supabaseClient.rpc('client_code_taken', { p_code: alt });
+  if (r2.error) throw r2.error;
+  return !!r2.data;
 }
 // Every place a professional writes to a client's record -- adding a visit,
 // saving hair notes, recording in-person photo consent -- goes through this
@@ -3466,7 +3494,7 @@ function suggestClientCode(name){
   const first = (name||'').trim().split(/\s+/)[0] || '';
   const base = sanitizeCode(first) || 'client';
   const suffix = Math.floor(1000 + Math.random()*9000);
-  return `${base}-${suffix}`;
+  return `${base}${suffix}`;
 }
 // A code a client will remember: their first name plus four digits they already
 // know by heart (the last 4 of their phone). Only the finished code is saved --
@@ -3476,7 +3504,7 @@ function clientCodeFromLast4(name, digits){
   if (d.length !== 4) return '';
   const first = (name||'').trim().split(/\s+/)[0] || '';
   const base = sanitizeCode(first);
-  return base ? `${base}-${d}` : '';
+  return base ? `${base}${d}` : '';
 }
 // Wires the "Last 4 of their phone" + code fields of a pro's "Start their Vono
 // Passport" form (used in both Booking and Consult). Returns { reset, showTaken }.
@@ -3494,7 +3522,7 @@ function wireNewClientCodeFields(root, prefix){
   lock(true);
   const SAY_DEFAULT = "They'll use this to log in to their own Vono Passport. We save the code only, never the phone number.";
   function updateSay(){
-    const m = /^([a-z0-9_.~:@+-]+)-(\d{4})$/.exec(codeEl.value.trim());
+    const m = /^([a-z0-9_.~:@+-]*?[^\d-])-?(\d{4})$/.exec(codeEl.value.trim());
     sayEl.textContent = m
       ? `Say it back to them: "Your code is ${m[1].split('-')[0]}, ${m[2].split('').join('-')}." ` + SAY_DEFAULT
       : SAY_DEFAULT;
@@ -3527,8 +3555,8 @@ function wireNewClientCodeFields(root, prefix){
     const d = l4El.value.replace(/\D/g, '');
     const four = d.length === 4 ? d : String(Math.floor(1000 + Math.random() * 9000));
     const opts = [];
-    if (words.length > 1) opts.push(`${first}-${sanitizeCode(words[words.length - 1]).charAt(0)}-${four}`);
-    opts.push(`${first}-${four}-2`);
+    if (words.length > 1) opts.push(`${first}${sanitizeCode(words[words.length - 1]).charAt(0)}${four}`);
+    opts.push(`${first}2${four}`);
     const chips = opts.map(sanitizeCode).filter((c, i, a)=> c && a.indexOf(c) === i && c !== codeEl.value.trim());
     chips.push('__random__');
     sugsEl.innerHTML = '';
@@ -5595,12 +5623,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
   async function performClientLookup_consult(codeOverride){
     const statusEl = root.querySelector('#consult-client-lookup-status');
-    const code = sanitizeCode(codeOverride !== undefined ? codeOverride : root.querySelector('#consult-client-code-input').value);
+    let code = sanitizeCode(codeOverride !== undefined ? codeOverride : root.querySelector('#consult-client-code-input').value);
     if (!code){ statusEl.textContent = 'Enter a code first.'; return; }
     if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
     statusEl.textContent = 'Looking up…';
     try{
-      const data = await getClientByCode(code);
+      const found = await withCodeAlt(getClientByCode, code); const data = found.data; code = found.code;
       if (data){
         attachedClient = { code, name: data.name || 'Client', visits: Array.isArray(data.visits) ? data.visits : [], hairProfile: data.hair_profile || null, barberCodes: Array.isArray(data.barber_codes) ? data.barber_codes : [] };
         statusEl.textContent = '';
@@ -7785,7 +7813,7 @@ async function saveAppointmentChange(id, core, extras){
     }
   });
   async function performBkLookup(codeOverride){
-    const code = sanitizeCode(codeOverride !== undefined ? codeOverride : root.querySelector('#bk-lookup-code').value);
+    let code = sanitizeCode(codeOverride !== undefined ? codeOverride : root.querySelector('#bk-lookup-code').value);
     const statusEl = root.querySelector('#bk-lookup-status');
     const resultEl = root.querySelector('#bk-lookup-result');
     resultEl.style.display = 'none';
@@ -7795,7 +7823,7 @@ async function saveAppointmentChange(id, core, extras){
     if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
     statusEl.textContent = 'Looking up…';
     try{
-      const data = await getClientByCode(code);
+      const found = await withCodeAlt(getClientByCode, code); const data = found.data; code = found.code;
       if (!data){ statusEl.textContent = 'No client found with that code.'; return; }
       bkLookupClient = {
         code,
@@ -8081,12 +8109,12 @@ async function saveAppointmentChange(id, core, extras){
   }
   async function performManualClientLookup(codeOverride){
     const statusEl = root.querySelector('#bk-manual-client-status');
-    const code = sanitizeCode(codeOverride !== undefined ? codeOverride : root.querySelector('#bk-manual-client-code').value);
+    let code = sanitizeCode(codeOverride !== undefined ? codeOverride : root.querySelector('#bk-manual-client-code').value);
     if (!code){ statusEl.textContent = 'Enter a code first.'; return; }
     if (!dbAvailable){ statusEl.textContent = "Live lookup isn't connected right now."; return; }
     statusEl.textContent = 'Looking up…';
     try{
-      const data = await getClientByCode(code);
+      const found = await withCodeAlt(getClientByCode, code); const data = found.data; code = found.code;
       if (data){
         manualClient = { code, name: toTitleCase(data.name) || 'Client' };
         statusEl.textContent = '';
