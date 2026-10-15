@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-29T14-00-00Z">
+<meta name="app-build" content="2026-10-30T14-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -4577,12 +4577,20 @@ async function startCheckout(tier, triggerBtn){
   if (note) note.textContent = 'Opening secure checkout…'; else showToast('Opening secure checkout…');
   try{
     const { data, error } = await supabaseClient.functions.invoke('create-checkout-session', { body: { planTier: tier } });
-    if (error) throw error;
+    if (error){
+      try{
+        if (error.context && typeof error.context.json === 'function'){
+          const j = await error.context.json();
+          if (j && j.code === 'billing_unavailable'){ const e2 = new Error(j.error || 'Billing is being updated. Please try again soon.'); e2.friendly = true; throw e2; }
+        }
+      }catch(inner){ if (inner && inner.friendly) throw inner; }
+      throw error;
+    }
     if (!data || !data.ok || !data.url) throw new Error((data && data.error) || 'Something went wrong.');
     window.location.href = data.url;
   }catch(e){
     console.warn('startCheckout failed', e);
-    const msg = "Couldn't start checkout. Try again.";
+    const msg = (e && e.friendly) ? e.message : "Couldn't start checkout. Try again.";
     if (note) note.textContent = msg; else showToast(msg);
     if (btn) btn.disabled = false;
   }
@@ -4601,15 +4609,15 @@ async function openBillingPortal(triggerBtn){
     ]);
     const data = res && res.data, error = res && res.error;
     if (error){
-      let detail = error.message || '';
-      try{ if (error.context && typeof error.context.json === 'function'){ const j = await error.context.json(); if (j && j.error) detail = j.error; } }catch(_e){}
-      const e2 = new Error(detail || 'Something went wrong.'); e2.status = error.context && error.context.status; throw e2;
+      let detail = error.message || '', friendly = false;
+      try{ if (error.context && typeof error.context.json === 'function'){ const j = await error.context.json(); if (j && j.error) detail = j.error; if (j && j.code === 'billing_unavailable') friendly = true; } }catch(_e){}
+      const e2 = new Error(detail || 'Something went wrong.'); e2.status = error.context && error.context.status; e2.friendly = friendly; throw e2;
     }
     if (!data || !data.ok || !data.url) throw new Error((data && data.error) || 'Something went wrong.');
     window.location.href = data.url;
   }catch(e){
     console.warn('openBillingPortal failed', e);
-    const msg = "Couldn't open billing: " + ((e && e.message) || 'try again.') + (e && e.status ? ' (code ' + e.status + ')' : '');
+    const msg = (e && e.friendly) ? e.message : "Couldn't open billing: " + ((e && e.message) || 'try again.') + (e && e.status ? ' (code ' + e.status + ')' : '');
     if (note) note.textContent = msg; else showToast(msg);
     if (btn) btn.disabled = false;
   }
