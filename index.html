@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-30T14-00-00Z">
+<meta name="app-build" content="2026-10-31T14-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -234,6 +234,17 @@
   .cost-row .t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
   .cost-row .t b{ font-size:14px; } .cost-row .t span{ color:var(--muted); font-size:12px; line-height:1.35; overflow-wrap:anywhere; }
   .cost-row .amt{ font-weight:700; font-variant-numeric:tabular-nums; flex:none; }
+  .rc-chip{ cursor:pointer; margin-left:0; white-space:nowrap; flex:none; }
+  .rc-chip.has{ color:var(--brass); border-color:var(--brass); }
+  .rc-chip.need{ color:var(--brass); border-style:dashed; border-color:var(--brass); }
+  .rc-have{ display:flex; gap:12px; align-items:center; }
+  .rc-have img{ width:64px; height:84px; object-fit:cover; border-radius:8px; border:1px solid var(--line); background:var(--surface); flex:none; }
+  .rc-have .btns{ flex:1; display:flex; flex-direction:column; gap:8px; }
+  .rc-viewer{ position:fixed; inset:0; z-index:2500; background:rgba(5,9,15,.97); display:flex; flex-direction:column; gap:12px; padding:16px; overflow:auto; }
+  .rc-viewer .rc-stage{ flex:1; min-height:240px; display:flex; align-items:center; justify-content:center; background:#000; border-radius:14px; padding:6px; }
+  .rc-viewer .rc-stage img{ max-width:100%; max-height:68vh; object-fit:contain; }
+  .tax-opt small{ display:block; color:var(--muted); font-weight:400; font-size:12px; margin-top:2px; line-height:1.4; }
+  .tax-opt{ align-items:flex-start; } .tax-opt input{ margin-top:2px; }
   .cost-chip{ font-style:normal; font-size:9.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; border:1px solid var(--line); border-radius:999px; padding:1px 7px; margin-left:6px; color:var(--muted); vertical-align:1px; }
   .pl-kpis{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   .pl-kpis div{ border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:10px 12px; }
@@ -2395,6 +2406,22 @@
                   <div class="field"><label for="shop-cost-amount">Amount ($)</label><div class="input-row"><input id="shop-cost-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 184.00"></div></div>
                   <div class="field"><label for="shop-cost-paidto">Paid to (optional)</label><div class="input-row"><input id="shop-cost-paidto" type="text" placeholder="e.g. Power company"></div></div>
                   <div class="field"><label for="shop-cost-note">Note (optional)</label><div class="input-row"><input id="shop-cost-note" type="text" placeholder="e.g. Color and developer"></div></div>
+                  <div class="field" id="shop-cost-receipt-field">
+                    <label>Receipt (optional)</label>
+                    <div id="shop-cost-rc-empty" style="display:flex; gap:10px;">
+                      <button type="button" class="btn btn-outline" id="btn-shop-cost-rc-take" style="flex:1;">Take photo</button>
+                      <button type="button" class="btn btn-outline" id="btn-shop-cost-rc-pick" style="flex:1;">Choose from library</button>
+                    </div>
+                    <div id="shop-cost-rc-have" class="rc-have" style="display:none;">
+                      <img id="shop-cost-rc-thumb" alt="Receipt photo">
+                      <div class="btns">
+                        <button type="button" class="btn btn-outline" id="btn-shop-cost-rc-retake">Retake photo</button>
+                        <button type="button" class="btn btn-outline" id="btn-shop-cost-rc-remove">Remove</button>
+                      </div>
+                    </div>
+                    <input type="file" id="shop-cost-rc-cam" accept="image/*" capture="environment" hidden>
+                    <input type="file" id="shop-cost-rc-lib" accept="image/*" hidden>
+                  </div>
                   <label class="check-row" id="shop-cost-repeat-row"><input type="checkbox" id="shop-cost-repeat"><span>Repeats every month</span></label>
                   <p class="screen-sub" style="margin:-4px 0 0;">Good for rent, internet and other bills that stay the same. Vono adds each month up to today.</p>
                   <div class="btn-row" style="gap:10px;">
@@ -2435,6 +2462,27 @@
                   <button class="btn btn-outline" id="btn-shop-pl-print" type="button" style="flex:1;">Print</button>
                   <button class="btn btn-outline" id="btn-shop-pl-csv" type="button" style="flex:1;">Download CSV</button>
                 </div>
+                <button class="btn btn-outline" id="btn-shop-pl-tax" type="button" data-shop-open="tax">Tax-time package</button>
+              </div>
+              <div id="shop-sub-tax" style="display:none; flex-direction:column; gap:12px;">
+                <button type="button" class="link-btn" data-shop-open="pl" style="padding:0 0 4px; align-self:flex-start; font-size:13px;">&larr; Profit &amp; loss</button>
+                <div>
+                  <p class="eyebrow-mini" style="margin:0;">Tax-time package</p>
+                  <p class="screen-sub" style="margin:4px 0 0;">Everything for the year in one place for your accountant.</p>
+                </div>
+                <div class="card" style="gap:12px;">
+                  <div class="field"><label for="shop-tax-year-select">Year</label><div class="input-row"><select id="shop-tax-year-select" class="title-select" style="width:100%;"></select></div></div>
+                  <label class="check-row tax-opt"><input type="checkbox" id="shop-tax-summary" checked><span>Summary and totals<small>Money in, costs by category, net.</small></span></label>
+                  <label class="check-row tax-opt"><input type="checkbox" id="shop-tax-costs" checked><span>Every cost, listed by category<small>Date, who you paid, note, amount.</small></span></label>
+                  <label class="check-row tax-opt"><input type="checkbox" id="shop-tax-payments" checked><span>Every payment received<small>Rent and commission by team member.</small></span></label>
+                  <label class="check-row tax-opt"><input type="checkbox" id="shop-tax-receipts" checked><span>Receipt photos<small id="shop-tax-receipts-sub">&nbsp;</small></span></label>
+                  <div class="btn-row" style="gap:10px;">
+                    <button class="btn btn-primary" id="btn-shop-tax-print" type="button" style="flex:1;">Print</button>
+                    <button class="btn btn-outline" id="btn-shop-tax-csv" type="button" style="flex:1;">Spreadsheet (CSV)</button>
+                  </div>
+                  <p class="screen-sub" id="shop-tax-status" style="margin:0;">&nbsp;</p>
+                </div>
+                <p class="screen-sub" style="margin:0;">Your own record, not verified and not tax advice. Ask your accountant what they need and how long to keep receipts.</p>
               </div>
               <div id="shop-sub-records" style="display:none; flex-direction:column; gap:12px;">
                 <button type="button" class="link-btn" data-shop-back style="padding:0 0 4px; align-self:flex-start; font-size:13px;">&larr; Shop</button>
@@ -11575,6 +11623,10 @@ async function saveAppointmentChange(id, core, extras){
   let costYear = new Date().getFullYear();
   let plView = 'year', plYear = new Date().getFullYear(), plMonth = new Date().getMonth();
   let armedCostDelete = false;
+  const RECEIPT_BUCKET = 'shop-receipts';
+  let costRc = { file:null, preview:null, existing:null, remove:false };
+  const rcUrls = {};
+  let taxYear = new Date().getFullYear();
   const plSum = a => a.reduce((s,v)=> s + v, 0);
   const plRound = n => Math.round((Number(n)||0) * 100) / 100;
   function plFmt(n){
@@ -11593,8 +11645,12 @@ async function saveAppointmentChange(id, core, extras){
   function costDaysIn(y, m){ return new Date(y, m + 1, 0).getDate(); }
   function costGroupOf(cat){ const g = COST_GROUPS.find(x => x.lines.includes(cat)); return g ? g.name : COST_OTHER_GROUP; }
   function costDateLabel(iso){ const p = costParts(iso); return MONTHS_SHORT[p.m] + ' ' + p.d; }
+  function costsErrIsReceipt(e){
+    return /receipt_path|shop-receipts|bucket not found|PGRST204|42703/i.test(String((e && e.message) || '') + ' ' + String((e && e.code) || '') + ' ' + String((e && e.statusCode) || ''));
+  }
   function costsFriendlyError(e){
     const m = String((e && e.message) || '') + ' ' + String((e && e.code) || '');
+    if (costsErrIsReceipt(e)) return "Receipt photos need a one-time database update first. Run the new SQL file in Supabase, then try again.";
     if (/42P01|PGRST205|shop_expenses/.test(m)) return "Costs needs a one-time database update first. Run the new SQL file in Supabase, then try again.";
     return "Couldn't save. Try again.";
   }
@@ -11621,8 +11677,136 @@ async function saveAppointmentChange(id, core, extras){
   function syncCostOther(){
     root.querySelector('#shop-cost-other-wrap').style.display = root.querySelector('#shop-cost-cat').value === '__other' ? 'flex' : 'none';
   }
+  // ---- Receipt photos ----
+  function rcReset(){
+    if (costRc.preview){ try{ URL.revokeObjectURL(costRc.preview); }catch(e){} }
+    costRc = { file:null, preview:null, existing:null, remove:false };
+    ['#shop-cost-rc-cam','#shop-cost-rc-lib'].forEach(sel => { const i = root.querySelector(sel); if (i) i.value = ''; });
+    renderReceiptField();
+  }
+  async function receiptUrl(path){
+    const hit = rcUrls[path];
+    if (hit && hit.exp > Date.now()) return hit.url;
+    try{
+      const { data, error } = await supabaseClient.storage.from(RECEIPT_BUCKET).createSignedUrl(path, 3600);
+      if (error || !data || !data.signedUrl) return null;
+      rcUrls[path] = { url: data.signedUrl, exp: Date.now() + 50 * 60 * 1000 };
+      return data.signedUrl;
+    }catch(e){ console.warn('receipt url failed', e); return null; }
+  }
+  function removeReceiptFiles(paths){
+    try{
+      const r = supabaseClient.storage.from(RECEIPT_BUCKET).remove(paths.filter(Boolean));
+      if (r && r.catch) r.catch(() => {});
+    }catch(e){ console.warn('receipt cleanup failed', e); }
+  }
+  async function uploadReceipt(file, costId){
+    const small = await compressPhotoForUpload(file, 1800, 0.85);
+    const ext = small.type === 'image/png' ? 'png' : 'jpg';
+    const path = profile.shopCode + '/' + costId + '-' + Date.now().toString(36) + '.' + ext;
+    const { error } = await supabaseClient.storage.from(RECEIPT_BUCKET).upload(path, small, { contentType: small.type || 'image/jpeg', upsert: false });
+    if (error) throw error;
+    return path;
+  }
+  async function renderReceiptField(){
+    const emptyEl = root.querySelector('#shop-cost-rc-empty'), haveEl = root.querySelector('#shop-cost-rc-have');
+    if (!emptyEl || !haveEl) return;
+    const thumb = root.querySelector('#shop-cost-rc-thumb');
+    if (costRc.file){
+      emptyEl.style.display = 'none'; haveEl.style.display = 'flex'; thumb.src = costRc.preview;
+    } else if (costRc.existing && !costRc.remove){
+      emptyEl.style.display = 'none'; haveEl.style.display = 'flex';
+      const keep = costRc.existing;
+      thumb.removeAttribute('src');
+      const u = await receiptUrl(keep);
+      if (u && costRc.existing === keep && !costRc.file && !costRc.remove) thumb.src = u;
+    } else {
+      emptyEl.style.display = 'flex'; haveEl.style.display = 'none'; thumb.removeAttribute('src');
+    }
+  }
+  function rcPicked(input){
+    const f = input.files && input.files[0];
+    input.value = '';
+    if (!f) return;
+    if (!/^image\//.test(f.type || '')){ root.querySelector('#shop-cost-status').textContent = 'Pick a photo (not a PDF).'; return; }
+    if (costRc.preview){ try{ URL.revokeObjectURL(costRc.preview); }catch(e){} }
+    costRc.file = f; costRc.preview = URL.createObjectURL(f); costRc.remove = false;
+    root.querySelector('#shop-cost-status').innerHTML = '&nbsp;';
+    renderReceiptField();
+  }
+  root.querySelector('#btn-shop-cost-rc-take').addEventListener('click', () => root.querySelector('#shop-cost-rc-cam').click());
+  root.querySelector('#btn-shop-cost-rc-retake').addEventListener('click', () => root.querySelector('#shop-cost-rc-cam').click());
+  root.querySelector('#btn-shop-cost-rc-pick').addEventListener('click', () => root.querySelector('#shop-cost-rc-lib').click());
+  root.querySelector('#shop-cost-rc-cam').addEventListener('change', function(){ rcPicked(this); });
+  root.querySelector('#shop-cost-rc-lib').addEventListener('change', function(){ rcPicked(this); });
+  root.querySelector('#btn-shop-cost-rc-remove').addEventListener('click', () => {
+    if (costRc.preview){ try{ URL.revokeObjectURL(costRc.preview); }catch(e){} }
+    costRc.file = null; costRc.preview = null; costRc.remove = !!costRc.existing;
+    renderReceiptField();
+  });
+  async function openReceiptViewer(id){
+    const c = shopCosts.find(x => String(x.id) === String(id));
+    if (!c || !c.receipt_path) return;
+    const old = document.getElementById('receipt-viewer'); if (old) old.remove();
+    const ov = document.createElement('div');
+    ov.id = 'receipt-viewer'; ov.className = 'rc-viewer';
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Receipt photo');
+    ov.innerHTML = '<button type="button" class="link-btn" data-rc-close style="align-self:flex-start; font-size:13px; padding:0;">&larr; Back to costs</button>' +
+      '<p class="eyebrow-mini" style="margin:0;">' + escapeHtmlShop(c.category) + ' &middot; ' + escapeHtmlShop(costDateLabel(c.expense_date)) + '</p>' +
+      '<div class="rc-stage"><span class="screen-sub" data-rc-msg style="margin:0;">Loading the photo…</span><img alt="Receipt photo" hidden></div>' +
+      '<div class="btn-row" style="gap:10px;"><button type="button" class="btn btn-outline" data-rc-replace style="flex:1;">Replace</button><button type="button" class="btn btn-outline" data-rc-remove style="flex:1;">Remove</button></div>' +
+      '<button type="button" class="btn btn-outline" data-rc-save>Save photo to my phone</button>' +
+      '<p class="screen-sub" data-rc-status style="margin:0;">&nbsp;</p>';
+    document.body.appendChild(ov);
+    const statusEl = ov.querySelector('[data-rc-status]');
+    function close(){ document.removeEventListener('keydown', onKey, true); ov.remove(); }
+    function onKey(e){ if (e.key === 'Escape'){ e.stopPropagation(); close(); } }
+    document.addEventListener('keydown', onKey, true);
+    ov.querySelector('[data-rc-close]').addEventListener('click', close);
+    ov.querySelector('[data-rc-close]').focus();
+    ov.querySelector('[data-rc-replace]').addEventListener('click', () => {
+      close(); loadCostIntoForm(c);
+      const f = root.querySelector('#shop-cost-receipt-field'); if (f && f.scrollIntoView) f.scrollIntoView({ block:'center' });
+    });
+    let armed = false;
+    ov.querySelector('[data-rc-remove]').addEventListener('click', async function(){
+      if (!armed){
+        armed = true; this.textContent = 'Tap again to remove';
+        setTimeout(() => { if (armed){ armed = false; this.textContent = 'Remove'; } }, 4000);
+        return;
+      }
+      armed = false;
+      const oldPath = c.receipt_path;
+      try{
+        const { error } = await supabaseClient.from('shop_expenses').update({ receipt_path: null }).eq('id', c.id);
+        if (error) throw error;
+        removeReceiptFiles([oldPath]);
+        c.receipt_path = null;
+        close(); renderCostsScreen();
+        root.querySelector('#shop-cost-status').textContent = 'Receipt removed.';
+      }catch(e){ console.warn('remove receipt failed', e); statusEl.textContent = costsErrIsReceipt(e) ? costsFriendlyError(e) : "Couldn't remove it. Try again."; }
+    });
+    const url = await receiptUrl(c.receipt_path);
+    const img = ov.querySelector('.rc-stage img'), msg = ov.querySelector('[data-rc-msg]');
+    if (!url){ msg.textContent = "Couldn't load this photo. Try again in a moment."; }
+    else { img.src = url; img.hidden = false; msg.hidden = true; }
+    ov.querySelector('[data-rc-save]').addEventListener('click', async () => {
+      if (!url){ statusEl.textContent = "The photo isn't loaded yet."; return; }
+      try{
+        const blob = await (await fetch(url)).blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'receipt-' + String(c.expense_date || '') + '-' + String(c.category || 'cost').replace(/[^a-z0-9]+/gi, '-').toLowerCase() + (blob.type === 'image/png' ? '.png' : '.jpg');
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+        statusEl.textContent = 'Saved to your downloads.';
+      }catch(e){ console.warn('save receipt failed', e); statusEl.textContent = "Couldn't save it. Try again."; }
+    });
+  }
+
   function resetCostForm(){
     costEditingId = null; armedCostDelete = false;
+    rcReset();
     populateCostCategories();
     root.querySelector('#shop-cost-cat').value = COST_GROUPS[0].lines[0];
     root.querySelector('#shop-cost-other').value = '';
@@ -11655,6 +11839,7 @@ async function saveAppointmentChange(id, core, extras){
     root.querySelector('#btn-shop-cost-cancel').style.display = '';
     root.querySelector('#btn-shop-cost-delete').style.display = '';
     root.querySelector('#btn-shop-cost-stop').style.display = c.series_id ? '' : 'none';
+    costRc.existing = c.receipt_path || null; renderReceiptField();
     syncCostOther();
     const card = root.querySelector('#shop-cost-form-card');
     if (card && card.scrollIntoView) card.scrollIntoView({ block:'start' });
@@ -11701,7 +11886,10 @@ async function saveAppointmentChange(id, core, extras){
         html += `<div class="cost-month"><span>${MONTHS_LONG[curM]}</span><span>${plFmt(tot)}</span></div>`;
       }
       const sub = [c.paid_to, costDateLabel(c.expense_date), c.note].filter(Boolean).map(escapeHtmlShop).join(' · ');
-      html += `<button type="button" class="cost-row" data-cost-id="${escapeHtmlShop(c.id)}"><span class="t"><b>${escapeHtmlShop(c.category)}${c.series_id ? ' <i class="cost-chip">Monthly</i>' : ''}</b><span>${sub}</span></span><span class="amt">${plFmt(c.amount)}</span></button>`;
+      const rcChip = c.receipt_path
+        ? `<span class="cost-chip rc-chip has" role="button" tabindex="0" data-receipt-view="${escapeHtmlShop(c.id)}">Receipt</span>`
+        : `<span class="cost-chip rc-chip ${/^(Repairs|Equipment)$/.test(c.category) ? 'need' : ''}" data-receipt-add="${escapeHtmlShop(c.id)}">+ Receipt</span>`;
+      html += `<button type="button" class="cost-row" data-cost-id="${escapeHtmlShop(c.id)}"><span class="t"><b>${escapeHtmlShop(c.category)}${c.series_id ? ' <i class="cost-chip">Monthly</i>' : ''}</b><span>${sub}</span></span>${rcChip}<span class="amt">${plFmt(c.amount)}</span></button>`;
     });
     listEl.innerHTML = html;
     const nudge = costNudgeRows();
@@ -11734,10 +11922,15 @@ async function saveAppointmentChange(id, core, extras){
   root.querySelector('#shop-cost-cat').addEventListener('change', syncCostOther);
   root.querySelector('#shop-cost-year-select').addEventListener('change', function(){ costYear = parseInt(this.value, 10); renderCostsScreen(); });
   root.querySelector('#shop-cost-list').addEventListener('click', e => {
+    const v = e.target.closest('[data-receipt-view]');
+    if (v){ e.preventDefault(); openReceiptViewer(v.dataset.receiptView); return; }
     const b = e.target.closest('[data-cost-id]');
     if (!b) return;
     const c = shopCosts.find(x => String(x.id) === b.dataset.costId);
-    if (c) loadCostIntoForm(c);
+    if (c){
+      loadCostIntoForm(c);
+      if (e.target.closest('[data-receipt-add]')){ const f = root.querySelector('#shop-cost-receipt-field'); if (f && f.scrollIntoView) f.scrollIntoView({ block:'center' }); }
+    }
   });
   root.querySelector('#btn-shop-cost-cancel').addEventListener('click', () => { resetCostForm(); root.querySelector('#shop-cost-status').innerHTML = '&nbsp;'; });
   root.querySelector('#btn-shop-cost-save').addEventListener('click', async () => {
@@ -11757,10 +11950,15 @@ async function saveAppointmentChange(id, core, extras){
     try{
       if (costEditingId){
         const patch = { expense_date: date, category, amount, paid_to: paidTo || null, note: note || null };
+        const cur = shopCosts.find(x => x.id === costEditingId);
+        const oldPath = cur ? (cur.receipt_path || null) : null;
+        let newPath = null;
+        if (costRc.file){ statusEl.textContent = 'Uploading receipt…'; newPath = await uploadReceipt(costRc.file, costEditingId); patch.receipt_path = newPath; }
+        else if (costRc.remove && oldPath){ patch.receipt_path = null; }
         const { error } = await supabaseClient.from('shop_expenses').update(patch).eq('id', costEditingId);
-        if (error) throw error;
-        const c = shopCosts.find(x => x.id === costEditingId);
-        if (c) Object.assign(c, patch);
+        if (error){ if (newPath) removeReceiptFiles([newPath]); throw error; }
+        if (oldPath && ('receipt_path' in patch)) removeReceiptFiles([oldPath]);
+        if (cur) Object.assign(cur, patch);
         statusEl.textContent = 'Saved.';
       } else {
         const repeat = root.querySelector('#shop-cost-repeat').checked;
@@ -11778,8 +11976,14 @@ async function saveAppointmentChange(id, core, extras){
             rows.push(Object.assign({ id: genRentId('cost'), expense_date: iso }, base));
           }
         }
+        let upPath = null;
+        if (costRc.file){
+          statusEl.textContent = 'Uploading receipt…';
+          upPath = await uploadReceipt(costRc.file, rows[0].id);
+          rows.forEach((r, i) => { r.receipt_path = i === 0 ? upPath : null; });
+        }
         const { error } = await supabaseClient.from('shop_expenses').insert(rows);
-        if (error) throw error;
+        if (error){ if (upPath) removeReceiptFiles([upPath]); throw error; }
         shopCosts.push(...rows);
         statusEl.textContent = rows.length > 1 ? 'Saved, and added each month up to now.' : 'Saved.';
       }
@@ -11790,7 +11994,7 @@ async function saveAppointmentChange(id, core, extras){
       statusEl.textContent = msg;
     }catch(e){
       console.warn('save cost failed', e);
-      if (/42P01|PGRST205|shop_expenses/.test(String((e && e.message) || '') + ' ' + String((e && e.code) || ''))) costsMissing = true;
+      if (!costsErrIsReceipt(e) && /42P01|PGRST205|shop_expenses/.test(String((e && e.message) || '') + ' ' + String((e && e.code) || ''))) costsMissing = true;
       statusEl.textContent = costsFriendlyError(e);
       renderCostsScreen();
     }
@@ -11806,9 +12010,11 @@ async function saveAppointmentChange(id, core, extras){
     }
     armedCostDelete = false;
     const id = costEditingId;
+    const goneRc = (shopCosts.find(c => c.id === id) || {}).receipt_path || null;
     try{
       const { error } = await supabaseClient.from('shop_expenses').delete().eq('id', id);
       if (error) throw error;
+      if (goneRc) removeReceiptFiles([goneRc]);
       shopCosts = shopCosts.filter(c => c.id !== id);
       resetCostForm(); renderCostsScreen(); statusEl.textContent = 'Deleted.';
     }catch(e){ console.warn('delete cost failed', e); statusEl.textContent = "Couldn't delete. Try again."; }
@@ -12068,8 +12274,162 @@ async function saveAppointmentChange(id, core, extras){
   }
   root.querySelector('#btn-shop-pl-print').addEventListener('click', () => { if (plView === 'year') plPrintYear(); else plPrintMonth(); });
 
+
+  // ---- Tax-time package ----
+  const TAX_CSS = `
+    .rgrid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:6px; }
+    .rbox{ border:1px solid #bbb; break-inside:avoid; page-break-inside:avoid; }
+    .rbox .im{ height:3.1in; background:#eee; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .rbox img{ max-width:100%; max-height:100%; object-fit:contain; }
+    .rbox p{ margin:0; padding:6px 8px; font:11px Arial,sans-serif; border-top:1px solid #bbb; } .rbox p b{ display:block; }
+    .rn{ text-align:center; font:800 10px Arial,sans-serif; }
+    .kpis.three div{ flex:1; }
+    .sect{ font:700 9.5px Arial,sans-serif; letter-spacing:.08em; text-transform:uppercase; }`;
+  function taxCostsOf(year){
+    return shopCosts.filter(c => costParts(c.expense_date).y === year).sort((a,b)=> (a.expense_date || '').localeCompare(b.expense_date || '') || String(a.id).localeCompare(String(b.id)));
+  }
+  function taxPaymentsOf(year){
+    return rentPayments.filter(p => costParts(p.period_start).y === year).sort((a,b)=> (a.period_start || '').localeCompare(b.period_start || '') || String(a.staff_code).localeCompare(String(b.staff_code)));
+  }
+  function taxReceiptNumbers(entries){
+    const map = {}; let n = 0;
+    entries.forEach(c => { if (c.receipt_path) map[c.id] = 'R' + (++n); });
+    return map;
+  }
+  function taxLongDate(iso){ const p = costParts(iso); return MONTHS_LONG[p.m] + ' ' + p.d + ', ' + p.y; }
+  function taxMemberName(code){ const m = teamMembers.find(x => x.code === code); return m ? (m.name || m.code) : code; }
+  function taxHow(p){ return p.kind === 'commission' ? 'Commission' + (p.rate != null ? ' ' + Number(p.rate) + '%' : '') : 'Flat rent'; }
+  function renderTax(){
+    const ys = costYears();
+    if (!ys.includes(taxYear)) taxYear = ys[0];
+    root.querySelector('#shop-tax-year-select').innerHTML = ys.map(y => `<option value="${y}" ${y === taxYear ? 'selected' : ''}>${y}</option>`).join('');
+    const entries = taxCostsOf(taxYear);
+    const withRc = entries.filter(c => c.receipt_path).length;
+    const rcBox = root.querySelector('#shop-tax-receipts');
+    const sub = root.querySelector('#shop-tax-receipts-sub');
+    if (withRc){
+      rcBox.disabled = false;
+      sub.textContent = withRc + ' of ' + entries.length + (entries.length === 1 ? ' cost has' : ' costs have') + ' a receipt. Photos print 6 to a page.';
+    } else {
+      rcBox.checked = false; rcBox.disabled = true;
+      sub.textContent = entries.length ? 'No receipt photos yet. Add them under Costs.' : 'No costs logged for this year yet.';
+    }
+  }
+  async function openTax(){
+    root.querySelector('#shop-tax-status').innerHTML = '&nbsp;';
+    await Promise.all([loadRentData(), loadCostsData()]);
+    const rcBox = root.querySelector('#shop-tax-receipts');
+    rcBox.checked = true;
+    renderTax();
+  }
+  root.querySelector('#shop-tax-year-select').addEventListener('change', function(){ taxYear = parseInt(this.value, 10); root.querySelector('#shop-tax-receipts').checked = true; renderTax(); });
+  function taxFootHtml(label){
+    return '<p class="foot">Prepared from the shop owner\'s own records in Vono. Amounts are as entered and are not verified. This isn\'t tax advice.<br><span class="sect">' + escapeHtmlShop(label) + '</span></p>';
+  }
+  function taxHeadHtml(title, sub){
+    return `<div class="head"><div><h1>${title}</h1><p class="sub" style="margin:3px 0 0;">${sub}</p></div><div class="yr">${taxYear}<small>Tax-time package</small></div></div>`;
+  }
+  async function taxPrint(){
+    const statusEl = root.querySelector('#shop-tax-status');
+    const want = { summary: root.querySelector('#shop-tax-summary').checked, costs: root.querySelector('#shop-tax-costs').checked, payments: root.querySelector('#shop-tax-payments').checked, receipts: root.querySelector('#shop-tax-receipts').checked };
+    if (!want.summary && !want.costs && !want.payments && !want.receipts){ statusEl.textContent = 'Pick at least one part to include.'; return; }
+    const entries = taxCostsOf(taxYear), pays = taxPaymentsOf(taxYear), nums = taxReceiptNumbers(entries);
+    const d = plCompute(taxYear);
+    const inc = plSum(d.income), exp = plSum(d.expenses), net = plSum(d.net);
+    const shop = plShopName();
+    let urls = {};
+    const withRc = entries.filter(c => c.receipt_path);
+    if (want.receipts && withRc.length){
+      statusEl.textContent = 'Getting your receipt photos…';
+      const got = await Promise.all(withRc.map(c => receiptUrl(c.receipt_path)));
+      withRc.forEach((c, i) => { urls[c.id] = got[i]; });
+    }
+    statusEl.innerHTML = '&nbsp;';
+    const sections = [];
+    if (want.summary){
+      let crows = '', tn = 0, tr = 0;
+      COST_GROUPS.forEach(g => {
+        const mine = entries.filter(c => costGroupOf(c.category) === g.name);
+        if (!mine.length) return;
+        const r = mine.filter(c => c.receipt_path).length;
+        tn += mine.length; tr += r;
+        crows += `<tr><td>${escapeHtmlShop(g.name)}</td><td class="r">${mine.length}</td><td class="r">${r}</td><td class="r">${plFmt(plSum(mine.map(c => Number(c.amount) || 0)))}</td></tr>`;
+      });
+      if (!crows) crows = '<tr><td colspan="4">No costs logged for this year.</td></tr>';
+      const byStaff = {};
+      pays.forEach(p => { byStaff[p.staff_code] = (byStaff[p.staff_code] || 0) + (Number(p.amount) || 0); });
+      const prow = Object.keys(byStaff).map(code => `<tr><td>${escapeHtmlShop(taxMemberName(code))}</td><td class="r">${plFmt(byStaff[code])}</td></tr>`).join('') || '<tr><td colspan="2">No payments logged for this year.</td></tr>';
+      sections.push(`
+        ${taxHeadHtml(shop, 'Prepared ' + escapeHtmlShop(taxLongDate(todayIso())) + ' &middot; owner\'s own records')}
+        <div class="kpis three"><div><small>Money in</small><b>${plFmt(inc)}</b></div><div><small>Costs</small><b>${plFmt(exp)}</b></div><div class="net"><small>${net < 0 ? 'Net loss' : 'Net profit'}</small><b>${plFmt(net)}</b></div></div>
+        <h2>Costs by category</h2>
+        <table><thead><tr><th>Category</th><th class="r">Entries</th><th class="r">With receipt</th><th class="r">Total</th></tr></thead><tbody>${crows}
+        <tr class="total"><td>Total costs</td><td class="r">${tn}</td><td class="r">${tr}</td><td class="r">${plFmt(exp)}</td></tr></tbody></table>
+        <h2>Money in by team member</h2>
+        <table><tbody>${prow}<tr class="total"><td>Total</td><td class="r">${plFmt(inc)}</td></tr></tbody></table>
+        ${taxFootHtml('Summary')}`);
+    }
+    if (want.costs){
+      let rows = '';
+      COST_GROUPS.forEach(g => {
+        const mine = entries.filter(c => costGroupOf(c.category) === g.name);
+        if (!mine.length) return;
+        rows += `<tr class="grp"><td colspan="4">${escapeHtmlShop(g.name)}</td></tr>`;
+        mine.forEach(c => {
+          rows += `<tr><td>${escapeHtmlShop(costDateLabel(c.expense_date))}</td><td>${escapeHtmlShop(c.category)}${c.note ? ` <span class="mut sm">&middot; ${escapeHtmlShop(c.note)}</span>` : ''}${c.paid_to ? `<br><span class="mut sm">${escapeHtmlShop(c.paid_to)}</span>` : ''}</td><td class="rn">${nums[c.id] || '&ndash;'}</td><td class="r">${plFmt(c.amount)}</td></tr>`;
+        });
+        rows += `<tr class="subt"><td colspan="3">Total ${escapeHtmlShop(g.name.toLowerCase())}</td><td class="r">${plFmt(plSum(mine.map(c => Number(c.amount) || 0)))}</td></tr>`;
+      });
+      sections.push(`
+        ${taxHeadHtml('Costs, entry by entry', shop + ' &middot; every cost you logged in ' + taxYear)}
+        <table><thead><tr><th>Date</th><th>What</th><th class="rn">Rcpt</th><th class="r">Amount</th></tr></thead><tbody>${rows || '<tr><td colspan="4">No costs logged for this year.</td></tr>'}
+        <tr class="total"><td colspan="3">Total costs</td><td class="r">${plFmt(exp)}</td></tr></tbody></table>
+        <p class="sm mut" style="margin:8px 0 0;">A dash means no receipt photo was added.</p>
+        ${taxFootHtml('Costs')}`);
+    }
+    if (want.payments){
+      const rows = pays.map(p => `<tr><td>${escapeHtmlShop(costDateLabel(p.period_start))} &ndash; ${escapeHtmlShop(costDateLabel(p.period_end || p.period_start))}</td><td>${escapeHtmlShop(taxMemberName(p.staff_code))}</td><td class="mut">${escapeHtmlShop(taxHow(p))}</td><td class="r">${plFmt(p.amount)}</td></tr>`).join('');
+      sections.push(`
+        ${taxHeadHtml('Payments received', shop + ' &middot; rent and commission paid by your team in ' + taxYear)}
+        <table><thead><tr><th>Period covered</th><th>Team member</th><th>How</th><th class="r">Amount</th></tr></thead><tbody>${rows || '<tr><td colspan="4">No payments logged for this year.</td></tr>'}
+        <tr class="total"><td colspan="3">Total money in</td><td class="r">${plFmt(inc)}</td></tr></tbody></table>
+        ${taxFootHtml('Payments received')}`);
+    }
+    if (want.receipts && withRc.length){
+      const boxes = withRc.map(c => {
+        const u = urls[c.id];
+        const img = u ? `<img src="${escapeHtmlShop(u)}" alt="Receipt ${escapeHtmlShop(nums[c.id])}">` : '<span class="mut sm">Photo couldn\'t load</span>';
+        return `<div class="rbox"><div class="im">${img}</div><p><b>${escapeHtmlShop(nums[c.id])} &middot; ${escapeHtmlShop(costDateLabel(c.expense_date))}</b>${escapeHtmlShop(c.category)} &middot; ${plFmt(c.amount)}${c.paid_to ? ' &middot; ' + escapeHtmlShop(c.paid_to) : ''}</p></div>`;
+      }).join('');
+      sections.push(`
+        ${taxHeadHtml('Receipts', shop + ' &middot; ' + withRc.length + (withRc.length === 1 ? ' photo' : ' photos') + ' &middot; numbers match the cost list')}
+        <div class="rgrid">${boxes}</div>
+        ${taxFootHtml('Receipts')}`);
+    }
+    const body = sections.map((h, i) => i ? `<div class="brk">${h}</div>` : `<div>${h}</div>`).join('');
+    window.openPrintPreview({ title: 'Tax-time package ' + taxYear, css: PL_PRINT_CSS + TAX_CSS, body });
+  }
+  root.querySelector('#btn-shop-tax-print').addEventListener('click', taxPrint);
+  root.querySelector('#btn-shop-tax-csv').addEventListener('click', () => {
+    const entries = taxCostsOf(taxYear), pays = taxPaymentsOf(taxYear), nums = taxReceiptNumbers(entries);
+    const num = n => plRound(n).toFixed(2);
+    const out = ['Type,Date,Category,Paid to / team member,Note,Amount,Has receipt,Receipt #'];
+    entries.forEach(c => out.push(['Cost', c.expense_date, costCsvText(c.category), costCsvText(c.paid_to), costCsvText(c.note), num(c.amount), c.receipt_path ? 'Yes' : 'No', nums[c.id] || ''].join(',')));
+    pays.forEach(p => {
+      const note = 'Covers ' + p.period_start + ' to ' + (p.period_end || p.period_start) + (p.kind === 'commission' ? ' (' + taxHow(p) + (p.earned_amount != null ? ' of ' + plFmt(p.earned_amount) : '') + ')' : '');
+      out.push(['Income', p.period_start, p.kind === 'commission' ? 'Commission' : 'Booth & chair rent', costCsvText(taxMemberName(p.staff_code)), costCsvText(note), num(p.amount), '', ''].join(','));
+    });
+    const blob = new Blob([out.join('\r\n')], { type:'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'tax-time-package-' + taxYear + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    root.querySelector('#shop-tax-status').textContent = 'Downloaded. ' + entries.length + (entries.length === 1 ? ' cost' : ' costs') + ' and ' + pays.length + (pays.length === 1 ? ' payment.' : ' payments.');
+  });
+
   // ---- Owner view: a short list of rows, each opening one page ----
-  const SHOP_SUBS = ['team','invite','rent','costs','pl','records'];
+  const SHOP_SUBS = ['team','invite','rent','costs','pl','tax','records'];
   function showShopSub(which){
     root.querySelector('#shop-owner-hub').style.display = which ? 'none' : 'flex';
     SHOP_SUBS.forEach(k=>{ root.querySelector('#shop-sub-' + k).style.display = (k === which) ? 'flex' : 'none'; });
@@ -12077,6 +12437,7 @@ async function saveAppointmentChange(id, core, extras){
     if (scroller) scroller.scrollTop = 0;
     if (which === 'costs') openCosts();
     if (which === 'pl') openPl();
+    if (which === 'tax') openTax();
   }
   root.querySelectorAll('[data-shop-open]').forEach(b=> b.addEventListener('click', ()=> showShopSub(b.dataset.shopOpen)));
   root.querySelectorAll('[data-shop-back]').forEach(b=> b.addEventListener('click', ()=> showShopSub(null)));
