@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-26T14-00-00Z">
+<meta name="app-build" content="2026-10-27T14-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -229,8 +229,13 @@
   .jobs-chips{ display:flex; gap:6px; flex-wrap:wrap; margin-top:2px; }
   .jobs-chip{ font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:3px 9px; border-radius:999px; background:var(--paper); color:var(--muted); border:1px solid var(--line); }
   .jobs-chip.field{ background:var(--brass-tint, rgba(217,174,94,.14)); color:var(--brass); border-color:transparent; }
-  .jobs-loc{ display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:12.5px; color:var(--muted); }
-  .jobs-loc b{ color:var(--ink); }
+  .jobs-where{ display:flex; flex-direction:column; gap:5px; }
+  .jobs-where label{ font-size:11.5px; font-weight:700; color:var(--muted); }
+  .jobs-fields{ display:flex; gap:8px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; flex:none; padding-bottom:2px; }
+  .jobs-fields::-webkit-scrollbar{ display:none; }
+  .jobs-fchip{ flex:none; border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--ink); font-family:'Public Sans',sans-serif; font-size:13.5px; font-weight:700; padding:0 14px; min-height:36px; display:inline-flex; align-items:center; cursor:pointer; }
+  .jobs-fchip[aria-pressed="true"]{ border-color:var(--brass); background:var(--brass-tint); color:var(--brass); }
+  .jobs-fchip:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
   .jobs-widen{ display:flex; flex-direction:column; gap:8px; }
   .jobs-empty-box{ border:1px dashed var(--line); border-radius:14px; padding:16px 14px; text-align:center; color:var(--muted); font-size:13px; line-height:1.5; }
   .jobs-empty-box b{ display:block; color:var(--ink); font-size:14px; margin-bottom:2px; }
@@ -2513,26 +2518,11 @@
               <button type="button" class="mode-btn active" data-jobs-type="looking">Looking</button>
               <button type="button" class="mode-btn" data-jobs-type="hiring">Hiring</button>
             </div>
-            <div class="jobs-loc">
-              <span>Showing <b id="jobs-loc-label">everywhere</b></span>
-              <button type="button" class="link-btn" id="btn-jobs-loc-change" style="padding:0;">Change</button>
+            <div class="jobs-where">
+              <label for="jobs-where">Where</label>
+              <div class="input-row"><select id="jobs-where" aria-label="Where"><option value="">All locations</option></select></div>
             </div>
-            <div id="jobs-loc-edit" style="display:none; gap:8px;">
-              <div class="input-row" style="flex:1;"><input id="jobs-search-city" type="text" placeholder="City" aria-label="City"></div>
-              <div class="input-row" style="width:96px; flex:none;"><input id="jobs-search-state" type="text" maxlength="2" style="text-transform:uppercase;" placeholder="State" aria-label="State"></div>
-            </div>
-            <div class="input-row" id="jobs-search-specialty-row">
-              <select id="jobs-search-specialty" aria-label="Field">
-                <option value="">All fields</option>
-                <option value="Barber">Barber</option>
-                <option value="Cosmetologist">Cosmetologist</option>
-                <option value="Nail Tech">Nail Tech</option>
-                <option value="Braider">Braider</option>
-                <option value="Massage Therapist">Massage Therapist</option>
-                <option value="Esthetician">Esthetician</option>
-                <option value="MUA">MUA</option>
-              </select>
-            </div>
+            <div class="jobs-fields" id="jobs-field-chips" role="group" aria-label="Choose a field"></div>
             <div id="jobs-browse-list" style="display:flex; flex-direction:column; gap:10px;"></div>
             <div class="jobs-empty-box" id="jobs-browse-empty" style="display:none;"></div>
             <div class="jobs-widen" id="jobs-browse-widen" hidden></div>
@@ -6377,20 +6367,77 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       searchListings();
     });
   });
-  // Browse starts in the person's own city and state (from their shop details) and narrows as they change it.
+  // Browse starts in the person's own city and state (from their shop details), like Find a Pro:
+  // a Where dropdown built from places that really have listings, and Field chips under it.
+  // browseWhere: '' = all locations, 'c|city|ST' = one city, 's|ST' = a whole state.
+  let browseWhere = '';
+  let browseField = '';
   let browseDefaultsApplied = false;
+  const JOB_FIELDS = ['Barber','Cosmetologist','Nail Tech','Braider','Massage Therapist','Esthetician','MUA'];
   function applyBrowseDefaults(){
     if (browseDefaultsApplied) return;
     browseDefaultsApplied = true;
-    const c = root.querySelector('#jobs-search-city'), st = root.querySelector('#jobs-search-state');
-    if (!c.value && !st.value && profile && profile.shopCity && profile.shopState){
-      c.value = profile.shopCity; st.value = String(profile.shopState).toUpperCase();
+    if (profile && profile.shopCity && profile.shopState){
+      browseWhere = 'c|' + String(profile.shopCity).trim() + '|' + String(profile.shopState).trim().toUpperCase();
     }
   }
+  function parseWhere(v){
+    const p = String(v || '').split('|');
+    if (p[0] === 'c') return { city:(p[1]||''), state:(p[2]||'').toUpperCase() };
+    if (p[0] === 's') return { city:'', state:(p[1]||'').toUpperCase() };
+    return { city:'', state:'' };
+  }
   function browseLocLabel(){
-    const city = root.querySelector('#jobs-search-city').value.trim();
-    const state = root.querySelector('#jobs-search-state').value.trim().toUpperCase();
-    return [city, state].filter(Boolean).join(', ') || 'everywhere';
+    const w = parseWhere(browseWhere);
+    return [w.city, w.state].filter(Boolean).join(', ') || 'everywhere';
+  }
+  function renderFieldChips(){
+    const el = root.querySelector('#jobs-field-chips');
+    el.innerHTML = [['All','']].concat(JOB_FIELDS.map(f=>[f,f])).map(([label,val])=>
+      `<button type="button" class="jobs-fchip" data-field="${escapeHtml(val)}" aria-pressed="${browseField === val ? 'true' : 'false'}">${escapeHtml(label)}</button>`).join('');
+  }
+  // Fills the Where dropdown from the listings that are actually on the board right now,
+  // so nobody picks a place that comes back empty. Keeps the current pick even at zero.
+  function populateWhere(rows){
+    const sel = root.querySelector('#jobs-where');
+    const cityMap = new Map(), stateMap = new Map();
+    rows.forEach(r=>{
+      const st = String(r.state || '').trim().toUpperCase();
+      const ct = String(r.city || '').trim();
+      if (st) stateMap.set(st, (stateMap.get(st) || 0) + 1);
+      if (ct && st){
+        const k = ct.toLowerCase() + '|' + st;
+        const cur = cityMap.get(k) || { city:ct, state:st, n:0 };
+        cur.n++; cityMap.set(k, cur);
+      }
+    });
+    const cityVal = (c, st)=> 'c|' + c + '|' + st;
+    const opts = [];
+    const used = new Set();
+    const add = (val, label, n)=>{ if (used.has(val)) return; used.add(val); opts.push({ val, text: label + (n != null ? ' · ' + n : '') }); };
+    const sameCity = (a,b)=> a.toLowerCase() === b.toLowerCase();
+    const cur = parseWhere(browseWhere);
+    // own city first (it is the starting pick), then everywhere, then whole states, then other places
+    if (profile && profile.shopCity && profile.shopState){
+      const c = String(profile.shopCity).trim(), st = String(profile.shopState).trim().toUpperCase();
+      const hit = cityMap.get(c.toLowerCase() + '|' + st);
+      add(cityVal(c, st), c + ', ' + st, hit ? hit.n : 0);
+    }
+    add('', 'All locations', rows.length);
+    // a whole-state choice only when it isn't just one city restated
+    [...stateMap.keys()].sort().forEach(st=>{
+      const cities = [...cityMap.values()].filter(c=>c.state === st).length;
+      const ownState = profile && profile.shopState && String(profile.shopState).trim().toUpperCase() === st;
+      if (cities > 1 || ownState) add('s|' + st, 'All of ' + st, stateMap.get(st));
+    });
+    [...cityMap.values()].sort((a,b)=> (a.city + a.state).localeCompare(b.city + b.state)).forEach(c=> add(cityVal(c.city, c.state), c.city + ', ' + c.state, c.n));
+    // keep a pick that has no listings right now (for example after switching Looking/Hiring)
+    if (browseWhere && !used.has(browseWhere)){
+      const label = cur.city ? cur.city + ', ' + cur.state : 'All of ' + cur.state;
+      add(browseWhere, label, 0);
+    }
+    sel.innerHTML = opts.map(o=>`<option value="${escapeHtml(o.val)}">${escapeHtml(o.text)}</option>`).join('');
+    sel.value = browseWhere;
   }
   const FIELD_PLURAL = { 'Barber':'Barber', 'Cosmetologist':'Cosmetologist', 'Nail Tech':'Nail Tech', 'Braider':'Braider', 'Massage Therapist':'Massage Therapist', 'Esthetician':'Esthetician', 'MUA':'MUA' };
   function hiringMatchesField(r, specialty){
@@ -6404,7 +6451,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const listEl = root.querySelector('#jobs-browse-list');
     const emptyEl = root.querySelector('#jobs-browse-empty');
     const label = browseLocLabel();
-    root.querySelector('#jobs-loc-label').textContent = label;
+    renderFieldChips();
     if (!dbAvailable){
       listEl.innerHTML = '';
       emptyEl.innerHTML = "Live search isn't connected right now.";
@@ -6413,9 +6460,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       root.querySelector('#jobs-browse-count').textContent = '';
       return;
     }
-    const city = root.querySelector('#jobs-search-city').value.trim().toLowerCase();
-    const state = root.querySelector('#jobs-search-state').value.trim().toLowerCase();
-    const specialty = root.querySelector('#jobs-search-specialty').value;
+    const wh = parseWhere(browseWhere);
+    const city = wh.city.toLowerCase();
+    const state = wh.state.toLowerCase();
+    const specialty = browseField;
     let rows = [];
     const myToken = ++browseToken;
     try{
@@ -6427,8 +6475,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     rows = rows.filter(r => r.profile_code !== profileCode);
     // a listing nobody has updated in 90 days is left off the board
     rows = rows.filter(r => { const d = listingAgeDays(r); return d == null || d < HIDE_DAYS; });
-    if (city) rows = rows.filter(r => (r.city||'').toLowerCase().includes(city));
-    if (state.length === 2) rows = rows.filter(r => (r.state||'').toLowerCase() === state);
+    populateWhere(rows);
+    if (city) rows = rows.filter(r => (r.city||'').trim().toLowerCase() === city);
+    if (state.length === 2) rows = rows.filter(r => (r.state||'').trim().toLowerCase() === state);
     if (specialty) rows = rows.filter(r => browseType === 'looking' ? r.specialty === specialty : hiringMatchesField(r, specialty));
     browseResults = rows;
     renderBrowseList(rows, { city, state, specialty, label });
@@ -6449,7 +6498,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       // never a dead end: one tap widens the search
       const btns = [];
       if (ctx.city && ctx.state.length === 2) btns.push(`<button type="button" class="btn btn-outline" data-widen="state">Show all of ${escapeHtml(ctx.state.toUpperCase())}</button>`);
-      if (ctx.city || ctx.state) btns.push('<button type="button" class="btn btn-outline" data-widen="all">Show everywhere</button>');
+      if (ctx.city || ctx.state) btns.push('<button type="button" class="btn btn-outline" data-widen="all">Show all locations</button>');
       if (ctx.specialty) btns.push('<button type="button" class="btn btn-outline" data-widen="field">Show all fields</button>');
       widenEl.innerHTML = btns.join('');
       widenEl.hidden = !btns.length;
@@ -6492,26 +6541,20 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }).join('');
   }
   const POSITION_LABELS = { employee:'Employee', commission:'Commission', booth_rent:'Booth rent' };
-  // Change: show the city and state boxes. Typing narrows the list as you go (no Search button).
-  root.querySelector('#btn-jobs-loc-change').addEventListener('click', function(){
-    const edit = root.querySelector('#jobs-loc-edit');
-    const showing = edit.style.display !== 'none';
-    edit.style.display = showing ? 'none' : 'flex';
-    this.textContent = showing ? 'Change' : 'Done';
-    if (!showing) root.querySelector('#jobs-search-city').focus();
+  root.querySelector('#jobs-where').addEventListener('change', function(){ browseWhere = this.value; searchListings(); });
+  root.querySelector('#jobs-field-chips').addEventListener('click', e=>{
+    const b = e.target.closest('[data-field]');
+    if (!b) return;
+    browseField = b.dataset.field;
+    searchListings();
   });
-  let browseTimer = null;
-  ['#jobs-search-city', '#jobs-search-state'].forEach(sel=> root.querySelector(sel).addEventListener('input', ()=>{
-    clearTimeout(browseTimer); browseTimer = setTimeout(searchListings, 250);
-  }));
-  root.querySelector('#jobs-search-specialty').addEventListener('change', searchListings);
   root.querySelector('#jobs-browse-widen').addEventListener('click', e=>{
     const b = e.target.closest('[data-widen]');
     if (!b) return;
     const w = b.dataset.widen;
-    if (w === 'state') root.querySelector('#jobs-search-city').value = '';
-    if (w === 'all'){ root.querySelector('#jobs-search-city').value = ''; root.querySelector('#jobs-search-state').value = ''; }
-    if (w === 'field') root.querySelector('#jobs-search-specialty').value = '';
+    if (w === 'state'){ const st = parseWhere(browseWhere).state; browseWhere = st ? 's|' + st : ''; }
+    if (w === 'all') browseWhere = '';
+    if (w === 'field') browseField = '';
     searchListings();
   });
   root.querySelector('#jobs-browse-list').addEventListener('click', e=>{
