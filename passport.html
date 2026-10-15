@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono Passport</title>
-<meta name="app-build" content="2026-10-18T12-00-00Z">
+<meta name="app-build" content="2026-10-20T15-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-passport.json">
@@ -43,6 +43,10 @@
   #app-root{ max-width:460px; margin:0 auto; min-height:100vh; min-height:100svh; display:flex; flex-direction:column; background:var(--bg-gradient); box-shadow:0 0 0 1px var(--line); }
   .center-screen{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 24px; gap:14px; text-align:center; }
   .center-screen.has-float-back{ position:relative; padding-top:max(64px, calc(env(safe-area-inset-top) + 56px)); }
+  /* While a login field is being typed in, tuck the logo and subtitle away and start from the top,
+     so the field sits above the on-screen keyboard and the page doesn't have to jump to reach it. */
+  #auth-screen.auth-typing{ justify-content:flex-start; padding-top:max(56px, calc(env(safe-area-inset-top) + 48px)); }
+  #auth-screen.auth-typing .auth-brand, #auth-screen.auth-typing .auth-subhead{ display:none !important; }
   .float-back-btn{ position:absolute; top:max(16px, calc(env(safe-area-inset-top) + 12px)); left:20px; margin:0; z-index:2; }
 
   .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:16px 20px; padding-top:max(16px, calc(env(safe-area-inset-top) + 12px)); border-bottom:1px solid var(--line); }
@@ -307,14 +311,14 @@
 
   <div id="auth-screen" class="center-screen has-float-back" hidden>
     <button type="button" class="link-btn float-back-btn" id="btn-auth-back">&larr; Back</button>
-    <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:-4px;">
+    <div class="auth-brand" style="display:flex; flex-direction:column; align-items:center; margin-bottom:-4px;">
       <img src="vono-mark-gold.svg" alt="Vono" style="width:90px; height:90px;">
       <p class="brand-name">Vono</p>
     </div>
     <div>
       <p class="eyebrow-mini">Vono Passport</p>
       <h2 class="screen-title" id="auth-heading">Create your passport</h2>
-      <p class="screen-sub" style="margin-top:6px;" id="auth-subhead">Your visits, your pros, your history. All in one place.</p>
+      <p class="screen-sub auth-subhead" style="margin-top:6px;" id="auth-subhead">Your visits, your pros, your history. All in one place.</p>
     </div>
     <div class="mode-toggle" style="width:100%; max-width:320px;">
       <button type="button" class="mode-btn active" id="btn-auth-mode-new">Create passport</button>
@@ -3237,6 +3241,23 @@ document.addEventListener('focusout', (e)=>{
     setTimeout(scrollAppToTop, 300);
   }
 });
+(function(){
+  const scr = document.getElementById('auth-screen');
+  if (!scr) return;
+  let t = null;
+  const inForm = el => !!(el && isTextEntryField(el) && el.closest('#auth-form, #forgot-code-panel'));
+  scr.addEventListener('focusin', e=>{
+    if (!inForm(e.target)) return;
+    clearTimeout(t);
+    scr.classList.add('auth-typing');
+    scrollAppToTop();
+  });
+  scr.addEventListener('focusout', ()=>{
+    clearTimeout(t);
+    // Wait for the keyboard to close (and for a tap on a button to land) before the layout returns.
+    t = setTimeout(()=>{ if (!inForm(document.activeElement)) scr.classList.remove('auth-typing'); }, 400);
+  });
+})();
 if (window.visualViewport){
   window.visualViewport.addEventListener('resize', ()=>{
     // Skip while any field, including a select/time/date picker, is still in use.
