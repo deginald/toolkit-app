@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-11-02T14-00-00Z">
+<meta name="app-build" content="2026-11-02T16-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1439,6 +1439,8 @@
             <button type="button" class="mode-btn active" data-cat="cuts">Haircuts</button>
             <button type="button" class="mode-btn" data-cat="chemical">Chemical</button>
             <button type="button" class="mode-btn" data-cat="safety">Safety</button>
+            <button type="button" class="mode-btn" data-cat="massage" style="display:none">Techniques</button>
+            <button type="button" class="mode-btn" data-cat="msafety" style="display:none">Consult &amp; Safety</button>
           </div>
           <div class="tech-list" id="tech-list"></div>
         </div>
@@ -3579,7 +3581,7 @@ function displayTitle(){
   if (profile.title === 'Barber' && profile.barberLevel) return profile.barberLevel;
   return profile.title || 'Student';
 }
-const CATEGORY_NAMES = { cuts:'Haircuts', chemical:'Chemical Services', safety:'Safety' };
+const CATEGORY_NAMES = { cuts:'Haircuts', chemical:'Chemical Services', safety:'Safety', massage:'Massage Techniques', msafety:'Consult & Safety' };
 const CATEGORY_ORDER = ['cuts','chemical','safety'];
 function defaultTechniques(){
   return [
@@ -5574,6 +5576,82 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         {kind:'final', badge:'kind-final', label:'Finish', title:'Condition & finish', body:'Deep condition. Style as requested and advise on strengthening aftercare.'}
       ]}
     ],
+    massage: [
+      { id:'swedish-full', name:'Swedish Full-Body (60 min)', category:'massage', steps:[
+        {kind:'consult', badge:'kind-consult', label:'Consultation', title:'Check in before you start', body:"Confirm the client's goals, areas to avoid, and any new injuries or health changes since the last visit. Agree on a pressure scale of 1 to 10 and ask them to speak up if anything is too much or too little."},
+        {kind:'checklist', badge:'kind-prep', label:'Prep', title:'Set up the room', items:['Hands washed and nails short','Fresh linens on a clean table','Oil or lotion warmed and in a pump bottle','Room temperature, lighting and music set','Client given privacy to undress and get on the table']},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Begin face-down with a calm first touch', body:'Re-enter after knocking, check the drape, and make first contact with a slow, still hold on the back. Matching your breathing to theirs helps them settle.'},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Effleurage: warm the back', body:'Uncover the back only. Use long, gliding strokes with the flat of your hands, moving up toward the heart and returning lightly. Spread the oil and warm the tissue with light to medium pressure.'},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Petrissage: knead the back and shoulders', body:'Lift, roll and knead the muscle on both sides of the spine, across the upper shoulders and the sides of the torso. Never press directly on the spine itself.'},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Friction, then feather out', body:'Use small circular friction around the shoulder blades and along the muscles beside the spine. Finish the area with light, slow feather strokes before moving on.'},
+        {kind:'timer', badge:'kind-timer', label:'Pacing', title:'Pace the back', body:'Plan about 15 minutes for the back. Keep an eye on the clock without rushing the client.', seconds:60, real:'~15 min'},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Legs, one at a time', body:'Uncover one leg, effleurage from ankle to hip, then knead the calf and thigh. Use light pressure behind the knee and re-drape the leg before you move to the other.'},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Turn the client over', body:'Hold the drape up like a screen so the client can turn over privately. Re-drape and check the face cradle, bolsters and their comfort.'},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Face-up: arms, legs, then neck', body:'Work one arm at a time with effleurage and gentle kneading, repeat the legs from the front, then cradle the head and ease the neck and upper shoulders.'},
+        {kind:'timer', badge:'kind-timer', label:'Pacing', title:'Pace the front', body:'Plan about 20 minutes for the front of the body, including the neck, so the session ends on time.', seconds:60, real:'~20 min'},
+        {kind:'finish', badge:'kind-final', label:'Finish', title:'Close slowly and give aftercare', body:'Finish with slower, lighter strokes and a still hold. Let the client know you are stepping out, give them time to get up slowly, offer water, and suggest drinking extra water and stretching gently later today.'}
+      ]},
+      { id:'back-neck', name:'Back & Neck (30 min)', category:'massage', steps:[
+        {kind:'consult', badge:'kind-consult', label:'Consultation', title:'Where is the tension?', body:"Ask where they feel tightness, whether it is new or ongoing, and whether there is any numbness, tingling or pain that travels down an arm or leg. If there is, adapt your work or refer them out. Agree on a 1 to 10 pressure scale."},
+        {kind:'checklist', badge:'kind-prep', label:'Prep', title:'Set up quickly', items:['Hands washed','Fresh linens, face cradle wiped down','Oil or lotion ready','Client face-down and draped to the hips']},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Warm up the back', body:'Uncover the back and use long effleurage strokes from the low back up toward the shoulders, then glide lightly back down. Three to five passes.'},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Work beside the spine', body:'Use your palms, then your thumbs or fingertips, in slow strokes along the muscles on each side of the spine. Stay beside the spine and never press directly on it.'},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Shoulders and shoulder blades', body:'Knead the upper shoulders, then use circular friction around the edges of the shoulder blade. Support the arm if you need to move it.'},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Neck', body:'Use light to medium pressure on the muscles along the back and sides of the neck. Avoid pressing on the front of the throat, and keep the neck in a comfortable, neutral position.'},
+        {kind:'timer', badge:'kind-timer', label:'Pacing', title:'Keep to the 30 minutes', body:'Spend roughly 20 minutes on the back and shoulders and 10 on the neck.', seconds:60, real:'~30 min'},
+        {kind:'finish', badge:'kind-final', label:'Finish', title:'Check in and give aftercare', body:'Finish with light strokes and a still hold. Ask how the neck and back feel, suggest water and gentle stretching, and mention that mild soreness for a day is normal after focused work.'}
+      ]},
+      { id:'deep-tissue', name:'Deep Tissue Basics', category:'massage', steps:[
+        {kind:'consult', badge:'kind-safety', label:'Safety check', title:'Ask before going deeper', body:'Ask about blood thinners, recent injuries, bruising easily, and any conditions that call for lighter pressure. If any apply, adapt your pressure or get the client’s doctor to clear it first. Agree on a pressure scale of 1 to 10 and a signal to back off.'},
+        {kind:'checklist', badge:'kind-prep', label:'Prep', title:'Prepare', items:['Hands washed and linens fresh','Oil or lotion with a little more grip','Body mechanics ready: table height and a wide stance','Plan to use your forearms and knuckles, not only your thumbs']},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Warm up first', body:'Spend several minutes on lighter, broader strokes so the tissue is ready. Going deep on cold muscle makes clients tense up and fight the pressure.'},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Sink in slowly', body:'Increase pressure gradually and let the tissue soften before you move. Use slow strokes with your forearm, knuckles or elbow instead of stabbing with a finger or thumb.'},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Check in at depth', body:'Ask the client to rate the pressure. Discomfort that eases as you hold is fine. Sharp, burning, electric or radiating pain means back off right away.'},
+        {kind:'safety', badge:'kind-safety', label:'Avoid', title:'Places not to press deeply', body:'Avoid deep pressure on the spine and bony areas, the front of the neck, behind the knee, the inner upper arm and thigh, and the area just below the ribs beside the spine (over the kidneys).'},
+        {kind:'timer', badge:'kind-timer', label:'Pacing', title:'Limit time on one spot', body:'Work a tight area for a short time, then move on and come back if needed. Long, repeated deep pressure in one place can bruise or irritate.', seconds:45, real:'~2-3 min per area'},
+        {kind:'finish', badge:'kind-final', label:'Finish', title:'Aftercare', body:'Finish with lighter, broader strokes to calm the area. Tell the client some soreness for 24 to 48 hours can happen, and suggest water, gentle movement, and heat on sore spots. Sharp or worsening pain should be checked by a doctor.'}
+      ]}
+    ],
+    msafety: [
+      { id:'m-intake', name:'Intake & Health Screening', category:'msafety', steps:[
+        {kind:'reference', badge:'kind-prep', label:'Have ready', title:'Before the client arrives', items:['A written intake form (new clients) or a quick update form (returning clients)','Pen and a clipboard or tablet','A private space to talk before the session starts']},
+        {kind:'consult', badge:'kind-consult', label:'Consultation', title:'Why are they here?', body:'Ask what they want from the session: relaxation, a sore spot, an injury, or athletic recovery. Their goal decides your pressure, your areas and your pace.'},
+        {kind:'consult', badge:'kind-safety', label:'Health history', title:'Ask about health and medications', body:'Ask about medical conditions, surgeries, injuries, current medications (especially blood thinners), pregnancy, allergies to oils, nuts or fragrance, and anything they have been told to avoid. Record every answer on the form.'},
+        {kind:'consult', badge:'kind-consult', label:'Consultation', title:'Pressure and preferences', body:'Ask about pressure, temperature, music and talking preferences, and any areas to leave alone. Explain the 1 to 10 pressure scale.'},
+        {kind:'checklist', badge:'kind-prep', label:'Consent', title:'Before you begin', items:['Client has read and signed the form','Allergies and areas to avoid are noted','Draping and privacy have been explained','Client knows they can stop or adjust at any time','Questions have been answered']},
+        {kind:'finish', badge:'kind-final', label:'Finish', title:'Record and proceed', body:'Keep the signed form on file and follow your state’s record-keeping rules. If anything on the form is a concern, use the Contraindications refresher before you begin.'}
+      ]},
+      { id:'m-contraindications', name:'Contraindications: Proceed, Adapt, Refer', category:'msafety', steps:[
+        {kind:'reference', badge:'kind-safety', label:'Three answers', title:'Every screening ends in one of these', items:['Proceed: nothing in the way','Adapt: change pressure, positioning or the area, or get the doctor’s clearance first','Postpone or refer: do not massage today, or send them to a doctor']},
+        {kind:'safety', badge:'kind-safety', label:'Postpone', title:'Usually skip the massage today', body:'Fever, contagious illness, skin infections or rashes of unknown cause, and a recent injury that is still hot, swollen or bruised. Reschedule kindly and explain why.'},
+        {kind:'safety', badge:'kind-safety', label:'Adapt', title:'Usually adapt', body:'Pregnancy, high blood pressure, recent surgery, cancer treatment, diabetes, blood thinners, easy bruising and varicose veins. Use lighter pressure, adjust positioning, or ask the client’s doctor for clearance. When unsure, get clearance in writing.'},
+        {kind:'safety', badge:'kind-safety', label:'Local', title:'Avoid just the area', body:'Do not work directly over bruises, rashes, open skin, sunburn, varicose veins or any lump you did not expect. You can usually massage the rest of the body.'},
+        {kind:'safety', badge:'kind-safety', label:'Red flag', title:'Swelling, warmth and pain in one calf', body:'This can be a blood clot. Do not massage the leg, and tell the client to get medical care right away. Chest pain, trouble breathing or a sudden severe headache need emergency help.'},
+        {kind:'finish', badge:'kind-final', label:'Finish', title:'Document your decision', body:'Write down what you decided and why, and what you told the client. This is a general refresher, not medical advice. Your training and state law come first.'}
+      ]},
+      { id:'m-draping', name:'Draping', category:'msafety', steps:[
+        {kind:'consult', badge:'kind-consult', label:'Consultation', title:'Explain draping first', body:'Tell the client that only the area being worked is uncovered, that they undress to their comfort level, and that you leave the room while they get on the table.'},
+        {kind:'checklist', badge:'kind-prep', label:'Prep', title:'Set the table', items:['Clean top sheet and a blanket for warmth','Bolsters and face cradle ready','Sheet turned back for the client to slide under','Knock before you re-enter']},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Face-down drape', body:'The client lies face-down with the sheet covering the body. Fold the drape back to the area you are working and tuck it at the edge so it stays put.'},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Face-up drape', body:'Hold the sheet up like a screen while the client turns over. Cover the chest and hips, and uncover one limb at a time, tucking the sheet around it.'},
+        {kind:'safety', badge:'kind-safety', label:'Boundaries', title:'What stays covered', body:'Never uncover the genitals. Keep the gluteal and breast areas covered unless your training, state law and the client’s clear consent allow otherwise. If the drape slips, fix it calmly.'},
+        {kind:'finish', badge:'kind-final', label:'Finish', title:'Leave them covered and comfortable', body:'At the end, re-drape fully, tell the client you are stepping out, and give them time to get up and dress in private.'}
+      ]},
+      { id:'m-sanitation', name:'Sanitation & Room Setup', category:'msafety', steps:[
+        {kind:'checklist', badge:'kind-prep', label:'Before each client', title:'Reset the room', items:['Wash hands with soap and water for at least 20 seconds','Fresh sheets and blanket for every client','Wipe table, face cradle and bolsters with a disinfectant approved for the surface','Oil or lotion in a pump bottle, never dipped into with hands','Used linens in a closed laundry bag, not on the floor']},
+        {kind:'timer', badge:'kind-safety', label:'Safety check', title:'Respect the disinfectant contact time', body:'Surfaces must stay wet for the full contact time on the product label. Wiping dry early means it has not disinfected.', seconds:30, real:'Per product label'},
+        {kind:'safety', badge:'kind-safety', label:'Safety', title:'Any tools that touch skin', body:'Clean and disinfect stones, cups and other tools between clients, following the manufacturer and your state board rules.'},
+        {kind:'finish', badge:'kind-final', label:'Finish', title:'Wash up again', body:'Wash your hands again after clearing the room and before greeting the next client.'}
+      ]},
+      { id:'m-body-mechanics', name:'Body Mechanics for You', category:'msafety', steps:[
+        {kind:'tech', badge:'kind-tech', label:'Setup', title:'Table height', body:'Adjust the table so you can work with a straight back and relaxed shoulders. A common starting point is about the height of your knuckles when you stand with your arms at your sides, then adjust for each technique.'},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Wide, staggered stance', body:'Stand with one foot ahead of the other and your knees soft. Move from your legs and hips by shifting your weight, not by reaching with your arms.'},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Lean, do not push', body:'Let your body weight supply the pressure by leaning into the stroke. Keep your wrists straight and your elbows close.'},
+        {kind:'tech', badge:'kind-tech', label:'Technique', title:'Protect your thumbs', body:'Use your palms, forearms, knuckles and fists for deeper work and save your thumbs for small, precise work.'},
+        {kind:'timer', badge:'kind-timer', label:'Recovery', title:'Stretch between clients', body:'Shake out your hands, roll your shoulders and stretch your wrists and back. A short stretch between clients adds years to your career.', seconds:30, real:'~2 min'},
+        {kind:'finish', badge:'kind-final', label:'Finish', title:'Make it a habit', body:'If something hurts while you work, change your position instead of pushing through. Tell the client you need a quick adjustment.'}
+      ]}
+    ],
     safety: [
       { id:'exposure-incident', name:'Exposure Incident (Blood Spill)', category:'safety', source:'Milady Standard Barbering, 7th Ed.', steps:[
         {kind:'reference', badge:'kind-safety', label:'Materials needed', title:'Have these ready at every station', items:['Antiseptic','Bandages','Cotton','Disposable gloves','Disposable paper towels','Liquid soap','Plastic bag (ziplock)']},
@@ -5779,6 +5857,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#cl-steps').textContent = `${cstate.technique.steps.length}/${cstate.technique.steps.length}`;
     root.querySelector('#cl-time').textContent = fmtTime(cstate.elapsed);
     const hasCheckpointStep = cstate.technique.steps.some(s=>s.kind==='final');
+    const cpRow = root.querySelector('#cl-checkpoint').closest('.cl-row');
+    if (cpRow) cpRow.style.display = (cstate.technique.category === 'massage' || cstate.technique.category === 'msafety') ? 'none' : '';
     root.querySelector('#cl-checkpoint').textContent = !hasCheckpointStep ? 'N/A' :
       (attachedClient ? (cstate.checkpointPhotos.length ? cstate.checkpointPhotos.length + ' photos' : 'Skipped') : (cstate.checkpointCaptured ? 'Saved' : 'Skipped'));
     const ledgerId = LEDGER_MAP[cstate.technique.id];
@@ -5952,7 +6032,22 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   // markup), so expose it globally -- other tabs' modules (Booking's client photo lookup, etc.)
   // reuse this exact same swipeable viewer instead of opening a raw image in a new tab.
   window.openLightbox = openLightbox;
-  window.initCoachTab = function(){ renderTechList(); showScreen('picker'); };
+  // Re-checks which refresher lists to show after a title change, without resetting a walkthrough in progress.
+  window.refreshCoachCategories = function(){
+    const walking = root.querySelector('[data-screen="walk"]').classList.contains('show');
+    if (!walking) window.initCoachTab();
+  };
+  window.initCoachTab = function(){
+    // Massage therapists (and massage students) see their own two lists; everyone else keeps the barbering lists.
+    const isMassage = (typeof currentCraft === 'function' && currentCraft() === 'Massage Therapist');
+    const isMassageCat = c => c === 'massage' || c === 'msafety';
+    root.querySelectorAll('.mode-btn[data-cat]').forEach(b=>{ b.style.display = (isMassageCat(b.dataset.cat) === isMassage) ? '' : 'none'; });
+    if (isMassageCat(cstate.category) !== isMassage){
+      cstate.category = isMassage ? 'massage' : 'cuts';
+      root.querySelectorAll('.mode-btn[data-cat]').forEach(b=> b.classList.toggle('active', b.dataset.cat === cstate.category));
+    }
+    renderTechList(); showScreen('picker');
+  };
 })();
 /* =========================================================
    CONSULT
@@ -14523,6 +14618,7 @@ document.getElementById('btn-role-change-confirm').addEventListener('click', asy
   populateNotificationsStatus();
   populateAccountListing();
   applyRoleVisibility();
+  try{ if (window.refreshCoachCategories) window.refreshCoachCategories(); }catch(e){}
   const currentTab = (document.querySelector('.tab-btn.active') || {}).dataset ? document.querySelector('.tab-btn.active').dataset.tabbtn : 'home';
   showTab(currentTab || 'home');
   showToast('Role updated. Pace and Ledger are no longer available');
