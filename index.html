@@ -515,7 +515,7 @@
   .pp-bar{ flex:none; display:flex; align-items:center; gap:10px; padding:12px 16px; padding-top:max(12px, calc(env(safe-area-inset-top) + 8px)); border-bottom:1px solid var(--line); background:var(--paper); }
   .pp-bar .btn{ flex:none; padding:10px 18px; }
   .pp-title{ flex:1; min-width:0; text-align:center; font-weight:700; font-size:13px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .pp-frame{ flex:1; width:100%; border:0; background:#fff; }
+  .pp-frame{ flex:1; min-height:0; width:auto; margin:12px 12px max(12px, env(safe-area-inset-bottom)); border:1px solid var(--line); border-radius:10px; background:#fff; }
   .cal-month-grid{ display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; }
   .cal-month-dow{ font-size:10.5px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); text-align:center; padding-bottom:4px; }
   .cal-month-cell{ position:relative; aspect-ratio:1/1; border:1px solid var(--line); border-radius:9px; background:var(--paper); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; font-variant-numeric:tabular-nums; }
@@ -4026,8 +4026,11 @@ window.openPrintPreview = function(opts){
     ".r{ text-align:right; } .year-total{ margin-top:24px; font-size:16px; font-weight:bold; text-align:right; border-top:2px solid #1a1a1a; padding-top:10px; }" +
     ".tips-line{ margin-top:10px; font-size:14px; font-weight:bold; text-align:right; } .tips-line span{ font-weight:normal; color:#555; font-size:12px; }" +
     "@media print{ body{ padding:0; } }";
+  // On-screen preview only (never printed): give the page inner padding inside the bordered frame and let the summary boxes wrap into a 2-column grid on narrow screens.
+  const SCREEN_ONLY_CSS = "@media screen{ body{ padding:16px 14px 28px !important; } }" +
+    "@media screen and (max-width:600px){ .kpis{ display:grid !important; grid-template-columns:1fr 1fr; } .kpis div{ border-left:0 !important; border-top:1px solid #d9d9d9; min-width:0; } .kpis div:nth-child(2n){ border-left:1px solid #d9d9d9 !important; } .kpis div:nth-child(-n+2){ border-top:0; } .kpis.three div:nth-child(3){ grid-column:1 / -1; border-left:0 !important; } .kpis b{ font-size:18px; overflow-wrap:anywhere; } }";
   const doc = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>' +
-    String(title).replace(/[&<>]/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])) + '</title><style>' + baseCss + (opts.css || '') + '</style></head><body>' +
+    String(title).replace(/[&<>]/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])) + '</title><style>' + baseCss + (opts.css || '') + SCREEN_ONLY_CSS + '</style></head><body>' +
     (opts.body || '') + '</body></html>';
   const frame = ov.querySelector('.pp-frame');
   frame.srcdoc = doc;
