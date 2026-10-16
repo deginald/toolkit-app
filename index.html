@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-11-01T14-00-00Z">
+<meta name="app-build" content="2026-11-02T14-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -4019,7 +4019,7 @@ window.openPrintPreview = function(opts){
   ov.setAttribute('aria-label', title);
   ov.innerHTML = '<div class="pp-bar"><button type="button" class="btn btn-outline pp-close">Close</button><span class="pp-title"></span><button type="button" class="btn btn-primary pp-print">Print</button></div><iframe class="pp-frame" title="Print preview"></iframe>';
   ov.querySelector('.pp-title').textContent = title;
-  const baseCss = "body{ font-family: Georgia, 'Times New Roman', serif; color:#1a1a1a; background:#fff; padding:24px 20px 40px; max-width:800px; margin:0 auto; }" +
+  const baseCss = "@page{ margin:1in; } body{ font-family: Georgia, 'Times New Roman', serif; color:#1a1a1a; background:#fff; padding:24px 20px 40px; max-width:800px; margin:0 auto; }" +
     "h1{ font-size:20px; margin:0 0 2px; } h2{ font-size:14px; margin:20px 0 4px; } p.sub{ color:#555; margin:0 0 24px; font-size:13px; }" +
     "table{ width:100%; border-collapse:collapse; font-size:13px; margin-bottom:4px; } th, td{ text-align:left; padding:6px; border-bottom:1px solid #ddd; }" +
     "th{ font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:#555; } tfoot td{ font-weight:bold; border-top:1px solid #1a1a1a; border-bottom:none; }" +
@@ -12265,26 +12265,26 @@ async function saveAppointmentChange(id, core, extras){
 
   // ---- Profit & loss: printouts ----
   const PL_PRINT_CSS = `
-    @page{ margin:.55in; } @page land{ size:landscape; margin:.45in; } .land{ page:land; } .brk{ page-break-before:always; }
+    @page{ margin:1in; } @page land{ size:landscape; margin:1in; } .land{ page:land; } .brk{ page-break-before:always; }
     body{ max-width:none; padding:0; }
     .head{ display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid #1a1a1a; padding-bottom:10px; margin-bottom:14px; }
     .head h1{ font-size:24px; margin:0; } .head .yr{ font-size:36px; font-weight:bold; line-height:1; text-align:right; }
     .head .yr small{ display:block; font:700 10px Arial,sans-serif; letter-spacing:.1em; text-transform:uppercase; color:#666; margin-top:6px; }
-    .kpis{ display:flex; border:1px solid #1a1a1a; margin-bottom:16px; } .kpis div{ flex:1; padding:9px 12px; border-left:1px solid #d9d9d9; } .kpis div:first-child{ border-left:0; }
+    .kpis{ display:flex; border:1px solid #1a1a1a; margin-bottom:10px; } .kpis div{ flex:1; padding:9px 12px; border-left:1px solid #d9d9d9; } .kpis div:first-child{ border-left:0; }
     .kpis small{ display:block; font:700 10px Arial,sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#666; } .kpis b{ font-size:20px; display:block; margin-top:3px; } .kpis .net{ background:#f3f3f3; }
     h2{ font:800 12px Arial,sans-serif; letter-spacing:.09em; text-transform:uppercase; margin:14px 0 6px; }
-    th, td{ padding:3px 6px; } th{ border-bottom:1px solid #1a1a1a; }
+    th, td{ padding:2px 6px; } th{ border-bottom:1px solid #1a1a1a; }
     .r{ text-align:right; font-variant-numeric:tabular-nums; } .mut{ color:#666; } .sm{ font-size:11px; } .neg{ color:#9b1c1c; }
-    tr.grp td{ font:800 10.5px Arial,sans-serif; letter-spacing:.08em; text-transform:uppercase; padding-top:11px; border-bottom:1px solid #1a1a1a; }
-    tr.in td:first-child{ padding-left:18px; } tr.subt td, tr.one td{ font-weight:bold; } tr.subt td{ border-top:1px solid #1a1a1a; } tr.one td{ padding-top:6px; padding-bottom:6px; }
-    tr.total td{ font-weight:bold; border-top:1.5px solid #1a1a1a; border-bottom:0; font-size:14px; padding-top:8px; }
-    tr.net td{ font-weight:bold; border-top:2px solid #1a1a1a; border-bottom:3px double #1a1a1a; font-size:15px; padding:8px 6px; background:#f3f3f3; }
-    .bars{ display:flex; align-items:flex-end; gap:7px; height:62px; border-bottom:1px solid #1a1a1a; padding:0 4px; } .bars .m{ flex:1; display:flex; gap:2px; align-items:flex-end; height:100%; }
+    tr.grp td{ font:800 10.5px Arial,sans-serif; letter-spacing:.08em; text-transform:uppercase; padding-top:8px; border-bottom:1px solid #1a1a1a; }
+    tr.in td:first-child{ padding-left:18px; } tr.subt td, tr.one td{ font-weight:bold; } tr.subt td{ border-top:1px solid #1a1a1a; } tr.one td{ padding-top:4px; padding-bottom:4px; }
+    tr.total td{ font-weight:bold; border-top:1.5px solid #1a1a1a; border-bottom:0; font-size:14px; padding-top:5px; }
+    tr.net td{ font-weight:bold; border-top:2px solid #1a1a1a; border-bottom:3px double #1a1a1a; font-size:15px; padding:5px 6px; background:#f3f3f3; }
+    .bars{ display:flex; align-items:flex-end; gap:7px; height:48px; border-bottom:1px solid #1a1a1a; padding:0 4px; } .bars .m{ flex:1; display:flex; gap:2px; align-items:flex-end; height:100%; }
     .bars i{ display:block; flex:1; min-width:0; } .bars .i{ background:#1a1a1a; } .bars .e{ background:#b8b8b8; }
     .bl{ display:flex; gap:7px; padding:0 4px; font:700 9.5px Arial,sans-serif; color:#666; margin-top:3px; } .bl span{ flex:1; text-align:center; }
-    .legend{ font:700 10px Arial,sans-serif; color:#666; margin:8px 0 10px; } .legend i{ display:inline-block; width:10px; height:10px; margin-right:5px; vertical-align:-1px; } .legend span{ margin-right:16px; }
+    .legend{ font:700 10px Arial,sans-serif; color:#666; margin:5px 0 6px; } .legend i{ display:inline-block; width:10px; height:10px; margin-right:5px; vertical-align:-1px; } .legend span{ margin-right:16px; }
     .grid{ table-layout:fixed; } .grid th:first-child, .grid td:first-child{ width:22%; white-space:normal; } .grid th, .grid td{ padding:3px 3px; font-size:9.5px; white-space:nowrap; } .grid th{ font-size:8.5px; }
-    .foot{ border-top:1px solid #d9d9d9; margin-top:18px; padding-top:8px; font-size:10.5px; color:#666; line-height:1.5; }
+    .foot{ border-top:1px solid #d9d9d9; margin-top:8px; padding-top:6px; font-size:10.5px; color:#666; line-height:1.5; }
     @media print{ tr{ page-break-inside:avoid; } }`;
   function plFootHtml(){ return '<p class="foot">Your own record for your business, prepared via Vono. Income counts by the period each payment covers; costs count by the date you entered. Vono doesn\'t verify these figures and this isn\'t tax advice.</p>'; }
   function plShopName(){ return escapeHtmlShop(myShop ? myShop.name : 'Your shop'); }
@@ -13162,7 +13162,7 @@ async function saveAppointmentChange(id, core, extras){
 
   // ---- Tax-time package ----
   const PRINT_CSS = `
-    @page{ margin:.55in; } .brk{ page-break-before:always; }
+    @page{ margin:1in; } .brk{ page-break-before:always; }
     body{ max-width:none; padding:0; }
     .head{ display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid #1a1a1a; padding-bottom:10px; margin-bottom:14px; }
     .head h1{ font-size:24px; margin:0; } .head .yr{ font-size:36px; font-weight:bold; line-height:1; text-align:right; }
