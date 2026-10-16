@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-11-02T18-30-00Z">
+<meta name="app-build" content="2026-11-02T20-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1441,6 +1441,14 @@
             <button type="button" class="mode-btn" data-cat="safety">Safety</button>
             <button type="button" class="mode-btn" data-cat="massage" style="display:none">Techniques</button>
             <button type="button" class="mode-btn" data-cat="msafety" style="display:none">Consult &amp; Safety</button>
+            <button type="button" class="mode-btn" data-cat="nailt" style="display:none">Techniques</button>
+            <button type="button" class="mode-btn" data-cat="nail" style="display:none">Consult &amp; Safety</button>
+            <button type="button" class="mode-btn" data-cat="braidt" style="display:none">Techniques</button>
+            <button type="button" class="mode-btn" data-cat="braid" style="display:none">Consult &amp; Safety</button>
+            <button type="button" class="mode-btn" data-cat="estht" style="display:none">Techniques</button>
+            <button type="button" class="mode-btn" data-cat="esth" style="display:none">Consult &amp; Safety</button>
+            <button type="button" class="mode-btn" data-cat="muat" style="display:none">Techniques</button>
+            <button type="button" class="mode-btn" data-cat="mua" style="display:none">Consult &amp; Safety</button>
           </div>
           <div class="tech-list" id="tech-list"></div>
         </div>
@@ -3261,7 +3269,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="refreshers.js?v=2026-11-02T18-30-00Z"></script><script>
+<script src="refreshers.js?v=2026-11-02T20-00-00Z"></script><script>
 /* =========================================================
    SUPABASE SETUP
    Fill these in once the Supabase project exists: Project URL
@@ -3575,7 +3583,7 @@ function displayTitle(){
   if (profile.title === 'Barber' && profile.barberLevel) return profile.barberLevel;
   return profile.title || 'Student';
 }
-const CATEGORY_NAMES = { cuts:'Haircuts', chemical:'Chemical Services', safety:'Safety', massage:'Massage Techniques', msafety:'Consult & Safety', nail:'Nail Tech: Consult & Safety', braid:'Braiding: Consult & Safety', esth:'Esthetics: Consult & Safety', mua:'Makeup: Consult & Safety' };
+const CATEGORY_NAMES = { cuts:'Haircuts', chemical:'Chemical Services', safety:'Safety', massage:'Massage Techniques', msafety:'Consult & Safety', nailt:'Nail Techniques', nail:'Nail Tech: Consult & Safety', braidt:'Braiding Techniques', estht:'Esthetics Techniques', muat:'Makeup Techniques', braid:'Braiding: Consult & Safety', esth:'Esthetics: Consult & Safety', mua:'Makeup: Consult & Safety' };
 const CATEGORY_ORDER = ['cuts','chemical','safety'];
 function defaultTechniques(){
   return [
@@ -5502,7 +5510,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 (function(){
   const root = document.getElementById('tab-coach');
   // The wording for every refresher lives in refreshers.js (loaded before this script).
-  const COACH_TECHNIQUES = window.VONO_REFRESHERS || { cuts:[], chemical:[], safety:[], massage:[], msafety:[], nail:[], braid:[], esth:[], mua:[] };
+  const COACH_TECHNIQUES = window.VONO_REFRESHERS || { cuts:[], chemical:[], safety:[], massage:[], msafety:[], nailt:[], nail:[], braidt:[], braid:[], estht:[], esth:[], muat:[], mua:[] };
   const REFRESHERS_MISSING = !window.VONO_REFRESHERS;
   const LEDGER_MAP = { 'skin-fade':'skin-fade', 'womens-layers':'womens-layered', 'beard-trim':'beard-trim', 'relaxer':'relaxer', 'color':'color', 'perm':'perm', 'bleach':'bleach', 'exposure-incident':'exposure' };
   const cstate = { category:'cuts', technique:null, stepIndex:0, checklistChecked:{}, timerState:{}, elapsed:0, elapsedTimerId:null };
@@ -5513,7 +5521,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     list.innerHTML = '';
     if (REFRESHERS_MISSING){ list.innerHTML = '<div class="card"><p class="screen-sub" style="margin:0;">The refreshers did not load. Refresh the page, and if this keeps happening, email vonosupport@gmail.com.</p></div>'; return; }
     const craftNow = (typeof currentCraft === 'function') ? currentCraft() : '';
-    COACH_TECHNIQUES[cstate.category].filter(t=> !t.crafts || t.crafts.includes(craftNow)).forEach(t=>{
+    COACH_TECHNIQUES[cstate.category].filter(t=> !t.crafts || t.crafts.includes(craftNow) || (craftNow === '' && t.crafts.includes('Barber'))).forEach(t=>{
       const btn = document.createElement('button');
       btn.className = 'tech-card';
       btn.innerHTML = `<div><div class="tc-name">${t.name}</div><div class="tc-meta">${meta(t)}</div>${t.source ? `<div class="tc-source">${t.source}</div>` : ''}</div><span class="tc-arrow">&rarr;</span>`;
@@ -5743,7 +5751,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (!walking) window.initCoachTab();
   };
   // Which refresher lists each craft sees. Crafts with one list get no toggle bar.
-  const CRAFT_CATS = { 'Massage Therapist':['massage','msafety'], 'Nail Tech':['nail'], 'Braider':['braid'], 'Esthetician':['esth'], 'MUA':['mua'] };
+  const CRAFT_CATS = { 'Massage Therapist':['massage','msafety'], 'Nail Tech':['nailt','nail'], 'Braider':['braidt','braid'], 'Esthetician':['estht','esth'], 'MUA':['muat','mua'] };
   window.initCoachTab = function(){
     const craft = (typeof currentCraft === 'function') ? currentCraft() : '';
     const cats = CRAFT_CATS[craft] || ['cuts','chemical','safety'];

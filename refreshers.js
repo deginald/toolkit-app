@@ -8,11 +8,13 @@
      sC  consultation question      sK  checklist (items to tick)
      sT  technique step             sS  safety note
      sR  reference list             sM  timer (title, text, seconds, "real time" label)
+     sP  timer with a real time (title, text, "~10 min")
      sF  final step (no photo needed)
 
    Lists: cuts, chemical, safety (barbering and cosmetology), massage and
-   msafety (massage therapy), nail, braid, esth and mua (one list each).
-   A refresher marked crafts:['Cosmetologist'] only shows for that craft.
+   msafety (massage therapy), and for each of nail, braid, esth and mua a
+   technique list (nailt, braidt, estht, muat) and a Consult & Safety list.
+   A refresher marked crafts:[...] only shows for the crafts named.
    ----------------------------------------------------------------------- */
 window.VONO_REFRESHERS = (function(){
 // Small builders for the refresher step data below.
@@ -22,6 +24,7 @@ const sT=(title,body,label)=>({kind:'tech',badge:'kind-tech',label:label||'Techn
 const sS=(title,body,label)=>({kind:'safety',badge:'kind-safety',label:label||'Safety',title,body});
 const sR=(label,items,title)=>({kind:'reference',badge:'kind-safety',label,title,items});
 const sM=(title,body,seconds,real,label)=>({kind:'timer',badge:'kind-safety',label:label||'Safety check',title,body,seconds,real});
+const sP=(title,body,real,label)=>({kind:'timer',badge:'kind-timer',label:label||'Timer',title,body,seconds:60,real});
 const sF=(title,body)=>({kind:'finish',badge:'kind-final',label:'Finish',title,body});
 return {
   cuts: [
@@ -168,6 +171,169 @@ return {
       {kind:'finish', badge:'kind-final', label:'Finish', title:'Make it a habit', body:'If something hurts while you work, change your position instead of pushing through. Tell the client you need a quick adjustment.'}
     ]}
   ],
+nailt: [
+  { id:'nt-manicure', name:'Basic Manicure', category:'nailt', steps:[
+    sC('Greet, check and agree', 'Ask about allergies and any skin or nail concerns, look at the hands and nails, and agree on the shape and finish. If you see signs of infection, use the When Not to Service refresher before you begin.', 'Consultation'),
+    sK('Set up', ['Wash your hands and the client’s hands','Table wiped with disinfectant and a fresh towel down','Clean, disinfected metal tools in a covered container','New file, buffer and orangewood sticks'], 'Prep'),
+    sT('Remove old polish', 'Soak a lint-free pad in remover, hold it on each nail for a few seconds, and wipe from the cuticle to the free edge. Wipe the skin clean of remover.', 'Technique'),
+    sT('Shape the nails', 'File from the sides toward the center in one direction, rather than sawing back and forth. Match all ten nails in length and shape.', 'Technique'),
+    sP('Soften the cuticles', 'Soak the fingertips in warm soapy water, or use cuticle remover as your training directs.', '~5 min', 'Timer'),
+    sT('Care for the cuticles', 'Gently push back the softened cuticle and nip only loose dead skin. Never cut living tissue. Stop if you draw blood and follow the Nicks, Cuts & Bleeding refresher.', 'Technique'),
+    sT('Massage', 'Apply lotion or oil and massage the hands and forearms with light, even strokes. Wipe the nail plates clean of oil before you polish.', 'Technique'),
+    sT('Apply polish', 'Apply a base coat, two thin coats of color and a top coat. Seal the free edge, and clean up any polish on the skin with a small brush.', 'Technique'),
+    sF('Aftercare', 'Apply cuticle oil once the polish is dry to the touch. Tell the client to avoid hot water and heavy tasks for about an hour, and to moisturize the hands daily.')
+  ]},
+  { id:'nt-pedicure', name:'Basic Pedicure', category:'nailt', steps:[
+    sC('Greet and check the feet', 'Ask about allergies, diabetes, circulation problems and recent injuries, and look closely at the feet, skin and nails for cuts, redness, fungus or swelling. If you see anything unusual, use the When Not to Service refresher.', 'Consultation'),
+    sK('Set up', ['Basin cleaned, disinfected and fitted with a fresh liner','Your hands washed and gloves on','Single-use files, buffers and toe separators ready','Clean, disinfected metal tools ready','Fresh towels down'], 'Prep'),
+    sT('Remove old polish and trim', 'Remove polish, then clip the toenails straight across and file smooth. Round the corners only slightly to help prevent ingrown nails.', 'Technique'),
+    sP('Soak the feet', 'Soak the feet in warm, not hot, water. Check the temperature with your own hand first.', '~10 min', 'Timer'),
+    sT('Smooth rough skin', 'Smooth calluses gently with a foot file. Do not use a blade on the skin. Stop if the skin becomes red or sore.', 'Technique'),
+    sT('Cuticles and scrub', 'Push back softened cuticles and trim only loose dead skin. Exfoliate and rinse the feet.', 'Technique'),
+    sT('Dry thoroughly and massage', 'Dry the feet well, especially between the toes. Massage the feet and calves with lotion or oil, then wipe the nails clean.', 'Technique'),
+    sT('Apply polish', 'Place toe separators and apply a base coat, two thin coats of color and a top coat. Sealing the free edge helps it last.', 'Technique'),
+    sF('Clean up', 'Discard the liner and single-use items, disinfect the basin and tools, remove your gloves and wash your hands. Tell the client how to care for their feet at home.')
+  ]},
+  { id:'nt-gel', name:'Gel Polish: Apply & Remove', category:'nailt', steps:[
+    sC('Check the nails first', 'Ask about allergies to gel or acrylic products, and look at the nails and skin. Gel is not applied over infection, lifting, or damaged nails.', 'Consultation'),
+    sK('Set up', ['Your hands washed and the table wiped with disinfectant','Lamp checked and matched to the product','Ventilation on and caps kept on the bottles','Clean metal tools, new files and buffers'], 'Prep'),
+    sT('Prep the nail', 'Push back the cuticle, lightly buff the shine off the nail plate and wipe away dust. Keep product off the skin.', 'Technique'),
+    sT('Base coat', 'Apply one thin coat and cap the free edge. Thin coats cure better and last longer.', 'Technique'),
+    sM('Cure the base', 'Cure under the lamp for the time on the product label. Keep the hand still.', 30, 'Per product label', 'Cure'),
+    sT('Color coats', 'Apply thin coats of color and cure each coat for the full time on the label. Do not flood the cuticle or sidewalls.', 'Technique'),
+    sT('Top coat', 'Apply the top coat, cap the free edge, cure it, and wipe off the sticky layer if your product has one.', 'Technique'),
+    sT('Remove gel safely', 'File off the top coat lightly, then soak cotton in acetone, place it on the nail, wrap in foil and wait. Gently push off the softened gel. Never peel or scrape it off.', 'Removal'),
+    sP('Soak to remove', 'Leave the wraps on until the gel is soft and lifting.', '~15 min', 'Timer'),
+    sF('Aftercare', 'Moisturize the nails and cuticles. Tell the client not to pick or peel the gel, and that redness, itching or swelling around the nail can mean an allergy, so they should stop using gel and see a doctor.')
+  ]},
+  { id:'nt-acrylic', name:'Acrylic Full Set & Fill', category:'nailt', steps:[
+    sC('Check the nails and agree on the set', 'Ask about allergies and look at the nails and skin. Agree on the length, shape and finish. Do not apply product over infection, lifting or damaged nails.', 'Consultation'),
+    sK('Set up for safety', ['Ventilation or extractor running','Dust control at the table','Mask and gloves ready if you need them','Containers closed when not in use','Clean metal tools, new files and buffers'], 'Prep'),
+    sT('Prep the nail plate', 'Push back the cuticle, lightly buff the shine and clean away dust. Apply a dehydrator or primer as your training directs.', 'Technique'),
+    sT('Apply a tip or form', 'Fit a tip or sculpting form so it matches the natural nail and the sidewalls, with no gap at the cuticle.', 'Technique'),
+    sT('Apply the product', 'Pick up a bead with the ratio of liquid to powder you were trained to use. Place it near the cuticle without touching the skin, then build and blend toward the free edge.', 'Technique'),
+    sP('Let it harden', 'Do not touch or file until the product is fully hard.', '~3 min', 'Timer'),
+    sT('File and shape', 'File to shape the free edge, the sidewalls and the surface, using light pressure. Keep dust under control.', 'Technique'),
+    sT('Fill after a couple of weeks', 'As the nail grows, remove any lifted product, blend the new growth area, and rebalance the apex so the nail stays strong.', 'Fill'),
+    sF('Finish and aftercare', 'Clean off dust, apply cuticle oil and polish if requested. Tell the client not to pick or pry at the nails, to see you for any lifting, and to stop and see a doctor if they develop redness or swelling.')
+  ]}
+],
+braidt: [
+  { id:'bt-knotless', name:'Knotless Box Braids', category:'braidt', steps:[
+    sC('Consult and check the scalp', 'Agree on the size, length and color. Check the scalp and hair health, ask about tenderness and allergies, and confirm the client’s hair is strong enough for the style.', 'Consultation'),
+    sK('Prep the hair', ['Hair washed, conditioned and fully detangled','Hair blow-dried or stretched to the client’s preference','Scalp moisturized lightly','Extensions sorted and ready','Station and tools clean'], 'Prep'),
+    sT('Section and part', 'Make clean, even parts in the size you agreed. Clip the rest of the hair out of the way, and keep sections consistent so the style looks even.', 'Technique'),
+    sT('Start with natural hair', 'Begin the braid with the client’s own hair, and add the extension hair gradually, in small pieces. This keeps the base light and free of knots.', 'Technique'),
+    sT('Check tension', 'Ask how it feels at the root. It should not hurt. If a braid feels tight, take it out and redo it.', 'Tension check'),
+    sT('Braid the length', 'Keep the braid even and smooth down to the end and avoid pulling the hair tight along the hairline.', 'Technique'),
+    sT('Seal the ends', 'Seal the ends in the way you were trained, with safe handling of any heat or water. Keep it away from the client’s skin.', 'Technique'),
+    sF('Finish and aftercare', 'Smooth the edges lightly, lightly moisturize the scalp, and tell the client how to wash and care for the style. Keeping the style in for about 6 to 8 weeks or less is easier on the hair. Take out any braid that is painful.')
+  ]},
+  { id:'bt-cornrows', name:'Straight-Back Cornrows', category:'braidt', steps:[
+    sC('Consult and check the scalp', 'Agree on the number of rows and the pattern. Check the scalp for sores or irritation and ask about tenderness.', 'Consultation'),
+    sK('Prep', ['Hair clean, detangled and moisturized','Rat-tail comb, clips and gel or edge product ready','Extension hair ready, if using any','Station clean'], 'Prep'),
+    sT('Part the first row', 'Use the rat-tail comb to make a straight, clean part from the front hairline to the nape. Clip the rest of the hair out of the way.', 'Technique'),
+    sT('Start the braid', 'Divide the section into three and braid with an under-and-over motion, picking up a little hair each time from the part line.', 'Technique'),
+    sT('Keep it even', 'Keep the pickups the same size and the tension even so the row stays straight and the scalp is not pulled.', 'Technique'),
+    sT('Check tension', 'Ask the client how it feels. Pain, small bumps or stinging means loosen it. Go lighter at the edges and temples.', 'Tension check'),
+    sT('Repeat across the head', 'Use the first row as your guide for the others. Make the parts parallel, and match row widths on each side.', 'Technique'),
+    sF('Finish and aftercare', 'Finish the ends, tidy the edges, and moisturize the scalp. Tell the client how to protect the style at night and when to take it out.')
+  ]},
+  { id:'bt-twists', name:'Two-Strand Twists', category:'braidt', steps:[
+    sC('Consult and check the hair', 'Agree on the size and length. Check the scalp and the condition of the hair, and ask about product allergies.', 'Consultation'),
+    sK('Prep', ['Hair washed, conditioned and detangled','Leave-in conditioner or twisting product ready','Clips and combs ready','Station clean'], 'Prep'),
+    sT('Section the hair', 'Part clean, even sections of the size you agreed. Keep the rest of the hair clipped away and damp enough to manage.', 'Technique'),
+    sT('Twist the section', 'Divide the section into two equal strands, wrap them around each other in the same direction, and keep the tension even down to the ends.', 'Technique'),
+    sT('Check tension', 'Ask how it feels. Twists should not pull at the roots. Loosen anything that feels tight.', 'Tension check'),
+    sT('Finish the ends', 'Curl the ends around your finger, or secure them according to the style, so the twist does not unravel.', 'Technique'),
+    sF('Aftercare', 'Tell the client how to keep the style moisturized and how to protect it at night. Recommend how long to keep it before taking it out.')
+  ]},
+  { id:'bt-takedown', name:'Takedown & Aftercare', category:'braidt', steps:[
+    sC('Check in', 'Ask how long the style has been in, whether the scalp has been sore, and whether there is itching or irritation. Look at the scalp and hairline.', 'Consultation'),
+    sK('Prep', ['Scissors for extension hair only','Rat-tail comb and clips','Detangling conditioner and spray','Towels and a cape'], 'Prep'),
+    sT('Cut the extension hair, not the natural hair', 'Cut the extension hair above the point where the natural hair begins, with the blade kept away from the scalp and your own fingers. Take care not to cut the client’s hair.', 'Technique'),
+    sT('Unravel gently', 'Undo the braid from the end, working slowly. Use conditioner to help detangle, and do not tug at shed hair.', 'Technique'),
+    sT('Wash and condition', 'Shampoo, deep condition and detangle once all braids are out. Shed hair that comes out is normal after a long style.', 'Technique'),
+    sT('Look at the scalp', 'Check for irritation, sores or thinning. Recommend a doctor visit for anything unusual.', 'Check'),
+    sF('Aftercare', 'Recommend giving the hair a rest between styles, moisturizing, and a trim if needed.')
+  ]}
+],
+estht: [
+  { id:'et-facial', name:'Classic Facial', category:'estht', steps:[
+    sC('Intake and skin check', 'Use the Skin Consultation & Intake and Contraindications refreshers first. Confirm allergies, medications and treatments, and check the skin under good light.', 'Consultation'),
+    sK('Set up', ['Your hands washed and the room cleaned','Fresh linens and a clean headband','Products dispensed with clean spatulas','Single-use items open and ready','Tools clean and disinfected'], 'Prep'),
+    sT('Cleanse', 'Remove makeup, then cleanse the face and neck with products suited to the skin type. Use gentle, even strokes.', 'Technique'),
+    sT('Analyze the skin', 'Look at the skin under a magnifying lamp. Note oiliness, dryness, sensitivity and any breakouts, and adjust your plan.', 'Technique'),
+    sT('Exfoliate gently', 'Use a gentle exfoliant that suits the skin type. Skip it if the skin is irritated, sunburned or on certain medications.', 'Technique'),
+    sT('Extractions, only if needed', 'Use the Extractions (Safe Basics) refresher. Do not squeeze anything inflamed.', 'Technique'),
+    sT('Massage', 'Use smooth, light strokes for about 10 minutes, with a product that suits the skin.', 'Technique'),
+    sP('Mask', 'Apply a mask suited to the skin type and let the client rest.', '~10 min', 'Timer'),
+    sT('Finish the skin', 'Remove the mask, tone, then apply moisturizer and sunscreen.', 'Technique'),
+    sF('Aftercare', 'Recommend home care, daily sunscreen, and avoiding strong exfoliants for a day or two. Record the treatment and the products used.')
+  ]},
+  { id:'et-waxing', name:'Facial Waxing (Brows & Lip)', category:'estht', steps:[
+    sC('Screen the skin first', 'Ask about isotretinoin or strong prescription retinoids, recent peels or sunburn, and allergies. Skip waxing on irritated, broken or sunburned skin, and on skin that is fragile from medication.', 'Consultation'),
+    sK('Set up', ['Hands washed and gloves on','Fresh single-use spatulas and a clean strip supply','Wax heated to the right temperature','Skin cleansed and dry','Client positioned comfortably'], 'Prep'),
+    sS('Test the temperature', 'Test the wax on the inside of your own wrist first. It should be warm and fluid, not hot. Never put a used spatula back into the wax.', 'Safety'),
+    sT('Apply a thin layer', 'Apply a thin, even layer in the direction of the hair growth, within the line you agreed with the client.', 'Technique'),
+    sT('Remove quickly', 'Hold the skin taut, then remove against the direction of growth in one fast, low motion parallel to the skin.', 'Technique'),
+    sT('Apply pressure', 'Press your hand on the area right away to calm the sting. Do not re-wax the same spot more than once or twice.', 'Technique'),
+    sT('Tweeze and soothe', 'Tidy stray hairs with clean tweezers, then apply a soothing, fragrance-free product.', 'Technique'),
+    sF('Aftercare', 'Tell the client to avoid sun, heat, makeup and strong products on the area for about 24 hours. Record the treatment.')
+  ]},
+  { id:'et-extractions', name:'Extractions (Safe Basics)', category:'estht', steps:[
+    sC('Check the skin and the rules', 'Look at the skin and check what your state allows. Many states restrict lancets and other tools, so use only what you are permitted to use.', 'Consultation'),
+    sK('Set up', ['Gloves on and hands washed','Clean cotton or gauze','Antiseptic ready','Sharps container nearby, if any sharps are used','Skin cleansed and warm'], 'Prep'),
+    sT('Soften the skin', 'Warm the skin with a warm towel or similar, as your training directs, so the pores are easier to clear.', 'Technique'),
+    sT('Extract only what is ready', 'Wrap your fingers in cotton or gauze and use light, even pressure. Only treat open blackheads and mature whiteheads that release easily.', 'Technique'),
+    sS('Stop when it is not working', 'Do not squeeze deep, red or swollen bumps, or cystic acne. Stop if you see more than a little clear fluid or blood.', 'Safety'),
+    sS('If there is bleeding', 'Apply gentle pressure with clean cotton, then clean the area. Throw single-use items in a sealed bag, and disinfect tools with a disinfectant that is effective against blood.', 'Blood'),
+    sT('Calm the skin', 'Apply an antiseptic or soothing product, and follow with a calming mask if you are doing a facial.', 'Technique'),
+    sF('Aftercare', 'Tell the client to avoid touching the area, makeup and strong products for a day. Record what you did.')
+  ]}
+],
+muat: [
+  { id:'mt-base', name:'Skin Prep & Base', category:'muat', steps:[
+    sC('Check the skin and the look', 'Ask about the occasion, allergies and skin sensitivities, and look at the skin. Skip any product the client reacts to.', 'Consultation'),
+    sK('Set up', ['Your hands washed and your station wiped','Products on a clean palette, taken with a clean spatula','Clean brushes and fresh sponges','Natural light or a daylight lamp'], 'Prep'),
+    sT('Prep the skin', 'Cleanse if needed, then apply moisturizer and a primer, and let each one settle for a moment before the next.', 'Technique'),
+    sT('Match the shade', 'Swatch two or three shades along the jaw, in natural light. The right one disappears into the skin.', 'Technique'),
+    sT('Apply foundation', 'Start at the center of the face and blend outward with a brush or sponge, in thin layers. Build coverage only where it is needed.', 'Technique'),
+    sT('Conceal', 'Apply concealer under the eyes and over blemishes, using small amounts, and blend the edges.', 'Technique'),
+    sT('Set', 'Lightly set with powder where the skin is oily, and leave dry areas alone.', 'Technique'),
+    sF('Check in daylight', 'Look at the finished base in natural light and check around the jaw and hairline. Tell the client how to remove it at the end of the day.')
+  ]},
+  { id:'mt-eyes', name:'Neutral Eye Look', category:'muat', steps:[
+    sC('Check the eyes first', 'Use the When Not to Apply refresher. Ask about allergies and contact lenses, and check for redness, discharge or a stye before you start.', 'Consultation'),
+    sK('Set up', ['Fresh, disposable mascara wands and applicators','Clean eye brushes','Eye products on a clean palette','Client seated with the face lifted to the light'], 'Prep'),
+    sT('Prime the lid', 'Apply a thin layer of eye primer or concealer so the shadow stays put.', 'Technique'),
+    sT('Transition shade', 'Sweep a soft, neutral shade through the crease with light, windshield-wiper motions.', 'Technique'),
+    sT('Lid shade', 'Press a lighter or shimmer shade on the center of the lid with a flat brush or your finger.', 'Technique'),
+    sT('Define', 'Deepen the outer corner with a slightly darker shade and blend the edges so there are no harsh lines.', 'Technique'),
+    sT('Liner and lashes', 'Line along the lash line, keeping the pencil off the wet inner rim if the client is sensitive. Use a fresh wand for mascara.', 'Technique'),
+    sF('Clean up', 'Use a swab to clean up any fallout, and check both eyes match. Never use a mascara wand on more than one client.')
+  ]},
+  { id:'mt-lashes', name:'Strip Lash Application', category:'muat', steps:[
+    sC('Check the eyes and allergies', 'Ask about allergies to lash glue and latex, and look for redness, irritation or infection. Do not apply lashes if the eyes are irritated.', 'Consultation'),
+    sK('Set up', ['Your hands washed and the lash strip handled with clean tweezers','Fresh, sealed adhesive and a clean applicator','Lash strip measured to the eye','Client’s eyes closed and relaxed'], 'Prep'),
+    sT('Measure and trim', 'Hold the strip along the lash line and trim the outer end if it is longer than the eye. Bend the strip gently so it follows the curve of the eyelid.', 'Technique'),
+    sT('Apply the adhesive', 'Apply a thin line of adhesive to the band, away from the client’s face.', 'Technique'),
+    sM('Wait until tacky', 'Let the adhesive become tacky for the time on the label before you apply. Do not apply while it is wet.', 30, 'Per product label', 'Wait'),
+    sT('Place the lash', 'With the client’s eyes closed, place the strip as close to the natural lash line as you can, starting from the middle, then the outer and inner corners.', 'Technique'),
+    sT('Blend', 'Press gently along the band. Blend with liner or mascara if you wish, using fresh applicators.', 'Technique'),
+    sF('Check comfort and aftercare', 'Ask the client to open their eyes and tell you how it feels. Remove the lashes at once if there is stinging or burning. Tell them to remove them gently with remover at the end of the day.')
+  ]},
+  { id:'mt-finish', name:'Blush, Contour & Lip', category:'muat', steps:[
+    sC('Confirm the finish', 'Ask about the look and allergies, especially to lip products and fragrance.', 'Consultation'),
+    sK('Set up', ['Disposable lip applicators and brushes ready','Clean brushes for powder and cream','Products on a clean palette','Natural light'], 'Prep'),
+    sT('Blush', 'Smile and place blush on the apples of the cheeks, blending up and out toward the temples.', 'Technique'),
+    sT('Contour and highlight', 'Add a light contour in the hollow under the cheekbone and highlight the high points, blending the edges.', 'Technique'),
+    sT('Line the lips', 'Use a clean pencil, or sharpen it first, and line just inside the natural lip line.', 'Technique'),
+    sT('Apply lip color', 'Use a disposable applicator or a clean brush from a palette. Never apply directly from a pot or a stick that has touched another client.', 'Technique'),
+    sT('Set the look', 'Mist lightly with setting spray if the client wants it to last.', 'Technique'),
+    sF('Final check', 'Check the whole face in natural light, tidy any smudges, and give the client touch-up tips. Clean your tools and station.')
+  ]}
+],
   nail: [
     { id:'n-consult', name:'Consultation & Nail Check', category:'nail', steps:[
       sC('Ask about health and allergies', 'Ask about allergies to nail products, skin conditions, medications, diabetes or circulation problems, and pregnancy. Ask what service they want and what has gone wrong at past appointments.'),
@@ -303,21 +469,21 @@ return {
     ]}
   ],
   safety: [
-    { id:'c-consult', name:'Consultation & Allergy Check', category:'safety', crafts:['Cosmetologist'], steps:[
+    { id:'c-consult', name:'Consultation & Allergy Check', category:'safety', crafts:['Cosmetologist','Barber'], steps:[
       sC('Ask about goals and history', 'Ask what service they want and about past chemical services, color, relaxers, perms or bleach in the last several months. Ask about hair loss or scalp problems.'),
       sC('Ask about allergies and reactions', 'Ask about allergies to hair color, bleach, fragrance, latex or other products, and about any past reaction at a salon or at home.', 'Health'),
       sT('Patch test when the product calls for one', 'Hair color and some other products require a skin patch test before use. Follow the manufacturer’s directions for where to apply and how long to wait, often 24 to 48 hours. Do not do the service if there is a reaction.', 'Check'),
       sT('Explain the service', 'Tell the client what you will do, how long it will take, the price and what to expect, and have them tell you right away if anything burns or itches.', 'Consultation'),
       sF('Record it', 'Write down allergies, the formula, the patch test result and what you agreed. Follow your state’s record-keeping rules.')
     ]},
-    { id:'c-sanitation', name:'Sanitation & Station Setup', category:'safety', crafts:['Cosmetologist'], steps:[
+    { id:'c-sanitation', name:'Sanitation & Station Setup', category:'safety', crafts:['Cosmetologist','Barber'], steps:[
       sK('Before each client', ['Wash hands with soap and water','Wipe the chair, station and tray with a disinfectant approved for the surface','Clean cape, towels and neck strip for every client','Combs, brushes, clips and shears cleaned and disinfected','Single-use items like gloves, foils and applicators ready'], 'Prep'),
       sT('Clean, then disinfect', 'Remove hair and product from tools, wash with soap and water, rinse, then fully submerge in an EPA-registered disinfectant. Porous items like foam files and cloth cannot be disinfected, so replace them.', 'Technique'),
       sM('Respect the contact time', 'Tools must stay submerged for the full contact time on the label.', 30, 'Per product label'),
       sS('Keep used and clean apart', 'Store used tools in a marked container and clean tools in a closed, covered one.'),
       sF('Wash up', 'Wash your hands before you start with the next client.')
     ]},
-    { id:'c-scalp', name:'Scalp & Skin Check: Service, Adapt or Refer', category:'safety', crafts:['Cosmetologist'], steps:[
+    { id:'c-scalp', name:'Scalp & Skin Check: Service, Adapt or Refer', category:'safety', crafts:['Cosmetologist','Barber'], steps:[
       sR('Three answers', ['Proceed: nothing in the way','Adapt: change the service or avoid the area','Do not service: send them to a doctor'], 'Every check ends in one of these'),
       sT('Look at the scalp and skin', 'Check the scalp, hairline, ears and neck for redness, sores, cuts, scabs, flaking, bumps, scratches or parasites.', 'Check'),
       sS('Do not service', 'Open sores or cuts, signs of infection such as pus or swelling, a contagious condition such as head lice, ringworm or scabies, and severe irritation. Chemical services are never done on irritated or broken skin.', 'Skip the service'),
@@ -325,7 +491,7 @@ return {
       sT('Say it kindly', 'Explain that you want the scalp checked first, that you cannot diagnose it, and that you would be glad to see them once it has cleared.', 'Client'),
       sF('Record it', 'Write down what you saw and what you told the client. This is a general refresher, not medical advice. Your training and state law come first.')
     ]},
-    { id:'c-reaction', name:'Reaction or Chemical Burn: What to Do', category:'safety', crafts:['Cosmetologist'], steps:[
+    { id:'c-reaction', name:'Reaction or Chemical Burn: What to Do', category:'safety', crafts:['Cosmetologist','Barber'], steps:[
       sS('Stop and rinse', 'Stop the service right away. Rinse the product off with plenty of lukewarm water until it is all gone.', 'Step 1'),
       sS('Keep rinsing a burn', 'If the skin is burning or blistering, keep flushing with cool running water for about 20 minutes.', 'Step 2'),
       sS('Eyes', 'If product gets in the eyes, rinse with plenty of clean water for at least 15 minutes and get medical care.', 'Step 3'),
