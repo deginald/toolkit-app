@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-10-31T14-00-00Z">
+<meta name="app-build" content="2026-11-01T14-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -234,6 +234,13 @@
   .cost-row .t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
   .cost-row .t b{ font-size:14px; } .cost-row .t span{ color:var(--muted); font-size:12px; line-height:1.35; overflow-wrap:anywhere; }
   .cost-row .amt{ font-weight:700; font-variant-numeric:tabular-nums; flex:none; }
+  .pc-kpis{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .pc-kpis div{ border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:10px 12px; min-width:0; }
+  .pc-kpis small{ display:block; font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+  .pc-kpis b{ font-size:16px; display:block; margin-top:3px; overflow-wrap:anywhere; } .pc-kpis .neg b{ color:var(--behind); }
+  .pc-auto{ display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:11px 12px; }
+  .pc-auto .t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; } .pc-auto .t b{ font-size:14px; } .pc-auto .t span{ color:var(--muted); font-size:12px; }
+  .pc-lock{ border:1px dashed var(--brass); border-radius:14px; padding:11px 12px; font-size:12.5px; color:var(--muted); line-height:1.45; display:flex; flex-direction:column; gap:8px; } .pc-lock b{ color:var(--brass); }
   .rc-chip{ cursor:pointer; margin-left:0; white-space:nowrap; flex:none; }
   .rc-chip.has{ color:var(--brass); border-color:var(--brass); }
   .rc-chip.need{ color:var(--brass); border-style:dashed; border-color:var(--brass); }
@@ -1970,6 +1977,10 @@
           </div>
           <p class="screen-sub">Business tools (Loyalty, Earnings, Walk-ins, My Clients, Inventory, Shop, and Rent &amp; Commission) are part of a paid Vono plan. Try Vono Pro free: you won't be charged until the trial ends.</p>
           <button class="btn btn-primary" type="button" id="btn-business-paywall-account">Start free trial</button>
+          <p class="biz-glabel">Free with every plan</p>
+          <div class="biz-group">
+            <button type="button" class="biz-row" id="btn-free-costs"><span class="t"><b>Costs</b><span id="bh-free-costs-sub">Log what you spend to work</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
         </div>
         <div id="business-real-content">
         <div class="tab-head" id="biz-tab-head">
@@ -1992,6 +2003,8 @@
           <button type="button" class="biz-row" data-biz-open="walkins"><span class="t"><b>Walk-ins</b><span id="bh-walk-sub">Today</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <button type="button" class="biz-row" data-biz-open="tips"><span class="t"><b>Tips</b><span id="bh-tips-sub">Today</span></span><span class="biz-pill" id="bh-tips-pill" hidden></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <button type="button" class="biz-row" data-biz-open="rentcomm"><span class="t"><b>Rent &amp; commission</b><span id="bh-rent-sub">What you pay for your chair</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="biz-row" data-biz-open="costs"><span class="t"><b>Costs</b><span id="bh-costs-sub">Log what you spend to work</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="biz-row" data-biz-open="tax"><span class="t"><b>Tax-time package</b><span id="bh-tax-sub">For your accountant</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           </div>
           <p class="biz-glabel">Clients</p>
           <div class="biz-group">
@@ -2002,6 +2015,88 @@
           <div class="biz-group">
           <button type="button" class="biz-row" data-biz-open="shop"><span class="t"><b>Shop</b><span id="bh-shop-sub">Your team and shop</span></span><span class="biz-pill good" id="bh-shop-pill" hidden></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <button type="button" class="biz-row" data-biz-open="inventory"><span class="t"><b>Inventory</b><span id="bh-inv-sub">Your products</span></span><span class="biz-pill" id="bh-inv-pill" hidden></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+        </div>
+        <div class="biz-pane" data-biz="costs" id="tab-procosts">
+          <div class="biz-pane-head"><button type="button" class="link-btn" id="pc-back">&larr; Business</button><h2>Costs</h2></div>
+          <div class="screen-body show" data-screen="dashboard" style="gap:14px;">
+            <p class="screen-sub" style="margin:0;">Log what you spend to work: booth rent, products, tools, license fees. This is your own record for your taxes. Vono doesn't verify these amounts.</p>
+            <p class="screen-sub" id="pc-setup-note" style="display:none; margin:0; color:var(--brass);">Costs needs a one-time database update before it can save. Run the new SQL file in Supabase, then come back.</p>
+            <div id="pc-pro-top" style="display:none; flex-direction:column; gap:10px;">
+              <div class="pc-kpis" id="pc-kpis"></div>
+              <p class="screen-sub" id="pc-money-note" style="margin:0;"></p>
+              <div class="pc-auto" id="pc-chair" style="display:none;"><span class="t"><b>Chair rent &amp; commission</b><span id="pc-chair-text"></span></span><i class="cost-chip" style="margin:0;">Auto</i></div>
+              <div class="detail-card" id="pc-nudge" style="display:none; flex-direction:column; gap:10px;">
+                <span class="screen-sub" id="pc-nudge-text" style="margin:0;"></span>
+                <button type="button" class="btn btn-outline" id="pc-btn-fill">Add them</button>
+              </div>
+            </div>
+            <div class="card" id="pc-form-card" style="gap:12px;">
+              <p class="eyebrow-mini2" id="pc-form-heading" style="margin:0;">Add a cost</p>
+              <div class="field"><label for="pc-cat">What was it for</label><div class="input-row"><select id="pc-cat" class="title-select" style="width:100%;"></select></div></div>
+              <div class="field" id="pc-other-wrap" style="display:none;"><label for="pc-other">Name it</label><div class="input-row"><input id="pc-other" type="text" placeholder="e.g. Parking"></div></div>
+              <div class="field"><label for="pc-date">Date</label><div class="input-row"><input id="pc-date" type="date"></div></div>
+              <div class="field"><label for="pc-amount">Amount ($)</label><div class="input-row"><input id="pc-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 62.00"></div></div>
+              <div class="field"><label for="pc-paidto">Paid to (optional)</label><div class="input-row"><input id="pc-paidto" type="text" placeholder="e.g. Sally Beauty"></div></div>
+              <div class="field"><label for="pc-note">Note (optional)</label><div class="input-row"><input id="pc-note" type="text" placeholder="e.g. Clipper guards"></div></div>
+              <div class="field" id="pc-receipt-field" style="display:none;">
+                <label>Receipt (optional)</label>
+                <div id="pc-rc-empty" style="display:flex; gap:10px;">
+                  <button type="button" class="btn btn-outline" id="pc-rc-take" style="flex:1;">Take photo</button>
+                  <button type="button" class="btn btn-outline" id="pc-rc-pick" style="flex:1;">Choose from library</button>
+                </div>
+                <div id="pc-rc-have" class="rc-have" style="display:none;">
+                  <img id="pc-rc-thumb" alt="Receipt photo">
+                  <div class="btns">
+                    <button type="button" class="btn btn-outline" id="pc-rc-retake">Retake photo</button>
+                    <button type="button" class="btn btn-outline" id="pc-rc-remove">Remove</button>
+                  </div>
+                </div>
+                <input type="file" id="pc-rc-cam" accept="image/*" capture="environment" hidden>
+                <input type="file" id="pc-rc-lib" accept="image/*" hidden>
+              </div>
+              <label class="check-row" id="pc-repeat-row" style="display:none;"><input type="checkbox" id="pc-repeat"><span>Repeats every month</span></label>
+              <p class="screen-sub" id="pc-repeat-help" style="display:none; margin:-4px 0 0;">Good for insurance, software and other bills that stay the same. Vono adds each month up to today.</p>
+              <div class="btn-row" style="gap:10px;">
+                <button class="btn btn-primary" id="pc-save" type="button" style="flex:1;">Save cost</button>
+                <button class="btn btn-ghost" id="pc-cancel" type="button" style="flex:1; display:none;">Cancel</button>
+              </div>
+              <div class="btn-row" style="gap:10px;">
+                <button class="btn btn-outline" id="pc-stop" type="button" style="flex:1; display:none;">Stop repeating</button>
+                <button class="btn btn-outline" id="pc-delete" type="button" style="flex:1; display:none;">Delete</button>
+              </div>
+              <div class="pc-lock" id="pc-lock" style="display:none;">
+                <span><b>With Vono Pro:</b> add a photo of the receipt, repeat monthly bills automatically, see your profit, and print a tax-time package for your accountant.</span>
+                <button type="button" class="btn btn-outline" id="pc-lock-trial">Start free trial</button>
+              </div>
+              <p class="screen-sub" id="pc-status" style="margin:0;">&nbsp;</p>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+              <select id="pc-year" class="title-select" style="width:auto;" aria-label="Year"></select>
+              <span class="screen-sub" id="pc-year-total" style="margin:0;"></span>
+            </div>
+            <div id="pc-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+            <p class="screen-sub" id="pc-empty" style="display:none; margin:0;">No costs logged for this year yet. Add your first one above.</p>
+            <button class="btn btn-outline" id="pc-csv" type="button" style="display:none;">Download costs (CSV)</button>
+          </div>
+        </div>
+        <div class="biz-pane" data-biz="tax" id="tab-protax">
+          <div class="biz-pane-head"><button type="button" class="link-btn" data-biz-back>&larr; Business</button><h2>Tax-time package</h2></div>
+          <div class="screen-body show" data-screen="dashboard" style="gap:14px;">
+            <p class="screen-sub" style="margin:0;">Everything for the year in one place for your accountant.</p>
+            <div class="card" style="gap:12px;">
+              <div class="field"><label for="pt-year">Year</label><div class="input-row"><select id="pt-year" class="title-select" style="width:100%;"></select></div></div>
+              <label class="check-row tax-opt"><input type="checkbox" id="pt-summary" checked><span>Summary and totals<small>Money in, costs by category, net.</small></span></label>
+              <label class="check-row tax-opt"><input type="checkbox" id="pt-costs" checked><span>Every cost, listed by category<small>Date, who you paid, note, amount.</small></span></label>
+              <label class="check-row tax-opt"><input type="checkbox" id="pt-chair" checked><span>Chair rent &amp; commission paid<small>Every payment from Rent &amp; commission.</small></span></label>
+              <label class="check-row tax-opt"><input type="checkbox" id="pt-receipts" checked><span>Receipt photos<small id="pt-receipts-sub">&nbsp;</small></span></label>
+              <div class="btn-row" style="gap:10px;">
+                <button class="btn btn-primary" id="pt-print" type="button" style="flex:1;">Print</button>
+                <button class="btn btn-outline" id="pt-csv" type="button" style="flex:1;">Spreadsheet (CSV)</button>
+              </div>
+              <p class="screen-sub" id="pt-status" style="margin:0;">&nbsp;</p>
+            </div>
+            <p class="screen-sub" style="margin:0;">Your own record, not verified and not tax advice. Ask your accountant what they need and how long to keep receipts.</p>
           </div>
         </div>
         <div class="biz-pane" data-biz="loyalty" id="tab-loyalty">
@@ -3984,6 +4079,8 @@ function showBusinessSubtab(mode){
   if (mode === 'inventory' && window.initInventoryTab) window.initInventoryTab();
   if (mode === 'shop' && window.initShopTab) window.initShopTab();
   if (mode === 'rentcomm' && window.initRentCommTab) window.initRentCommTab();
+  if (mode === 'costs' && window.initProCostsTab) window.initProCostsTab();
+  if (mode === 'tax' && window.initProTaxTab) window.initProTaxTab();
 }
 // Rows on the Business home open their pane; every pane's back link returns home.
 document.querySelectorAll('[data-biz-open]').forEach(btn=>{
@@ -4049,6 +4146,7 @@ function showTab(name){
     if (window.initBookingTab) window.initBookingTab();
   }
   if (name === 'business' && hasActiveAccess()) showBusinessSubtab('home');
+  if (name === 'business' && !isStudent() && !hasActiveAccess() && window.refreshFreeCostsRow) window.refreshFreeCostsRow();
   if (name === 'jobs' && window.initJobsTab) window.initJobsTab();
 }
 /* =========================================================
@@ -9673,12 +9771,30 @@ async function saveAppointmentChange(id, core, extras){
       return {
         monthName: MONTH_NAMES[m],
         monthAppt: n.appt[m], monthWalk: n.walk[m], monthTips: n.tips[m],
-        ytd: n.apptTotal + n.walkTotal,
+        ytd: n.apptTotal + n.walkTotal, ytdTips: n.tipTotal,
         todayWalk: sumDay(walkinLogs, r => (Number(r.count)||0) * (Number(r.price)||0)),
         todayTips: sumDay(tipLogs, r => Number(r.amount)||0),
         todayTipsLogged: (tipLogs || []).some(r => r.entry_date === today)
       };
     }catch(e){ console.warn('earnings summary failed', e); return null; }
+  };
+  // For Costs and the Tax-time package: the same year numbers the Earnings screen shows.
+  window.proMoneyData = async function(){
+    if (!dbAvailable || !profileCode) return null;
+    try{
+      const appts = await fetchBookedAppointments();
+      const walkinLogs = window.fetchAllWalkinLogsForBarber ? await window.fetchAllWalkinLogsForBarber() : [];
+      const tipLogs = window.fetchAllTipLogsForBarber ? await window.fetchAllTipLogsForBarber() : [];
+      return { appts, walkinLogs, tipLogs };
+    }catch(e){ console.warn('money data failed', e); return null; }
+  };
+  window.proMoneyYear = function(data, year){
+    const keep = cache; cache = data;
+    try{ return yearNumbers(year); } finally { cache = keep; }
+  };
+  window.proMoneyYears = function(data){
+    const keep = cache; cache = data;
+    try{ return yearsWithData(); } finally { cache = keep; }
   };
   window.initEarningsTab = function(){
     renderEarnings();
@@ -12559,6 +12675,10 @@ async function saveAppointmentChange(id, core, extras){
       $('bh-walk-sub').textContent = e.todayWalk > 0 ? 'Today ' + money(e.todayWalk) : 'Nothing logged today';
       $('bh-tips-sub').textContent = e.todayTipsLogged ? 'Today ' + money(e.todayTips) : 'Not logged today';
       setPill('bh-tips-pill', e.todayTipsLogged ? '' : 'Add');
+      if (window.bizCostsSummary) window.bizCostsSummary(e).then(c => {
+        if (mine !== token || !c) return;
+        $('bh-costs-sub').textContent = c.any ? c.year + ' so far: ' + money(Math.abs(c.net)) + (c.net < 0 ? ' loss' : ' profit') : 'Log what you spend to work';
+      });
     });
     live(window.bizClientsSummary).then(c=>{
       if (mine !== token || !c) return;
@@ -12584,6 +12704,590 @@ async function saveAppointmentChange(id, core, extras){
       }
     });
   };
+})();
+
+/* =========================================================
+   COSTS + TAX-TIME PACKAGE (Business > Costs, Business > Tax-time package)
+   A pro's own costs. Basic gets the plain list and a costs-only CSV (on the free
+   row of the Business page); any paid plan adds receipt photos, monthly repeats,
+   the money in / costs / net line and the printed package. Money in comes from the
+   same numbers as Earnings (appointments + walk-ins, with tips on their own line),
+   and chair rent comes from Rent & commission, so nothing is typed twice.
+   ========================================================= */
+(function(){
+  const rootC = document.getElementById('tab-procosts');
+  const rootT = document.getElementById('tab-protax');
+  const $c = s => rootC.querySelector(s);
+  const $t = s => rootT.querySelector(s);
+  const RECEIPT_BUCKET = 'shop-receipts';
+  const CATS = ['Products & supplies','Tools & equipment','Licenses & insurance','Education & training','Marketing & software'];
+  const OTHER = 'Other costs';
+  const CHAIR = 'Chair rent & commission';
+  const MS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const ML = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let costs = [], chair = [], money = null, missing = false, editingId = null, armedDelete = false;
+  let year = new Date().getFullYear(), taxYear = new Date().getFullYear();
+  let rc = { file:null, preview:null, existing:null, remove:false };
+  const rcUrls = {};
+  const isPro = () => hasActiveAccess();
+  const esc = v => (v == null ? '' : String(v)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const sum = a => a.reduce((x, y) => x + (Number(y) || 0), 0);
+  const rnd = n => Math.round((Number(n) || 0) * 100) / 100;
+  function fmt(n){ n = rnd(n); const t = Math.abs(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); return n < 0 ? '($' + t + ')' : '$' + t; }
+  function parts(iso){ const t = String(iso || ''); return { y: parseInt(t.slice(0,4), 10), m: parseInt(t.slice(5,7), 10) - 1, d: parseInt(t.slice(8,10), 10) || 1 }; }
+  function mkIso(y, m, d){ return y + '-' + String(m + 1).padStart(2,'0') + '-' + String(d).padStart(2,'0'); }
+  function daysIn(y, m){ return new Date(y, m + 1, 0).getDate(); }
+  function shortDate(iso){ const p = parts(iso); return MS[p.m] + ' ' + p.d; }
+  function longDate(iso){ const p = parts(iso); return ML[p.m] + ' ' + p.d + ', ' + p.y; }
+  function genId(pre){ return pre + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function groupOf(cat){ return CATS.includes(cat) ? cat : OTHER; }
+  function csvText(v){ let t = v == null ? '' : String(v); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return /[",\r\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; }
+  function isMissingTable(e){ return /42P01|PGRST205|pro_expenses/.test(String((e && e.message) || '') + ' ' + String((e && e.code) || '')); }
+  function isReceiptErr(e){ return /receipt_path|shop-receipts|bucket not found|PGRST204|42703/i.test(String((e && e.message) || '') + ' ' + String((e && e.code) || '') + ' ' + String((e && e.statusCode) || '')); }
+  function friendly(e){
+    if (isReceiptErr(e)) return 'Receipt photos need a one-time database update first. Run the new SQL file in Supabase, then try again.';
+    if (isMissingTable(e)) return 'Costs needs a one-time database update first. Run the new SQL file in Supabase, then try again.';
+    return "Couldn't save. Try again.";
+  }
+
+  // ---- data ----
+  async function loadCosts(){
+    missing = false;
+    if (!dbAvailable || !profileCode){ costs = []; return; }
+    try{
+      const { data, error } = await supabaseClient.from('pro_expenses').select('*').eq('barber_code', profileCode);
+      if (error) throw error;
+      costs = data || [];
+    }catch(e){ console.warn('load costs failed', e); costs = []; if (isMissingTable(e)) missing = true; }
+  }
+  async function loadChair(){
+    if (!dbAvailable || !profileCode || !isPro()){ chair = []; return; }
+    try{
+      const { data, error } = await supabaseClient.from('rent_commission_entries').select('*').eq('barber_code', profileCode);
+      if (error) throw error;
+      chair = data || [];
+    }catch(e){ console.warn('load chair entries failed', e); chair = []; }
+  }
+  async function loadMoney(){
+    money = (isPro() && window.proMoneyData) ? await window.proMoneyData() : null;
+  }
+  function moneyYear(y){
+    if (!money || !window.proMoneyYear){ const z = Array(12).fill(0); return { appt:z, walk:z, tips:z, apptTotal:0, walkTotal:0, tipTotal:0 }; }
+    return window.proMoneyYear(money, y);
+  }
+  function compute(y){
+    const mm = moneyYear(y);
+    const yc = costs.filter(c => parts(c.expense_date).y === y);
+    const ych = chair.filter(c => parts(c.entry_date).y === y);
+    const services = mm.apptTotal + mm.walkTotal, tips = mm.tipTotal;
+    const costTotal = sum(yc.map(c => c.amount)), chairTotal = sum(ych.map(c => c.amount));
+    const moneyIn = services + tips, out = costTotal + chairTotal;
+    return { mm, yc, ych, services, tips, moneyIn, costTotal, chairTotal, out, net: moneyIn - out };
+  }
+  function years(){
+    const ys = new Set([new Date().getFullYear()]);
+    costs.forEach(c => { const y = parts(c.expense_date).y; if (y) ys.add(y); });
+    chair.forEach(c => { const y = parts(c.entry_date).y; if (y) ys.add(y); });
+    if (money && window.proMoneyYears) window.proMoneyYears(money).forEach(y => ys.add(y));
+    return [...ys].sort((a, b) => b - a);
+  }
+
+  // ---- receipts ----
+  async function receiptUrl(path){
+    const hit = rcUrls[path];
+    if (hit && hit.exp > Date.now()) return hit.url;
+    try{
+      const { data, error } = await supabaseClient.storage.from(RECEIPT_BUCKET).createSignedUrl(path, 3600);
+      if (error || !data || !data.signedUrl) return null;
+      rcUrls[path] = { url: data.signedUrl, exp: Date.now() + 50 * 60 * 1000 };
+      return data.signedUrl;
+    }catch(e){ console.warn('receipt url failed', e); return null; }
+  }
+  function removeFiles(paths){
+    try{ const r = supabaseClient.storage.from(RECEIPT_BUCKET).remove(paths.filter(Boolean)); if (r && r.catch) r.catch(() => {}); }catch(e){ console.warn('receipt cleanup failed', e); }
+  }
+  async function uploadReceipt(file, costId){
+    const small = await compressPhotoForUpload(file, 1800, 0.85);
+    const ext = small.type === 'image/png' ? 'png' : 'jpg';
+    const path = profileCode + '/pro-' + costId + '-' + Date.now().toString(36) + '.' + ext;
+    const { error } = await supabaseClient.storage.from(RECEIPT_BUCKET).upload(path, small, { contentType: small.type || 'image/jpeg', upsert: false });
+    if (error) throw error;
+    return path;
+  }
+  function revoke(){ if (rc.preview){ try{ URL.revokeObjectURL(rc.preview); }catch(e){} } }
+  async function renderReceiptField(){
+    const emptyEl = $c('#pc-rc-empty'), haveEl = $c('#pc-rc-have'), thumb = $c('#pc-rc-thumb');
+    if (rc.file){ emptyEl.style.display = 'none'; haveEl.style.display = 'flex'; thumb.src = rc.preview; }
+    else if (rc.existing && !rc.remove){
+      emptyEl.style.display = 'none'; haveEl.style.display = 'flex';
+      const keep = rc.existing; thumb.removeAttribute('src');
+      const u = await receiptUrl(keep);
+      if (u && rc.existing === keep && !rc.file && !rc.remove) thumb.src = u;
+    } else { emptyEl.style.display = 'flex'; haveEl.style.display = 'none'; thumb.removeAttribute('src'); }
+  }
+  function rcReset(){
+    revoke(); rc = { file:null, preview:null, existing:null, remove:false };
+    ['#pc-rc-cam','#pc-rc-lib'].forEach(sel => { $c(sel).value = ''; });
+    renderReceiptField();
+  }
+  function rcPicked(input){
+    const f = input.files && input.files[0]; input.value = '';
+    if (!f) return;
+    if (!/^image\//.test(f.type || '')){ $c('#pc-status').textContent = 'Pick a photo (not a PDF).'; return; }
+    revoke(); rc.file = f; rc.preview = URL.createObjectURL(f); rc.remove = false;
+    $c('#pc-status').innerHTML = '&nbsp;'; renderReceiptField();
+  }
+  $c('#pc-rc-take').addEventListener('click', () => $c('#pc-rc-cam').click());
+  $c('#pc-rc-retake').addEventListener('click', () => $c('#pc-rc-cam').click());
+  $c('#pc-rc-pick').addEventListener('click', () => $c('#pc-rc-lib').click());
+  $c('#pc-rc-cam').addEventListener('change', function(){ rcPicked(this); });
+  $c('#pc-rc-lib').addEventListener('change', function(){ rcPicked(this); });
+  $c('#pc-rc-remove').addEventListener('click', () => { revoke(); rc.file = null; rc.preview = null; rc.remove = !!rc.existing; renderReceiptField(); });
+
+  // Full-screen photo viewer. onRemove() does the actual delete.
+  async function viewReceipt(c){
+    if (!c || !c.receipt_path) return;
+    const old = document.getElementById('receipt-viewer'); if (old) old.remove();
+    const ov = document.createElement('div');
+    ov.id = 'receipt-viewer'; ov.className = 'rc-viewer';
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Receipt photo');
+    ov.innerHTML = '<button type="button" class="link-btn" data-rc-close style="align-self:flex-start; font-size:13px; padding:0;">&larr; Back to costs</button>' +
+      '<p class="eyebrow-mini" style="margin:0;">' + esc(c.category) + ' &middot; ' + esc(shortDate(c.expense_date)) + '</p>' +
+      '<div class="rc-stage"><span class="screen-sub" data-rc-msg style="margin:0;">Loading the photo…</span><img alt="Receipt photo" hidden></div>' +
+      '<div class="btn-row" style="gap:10px;"><button type="button" class="btn btn-outline" data-rc-replace style="flex:1;">Replace</button><button type="button" class="btn btn-outline" data-rc-remove style="flex:1;">Remove</button></div>' +
+      '<button type="button" class="btn btn-outline" data-rc-save>Save photo to my phone</button>' +
+      '<p class="screen-sub" data-rc-status style="margin:0;">&nbsp;</p>';
+    document.body.appendChild(ov);
+    const statusEl = ov.querySelector('[data-rc-status]');
+    function close(){ document.removeEventListener('keydown', onKey, true); ov.remove(); }
+    function onKey(e){ if (e.key === 'Escape'){ e.stopPropagation(); close(); } }
+    document.addEventListener('keydown', onKey, true);
+    ov.querySelector('[data-rc-close]').addEventListener('click', close);
+    ov.querySelector('[data-rc-close]').focus();
+    ov.querySelector('[data-rc-replace]').addEventListener('click', () => {
+      close(); loadIntoForm(c);
+      const f = $c('#pc-receipt-field'); if (f && f.scrollIntoView) f.scrollIntoView({ block:'center' });
+    });
+    let armed = false;
+    ov.querySelector('[data-rc-remove]').addEventListener('click', async function(){
+      if (!armed){ armed = true; this.textContent = 'Tap again to remove'; setTimeout(() => { if (armed){ armed = false; this.textContent = 'Remove'; } }, 4000); return; }
+      armed = false;
+      const oldPath = c.receipt_path;
+      try{
+        const { error } = await supabaseClient.from('pro_expenses').update({ receipt_path: null }).eq('id', c.id);
+        if (error) throw error;
+        removeFiles([oldPath]); c.receipt_path = null;
+        close(); renderCosts(); $c('#pc-status').textContent = 'Receipt removed.';
+      }catch(e){ console.warn('remove receipt failed', e); statusEl.textContent = isReceiptErr(e) ? friendly(e) : "Couldn't remove it. Try again."; }
+    });
+    const url = await receiptUrl(c.receipt_path);
+    const img = ov.querySelector('.rc-stage img'), msg = ov.querySelector('[data-rc-msg]');
+    if (!url){ msg.textContent = "Couldn't load this photo. Try again in a moment."; } else { img.src = url; img.hidden = false; msg.hidden = true; }
+    ov.querySelector('[data-rc-save]').addEventListener('click', async () => {
+      if (!url){ statusEl.textContent = "The photo isn't loaded yet."; return; }
+      try{
+        const blob = await (await fetch(url)).blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'receipt-' + String(c.expense_date || '') + '-' + String(c.category || 'cost').replace(/[^a-z0-9]+/gi, '-').toLowerCase() + (blob.type === 'image/png' ? '.png' : '.jpg');
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+        statusEl.textContent = 'Saved to your downloads.';
+      }catch(e){ console.warn('save receipt failed', e); statusEl.textContent = "Couldn't save it. Try again."; }
+    });
+  }
+
+  // ---- Costs screen ----
+  function populateCats(){
+    const sel = $c('#pc-cat');
+    if (sel.options.length) return;
+    sel.innerHTML = CATS.map(l => `<option value="${esc(l)}">${esc(l)}</option>`).join('') + '<option value="__other">Other (name it)</option>';
+  }
+  function syncOther(){ $c('#pc-other-wrap').style.display = $c('#pc-cat').value === '__other' ? 'flex' : 'none'; }
+  function applyMode(){
+    const pro = isPro();
+    $c('#pc-pro-top').style.display = pro ? 'flex' : 'none';
+    $c('#pc-receipt-field').style.display = pro ? 'flex' : 'none';
+    $c('#pc-lock').style.display = pro ? 'none' : 'flex';
+    $c('#pc-csv').style.display = pro ? 'none' : '';
+    const showRepeat = pro && !editingId;
+    $c('#pc-repeat-row').style.display = showRepeat ? 'flex' : 'none';
+    $c('#pc-repeat-help').style.display = showRepeat ? 'block' : 'none';
+  }
+  function resetForm(){
+    editingId = null; armedDelete = false;
+    rcReset(); populateCats();
+    $c('#pc-cat').value = CATS[0]; $c('#pc-other').value = '';
+    $c('#pc-date').value = todayIso(); $c('#pc-amount').value = ''; $c('#pc-paidto').value = ''; $c('#pc-note').value = '';
+    $c('#pc-repeat').checked = false;
+    $c('#pc-form-heading').textContent = 'Add a cost'; $c('#pc-save').textContent = 'Save cost';
+    ['#pc-cancel','#pc-delete','#pc-stop'].forEach(sel => { $c(sel).style.display = 'none'; });
+    $c('#pc-delete').textContent = 'Delete';
+    syncOther(); applyMode();
+  }
+  function loadIntoForm(c){
+    resetForm(); editingId = c.id;
+    const known = CATS.includes(c.category);
+    $c('#pc-cat').value = known ? c.category : '__other'; $c('#pc-other').value = known ? '' : c.category;
+    $c('#pc-date').value = c.expense_date; $c('#pc-amount').value = Number(c.amount);
+    $c('#pc-paidto').value = c.paid_to || ''; $c('#pc-note').value = c.note || '';
+    $c('#pc-form-heading').textContent = 'Edit this cost'; $c('#pc-save').textContent = 'Save changes';
+    $c('#pc-cancel').style.display = ''; $c('#pc-delete').style.display = '';
+    $c('#pc-stop').style.display = (isPro() && c.series_id) ? '' : 'none';
+    rc.existing = c.receipt_path || null; renderReceiptField();
+    syncOther(); applyMode();
+    const card = $c('#pc-form-card'); if (card && card.scrollIntoView) card.scrollIntoView({ block:'start' });
+  }
+  function nudgeRows(){
+    const today = todayIso(), latest = {};
+    costs.forEach(c => { if (!c.series_id) return; if (!latest[c.series_id] || c.expense_date > latest[c.series_id].expense_date) latest[c.series_id] = c; });
+    const rows = [];
+    Object.values(latest).forEach(last => {
+      let { y, m, d } = parts(last.expense_date);
+      for (let i = 0; i < 24; i++){
+        m++; if (m > 11){ m = 0; y++; }
+        const iso = mkIso(y, m, Math.min(d, daysIn(y, m)));
+        if (iso > today) break;
+        rows.push({ id: genId('pcost'), barber_code: profileCode, expense_date: iso, category: last.category, amount: Number(last.amount), paid_to: last.paid_to || null, note: last.note || null, series_id: last.series_id });
+      }
+    });
+    return rows;
+  }
+  function renderCosts(){
+    populateCats();
+    const pro = isPro();
+    const ys = years(); if (!ys.includes(year)) year = ys[0];
+    $c('#pc-year').innerHTML = ys.map(y => `<option value="${y}" ${y === year ? 'selected' : ''}>${y}</option>`).join('');
+    const rows = costs.filter(c => parts(c.expense_date).y === year).sort((a, b) => (b.expense_date || '').localeCompare(a.expense_date || '') || String(b.id).localeCompare(String(a.id)));
+    $c('#pc-year-total').textContent = year + ' total ' + fmt(sum(rows.map(c => c.amount)));
+    let html = '', curM = -1;
+    rows.forEach(c => {
+      const p = parts(c.expense_date);
+      if (p.m !== curM){
+        curM = p.m;
+        html += `<div class="cost-month"><span>${ML[curM]}</span><span>${fmt(sum(rows.filter(r => parts(r.expense_date).m === curM).map(r => r.amount)))}</span></div>`;
+      }
+      const sub = [c.paid_to, shortDate(c.expense_date), c.note].filter(Boolean).map(esc).join(' · ');
+      let chip;
+      if (!pro) chip = `<span class="cost-chip rc-chip" role="button" tabindex="0" data-pro-tag>Pro</span>`;
+      else if (c.receipt_path) chip = `<span class="cost-chip rc-chip has" role="button" tabindex="0" data-receipt-view="${esc(c.id)}">Receipt</span>`;
+      else chip = `<span class="cost-chip rc-chip ${c.category === 'Tools & equipment' ? 'need' : ''}" data-receipt-add="${esc(c.id)}">+ Receipt</span>`;
+      html += `<button type="button" class="cost-row" data-cost-id="${esc(c.id)}"><span class="t"><b>${esc(c.category)}${(pro && c.series_id) ? ' <i class="cost-chip">Monthly</i>' : ''}</b><span>${sub}</span></span>${chip}<span class="amt">${fmt(c.amount)}</span></button>`;
+    });
+    $c('#pc-list').innerHTML = html;
+    $c('#pc-empty').style.display = rows.length ? 'none' : 'block';
+    $c('#pc-setup-note').style.display = missing ? 'block' : 'none';
+    if (pro){
+      const d = compute(year);
+      $c('#pc-kpis').innerHTML = `<div><small>Money in</small><b>${fmt(d.moneyIn)}</b></div><div><small>Costs</small><b>${fmt(d.out)}</b></div><div class="${d.net < 0 ? 'neg' : ''}"><small>${d.net < 0 ? 'Net loss' : 'Net'}</small><b>${fmt(d.net)}</b></div>`;
+      $c('#pc-money-note').textContent = year + (year === new Date().getFullYear() ? ' so far' : '') + '. Money in is appointments, walk-ins and tips.';
+      const ch = $c('#pc-chair');
+      ch.style.display = d.chairTotal > 0 ? 'flex' : 'none';
+      $c('#pc-chair-text').textContent = fmt(d.chairTotal) + ' · counted from Rent & commission';
+      const nudge = nudgeRows(), nEl = $c('#pc-nudge');
+      if (nudge.length){
+        const names = [...new Set(nudge.map(r => r.category))];
+        $c('#pc-nudge-text').textContent = nudge.length + (nudge.length === 1 ? ' monthly bill is' : ' monthly bills are') + ' not added yet: ' + names.slice(0, 4).join(', ') + (names.length > 4 ? ' and more' : '') + '.';
+        nEl.style.display = 'flex';
+      } else nEl.style.display = 'none';
+    }
+    applyMode();
+  }
+  window.initProCostsTab = async function(){
+    resetForm(); $c('#pc-status').innerHTML = '&nbsp;';
+    await Promise.all([loadCosts(), loadChair(), loadMoney()]);
+    renderCosts();
+  };
+  $c('#pc-cat').addEventListener('change', syncOther);
+  $c('#pc-year').addEventListener('change', function(){ year = parseInt(this.value, 10); renderCosts(); });
+  $c('#pc-back').addEventListener('click', () => {
+    if (isPro()) showBusinessSubtab('home');
+    else { applyAccessGating(); if (window.refreshFreeCostsRow) window.refreshFreeCostsRow(); }
+  });
+  function goTrial(btn){ startCheckout('pro', btn); }
+  $c('#pc-lock-trial').addEventListener('click', e => goTrial(e.currentTarget));
+  $c('#pc-list').addEventListener('click', e => {
+    if (e.target.closest('[data-pro-tag]')){
+      $c('#pc-status').textContent = 'Receipt photos come with Vono Pro.';
+      const l = $c('#pc-lock'); if (l && l.scrollIntoView) l.scrollIntoView({ block:'center' });
+      return;
+    }
+    const v = e.target.closest('[data-receipt-view]');
+    if (v){ e.preventDefault(); viewReceipt(costs.find(x => String(x.id) === v.dataset.receiptView)); return; }
+    const b = e.target.closest('[data-cost-id]'); if (!b) return;
+    const c = costs.find(x => String(x.id) === b.dataset.costId);
+    if (c){
+      loadIntoForm(c);
+      if (e.target.closest('[data-receipt-add]')){ const f = $c('#pc-receipt-field'); if (f && f.scrollIntoView) f.scrollIntoView({ block:'center' }); }
+    }
+  });
+  $c('#pc-cancel').addEventListener('click', () => { resetForm(); $c('#pc-status').innerHTML = '&nbsp;'; });
+  $c('#pc-save').addEventListener('click', async () => {
+    const statusEl = $c('#pc-status'), saveBtn = $c('#pc-save'), pro = isPro();
+    const sel = $c('#pc-cat').value;
+    const category = sel === '__other' ? $c('#pc-other').value.trim() : sel;
+    const date = $c('#pc-date').value;
+    const amount = rnd(parseFloat($c('#pc-amount').value));
+    const paidTo = $c('#pc-paidto').value.trim(), note = $c('#pc-note').value.trim();
+    if (!category){ statusEl.textContent = 'Name this cost.'; return; }
+    if (!date){ statusEl.textContent = 'Pick a date.'; return; }
+    if (!(amount > 0)){ statusEl.textContent = 'Enter an amount.'; return; }
+    if (!dbAvailable){ statusEl.textContent = "Live saving isn't connected right now."; return; }
+    saveBtn.disabled = true; statusEl.textContent = 'Saving…';
+    try{
+      if (editingId){
+        const patch = { expense_date: date, category, amount, paid_to: paidTo || null, note: note || null };
+        const cur = costs.find(x => x.id === editingId);
+        const oldPath = cur ? (cur.receipt_path || null) : null;
+        let newPath = null;
+        if (pro && rc.file){ statusEl.textContent = 'Uploading receipt…'; newPath = await uploadReceipt(rc.file, editingId); patch.receipt_path = newPath; }
+        else if (pro && rc.remove && oldPath){ patch.receipt_path = null; }
+        const { error } = await supabaseClient.from('pro_expenses').update(patch).eq('id', editingId);
+        if (error){ if (newPath) removeFiles([newPath]); throw error; }
+        if (oldPath && ('receipt_path' in patch)) removeFiles([oldPath]);
+        if (cur) Object.assign(cur, patch);
+        statusEl.textContent = 'Saved.';
+      } else {
+        const repeat = pro && $c('#pc-repeat').checked;
+        const seriesId = repeat ? genId('pseries') : null;
+        const base = { barber_code: profileCode, category, amount, paid_to: paidTo || null, note: note || null, series_id: seriesId };
+        const rows = [Object.assign({ id: genId('pcost'), expense_date: date }, base)];
+        if (repeat){
+          const t = parts(todayIso()); let { y, m, d } = parts(date);
+          for (let i = 0; i < 36; i++){
+            m++; if (m > 11){ m = 0; y++; }
+            if (y * 12 + m > t.y * 12 + t.m) break;
+            const iso = mkIso(y, m, Math.min(d, daysIn(y, m)));
+            if (iso > todayIso()) break;
+            rows.push(Object.assign({ id: genId('pcost'), expense_date: iso }, base));
+          }
+        }
+        let upPath = null;
+        if (pro && rc.file){
+          statusEl.textContent = 'Uploading receipt…';
+          upPath = await uploadReceipt(rc.file, rows[0].id);
+          rows.forEach((r, i) => { r.receipt_path = i === 0 ? upPath : null; });
+        }
+        const { error } = await supabaseClient.from('pro_expenses').insert(rows);
+        if (error){ if (upPath) removeFiles([upPath]); throw error; }
+        costs.push(...rows);
+        statusEl.textContent = rows.length > 1 ? 'Saved, and added each month up to now.' : 'Saved.';
+      }
+      year = parts(date).y;
+      const msg = statusEl.textContent;
+      resetForm(); renderCosts(); statusEl.textContent = msg;
+    }catch(e){
+      console.warn('save cost failed', e);
+      if (!isReceiptErr(e) && isMissingTable(e)) missing = true;
+      statusEl.textContent = friendly(e);
+      renderCosts();
+    }
+    saveBtn.disabled = false;
+  });
+  $c('#pc-delete').addEventListener('click', async function(){
+    if (!editingId) return;
+    const statusEl = $c('#pc-status');
+    if (!armedDelete){ armedDelete = true; this.textContent = 'Tap again to delete'; setTimeout(() => { if (armedDelete){ armedDelete = false; this.textContent = 'Delete'; } }, 4000); return; }
+    armedDelete = false;
+    const id = editingId;
+    const goneRc = (costs.find(c => c.id === id) || {}).receipt_path || null;
+    try{
+      const { error } = await supabaseClient.from('pro_expenses').delete().eq('id', id);
+      if (error) throw error;
+      if (goneRc) removeFiles([goneRc]);
+      costs = costs.filter(c => c.id !== id);
+      resetForm(); renderCosts(); statusEl.textContent = 'Deleted.';
+    }catch(e){ console.warn('delete cost failed', e); statusEl.textContent = "Couldn't delete. Try again."; }
+  });
+  $c('#pc-stop').addEventListener('click', async () => {
+    const c = costs.find(x => x.id === editingId), statusEl = $c('#pc-status');
+    if (!c || !c.series_id) return;
+    const sid = c.series_id;
+    try{
+      const { error } = await supabaseClient.from('pro_expenses').update({ series_id: null }).eq('series_id', sid);
+      if (error) throw error;
+      costs.forEach(x => { if (x.series_id === sid) x.series_id = null; });
+      resetForm(); renderCosts(); statusEl.textContent = 'Stopped repeating. Past months stay in your records.';
+    }catch(e){ console.warn('stop repeat failed', e); statusEl.textContent = "Couldn't stop it. Try again."; }
+  });
+  $c('#pc-btn-fill').addEventListener('click', async function(){
+    const rows = nudgeRows(), statusEl = $c('#pc-status');
+    if (!rows.length) return;
+    this.disabled = true;
+    try{
+      const { error } = await supabaseClient.from('pro_expenses').insert(rows);
+      if (error) throw error;
+      costs.push(...rows); renderCosts(); statusEl.textContent = 'Added ' + rows.length + (rows.length === 1 ? ' bill.' : ' bills.');
+    }catch(e){ console.warn('fill monthly bills failed', e); statusEl.textContent = friendly(e); }
+    this.disabled = false;
+  });
+  function download(name, text){
+    const blob = new Blob([text], { type:'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+  $c('#pc-csv').addEventListener('click', () => {
+    const rows = costs.filter(c => parts(c.expense_date).y === year).sort((a, b) => (a.expense_date || '').localeCompare(b.expense_date || ''));
+    const out = ['Date,Category,Paid to,Note,Amount'];
+    rows.forEach(c => out.push([c.expense_date, csvText(c.category), csvText(c.paid_to), csvText(c.note), rnd(c.amount).toFixed(2)].join(',')));
+    download('costs-' + year + '.csv', out.join('\r\n'));
+    $c('#pc-status').textContent = 'Downloaded ' + rows.length + (rows.length === 1 ? ' cost.' : ' costs.');
+  });
+
+  // ---- Business home / paywall summaries ----
+  window.bizCostsSummary = async function(e){
+    if (!dbAvailable || !profileCode || !isPro()) return null;
+    try{
+      await Promise.all([loadCosts(), loadChair()]);
+      const y = new Date().getFullYear();
+      const yc = costs.filter(c => parts(c.expense_date).y === y), ych = chair.filter(c => parts(c.entry_date).y === y);
+      const out = sum(yc.map(c => c.amount)) + sum(ych.map(c => c.amount));
+      return { year: y, any: !!(yc.length || ych.length), net: (e.ytd || 0) + (e.ytdTips || 0) - out };
+    }catch(err){ console.warn('costs summary failed', err); return null; }
+  };
+  window.refreshFreeCostsRow = async function(){
+    const el = document.getElementById('bh-free-costs-sub'); if (!el) return;
+    if (!dbAvailable || !profileCode) return;
+    await loadCosts();
+    const y = new Date().getFullYear();
+    const yc = costs.filter(c => parts(c.expense_date).y === y);
+    el.textContent = yc.length ? 'Costs this year: ' + fmt(sum(yc.map(c => c.amount))).replace(/\.00$/, '') : 'Log what you spend to work';
+  };
+  document.getElementById('btn-free-costs').addEventListener('click', () => {
+    document.getElementById('business-paywall').style.display = 'none';
+    document.getElementById('business-real-content').style.display = '';
+    showBusinessSubtab('costs');
+  });
+
+  // ---- Tax-time package ----
+  const PRINT_CSS = `
+    @page{ margin:.55in; } .brk{ page-break-before:always; }
+    body{ max-width:none; padding:0; }
+    .head{ display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid #1a1a1a; padding-bottom:10px; margin-bottom:14px; }
+    .head h1{ font-size:24px; margin:0; } .head .yr{ font-size:36px; font-weight:bold; line-height:1; text-align:right; }
+    .head .yr small{ display:block; font:700 10px Arial,sans-serif; letter-spacing:.1em; text-transform:uppercase; color:#666; margin-top:6px; }
+    h2{ font:800 12px Arial,sans-serif; letter-spacing:.09em; text-transform:uppercase; margin:16px 0 6px; }
+    th, td{ padding:3px 6px; } th{ border-bottom:1px solid #1a1a1a; }
+    .r{ text-align:right; font-variant-numeric:tabular-nums; } .mut{ color:#666; } .sm{ font-size:11px; }
+    tr.grp td{ font:800 10.5px Arial,sans-serif; letter-spacing:.08em; text-transform:uppercase; padding-top:11px; border-bottom:1px solid #1a1a1a; }
+    tr.subt td{ font-weight:bold; border-top:1px solid #1a1a1a; }
+    tr.total td{ font-weight:bold; border-top:1.5px solid #1a1a1a; border-bottom:0; padding-top:8px; }
+    tr.net td{ font-weight:bold; border-top:2px solid #1a1a1a; border-bottom:3px double #1a1a1a; font-size:15px; padding:8px 6px; background:#f3f3f3; }
+    .rn{ text-align:center; font:800 10px Arial,sans-serif; }
+    .foot{ border-top:1px solid #d9d9d9; margin-top:18px; padding-top:8px; font-size:10.5px; color:#666; line-height:1.5; } .sect{ font:700 9.5px Arial,sans-serif; letter-spacing:.08em; text-transform:uppercase; }
+    .rgrid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:6px; }
+    .rbox{ border:1px solid #bbb; break-inside:avoid; page-break-inside:avoid; } .rbox .im{ height:3.1in; background:#eee; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .rbox img{ max-width:100%; max-height:100%; object-fit:contain; } .rbox p{ margin:0; padding:6px 8px; font:11px Arial,sans-serif; border-top:1px solid #bbb; } .rbox p b{ display:block; }
+    @media print{ tr{ page-break-inside:avoid; } }`;
+  function taxCosts(y){ return costs.filter(c => parts(c.expense_date).y === y).sort((a, b) => (a.expense_date || '').localeCompare(b.expense_date || '') || String(a.id).localeCompare(String(b.id))); }
+  function taxChair(y){ return chair.filter(c => parts(c.entry_date).y === y).sort((a, b) => (a.entry_date || '').localeCompare(b.entry_date || '')); }
+  function receiptNums(entries){ const m = {}; let n = 0; entries.forEach(c => { if (c.receipt_path) m[c.id] = 'R' + (++n); }); return m; }
+  function chairHow(p){ return p.kind === 'commission' ? 'Commission' + (p.rate != null ? ' ' + Number(p.rate) + '%' : '') : 'Flat rent'; }
+  function renderTax(){
+    const ys = years(); if (!ys.includes(taxYear)) taxYear = ys[0];
+    $t('#pt-year').innerHTML = ys.map(y => `<option value="${y}" ${y === taxYear ? 'selected' : ''}>${y}</option>`).join('');
+    const entries = taxCosts(taxYear), withRc = entries.filter(c => c.receipt_path).length;
+    const box = $t('#pt-receipts'), sub = $t('#pt-receipts-sub');
+    if (withRc){ box.disabled = false; sub.textContent = withRc + ' of ' + entries.length + (entries.length === 1 ? ' cost has' : ' costs have') + ' a receipt. Photos print 6 to a page.'; }
+    else { box.checked = false; box.disabled = true; sub.textContent = entries.length ? 'No receipt photos yet. Add them under Costs.' : 'No costs logged for this year yet.'; }
+  }
+  window.initProTaxTab = async function(){
+    $t('#pt-status').innerHTML = '&nbsp;';
+    await Promise.all([loadCosts(), loadChair(), loadMoney()]);
+    $t('#pt-receipts').checked = true;
+    renderTax();
+  };
+  $t('#pt-year').addEventListener('change', function(){ taxYear = parseInt(this.value, 10); $t('#pt-receipts').checked = true; renderTax(); });
+  const foot = label => '<p class="foot">Prepared from the pro\'s own records in Vono. Amounts are as entered and are not verified. This isn\'t tax advice.<br><span class="sect">' + esc(label) + '</span></p>';
+  const head = (title, sub) => `<div class="head"><div><h1>${title}</h1><p class="sub" style="margin:3px 0 0;">${sub}</p></div><div class="yr">${taxYear}<small>Tax-time package</small></div></div>`;
+  $t('#pt-print').addEventListener('click', async () => {
+    const statusEl = $t('#pt-status');
+    const want = { summary: $t('#pt-summary').checked, costs: $t('#pt-costs').checked, chair: $t('#pt-chair').checked, receipts: $t('#pt-receipts').checked };
+    if (!want.summary && !want.costs && !want.chair && !want.receipts){ statusEl.textContent = 'Pick at least one part to include.'; return; }
+    const entries = taxCosts(taxYear), chairs = taxChair(taxYear), nums = receiptNums(entries), d = compute(taxYear);
+    const who = esc(profile.name || 'Your business') + (profile.title ? ' &middot; ' + esc(profile.title) : '');
+    const withRc = entries.filter(c => c.receipt_path);
+    const urls = {};
+    if (want.receipts && withRc.length){
+      statusEl.textContent = 'Getting your receipt photos…';
+      const got = await Promise.all(withRc.map(c => receiptUrl(c.receipt_path)));
+      withRc.forEach((c, i) => { urls[c.id] = got[i]; });
+    }
+    statusEl.innerHTML = '&nbsp;';
+    const sections = [];
+    if (want.summary){
+      let crows = '', tn = 0, tr = 0;
+      if (chairs.length){ tn += chairs.length; crows += `<tr><td>${esc(CHAIR)} <span class="mut sm">(from Rent &amp; commission)</span></td><td class="r">${chairs.length}</td><td class="r">&ndash;</td><td class="r">${fmt(d.chairTotal)}</td></tr>`; }
+      [...CATS, OTHER].forEach(g => {
+        const mine = entries.filter(c => groupOf(c.category) === g); if (!mine.length) return;
+        const r = mine.filter(c => c.receipt_path).length; tn += mine.length; tr += r;
+        crows += `<tr><td>${esc(g)}</td><td class="r">${mine.length}</td><td class="r">${r}</td><td class="r">${fmt(sum(mine.map(c => c.amount)))}</td></tr>`;
+      });
+      if (!crows) crows = '<tr><td colspan="4">No costs logged for this year.</td></tr>';
+      sections.push(`
+        ${head(who, 'Prepared ' + esc(longDate(todayIso())) + ' &middot; own records')}
+        <h2>Money in</h2>
+        <table><tbody><tr><td>Appointments</td><td class="r">${fmt(d.mm.apptTotal)}</td></tr><tr><td>Walk-ins</td><td class="r">${fmt(d.mm.walkTotal)}</td></tr>
+        <tr class="subt"><td>Services total</td><td class="r">${fmt(d.services)}</td></tr><tr><td>Tips <span class="mut sm">(kept on their own line)</span></td><td class="r">${fmt(d.tips)}</td></tr>
+        <tr class="total"><td>Total money in</td><td class="r">${fmt(d.moneyIn)}</td></tr></tbody></table>
+        <h2>Costs by category</h2>
+        <table><thead><tr><th>Category</th><th class="r">Entries</th><th class="r">With receipt</th><th class="r">Total</th></tr></thead><tbody>${crows}
+        <tr class="total"><td>Total costs</td><td class="r">${tn}</td><td class="r">${tr}</td><td class="r">${fmt(d.out)}</td></tr></tbody></table>
+        <h2>Net</h2>
+        <table><tbody><tr class="net"><td>${d.net < 0 ? 'Net loss' : 'Net'} <span class="mut sm">(total money in minus costs)</span></td><td class="r">${fmt(d.net)}</td></tr></tbody></table>
+        ${foot('Summary')}`);
+    }
+    if (want.costs){
+      let rows = '';
+      [...CATS, OTHER].forEach(g => {
+        const mine = entries.filter(c => groupOf(c.category) === g); if (!mine.length) return;
+        rows += `<tr class="grp"><td colspan="4">${esc(g)}</td></tr>`;
+        mine.forEach(c => { rows += `<tr><td>${esc(shortDate(c.expense_date))}</td><td>${esc(c.category)}${c.note ? ` <span class="mut sm">&middot; ${esc(c.note)}</span>` : ''}${c.paid_to ? `<br><span class="mut sm">${esc(c.paid_to)}</span>` : ''}</td><td class="rn">${nums[c.id] || '&ndash;'}</td><td class="r">${fmt(c.amount)}</td></tr>`; });
+        rows += `<tr class="subt"><td colspan="3">Total ${esc(g.toLowerCase())}</td><td class="r">${fmt(sum(mine.map(c => c.amount)))}</td></tr>`;
+      });
+      sections.push(`
+        ${head('Costs, entry by entry', who + ' &middot; every cost you logged in ' + taxYear)}
+        <table><thead><tr><th>Date</th><th>What</th><th class="rn">Rcpt</th><th class="r">Amount</th></tr></thead><tbody>${rows || '<tr><td colspan="4">No costs logged for this year.</td></tr>'}
+        <tr class="total"><td colspan="3">Total costs logged here</td><td class="r">${fmt(d.costTotal)}</td></tr></tbody></table>
+        <p class="sm mut" style="margin:8px 0 0;">A dash means no receipt photo was added. Chair rent &amp; commission is listed on its own page.</p>
+        ${foot('Costs')}`);
+    }
+    if (want.chair){
+      const rows = chairs.map(p => `<tr><td>${esc(shortDate(p.entry_date))}</td><td>${esc(p.paid_to)}${p.note ? ` <span class="mut sm">&middot; ${esc(p.note)}</span>` : ''}</td><td class="mut">${esc(chairHow(p))}</td><td class="r">${fmt(p.amount)}</td></tr>`).join('');
+      sections.push(`
+        ${head('Chair rent &amp; commission paid', who + ' &middot; from your Rent &amp; commission log, ' + taxYear)}
+        <table><thead><tr><th>Date</th><th>Paid to</th><th>How</th><th class="r">Amount</th></tr></thead><tbody>${rows || '<tr><td colspan="4">No payments logged for this year.</td></tr>'}
+        <tr class="total"><td colspan="3">Total paid</td><td class="r">${fmt(d.chairTotal)}</td></tr></tbody></table>
+        ${foot('Chair rent & commission')}`);
+    }
+    if (want.receipts && withRc.length){
+      const boxes = withRc.map(c => {
+        const u = urls[c.id];
+        const img = u ? `<img src="${esc(u)}" alt="Receipt ${esc(nums[c.id])}">` : '<span class="mut sm">Photo couldn\'t load</span>';
+        return `<div class="rbox"><div class="im">${img}</div><p><b>${esc(nums[c.id])} &middot; ${esc(shortDate(c.expense_date))}</b>${esc(c.category)} &middot; ${fmt(c.amount)}${c.paid_to ? ' &middot; ' + esc(c.paid_to) : ''}</p></div>`;
+      }).join('');
+      sections.push(`
+        ${head('Receipts', who + ' &middot; ' + withRc.length + (withRc.length === 1 ? ' photo' : ' photos') + ' &middot; numbers match the cost list')}
+        <div class="rgrid">${boxes}</div>
+        ${foot('Receipts')}`);
+    }
+    window.openPrintPreview({ title: 'Tax-time package ' + taxYear, css: PRINT_CSS, body: sections.map((h, i) => i ? `<div class="brk">${h}</div>` : `<div>${h}</div>`).join('') });
+  });
+  $t('#pt-csv').addEventListener('click', () => {
+    const entries = taxCosts(taxYear), chairs = taxChair(taxYear), nums = receiptNums(entries), mm = moneyYear(taxYear);
+    const num = n => rnd(n).toFixed(2);
+    const out = ['Type,Date,Category,Paid to / team member,Note,Amount,Has receipt,Receipt #'];
+    entries.forEach(c => out.push(['Cost', c.expense_date, csvText(c.category), csvText(c.paid_to), csvText(c.note), num(c.amount), c.receipt_path ? 'Yes' : 'No', nums[c.id] || ''].join(',')));
+    chairs.forEach(p => out.push(['Cost', p.entry_date, csvText(CHAIR), csvText(p.paid_to), csvText(chairHow(p) + (p.note ? ' - ' + p.note : '')), num(p.amount), '', ''].join(',')));
+    for (let m = 0; m < 12; m++){
+      [['Appointments', mm.appt[m]], ['Walk-ins', mm.walk[m]], ['Tips', mm.tips[m]]].forEach(([label, v]) => {
+        if (v) out.push(['Income', taxYear + '-' + String(m + 1).padStart(2,'0'), label, '', 'Monthly total', num(v), '', ''].join(','));
+      });
+    }
+    download('tax-time-package-' + taxYear + '.csv', out.join('\r\n'));
+    $t('#pt-status').textContent = 'Downloaded. ' + entries.length + (entries.length === 1 ? ' cost' : ' costs') + ' and ' + chairs.length + (chairs.length === 1 ? ' chair payment.' : ' chair payments.');
+  });
 })();
 /* =========================================================
    AUTH / PROFILE LOAD / SHARED READ-ONLY VIEW / BOOT
