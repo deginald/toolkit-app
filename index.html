@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-11-02T16-00-00Z">
+<meta name="app-build" content="2026-11-02T18-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -3581,7 +3581,7 @@ function displayTitle(){
   if (profile.title === 'Barber' && profile.barberLevel) return profile.barberLevel;
   return profile.title || 'Student';
 }
-const CATEGORY_NAMES = { cuts:'Haircuts', chemical:'Chemical Services', safety:'Safety', massage:'Massage Techniques', msafety:'Consult & Safety' };
+const CATEGORY_NAMES = { cuts:'Haircuts', chemical:'Chemical Services', safety:'Safety', massage:'Massage Techniques', msafety:'Consult & Safety', nail:'Nail Tech: Consult & Safety', braid:'Braiding: Consult & Safety', esth:'Esthetics: Consult & Safety', mua:'Makeup: Consult & Safety' };
 const CATEGORY_ORDER = ['cuts','chemical','safety'];
 function defaultTechniques(){
   return [
@@ -5507,6 +5507,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
    ========================================================= */
 (function(){
   const root = document.getElementById('tab-coach');
+  // Small builders for the refresher step data below.
+  const sC=(title,body,label)=>({kind:'consult',badge:'kind-consult',label:label||'Consultation',title,body});
+  const sK=(title,items,label)=>({kind:'checklist',badge:'kind-prep',label:label||'Prep',title,items});
+  const sT=(title,body,label)=>({kind:'tech',badge:'kind-tech',label:label||'Technique',title,body});
+  const sS=(title,body,label)=>({kind:'safety',badge:'kind-safety',label:label||'Safety',title,body});
+  const sR=(label,items,title)=>({kind:'reference',badge:'kind-safety',label,title,items});
+  const sM=(title,body,seconds,real,label)=>({kind:'timer',badge:'kind-safety',label:label||'Safety check',title,body,seconds,real});
+  const sF=(title,body)=>({kind:'finish',badge:'kind-final',label:'Finish',title,body});
   const COACH_TECHNIQUES = {
     cuts: [
       { id:'skin-fade', name:'Skin Fade', category:'cuts', steps:[
@@ -5652,7 +5660,171 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
         {kind:'finish', badge:'kind-final', label:'Finish', title:'Make it a habit', body:'If something hurts while you work, change your position instead of pushing through. Tell the client you need a quick adjustment.'}
       ]}
     ],
+    nail: [
+      { id:'n-consult', name:'Consultation & Nail Check', category:'nail', steps:[
+        sC('Ask about health and allergies', 'Ask about allergies to nail products, skin conditions, medications, diabetes or circulation problems, and pregnancy. Ask what service they want and what has gone wrong at past appointments.'),
+        sT('Look at the hands or feet first', 'Check the nails, cuticles and surrounding skin before you start. Look for redness, swelling, pus, discoloration, thickened or crumbling nails, nails lifting from the nail bed, cuts and open skin.', 'Check'),
+        sS('Decide: proceed, adapt or refer', 'Clear nails and skin: proceed. Minor issues like dryness or a small hangnail: adapt and go gently. Signs of infection or a possible fungal problem: do not service the area, and suggest they see a doctor.', 'Decision'),
+        sT('Agree on the service', 'Explain what you will do, how long it will take and the price. Tell the client to speak up if anything stings or hurts.', 'Consultation'),
+        sF('Record it', 'Write down allergies, any concerns you saw and what you agreed. Follow your state’s record-keeping rules.')
+      ]},
+      { id:'n-sanitation', name:'Sanitation & Implement Disinfection', category:'nail', steps:[
+        sK('Before each client', ['Wash hands with soap and water','Wipe the table and arm rest with a disinfectant approved for the surface','Fresh towel or liner for every client','New files, buffers and orangewood sticks, or ones the client keeps','Clean, disinfected metal tools ready in a covered container'], 'Prep'),
+        sS('Single-use items stay single-use', 'Files, buffers, sanding bands, toe separators and orangewood sticks cannot be disinfected. Throw them away or give them to the client after one use.'),
+        sT('Metal tools: clean, then disinfect', 'Scrub off debris with soap and water first, rinse, dry, then fully submerge in an EPA-registered disinfectant. Disinfectant does not work on a dirty tool.', 'Technique'),
+        sM('Respect the contact time', 'Tools must stay submerged for the full contact time on the product label. Taking them out early means they are not disinfected.', 30, 'Per product label'),
+        sF('Wash up', 'Wash your hands after cleaning up and before you greet the next client. Replace disinfectant as often as the label says.')
+      ]},
+      { id:'n-notservice', name:'When Not to Service', category:'nail', steps:[
+        sR('Three answers', ['Proceed: nothing in the way','Adapt: avoid the area or change the service','Do not service: send them to a doctor'], 'Every check ends in one of these'),
+        sS('Do not service', 'Redness, swelling, heat, pus or pain around a nail, a nail that is thick, crumbling or discolored in a way you have not seen before, a nail separating from the nail bed, a rash or open sores, and warts on or near the service area.', 'Skip the service'),
+        sS('Take extra care', 'Diabetes or poor circulation, pregnancy, and anyone on blood thinners. Avoid anything that could cut or break the skin, use light pressure, and check your state rules on foot tools.', 'Adapt'),
+        sT('Say it kindly', 'Tell the client you want them to get it checked first, that you are not able to diagnose it, and that you would be glad to see them once it has cleared.', 'Client'),
+        sF('Record it', 'Write down what you saw and what you told the client. This is a general refresher, not medical advice. Your training and state law come first.')
+      ]},
+      { id:'n-cut', name:'Nicks, Cuts & Bleeding', category:'nail', steps:[
+        sS('Stop the service', 'Stop right away and tell the client calmly what happened.', 'Step 1'),
+        sS('Wash and glove', 'Wash your hands and put on clean gloves before you touch the area.', 'Step 2'),
+        sS('Stop the bleeding', 'Apply gentle pressure with a clean gauze or cotton pad. Then clean with an antiseptic and cover with a bandage.', 'Step 3'),
+        sS('Handle what touched the blood', 'Throw away single-use items in a sealed bag. Metal tools must be cleaned and then disinfected with a disinfectant that is effective against blood and body fluids, following the label.', 'Step 4'),
+        sS('Clean the area', 'Disinfect the table and anything else the blood touched before you take off your gloves.', 'Step 5'),
+        sF('Wash up and follow up', 'Wash your hands. Tell the client to watch for redness, swelling or pus over the next few days and to see a doctor if they appear. Record what happened.')
+      ]},
+      { id:'n-ventilation', name:'Product Safety & Ventilation', category:'nail', steps:[
+        sK('Set up the workspace', ['Ventilation or an extractor running and the room well aired','Dust control at the table for filing and drilling','Product containers closed when not in use','Gloves and a mask ready if you need them','Safety data sheets available for your products'], 'Prep'),
+        sS('Protect skin and eyes', 'Keep liquids and powders off the client’s skin and your own. If product touches skin, wipe it off right away. Skin redness, itching or swelling can mean a developing allergy.'),
+        sS('If something goes wrong', 'If a product gets in the eyes, rinse with plenty of clean water for at least 15 minutes and get medical care. For trouble breathing or swelling of the face, call emergency services.', 'Reaction'),
+        sT('Dispose of it properly', 'Put used wipes and cotton in a closed container and follow your state rules for disposing of chemicals. Do not leave open product or soaked wipes out overnight.', 'Cleanup'),
+        sF('Make it routine', 'Check your ventilation every day and read the label on any new product before you use it.')
+      ]}
+    ],
+    braid: [
+      { id:'b-consult', name:'Consultation & Scalp Check', category:'braid', steps:[
+        sC('Ask about goals and history', 'Ask about the style, length and how long they want to keep it. Ask about past braiding, scalp tenderness, hair loss and whether styles have been painful before.'),
+        sC('Ask about allergies', 'Ask about allergies to hair products or braiding hair, including the finish or coating on synthetic extensions.', 'Health'),
+        sT('Look at the scalp and hair', 'Part a few sections and check for redness, sores, flaking, bumps, thinning or broken edges, and how strong the hair is.', 'Check'),
+        sT('Agree on the plan', 'Explain the style, how long it will take, the price and how long it should stay in. Tell the client to say right away if anything feels too tight.', 'Consultation'),
+        sF('Record it', 'Note allergies, scalp concerns and what you agreed.')
+      ]},
+      { id:'b-tension', name:'Tension & Hair Health', category:'braid', steps:[
+        sS('Check tension as you go', 'A style should not hurt. Ask regularly how it feels, and watch the client’s face. Pain, small bumps, redness or stinging around the base of the braids means it is too tight.'),
+        sT('Go easy on the edges', 'The hairline and temples are the most fragile hair. Use less tension and smaller, lighter extension amounts there.', 'Technique'),
+        sT('Keep the weight in check', 'Heavy or long extensions, and very small parts, add pull on the roots. Choose size and weight to fit the client’s hair.', 'Technique'),
+        sT('Redo what is too tight', 'If a braid is too tight, take it out and redo it. Do not tell the client it will loosen up.', 'Fix it'),
+        sF('Aftercare', 'Tell the client to see you or a doctor if they develop persistent pain, scalp sores or noticeable hair loss, and how to care for the style and scalp while it is in.')
+      ]},
+      { id:'b-sanitation', name:'Sanitation & Station Setup', category:'braid', steps:[
+        sK('Before each client', ['Wash hands with soap and water','Wipe the chair, station and tray with a disinfectant approved for the surface','Fresh towels and cape for every client','Combs, clips and brushes cleaned and disinfected','Extensions and supplies kept sealed and clean'], 'Prep'),
+        sM('Respect the contact time', 'Tools must stay in the disinfectant for the full contact time on the label.', 30, 'Per product label'),
+        sS('Keep supplies clean', 'Do not put used combs or brushes back into a clean station. Throw away single-use items and any extension hair that touched the floor or a client’s scalp.'),
+        sF('Wash up', 'Wash your hands before you start the next client.')
+      ]},
+      { id:'b-notservice', name:'When Not to Service', category:'braid', steps:[
+        sR('Three answers', ['Proceed: nothing in the way','Adapt: avoid the area or change the style','Do not service: send them to a doctor'], 'Every scalp check ends in one of these'),
+        sS('Do not service', 'Open sores, signs of infection like pus, swelling or a bad smell, a contagious scalp condition such as head lice or ringworm, and unusual patches of hair loss. Do not braid over it.', 'Skip the service'),
+        sS('Adapt', 'Mild flaking, a small irritated spot, or hair that is thin or fragile. Use looser tension, fewer extensions or work around the area.', 'Adapt'),
+        sT('Say it kindly', 'Explain that you want the scalp checked first, that you are not able to diagnose it, and that you would be glad to see them again once it has cleared.', 'Client'),
+        sF('Record it', 'Write down what you saw and what you told the client. This is a general refresher, not medical advice. Your training and state law come first.')
+      ]},
+      { id:'b-comfort', name:'Long-Session Care', category:'braid', steps:[
+        sT('Plan breaks', 'For long sessions, build in short breaks so the client can stand, stretch, use the restroom and drink water.', 'Plan'),
+        sT('Watch posture and head position', 'Check that the client can keep their head and neck in a comfortable position. Use a pillow or a different chair position if their neck gets sore.', 'Comfort'),
+        sT('Look after yourself too', 'Change your position often, sit when you can, and take a moment to stretch your hands, wrists and back between sections.', 'You'),
+        sF('Check in at the end', 'Before they leave, ask how the scalp feels and tell them what to do if the style feels too tight overnight.')
+      ]}
+    ],
+    esth: [
+      { id:'e-consult', name:'Skin Consultation & Intake', category:'esth', steps:[
+        sC('Goals and history', 'Ask what they want to improve and what they currently use on their skin, including prescription creams and recent treatments.'),
+        sC('Medications and skin treatments', 'Ask about medications, especially isotretinoin or other strong prescription skin medicines, blood thinners, and recent peels, lasers, waxing, injections or sun exposure.', 'Health'),
+        sC('Allergies', 'Ask about allergies and past reactions to skin products, fragrance, latex, nuts and essential oils.', 'Health'),
+        sT('Look at the skin', 'Check the skin under good light for redness, breakouts, irritation, sunburn, open areas and anything unusual such as a mole that has changed.', 'Skin analysis'),
+        sF('Consent and record', 'Have the client read and sign the intake form. Record what you found and the plan, and follow your state’s record-keeping rules.')
+      ]},
+      { id:'e-contra', name:'Contraindications: Proceed, Adapt, Refer', category:'esth', steps:[
+        sR('Three answers', ['Proceed: nothing in the way','Adapt: change the treatment or the area, or get a doctor’s clearance first','Postpone or refer: no treatment today'], 'Every screening ends in one of these'),
+        sS('Usually skip the treatment today', 'Active skin infection or an unexplained rash, fever or contagious illness, severe sunburn, recent surgery or injections that are still healing, and open or irritated skin in the treatment area.', 'Postpone'),
+        sS('Adapt', 'Sensitive or reactive skin, pregnancy, recent waxing or peels, and medications such as isotretinoin or strong prescription retinoids that make skin fragile. Use gentler products, skip waxing, peels and harsh exfoliation, and ask the client’s doctor when unsure.', 'Usually adapt'),
+        sS('Avoid just the area', 'Do not treat over unexpected moles, rashes, cold sores or broken skin. The rest of the skin can often be treated.', 'Local'),
+        sS('Send to a doctor', 'A mole that is changing, a sore that will not heal, or sudden swelling or rash. Do not treat it, and recommend medical care.', 'Red flag'),
+        sF('Document your decision', 'Write down what you decided and what you told the client. This is a general refresher, not medical advice. Your training and state law come first.')
+      ]},
+      { id:'e-sanitation', name:'Sanitation & Room Setup', category:'esth', steps:[
+        sK('Before each client', ['Wash hands with soap and water','Fresh linens, towels and a clean headband for every client','Wipe the bed, stool and trolley with a disinfectant approved for the surface','Products in pump bottles or dispensed with a clean spatula, never with fingers','Single-use items like sponges, spatulas and disposable applicators out'], 'Prep'),
+        sS('Single-use items stay single-use', 'Throw away disposable items, wax sticks and anything that cannot be disinfected after one use. Never double-dip into wax or cream.'),
+        sT('Clean, then disinfect tools', 'Wash tools with soap and water, rinse, then fully submerge in an EPA-registered disinfectant.', 'Technique'),
+        sM('Respect the contact time', 'Tools must stay submerged for the full contact time on the label.', 30, 'Per product label'),
+        sF('Wash up', 'Wash your hands again before you greet the next client.')
+      ]},
+      { id:'e-patch', name:'Patch Test & Reaction Response', category:'esth', steps:[
+        sT('When to patch test', 'Patch test before a new product or treatment that is known to cause reactions, or when a client has a history of sensitive skin or allergies.', 'When'),
+        sT('How to patch test', 'Apply a small amount in a hidden area such as behind the ear or on the inner forearm. Follow the product directions for how long to leave it and whether to wait before the full treatment.', 'How'),
+        sS('Read the result', 'Redness, itching, swelling, blisters or hives mean do not use that product on the client. Note it in their record.', 'Result'),
+        sS('If a reaction happens', 'Stop right away, remove the product with cool water, and soothe the area. Seek medical care for blistering, severe swelling or pain. For trouble breathing or swelling of the face or throat, call emergency services.', 'Reaction'),
+        sF('Document it', 'Record what happened, what you did and what you told the client.')
+      ]}
+    ],
+    mua: [
+      { id:'m-consult', name:'Consultation & Allergy Check', category:'mua', steps:[
+        sC('Goals and look', 'Ask about the occasion, the look they want, how long it needs to last and any photos they like.'),
+        sC('Allergies and sensitivities', 'Ask about allergies to cosmetics, fragrance, latex, adhesives, nuts and dyes, and about any past reactions.', 'Health'),
+        sC('Skin and eye health', 'Ask about current skin treatments and eye conditions, and whether they wear contact lenses.', 'Health'),
+        sT('Patch test when needed', 'For a client with a history of reactions, or when using a new product, test a small amount on the inner forearm first and follow the product directions on how long to wait.', 'Check'),
+        sF('Record it', 'Write down allergies, products used and anything the client asked to avoid.')
+      ]},
+      { id:'m-kit', name:'Kit Sanitation & Hygiene', category:'mua', steps:[
+        sK('Before each client', ['Wash hands with soap and water, or use sanitizer','Wipe your station with a disinfectant approved for the surface','Clean brushes and tools ready','Disposable applicators, sponges and mascara wands on hand','Products on a clean palette or tray'], 'Prep'),
+        sS('Never double-dip', 'Use a clean spatula to take product from a pot, and put it on a clean palette. Never put a used brush, wand or finger back in the container. Mascara and lip products are single-use applicators only.'),
+        sT('Keep it clean', 'Wipe hard products such as pressed powders and pencils with a sanitizing spray that your state board allows, and shave or sharpen pencils for each client.', 'Technique'),
+        sT('Clean your brushes', 'Wash brushes with brush cleaner or soap, rinse, reshape and let them dry fully. Clean them between clients when you can, and disinfect them according to your state board rules.', 'Tools'),
+        sF('Wash up', 'Wash your hands before and after every client.')
+      ]},
+      { id:'m-eye', name:'When Not to Apply', category:'mua', steps:[
+        sR('Three answers', ['Proceed: nothing in the way','Adapt: avoid the area','Do not apply: send them to a doctor'], 'Every check ends in one of these'),
+        sS('Do not apply', 'Redness, swelling, discharge or crusting around the eyes, a stye, signs of pink eye, cold sores or open skin on the lips, and any skin infection in the area.', 'Skip the service'),
+        sS('Adapt', 'Mild irritation or a breakout. Work around the area, use gentle products and keep the pressure light.', 'Adapt'),
+        sT('Say it kindly', 'Explain that you want to protect them from making it worse, that you are not able to diagnose it, and offer to reschedule once it has cleared.', 'Client'),
+        sF('Record it', 'Write down what you saw and what you told the client. This is a general refresher, not medical advice. Your training and state law come first.')
+      ]},
+      { id:'m-reaction', name:'Reaction Response', category:'mua', steps:[
+        sS('Stop and remove', 'Stop right away and take off the product with a clean, damp cloth or a gentle remover.', 'Step 1'),
+        sS('Cool and comfort', 'Rinse with cool water and let the skin rest. Do not apply more product to irritated skin.', 'Step 2'),
+        sS('Eyes', 'If product gets in the eyes, rinse with plenty of clean water for at least 15 minutes, and get medical care if pain, redness or blurry vision continue.', 'Step 3'),
+        sS('When to get help', 'Blistering, severe swelling or pain, or any trouble breathing or swelling of the face or throat. Call emergency services in those cases.', 'Step 4'),
+        sF('Document it', 'Record what happened, which products were used and what you told the client. Keep the product packaging in case a doctor asks.')
+      ]}
+    ],
     safety: [
+      { id:'c-consult', name:'Consultation & Allergy Check', category:'safety', crafts:['Cosmetologist'], steps:[
+        sC('Ask about goals and history', 'Ask what service they want and about past chemical services, color, relaxers, perms or bleach in the last several months. Ask about hair loss or scalp problems.'),
+        sC('Ask about allergies and reactions', 'Ask about allergies to hair color, bleach, fragrance, latex or other products, and about any past reaction at a salon or at home.', 'Health'),
+        sT('Patch test when the product calls for one', 'Hair color and some other products require a skin patch test before use. Follow the manufacturer’s directions for where to apply and how long to wait, often 24 to 48 hours. Do not do the service if there is a reaction.', 'Check'),
+        sT('Explain the service', 'Tell the client what you will do, how long it will take, the price and what to expect, and have them tell you right away if anything burns or itches.', 'Consultation'),
+        sF('Record it', 'Write down allergies, the formula, the patch test result and what you agreed. Follow your state’s record-keeping rules.')
+      ]},
+      { id:'c-sanitation', name:'Sanitation & Station Setup', category:'safety', crafts:['Cosmetologist'], steps:[
+        sK('Before each client', ['Wash hands with soap and water','Wipe the chair, station and tray with a disinfectant approved for the surface','Clean cape, towels and neck strip for every client','Combs, brushes, clips and shears cleaned and disinfected','Single-use items like gloves, foils and applicators ready'], 'Prep'),
+        sT('Clean, then disinfect', 'Remove hair and product from tools, wash with soap and water, rinse, then fully submerge in an EPA-registered disinfectant. Porous items like foam files and cloth cannot be disinfected, so replace them.', 'Technique'),
+        sM('Respect the contact time', 'Tools must stay submerged for the full contact time on the label.', 30, 'Per product label'),
+        sS('Keep used and clean apart', 'Store used tools in a marked container and clean tools in a closed, covered one.'),
+        sF('Wash up', 'Wash your hands before you start with the next client.')
+      ]},
+      { id:'c-scalp', name:'Scalp & Skin Check: Service, Adapt or Refer', category:'safety', crafts:['Cosmetologist'], steps:[
+        sR('Three answers', ['Proceed: nothing in the way','Adapt: change the service or avoid the area','Do not service: send them to a doctor'], 'Every check ends in one of these'),
+        sT('Look at the scalp and skin', 'Check the scalp, hairline, ears and neck for redness, sores, cuts, scabs, flaking, bumps, scratches or parasites.', 'Check'),
+        sS('Do not service', 'Open sores or cuts, signs of infection such as pus or swelling, a contagious condition such as head lice, ringworm or scabies, and severe irritation. Chemical services are never done on irritated or broken skin.', 'Skip the service'),
+        sS('Adapt', 'Mild dryness or flaking, a small irritated area, or damaged hair. Choose gentler products, skip the chemical service, or work around the area.', 'Adapt'),
+        sT('Say it kindly', 'Explain that you want the scalp checked first, that you cannot diagnose it, and that you would be glad to see them once it has cleared.', 'Client'),
+        sF('Record it', 'Write down what you saw and what you told the client. This is a general refresher, not medical advice. Your training and state law come first.')
+      ]},
+      { id:'c-reaction', name:'Reaction or Chemical Burn: What to Do', category:'safety', crafts:['Cosmetologist'], steps:[
+        sS('Stop and rinse', 'Stop the service right away. Rinse the product off with plenty of lukewarm water until it is all gone.', 'Step 1'),
+        sS('Keep rinsing a burn', 'If the skin is burning or blistering, keep flushing with cool running water for about 20 minutes.', 'Step 2'),
+        sS('Eyes', 'If product gets in the eyes, rinse with plenty of clean water for at least 15 minutes and get medical care.', 'Step 3'),
+        sT('Calm the client', 'Stay calm, explain what you are doing, and do not put anything else on the skin.', 'Step 4'),
+        sS('Get medical care', 'Blisters, severe pain, burns over a large area, swelling of the face, or any trouble breathing need medical help. Call emergency services if needed.', 'Step 5'),
+        sF('Document it', 'Record the products used, what happened and what you told the client. Keep the packaging in case a doctor asks.')
+      ]},
       { id:'exposure-incident', name:'Exposure Incident (Blood Spill)', category:'safety', source:'Milady Standard Barbering, 7th Ed.', steps:[
         {kind:'reference', badge:'kind-safety', label:'Materials needed', title:'Have these ready at every station', items:['Antiseptic','Bandages','Cotton','Disposable gloves','Disposable paper towels','Liquid soap','Plastic bag (ziplock)']},
         {kind:'safety', badge:'kind-safety', label:'Step 1', title:'Stop the service', body:'STOP the service immediately.'},
@@ -5687,7 +5859,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   function renderTechList(){
     const list = root.querySelector('#tech-list');
     list.innerHTML = '';
-    COACH_TECHNIQUES[cstate.category].forEach(t=>{
+    const craftNow = (typeof currentCraft === 'function') ? currentCraft() : '';
+    COACH_TECHNIQUES[cstate.category].filter(t=> !t.crafts || t.crafts.includes(craftNow)).forEach(t=>{
       const btn = document.createElement('button');
       btn.className = 'tech-card';
       btn.innerHTML = `<div><div class="tc-name">${t.name}</div><div class="tc-meta">${meta(t)}</div>${t.source ? `<div class="tc-source">${t.source}</div>` : ''}</div><span class="tc-arrow">&rarr;</span>`;
@@ -5858,7 +6031,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#cl-time').textContent = fmtTime(cstate.elapsed);
     const hasCheckpointStep = cstate.technique.steps.some(s=>s.kind==='final');
     const cpRow = root.querySelector('#cl-checkpoint').closest('.cl-row');
-    if (cpRow) cpRow.style.display = (cstate.technique.category === 'massage' || cstate.technique.category === 'msafety') ? 'none' : '';
+    if (cpRow) cpRow.style.display = (!hasCheckpointStep && cstate.technique.id !== 'exposure-incident') ? 'none' : '';
     root.querySelector('#cl-checkpoint').textContent = !hasCheckpointStep ? 'N/A' :
       (attachedClient ? (cstate.checkpointPhotos.length ? cstate.checkpointPhotos.length + ' photos' : 'Skipped') : (cstate.checkpointCaptured ? 'Saved' : 'Skipped'));
     const ledgerId = LEDGER_MAP[cstate.technique.id];
@@ -6037,15 +6210,16 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const walking = root.querySelector('[data-screen="walk"]').classList.contains('show');
     if (!walking) window.initCoachTab();
   };
+  // Which refresher lists each craft sees. Crafts with one list get no toggle bar.
+  const CRAFT_CATS = { 'Massage Therapist':['massage','msafety'], 'Nail Tech':['nail'], 'Braider':['braid'], 'Esthetician':['esth'], 'MUA':['mua'] };
   window.initCoachTab = function(){
-    // Massage therapists (and massage students) see their own two lists; everyone else keeps the barbering lists.
-    const isMassage = (typeof currentCraft === 'function' && currentCraft() === 'Massage Therapist');
-    const isMassageCat = c => c === 'massage' || c === 'msafety';
-    root.querySelectorAll('.mode-btn[data-cat]').forEach(b=>{ b.style.display = (isMassageCat(b.dataset.cat) === isMassage) ? '' : 'none'; });
-    if (isMassageCat(cstate.category) !== isMassage){
-      cstate.category = isMassage ? 'massage' : 'cuts';
-      root.querySelectorAll('.mode-btn[data-cat]').forEach(b=> b.classList.toggle('active', b.dataset.cat === cstate.category));
-    }
+    const craft = (typeof currentCraft === 'function') ? currentCraft() : '';
+    const cats = CRAFT_CATS[craft] || ['cuts','chemical','safety'];
+    root.querySelectorAll('.mode-btn[data-cat]').forEach(b=>{ b.style.display = cats.includes(b.dataset.cat) ? '' : 'none'; });
+    const bar = root.querySelector('.mode-toggle');
+    if (bar) bar.style.display = cats.length > 1 ? '' : 'none';
+    if (!cats.includes(cstate.category)) cstate.category = cats[0];
+    root.querySelectorAll('.mode-btn[data-cat]').forEach(b=> b.classList.toggle('active', b.dataset.cat === cstate.category));
     renderTechList(); showScreen('picker');
   };
 })();
