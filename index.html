@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-11-02T20-00-00Z">
+<meta name="app-build" content="2026-11-02T22-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -592,6 +592,9 @@
   .tech-list{ display:flex; flex-direction:column; gap:8px; }
   .tech-card{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 14px; border:1px solid var(--line); border-radius:12px; background:var(--paper); cursor:pointer; text-align:left; width:100%; font-family:inherit; color:inherit; }
   .tech-card:hover{ border-color:var(--brass); }
+  .tech-card .tc-lead{ display:flex; align-items:center; gap:12px; min-width:0; }
+  .tech-card .tc-icon{ flex:none; width:38px; height:38px; border-radius:10px; background:var(--brass-tint); color:var(--brass); display:flex; align-items:center; justify-content:center; }
+  .tech-card .tc-icon svg{ width:21px; height:21px; }
   .tech-card .tc-name{ font-size:14.5px; font-weight:700; }
   .tech-card .tc-meta{ font-size:11.5px; color:var(--muted); margin-top:2px; font-variant-numeric:tabular-nums; }
   .tech-card .tc-source{ font-size:10.5px; color:var(--brass); margin-top:2px; font-style:italic; }
@@ -602,7 +605,7 @@
   .walk-titles{ min-width:0; flex:1; }
   .walk-tech-name{ font-size:13.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .walk-name{ font-size:13.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .walk-elapsed{ font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; flex-shrink:0; }
+  .walk-elapsed{ font-size:10.5px; color:var(--muted); opacity:.55; font-variant-numeric:tabular-nums; flex-shrink:0; }
   .progress-track{ height:6px; border-radius:4px; background:var(--line); overflow:hidden; }
   .progress-fill{ height:100%; border-radius:4px; background:var(--brass); transition:width .2s ease; }
   .progress-label{ font-size:11px; color:var(--muted); font-weight:600; font-variant-numeric:tabular-nums; }
@@ -615,6 +618,13 @@
   .kind-badge.kind-safety{ background:var(--behind-tint); color:var(--behind); }
   .kind-badge.kind-final{ background:var(--good-tint); color:var(--good); }
   .step-card{ display:flex; flex-direction:column; gap:10px; }
+  .step-card.step-safety{ background:var(--behind-tint); border:1px solid var(--behind); border-radius:14px; padding:14px; }
+  .intro-block{ display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+  .intro-block h3{ margin:0; font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+  .intro-note{ margin:0; font-size:12px; color:var(--muted); }
+  .intro-steps{ margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:6px; counter-reset:is; }
+  .intro-steps li{ counter-increment:is; display:flex; gap:10px; font-size:13.5px; line-height:1.35; }
+  .intro-steps li::before{ content:counter(is); flex:none; width:20px; height:20px; border-radius:50%; background:var(--paper); border:1px solid var(--line); color:var(--muted); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
   .step-card .step-title{ font-family:'Libre Franklin',sans-serif; font-weight:700; font-size:19px; letter-spacing:-0.005em; margin:0; }
   .step-card .step-body{ font-size:14.5px; line-height:1.55; color:var(--ink); margin:0; }
   .checklist{ display:flex; flex-direction:column; gap:8px; }
@@ -1430,11 +1440,11 @@
       <!-- ============ COACH ============ -->
       <section class="tab-pane" data-tab="coach" id="tab-coach">
         <div class="tab-head">
-          <p class="eyebrow-mini">Guided technique coaching</p>
+          <p class="eyebrow-mini" id="coach-eyebrow">Refreshers</p>
           <h2>Refresher</h2>
         </div>
         <div class="screen-body show" data-screen="picker">
-          <p class="screen-sub">Pick a refresher technique to walk through step by step.</p>
+          <p class="screen-sub" id="coach-intro">Pick a refresher to walk through step by step.</p>
           <div class="mode-toggle">
             <button type="button" class="mode-btn active" data-cat="cuts">Haircuts</button>
             <button type="button" class="mode-btn" data-cat="chemical">Chemical</button>
@@ -1451,6 +1461,20 @@
             <button type="button" class="mode-btn" data-cat="mua" style="display:none">Consult &amp; Safety</button>
           </div>
           <div class="tech-list" id="tech-list"></div>
+        </div>
+        <div class="screen-body" data-screen="intro">
+          <div class="walk-header">
+            <button class="back-btn" id="btn-intro-back" aria-label="Back">&larr;</button>
+            <div class="walk-titles">
+              <div class="walk-tech-name" id="intro-name">&nbsp;</div>
+              <div class="progress-label" id="intro-meta"></div>
+            </div>
+          </div>
+          <div id="intro-body"></div>
+          <div class="spacer"></div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btn-start-refresher" type="button">Start</button>
+          </div>
         </div>
         <div class="screen-body" data-screen="walk">
           <div class="walk-header">
@@ -1478,13 +1502,14 @@
           </div>
           <div class="complete-log">
             <div class="cl-row"><span>Steps completed</span><span id="cl-steps">0/0</span></div>
-            <div class="cl-row"><span>Time on this service</span><span id="cl-time">0:00</span></div>
+            <div class="cl-row"><span>Time spent</span><span id="cl-time">0:00</span></div>
           </div>
 <div class="spacer"></div>
           <div class="btn-row" id="ledger-handoff-row" style="display:none;">
             <button class="btn btn-outline" id="btn-send-ledger">Rate yourself in Ledger</button>
           </div>
-          <button class="btn btn-primary" id="btn-choose-another">Choose another service</button>
+          <button class="btn btn-outline" id="btn-next-refresher" type="button" style="display:none;"></button>
+          <button class="btn btn-primary" id="btn-choose-another">Back to refreshers</button>
         </div>
       </section>
       <!-- ============ CONSULT ============ -->
@@ -3269,7 +3294,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="refreshers.js?v=2026-11-02T20-00-00Z"></script><script>
+<script src="refreshers.js?v=2026-11-02T22-00-00Z"></script><script>
 /* =========================================================
    SUPABASE SETUP
    Fill these in once the Supabase project exists: Project URL
@@ -5514,26 +5539,84 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   const REFRESHERS_MISSING = !window.VONO_REFRESHERS;
   const LEDGER_MAP = { 'skin-fade':'skin-fade', 'womens-layers':'womens-layered', 'beard-trim':'beard-trim', 'relaxer':'relaxer', 'color':'color', 'perm':'perm', 'bleach':'bleach', 'exposure-incident':'exposure' };
   const cstate = { category:'cuts', technique:null, stepIndex:0, checklistChecked:{}, timerState:{}, elapsed:0, elapsedTimerId:null };
+  const svg = d => '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' + d + '</svg>';
+  const ST = 'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"';
+  const ICONS = {
+    cuts: svg('<circle cx="6" cy="7" r="2.6" '+ST+'/><circle cx="6" cy="17" r="2.6" '+ST+'/><path d="M8.2 8.6 20 17M8.2 15.4 20 7" '+ST+'/>'),
+    chemical: svg('<path d="M9.5 3.5h5M10.5 3.5v6L5.2 18.2a1.8 1.8 0 0 0 1.5 2.8h10.6a1.8 1.8 0 0 0 1.5-2.8L13.5 9.5v-6" '+ST+'/><path d="M8 14.5h8" '+ST+'/>'),
+    safety: svg('<path d="M12 3.5 5 6v5.5c0 4.3 2.9 7.5 7 9 4.1-1.5 7-4.7 7-9V6l-7-2.5Z" '+ST+'/><path d="m9 12 2.2 2.2L15.2 10" '+ST+'/>'),
+    massage: svg('<ellipse cx="12" cy="17.5" rx="7" ry="2.7" '+ST+'/><ellipse cx="12" cy="12" rx="5" ry="2.2" '+ST+'/><ellipse cx="12" cy="7.2" rx="3" ry="1.7" '+ST+'/>'),
+    nailt: svg('<path d="M12 3.5c3 3.7 5 6.4 5 9.3a5 5 0 0 1-10 0c0-2.9 2-5.6 5-9.3Z" '+ST+'/>'),
+    braidt: svg('<path d="M8 3c4 3 4 6 0 9s-4 6 0 9M16 3c-4 3-4 6 0 9s4 6 0 9" '+ST+'/>'),
+    estht: svg('<path d="M12 3.5c.7 4.2 1.8 5.3 6 6-4.2.7-5.3 1.8-6 6-.7-4.2-1.8-5.3-6-6 4.2-.7 5.3-1.8 6-6Z" '+ST+'/><path d="M18.5 16.5v3M17 18h3" '+ST+'/>'),
+    muat: svg('<path d="M15.5 3.5 20.5 8.5 11 18l-5 .5.5-5 9-10Z" '+ST+'/><path d="M5.5 21c1.2-.3 2.2-1 2.8-2" '+ST+'/>')
+  };
+  ICONS.msafety = ICONS.nail = ICONS.braid = ICONS.esth = ICONS.mua = ICONS.safety;
+  const CATEGORY_INTRO = {
+    cuts:'Cuts to practice and review, one step at a time.',
+    chemical:'Color, bleach, perm and relaxer walkthroughs, with the safety checks built in.',
+    safety:'Safety, sanitation and consultation refreshers for everyday services.',
+    massage:'Full-body and focused massage routines, step by step.',
+    msafety:'Intake, contraindications, draping and room safety.',
+    nailt:'Manicures, pedicures, gel and acrylic, step by step.',
+    nail:'Consultation, sanitation, when not to service, and safety.',
+    braidt:'Braids, cornrows, twists and takedowns, step by step.',
+    braid:'Consultation, tension, sanitation and when not to service.',
+    estht:'Facials, waxing and extractions, step by step.',
+    esth:'Intake, contraindications, sanitation and patch tests.',
+    muat:'Skin prep, eyes, lashes and finishing, step by step.',
+    mua:'Allergy checks, kit hygiene and reaction response.'
+  };
+  const CRAFT_EYEBROW = { 'Barber':'Barber refreshers', 'Cosmetologist':'Cosmetology refreshers', 'Nail Tech':'Nail tech refreshers', 'Braider':'Braiding refreshers', 'Massage Therapist':'Massage refreshers', 'Esthetician':'Esthetics refreshers', 'MUA':'Makeup refreshers' };
+  // Rough time to read through a refresher: about 40 seconds a step, a minute for a checklist.
+  function readMinutes(tech){
+    const secs = tech.steps.reduce((n, st)=> n + (st.kind === 'checklist' ? 60 : st.kind === 'timer' ? 20 : st.kind === 'reference' ? 30 : 40), 0);
+    return Math.max(2, Math.ceil(secs / 60));
+  }
+  function visibleList(cat){
+    const craftNow = (typeof currentCraft === 'function') ? currentCraft() : '';
+    return (COACH_TECHNIQUES[cat] || []).filter(t=> !t.crafts || t.crafts.includes(craftNow) || (craftNow === '' && t.crafts.includes('Barber')));
+  }
   function fmtTime(totalSeconds){ const m = Math.floor(totalSeconds/60); const s = totalSeconds % 60; return `${m}:${s.toString().padStart(2,'0')}`; }
-  function meta(tech){ const timedCount = tech.steps.filter(s=>s.kind==='timer').length; return `${tech.steps.length} steps${timedCount ? ' · ' + timedCount + ' timed' : ''}`; }
+  function meta(tech){ const timedCount = tech.steps.filter(s=>s.kind==='timer').length; return `${tech.steps.length} steps · about ${readMinutes(tech)} min${timedCount ? ' · ' + timedCount + ' timed' : ''}`; }
   function renderTechList(){
     const list = root.querySelector('#tech-list');
     list.innerHTML = '';
     if (REFRESHERS_MISSING){ list.innerHTML = '<div class="card"><p class="screen-sub" style="margin:0;">The refreshers did not load. Refresh the page, and if this keeps happening, email vonosupport@gmail.com.</p></div>'; return; }
-    const craftNow = (typeof currentCraft === 'function') ? currentCraft() : '';
-    COACH_TECHNIQUES[cstate.category].filter(t=> !t.crafts || t.crafts.includes(craftNow) || (craftNow === '' && t.crafts.includes('Barber'))).forEach(t=>{
+    const intro = root.querySelector('#coach-intro'); if (intro) intro.textContent = CATEGORY_INTRO[cstate.category] || 'Pick a refresher to walk through step by step.';
+    visibleList(cstate.category).forEach(t=>{
       const btn = document.createElement('button');
       btn.className = 'tech-card';
-      btn.innerHTML = `<div><div class="tc-name">${t.name}</div><div class="tc-meta">${meta(t)}</div>${t.source ? `<div class="tc-source">${t.source}</div>` : ''}</div><span class="tc-arrow">&rarr;</span>`;
+      btn.innerHTML = `<div class="tc-lead"><span class="tc-icon">${ICONS[t.category] || ICONS.safety}</span><div><div class="tc-name">${t.name}</div><div class="tc-meta">${meta(t)}</div>${t.source ? `<div class="tc-source">${t.source}</div>` : ''}</div></div><span class="tc-arrow">&rarr;</span>`;
       btn.addEventListener('click', ()=> startTechnique(t));
       list.appendChild(btn);
     });
   }
   function showScreen(name){ root.querySelectorAll('[data-screen]').forEach(el=> el.classList.toggle('show', el.dataset.screen===name)); }
+  // Picking a refresher opens a short preview first: what you'll need and what it covers.
   function startTechnique(tech){
     cstate.technique = tech; cstate.stepIndex = 0; cstate.checklistChecked = {}; cstate.timerState = {}; cstate.elapsed = 0;
+    if (cstate.elapsedTimerId){ clearInterval(cstate.elapsedTimerId); cstate.elapsedTimerId = null; }
+    root.querySelector('#intro-name').textContent = tech.name;
+    root.querySelector('#intro-meta').textContent = meta(tech);
+    const needs = tech.steps.find(st=> st.kind === 'checklist') || tech.steps.find(st=> st.kind === 'reference');
+    let html = '';
+    if (needs){
+      const at = tech.steps.indexOf(needs) + 1;
+      html += '<div class="intro-block"><h3>What you\u2019ll need</h3><div class="ref-list">' + needs.items.map(it=> `<div class="ref-item"><span class="ref-dot"></span><span>${it}</span></div>`).join('') + '</div>' +
+        (needs.kind === 'checklist' ? `<p class="intro-note">You\u2019ll tick these off in step ${at}.</p>` : '') + '</div>';
+    }
+    html += '<div class="intro-block"><h3>What it covers</h3><ol class="intro-steps">' + tech.steps.map(st=> `<li><span>${st.title}</span></li>`).join('') + '</ol></div>';
+    root.querySelector('#intro-body').innerHTML = html;
+    showScreen('intro');
+    const sc = root.querySelector('[data-screen="intro"]'); if (sc && sc.scrollIntoView) { try{ window.scrollTo(0, 0); }catch(e){} }
+  }
+  function beginWalk(){
+    const tech = cstate.technique; if (!tech) return;
+    cstate.stepIndex = 0; cstate.elapsed = 0;
     if (cstate.elapsedTimerId) clearInterval(cstate.elapsedTimerId);
     cstate.elapsedTimerId = setInterval(()=>{ cstate.elapsed++; root.querySelector('#walk-elapsed').textContent = fmtTime(cstate.elapsed); }, 1000);
+    root.querySelector('#walk-elapsed').textContent = fmtTime(0);
     root.querySelector('#walk-tech-name').textContent = tech.name;
     root.querySelector('#walk-source').textContent = tech.source || '';
     showScreen('walk');
@@ -5557,7 +5640,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const isLastStep = cstate.stepIndex === total - 1;
     root.querySelector('#btn-step-next').textContent = isLastStep ? 'Finish' : 'Next';
     const holder = root.querySelector('#step-render');
-    let html = `<div class="step-card"><span class="kind-badge ${step.badge}">${step.label}</span><h3 class="step-title">${step.title}</h3>`;
+    let html = `<div class="step-card${step.badge === 'kind-safety' && step.kind !== 'reference' ? ' step-safety' : ''}"><span class="kind-badge ${step.badge}">${step.label}</span><h3 class="step-title">${step.title}</h3>`;
     if (step.body) html += `<p class="step-body">${step.body}</p>`;
     if (step.kind === 'checklist'){
       html += `<div class="checklist">` + step.items.map((item,i)=>{
@@ -5666,8 +5749,15 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     } else {
       handoffRow.style.display = 'none';
     }
+    const nextBtn = root.querySelector('#btn-next-refresher');
+    const list = visibleList(cstate.category); const at = list.findIndex(t=> t.id === cstate.technique.id);
+    const nxt = list.length > 1 && at >= 0 ? list[(at + 1) % list.length] : null;
+    if (nxt){ nextBtn.style.display = ''; nextBtn.textContent = 'Next: ' + nxt.name; nextBtn.onclick = ()=> startTechnique(nxt); }
+    else { nextBtn.style.display = 'none'; nextBtn.onclick = null; }
     showScreen('complete');
   }
+  root.querySelector('#btn-start-refresher').addEventListener('click', beginWalk);
+  root.querySelector('#btn-intro-back').addEventListener('click', ()=> showScreen('picker'));
   root.querySelector('#btn-choose-another').addEventListener('click', ()=> showScreen('picker'));
   root.querySelectorAll('.mode-btn[data-cat]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
@@ -5747,7 +5837,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   window.openLightbox = openLightbox;
   // Re-checks which refresher lists to show after a title change, without resetting a walkthrough in progress.
   window.refreshCoachCategories = function(){
-    const walking = root.querySelector('[data-screen="walk"]').classList.contains('show');
+    const walking = root.querySelector('[data-screen="walk"]').classList.contains('show') || root.querySelector('[data-screen="intro"]').classList.contains('show');
     if (!walking) window.initCoachTab();
   };
   // Which refresher lists each craft sees. Crafts with one list get no toggle bar.
@@ -5760,6 +5850,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (bar) bar.style.display = cats.length > 1 ? '' : 'none';
     if (!cats.includes(cstate.category)) cstate.category = cats[0];
     root.querySelectorAll('.mode-btn[data-cat]').forEach(b=> b.classList.toggle('active', b.dataset.cat === cstate.category));
+    const eb = root.querySelector('#coach-eyebrow'); if (eb) eb.textContent = CRAFT_EYEBROW[craft] || 'Refreshers';
     renderTechList(); showScreen('picker');
   };
 })();
