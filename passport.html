@@ -1883,9 +1883,9 @@ function renderUpcoming(list){
           let planOk = false, planKnownNo = false;
           if (ap && ap.barber_code){
             try{
-              const pr = await withDeadline(supabaseClient.from('profiles').select('subscription_status').eq('code', ap.barber_code).maybeSingle(), 5000, 'plan check timed out');
+              const pr = await withDeadline(supabaseClient.from('profiles').select('subscription_status, trial_source, trial_ends_at').eq('code', ap.barber_code).maybeSingle(), 5000, 'plan check timed out');
               if (pr && pr.data){
-                planOk = ['trialing','active','past_due'].includes(pr.data.subscription_status);
+                planOk = ['trialing','active','past_due'].includes(pr.data.subscription_status) && !gradTrialOver(pr.data);
                 planKnownNo = !planOk;
               }
             }catch(e){ planOk = false; }
@@ -2474,11 +2474,17 @@ function otPickDuration(pro, lastApptForPro){
   const first = list.find(x => Number(x.duration) > 0) || list[0];
   return { mins: Number(first && first.duration) || 30, names: [] };
 }
+// The free month given to graduating students has no card behind it, so it simply runs out
+// (6 hours of slack). Same rule as index.html.
+function gradTrialOver(p){
+  return !!p && p.subscription_status === 'trialing' && p.trial_source === 'graduation' && !!p.trial_ends_at
+    && new Date(p.trial_ends_at).getTime() + 6 * 3600000 < Date.now();
+}
 async function openTodayFor(code, lastAppt, today, nowMin){
   const { data: pro } = await supabaseClient.from('profiles')
-    .select('code, name, title, shop_city, shop_state, subscription_status, booking_enabled, booking_services, booking_hours, booking_overrides')
+    .select('code, name, title, shop_city, shop_state, subscription_status, trial_source, trial_ends_at, booking_enabled, booking_services, booking_hours, booking_overrides')
     .eq('code', code).maybeSingle();
-  if (!pro || !['trialing','active','past_due'].includes(pro.subscription_status)) return null;
+  if (!pro || !['trialing','active','past_due'].includes(pro.subscription_status) || gradTrialOver(pro)) return null;
   if (!pro.booking_enabled || !Array.isArray(pro.booking_services) || !pro.booking_services.length) return null;
   const ov = (pro.booking_overrides || []).find(o => o.date === today);
   const hours = ov || (pro.booking_hours || {})[CS_DAY_KEYS[new Date().getDay()]] || { closed:true };

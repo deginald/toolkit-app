@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-11-02T22-00-00Z">
+<meta name="app-build" content="2026-11-03T20-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -163,6 +163,38 @@
   .shome-tile span{ display:block; font-size:12px; color:var(--muted); margin-top:1px; font-weight:500; }
   .shome-tile:active{ background:var(--surface); }
   .shome-tile:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+
+  /* Graduation, exam prep and My work */
+  #sub-main > .btn, #sub-main > .btn-row{ flex:none; }
+  .xq-top{ display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:700; color:var(--muted); }
+  .xq-topic{ margin:0; font-size:11.5px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; color:var(--brass); }
+  .xq-q{ margin:0; font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:19px; line-height:1.3; }
+  .xq-choices{ display:flex; flex-direction:column; gap:10px; }
+  .xq-choice{ display:flex; gap:12px; align-items:flex-start; text-align:left; padding:13px 14px; border:1.5px solid var(--line); border-radius:12px; background:var(--paper); color:var(--ink); font-family:'Public Sans',sans-serif; font-size:15px; line-height:1.35; cursor:pointer; width:100%; }
+  .xq-choice b{ flex:none; width:24px; height:24px; border-radius:50%; border:1.5px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:var(--muted); }
+  .xq-choice:active:not(:disabled){ background:var(--surface); }
+  .xq-choice:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .xq-choice:disabled{ cursor:default; }
+  .xq-choice.right{ border-color:var(--good); background:var(--good-tint); }
+  .xq-choice.right b{ background:var(--good); border-color:var(--good); color:#fff; }
+  .xq-choice.wrong{ border-color:var(--behind); background:var(--behind-tint); }
+  .xq-choice.wrong b{ background:var(--behind); border-color:var(--behind); color:#fff; }
+  .xq-fb{ border-radius:12px; padding:12px 14px; border:1px solid var(--line); background:var(--surface); display:flex; flex-direction:column; gap:4px; }
+  .xq-fb strong{ font-size:14px; }
+  .xq-fb p{ margin:0; font-size:13.5px; line-height:1.45; color:var(--ink); }
+  .xq-score{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:44px; line-height:1; margin:0; font-variant-numeric:tabular-nums; }
+  .xq-miss{ border-top:1px solid var(--line); padding-top:10px; display:flex; flex-direction:column; gap:3px; }
+  .xq-miss p{ margin:0; font-size:13.5px; line-height:1.4; }
+  .gw-svc{ display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--line); }
+  .gw-svc:first-child{ border-top:0; }
+  .gw-svc label.gw-name{ flex:1; min-width:0; display:flex; align-items:center; gap:10px; font-size:15px; font-weight:600; cursor:pointer; }
+  .gw-svc input[type=checkbox]{ width:20px; height:20px; accent-color:var(--brass); flex:none; }
+  .gw-svc input.gw-price{ width:84px; flex:none; }
+  .gw-list{ margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px; font-size:14.5px; line-height:1.4; }
+  .mw-grid{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; }
+  .mw-grid .mw-ph{ position:relative; aspect-ratio:1; border-radius:10px; overflow:hidden; background:var(--surface); }
+  .mw-grid img{ width:100%; height:100%; object-fit:cover; display:block; cursor:pointer; }
+  .mw-grid button.mw-x{ position:absolute; top:4px; right:4px; width:26px; height:26px; border-radius:50%; border:0; background:rgba(0,0,0,0.6); color:#fff; font-size:16px; line-height:1; cursor:pointer; }
   .shome-step{ display:flex; align-items:center; gap:12px; }
   .shome-step-dot{ width:30px; height:30px; border-radius:50%; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:var(--muted); flex:none; }
   .shome-step.next .shome-step-dot{ border-color:var(--brass); color:var(--brass); }
@@ -1020,6 +1052,12 @@
         <button type="button" class="link-btn" id="btn-trial-nudge-dismiss">Dismiss</button>
       </span>
     </div>
+    <div id="grad-trial-banner" class="banner action" hidden>
+      <span id="grad-trial-banner-text">Your free month of full access is running.</span>
+      <span style="display:flex; gap:14px; flex:none;">
+        <button type="button" class="link-btn" id="btn-grad-trial-keep">Keep it</button>
+      </span>
+    </div>
     <main class="tab-content">
       <!-- ============ HOME (professionals only) ============ -->
       <section class="tab-pane" data-tab="home" id="tab-home">
@@ -1144,11 +1182,18 @@
             <p class="screen-sub" id="shome-week-note" style="margin:6px 0 0; font-size:12px;"></p>
           </div>
         </div>
+        <div class="card" id="shome-grad-card" hidden style="border-color:var(--brass); gap:8px;">
+          <p style="margin:0; font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:15px;">Almost there. Ready to go pro?</p>
+          <p class="screen-sub" style="margin:0;">When you graduate, switch your account and get a free month of everything in Vono. No card needed.</p>
+          <button type="button" class="btn btn-primary" id="btn-shome-grad">See how it works</button>
+        </div>
         <div class="shome-grid2" id="shome-tiles">
           <button type="button" class="shome-tile" data-shome-go="coach"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6.5c2-1 5-1.3 8 0v11c-3-1.3-6-1-8 0v-11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 6.5c-2-1-5-1.3-8 0v11c3-1.3 6-1 8 0v-11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><div><strong>Refresher</strong><span>Practice a cut</span></div></button>
           <button type="button" class="shome-tile" data-shome-go="consult"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 6.5A2.5 2.5 0 0 1 7 4h10a2.5 2.5 0 0 1 2.5 2.5v6A2.5 2.5 0 0 1 17 15H10l-4 3.5V15a2.5 2.5 0 0 1-1.5-2.3v-6.2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><div><strong>Consult</strong><span>Practice a talk</span></div></button>
           <button type="button" class="shome-tile" data-shome-go="ledger"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 19V10M12 19V5M19 19v-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><div><strong>Ledger</strong><span id="shome-ledger-sub">Rate your skills</span></div></button>
           <button type="button" class="shome-tile" data-shome-go="jobs"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="8" width="17" height="11" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M9 8V6.5A1.5 1.5 0 0 1 10.5 5h3A1.5 1.5 0 0 1 15 6.5V8" stroke="currentColor" stroke-width="1.6"/></svg><div><strong>Jobs</strong><span>Who's hiring</span></div></button>
+          <button type="button" class="shome-tile" id="btn-shome-exam"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><div><strong>Exam prep</strong><span id="shome-exam-sub">Practice for your boards</span></div></button>
+          <button type="button" class="shome-tile" id="btn-shome-work"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="10.5" r="1.8" stroke="currentColor" stroke-width="1.6"/><path d="M4 17l5-4.5 3.5 3 3-2.5L20 17" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><div><strong>My work</strong><span id="shome-work-sub">Start your portfolio</span></div></button>
         </div>
         <div class="card" style="border-color:var(--brass); flex-direction:row; align-items:center; gap:12px;">
           <div style="flex:1; min-width:0;">
@@ -1157,6 +1202,7 @@
           </div>
           <button type="button" class="btn btn-outline" id="btn-shome-share" style="flex:none; padding:9px 14px; font-size:13px;">Share Vono</button>
         </div>
+        <button type="button" class="link-btn" id="btn-shome-grad-link" style="align-self:center;">I've graduated. Switch to a professional account</button>
       </section>
       <!-- ============ PACE ============ -->
       <section class="tab-pane" data-tab="pace" id="tab-pace">
@@ -1461,6 +1507,7 @@
             <button type="button" class="mode-btn" data-cat="mua" style="display:none">Consult &amp; Safety</button>
           </div>
           <div class="tech-list" id="tech-list"></div>
+          <button type="button" class="shome-tile" id="btn-coach-exam" style="width:100%; margin-top:6px;"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><div><strong>Exam prep</strong><span>Practice 10 board-style questions</span></div></button>
         </div>
         <div class="screen-body" data-screen="intro">
           <div class="walk-header">
@@ -3167,7 +3214,7 @@
       <div id="account-plan-section" style="display:flex; flex-direction:column; gap:10px;">
         <p class="screen-sub" id="account-plan-status">&nbsp;</p>
         <div id="account-plan-offer" style="display:none; flex-direction:column; gap:10px; margin-top:10px;">
-          <p class="screen-sub" style="margin:0; font-weight:700; color:var(--ink);">Try either plan free: you won't be charged until your trial ends, and you can cancel any time before that.</p>
+          <p class="screen-sub" id="account-plan-offer-lead" style="margin:0; font-weight:700; color:var(--ink);">Try either plan free: you won't be charged until your trial ends, and you can cancel any time before that.</p>
           <div class="card" style="gap:6px;">
             <strong>Vono Pro ($20/month)</strong>
             <span class="screen-sub" style="margin:0;">Online booking with your link and QR code, payment links, a top spot on Find a Pro with unlimited photos, messaging clients, Business tools, and notifications.</span>
@@ -3252,6 +3299,14 @@
     <div id="shared-list" style="display:flex; flex-direction:column; gap:14px;"></div>
     <p class="foot-note-small" id="shared-note" style="margin-top:8px;">This link reads live. If they update a rating later, reopening it shows the current numbers.</p>
   </div>
+  <div id="sub-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100svh;">
+    <header class="topbar">
+      <button type="button" class="link-btn" id="btn-sub-back">&larr; Back</button>
+      <div class="tb-name" id="sub-title">&nbsp;</div>
+      <div style="width:40px;"></div>
+    </header>
+    <main class="tab-content" id="sub-main" style="display:flex; flex-direction:column; gap:16px;"></main>
+  </div>
   <div id="toast" class="toast">Saved</div>
   <div id="photo-lightbox" class="lightbox-overlay" hidden>
     <button class="lightbox-close" id="btn-lightbox-close" type="button" aria-label="Close">&times;</button>
@@ -3294,7 +3349,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="refreshers.js?v=2026-11-02T22-00-00Z"></script><script>
+<script src="refreshers.js?v=2026-11-03T20-00-00Z"></script><script src="exam-bank.js?v=2026-11-03T20-00-00Z"></script><script>
 /* =========================================================
    SUPABASE SETUP
    Fill these in once the Supabase project exists: Project URL
@@ -3678,7 +3733,10 @@ function defaultProfile(name){
     timezone: '',
     subscriptionStatus: 'none',
     planTier: null,
-    trialEndsAt: null
+    trialEndsAt: null,
+    trialSource: null,
+    gradTrialUsedAt: null,
+    examPrep: null
   };
 }
 // Walk-in hours live beside the appointment hours: { on, hours:{day:{closed,open,close}}, overrides:[{date,closed,open,close}] }.
@@ -3756,6 +3814,7 @@ async function persistProfile(fields){
   if (fields.notifyApptReminders !== undefined) row.notify_appt_reminders = fields.notifyApptReminders;
   if (fields.apptReminderHours !== undefined) row.appt_reminder_hours = fields.apptReminderHours;
   if (fields.timezone !== undefined) row.timezone = fields.timezone;
+  if (fields.examPrep !== undefined) row.exam_prep = fields.examPrep;
   try{
     const { data, error } = await supabaseClient.from('profiles').update(row).eq('code', profileCode).select();
     if (error) throw error;
@@ -4590,6 +4649,7 @@ function showTab(name){
       root.querySelector('#shome-week-note').textContent = pace.nextBreak ? ('Next break: ' + pace.nextBreak.label + ', ' + fmtShort(pace.nextBreak.start)) : 'No breaks added';
     }
     root.querySelector('#shome-ledger-sub').textContent = !techs.length ? 'Rate your skills' : (rated === 0 ? 'Rate your first skill' : (unrated > 0 ? (unrated + (unrated === 1 ? ' skill' : ' skills') + ' to rate') : 'All skills rated'));
+    if (window.refreshStudentExtras) window.refreshStudentExtras();
   }
   window.initStudentHome = function(){ render(); };
   function setupCta(){
@@ -4636,6 +4696,582 @@ function showTab(name){
     if (!document.hidden && root.classList.contains('show')) render();
   });
 })();
+/* =========================================================
+   GRADUATION, EXAM PREP, MY WORK
+   Three full-screen flows that sit on top of the app (#sub-screen):
+   - Graduation: a 4-step switch from Student to a professional, with a free month
+     of full access (started on the server by start_graduation_trial) and a
+     downloadable (CSV only, not printable) copy of the school record.
+   - Exam prep: 10 random questions per session from a 100-question bank per
+     profession (exam-bank.js), with feedback, results and seen-question tracking.
+   - My work: students build a portfolio now; it carries into the pro listing.
+   ========================================================= */
+(function(){
+  const screen = document.getElementById('sub-screen');
+  const main = document.getElementById('sub-main');
+  const titleEl = document.getElementById('sub-title');
+  let backFn = null;
+  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function shuffle(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function openSub(title, back){
+    titleEl.textContent = title; backFn = back || closeSub;
+    document.getElementById('app-shell').hidden = true;
+    screen.hidden = false;
+    try{ window.scrollTo(0, 0); }catch(e){}
+  }
+  function closeSub(){
+    screen.hidden = true; main.innerHTML = ''; backFn = null;
+    document.getElementById('app-shell').hidden = false;
+  }
+  document.getElementById('btn-sub-back').addEventListener('click', ()=>{ (backFn || closeSub)(); });
+  function csvCell(v){ v = (v == null ? '' : String(v)); return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+  function fmtDate(iso){ try{ return new Date(iso).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); }catch(e){ return iso; } }
+  function firstName(){ const n = ((profile && profile.name) || '').trim(); return n ? n.split(/\s+/)[0] : ''; }
+  function iconCheck(){ return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true" style="flex:none; color:var(--good);"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+
+  /* ---------------------------------------------------------
+     EXAM PREP
+     --------------------------------------------------------- */
+  const EXAM_KEYS = { 'Barber':'barber', 'Cosmetologist':'cosmetologist', 'Nail Tech':'nailt', 'Esthetician':'estht', 'Massage Therapist':'massage', 'Braider':'braider', 'MUA':'mua' };
+  const EXAM_LABEL = { barber:'Barber', cosmetologist:'Cosmetology', nailt:'Nail Technology', estht:'Esthetics', massage:'Massage Therapy', braider:'Braiding', mua:'Makeup Artistry' };
+  const EXAM_ORDER = ['barber','cosmetologist','nailt','estht','massage','braider','mua'];
+  const EXAM_NOTE = {
+    barber:"Original practice questions written to the topics on NIC's published Barber exam outline. They aren't real exam questions.",
+    cosmetologist:"Original practice questions written to the topics on NIC's published Cosmetology exam outline. They aren't real exam questions.",
+    nailt:"Original practice questions written to the topics on NIC's published Nail Technology exam outline. They aren't real exam questions.",
+    estht:"Original practice questions written to the topics on NIC's published Esthetics exam outline. They aren't real exam questions.",
+    massage:"NIC doesn't offer a massage exam. These original questions follow the MBLEx outline most states use. They aren't real exam questions.",
+    braider:"NIC doesn't offer a braiding exam. These original questions cover the sanitation, hair science, and technique topics braiding boards test.",
+    mua:"NIC doesn't offer a makeup exam. These original questions cover sanitation, skin, color, and application topics from the cosmetology and esthetics outlines."
+  };
+  const QUIZ_SIZE = 10;
+  let xKey = '';          // which exam is open
+  let xq = null;         // active session
+  function examBank(k){ const b = window.VONO_EXAMS && window.VONO_EXAMS[k]; return Array.isArray(b) ? b : []; }
+  function examKeyFor(craft){
+    if (EXAM_KEYS[craft]) return EXAM_KEYS[craft];
+    const c = String(craft || '').toLowerCase();
+    if (/barber/.test(c)) return 'barber';
+    if (/cosmet/.test(c)) return 'cosmetologist';
+    if (/nail/.test(c)) return 'nailt';
+    if (/brai/.test(c)) return 'braider';
+    if (/massage/.test(c)) return 'massage';
+    if (/esthet|skin/.test(c)) return 'estht';
+    if (/mua|makeup/.test(c)) return 'mua';
+    return '';
+  }
+  function ep(){
+    if (!profile.examPrep || typeof profile.examPrep !== 'object'){
+      let local = null;
+      try{ local = JSON.parse(localStorage.getItem('vonoExam_' + (profileCode || '')) || 'null'); }catch(e){}
+      profile.examPrep = (local && typeof local === 'object') ? local : {};
+    }
+    const e = profile.examPrep;
+    if (!e.seen || typeof e.seen !== 'object') e.seen = {};
+    if (!e.miss || typeof e.miss !== 'object') e.miss = {};
+    if (!Array.isArray(e.hist)) e.hist = [];
+    return e;
+  }
+  async function saveEp(){
+    try{ localStorage.setItem('vonoExam_' + (profileCode || ''), JSON.stringify(profile.examPrep || {})); }catch(e){}
+    return persistProfile({ examPrep: profile.examPrep });
+  }
+  function daysUntil(iso){
+    if (!iso) return null;
+    const a = new Date(todayIso() + 'T00:00:00'), b = new Date(iso + 'T00:00:00');
+    return Math.round((b - a) / 86400000);
+  }
+  function pickSession(k, n){
+    const bank = examBank(k), e = ep();
+    const all = bank.map((_, i)=> i);
+    let seen = new Set(e.seen[k] || []);
+    let fresh = all.filter(i=> !seen.has(i));
+    let fresh_round = false;
+    if (!fresh.length){ e.seen[k] = []; seen = new Set(); fresh = all.slice(); fresh_round = true; }
+    let pick = shuffle(fresh).slice(0, n);
+    if (pick.length < n){
+      const missSet = new Set(e.miss[k] || []);
+      const pool = shuffle(all.filter(i=> pick.indexOf(i) < 0));
+      const topUp = pool.filter(i=> missSet.has(i)).concat(pool.filter(i=> !missSet.has(i)));
+      pick = pick.concat(topUp.slice(0, n - pick.length));
+    }
+    return { items: shuffle(pick).map(i=>{
+      const q = bank[i];
+      const opts = shuffle(q.c.map((text, idx)=> ({ text, ok: idx === q.a })));
+      return { i, q: q.q, t: q.t || '', why: q.why || '', opts, picked: -1 };
+    }), pos: 0, fresh_round };
+  }
+  function renderExamHome(){
+    const bank = examBank(xKey), e = ep();
+    const seenN = (e.seen[xKey] || []).length;
+    const hist = e.hist.filter(h=> h.k === xKey);
+    const last5 = hist.slice(-5);
+    const avg = last5.length ? Math.round(last5.reduce((s, h)=> s + h.s, 0) / (last5.length * QUIZ_SIZE) * 100) : null;
+    const days = daysUntil(e.date);
+    const topicCount = {};
+    (e.miss[xKey] || []).forEach(i=>{ const t = bank[i] && bank[i].t; if (t) topicCount[t] = (topicCount[t] || 0) + 1; });
+    const weak = Object.keys(topicCount).sort((a, b)=> topicCount[b] - topicCount[a]).slice(0, 3);
+    let countdown;
+    if (!e.date) countdown = 'Set your exam date to see a countdown.';
+    else if (days > 1) countdown = days + ' days to go';
+    else if (days === 1) countdown = 'Tomorrow';
+    else if (days === 0) countdown = 'Exam day. You\'ve got this.';
+    else countdown = 'That date has passed. Update it if you\'re retaking.';
+    main.innerHTML = `
+      <div>
+        <p class="eyebrow-mini">${esc(EXAM_LABEL[xKey])}</p>
+        <h2 class="screen-title" style="margin:0;">Exam prep</h2>
+        <p class="screen-sub" id="xp-note" style="margin:6px 0 0;">${esc(EXAM_NOTE[xKey])}</p>
+      </div>
+      <div class="card" style="gap:10px;">
+        <strong>Practice quiz</strong>
+        <span class="screen-sub" style="margin:0;">${QUIZ_SIZE} questions, a new mix each time. You see the answer and why after each one.</span>
+        <button type="button" class="btn btn-primary" id="xp-start">Start ${QUIZ_SIZE} questions</button>
+      </div>
+      <div class="card" style="gap:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px;">
+          <strong>My exam date</strong>
+          <span id="xp-count" style="font-weight:800; color:var(--brass); font-size:14px;">${esc(countdown)}</span>
+        </div>
+        <div class="input-row"><input type="date" id="xp-date" aria-label="My exam date" value="${esc(e.date || '')}"></div>
+      </div>
+      <div class="shome-grid2">
+        <div class="card shome-stat"><span class="screen-sub" style="margin:0;">Questions seen</span><p class="big">${seenN} <small>of ${bank.length}</small></p><div class="shome-bar"><span style="width:${bank.length ? Math.round(seenN / bank.length * 100) : 0}%;"></span></div></div>
+        <div class="card shome-stat"><span class="screen-sub" style="margin:0;">Recent average</span><p class="big">${avg == null ? '-' : avg + '%'}</p><span class="screen-sub" style="margin:0; font-size:12px;">${hist.length} quiz${hist.length === 1 ? '' : 'zes'} taken</span></div>
+      </div>
+      ${weak.length ? `<div class="card" style="gap:6px;"><strong>Worth another look</strong><span class="screen-sub" style="margin:0;">${weak.map(esc).join(', ')}</span></div>` : ''}
+      <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+        <button type="button" class="link-btn" id="xp-switch" style="padding:0;">Practice a different exam</button>
+        ${seenN || hist.length ? '<button type="button" class="link-btn" id="xp-reset" style="padding:0;">Reset my progress</button>' : ''}
+      </div>
+      <p class="foot-note-small">Practice only. Your state board's exam is the one that counts, so use your school's study guide too.</p>`;
+    main.querySelector('#xp-start').addEventListener('click', startQuiz);
+    main.querySelector('#xp-date').addEventListener('change', async function(){
+      const e2 = ep(); e2.date = this.value || ''; renderExamHome(); await saveEp(); refreshExtras();
+    });
+    main.querySelector('#xp-switch').addEventListener('click', renderExamPicker);
+    const rs = main.querySelector('#xp-reset');
+    if (rs) rs.addEventListener('click', function(){
+      if (!this.dataset.armed){ this.dataset.armed = '1'; this.textContent = 'Tap again to reset'; setTimeout(()=>{ if (this.isConnected){ delete this.dataset.armed; this.textContent = 'Reset my progress'; } }, 3500); return; }
+      const e2 = ep(); e2.seen[xKey] = []; e2.miss[xKey] = []; e2.hist = e2.hist.filter(h=> h.k !== xKey);
+      saveEp(); renderExamHome(); refreshExtras();
+    });
+  }
+  function renderExamPicker(){
+    main.innerHTML = `
+      <div><p class="eyebrow-mini">Exam prep</p><h2 class="screen-title" style="margin:0;">Which exam?</h2>
+      <p class="screen-sub" style="margin:6px 0 0;">Each one has ${QUIZ_SIZE * 10} practice questions.</p></div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        ${EXAM_ORDER.map(k=> `<button type="button" class="shome-tile" data-xk="${k}" style="width:100%;"><div><strong>${esc(EXAM_LABEL[k])}</strong><span>${examBank(k).length} questions</span></div></button>`).join('')}
+      </div>`;
+    main.querySelectorAll('[data-xk]').forEach(b=> b.addEventListener('click', ()=>{ xKey = b.dataset.xk; renderExamHome(); }));
+  }
+  function startQuiz(){
+    if (!examBank(xKey).length){ showToast("Practice questions aren't loaded. Refresh the app and try again."); return; }
+    xq = pickSession(xKey, QUIZ_SIZE);
+    if (xq.fresh_round) showToast("You've seen every question. Starting a fresh round.");
+    renderQuestion();
+  }
+  function renderQuestion(){
+    const it = xq.items[xq.pos], n = xq.items.length;
+    const letters = ['A','B','C','D'];
+    main.innerHTML = `
+      <div class="xq-top"><span id="xq-count">Question ${xq.pos + 1} of ${n}</span><button type="button" class="link-btn" id="xq-end" style="padding:0;">End quiz</button></div>
+      <div class="shome-bar" aria-hidden="true"><span style="width:${Math.round(xq.pos / n * 100)}%;"></span></div>
+      ${it.t ? `<p class="xq-topic">${esc(it.t)}</p>` : ''}
+      <h3 class="xq-q" id="xq-q">${esc(it.q)}</h3>
+      <div class="xq-choices" role="group" aria-labelledby="xq-q">
+        ${it.opts.map((o, k)=> `<button type="button" class="xq-choice" data-k="${k}"><b>${letters[k]}</b><span>${esc(o.text)}</span></button>`).join('')}
+      </div>
+      <div class="xq-fb" id="xq-fb" hidden aria-live="polite"></div>
+      <button type="button" class="btn btn-primary" id="xq-next" hidden>${xq.pos + 1 === n ? 'See my results' : 'Next question'}</button>`;
+    main.querySelector('#xq-end').addEventListener('click', ()=>{ finishEarly(); });
+    main.querySelectorAll('.xq-choice').forEach(btn=> btn.addEventListener('click', ()=> answer(parseInt(btn.dataset.k, 10))));
+    main.querySelector('#xq-next').addEventListener('click', ()=>{
+      if (xq.pos + 1 >= n) renderResults(); else { xq.pos++; renderQuestion(); try{ window.scrollTo(0, 0); }catch(e){} }
+    });
+  }
+  function answer(k){
+    const it = xq.items[xq.pos];
+    if (it.picked >= 0) return;
+    it.picked = k;
+    const ok = !!it.opts[k].ok;
+    const e = ep();
+    const seen = new Set(e.seen[xKey] || []); seen.add(it.i); e.seen[xKey] = Array.from(seen);
+    const miss = new Set(e.miss[xKey] || []);
+    if (ok) miss.delete(it.i); else miss.add(it.i);
+    e.miss[xKey] = Array.from(miss);
+    const letters = ['A','B','C','D'];
+    const rightK = it.opts.findIndex(o=> o.ok);
+    main.querySelectorAll('.xq-choice').forEach((btn, idx)=>{
+      btn.disabled = true;
+      if (idx === rightK) btn.classList.add('right');
+      else if (idx === k) btn.classList.add('wrong');
+    });
+    const fb = main.querySelector('#xq-fb');
+    fb.hidden = false;
+    fb.innerHTML = `<strong style="color:${ok ? 'var(--good)' : 'var(--behind)'};">${ok ? 'Correct' : 'Not quite. The answer is ' + letters[rightK] + '.'}</strong><p>${esc(it.why)}</p>`;
+    const next = main.querySelector('#xq-next'); next.hidden = false;
+    try{ next.scrollIntoView({ block:'nearest', behavior:'smooth' }); }catch(e2){}
+    try{ next.focus({ preventScroll:true }); }catch(e3){}
+  }
+  async function finishEarly(){
+    await saveEp(); refreshExtras(); renderExamHome(); xq = null;
+  }
+  async function renderResults(){
+    const items = xq.items, n = items.length;
+    const score = items.filter(it=> it.picked >= 0 && it.opts[it.picked].ok).length;
+    const e = ep();
+    e.hist.push({ d: todayIso(), k: xKey, s: score });
+    if (e.hist.length > 60) e.hist = e.hist.slice(-60);
+    const missed = items.filter(it=> !(it.picked >= 0 && it.opts[it.picked].ok));
+    const msg = score >= 9 ? 'Strong. Keep this up.' : (score >= 7 ? 'Solid. A little more practice and you\'re there.' : (score >= 5 ? 'Getting there. Go over the ones you missed.' : 'Keep at it. Read the answers below, then try again.'));
+    const topicCount = {};
+    missed.forEach(it=>{ if (it.t) topicCount[it.t] = (topicCount[it.t] || 0) + 1; });
+    const topics = Object.keys(topicCount).sort((a, b)=> topicCount[b] - topicCount[a]);
+    main.innerHTML = `
+      <div><p class="eyebrow-mini">${esc(EXAM_LABEL[xKey])}</p>
+      <p class="xq-score" id="xq-score">${score} <span style="font-size:20px; color:var(--muted);">of ${n}</span></p>
+      <p class="screen-sub" style="margin:8px 0 0;">${esc(msg)}</p></div>
+      <div class="shome-bar" aria-hidden="true"><span style="width:${Math.round(score / n * 100)}%;"></span></div>
+      ${topics.length ? `<div class="card" style="gap:6px;"><strong>Review these topics</strong><span class="screen-sub" style="margin:0;">${topics.map(esc).join(', ')}</span></div>` : ''}
+      ${missed.length ? `<div style="display:flex; flex-direction:column; gap:12px;"><strong>What you missed</strong>${missed.map(it=>{
+        const right = it.opts.find(o=> o.ok);
+        return `<div class="xq-miss"><p><b>${esc(it.q)}</b></p><p style="color:var(--good); font-weight:700;">${esc(right ? right.text : '')}</p><p style="color:var(--muted);">${esc(it.why)}</p></div>`;
+      }).join('')}</div>` : '<p class="screen-sub">Perfect round. No misses to review.</p>'}
+      <button type="button" class="btn btn-primary" id="xq-again">Practice ${QUIZ_SIZE} more</button>
+      <button type="button" class="btn btn-outline" id="xq-done">Done</button>`;
+    main.querySelector('#xq-again').addEventListener('click', startQuiz);
+    main.querySelector('#xq-done').addEventListener('click', ()=>{ renderExamHome(); });
+    try{ window.scrollTo(0, 0); }catch(e2){}
+    xq = null;
+    await saveEp(); refreshExtras();
+  }
+  window.openExamPrep = function(returnTab){
+    if (!profile) return;
+    const back = ()=>{ xq = null; saveEp(); closeSub(); refreshExtras(); if (returnTab) showTab(returnTab); };
+    openSub('Exam prep', back);
+    const k = examKeyFor(currentCraft());
+    if (k){ xKey = k; renderExamHome(); } else renderExamPicker();
+  };
+  // Test hooks (also handy for checking the bank): not used by the app itself.
+  window.__examPick = function(k, n){ return pickSession(k, n || QUIZ_SIZE).items.map(it=> it.i); };
+
+  /* ---------------------------------------------------------
+     MY WORK (student portfolio)
+     --------------------------------------------------------- */
+  const WORK_LIMIT = 14;
+  function consentKey(){ return 'vonoWorkConsent_' + (profileCode || ''); }
+  function renderWork(statusMsg){
+    const photos = Array.isArray(profile.portfolioPhotos) ? profile.portfolioPhotos : [];
+    let consented = false; try{ consented = localStorage.getItem(consentKey()) === '1'; }catch(e){}
+    const full = photos.length >= WORK_LIMIT;
+    main.innerHTML = `
+      <div><p class="eyebrow-mini">Portfolio</p><h2 class="screen-title" style="margin:0;">My work</h2>
+      <p class="screen-sub" style="margin:6px 0 0;">Save photos of your best work while you're in school. When you go pro they're ready for your Find a Pro listing.</p></div>
+      <div class="card" style="gap:10px;">
+        <label style="display:flex; gap:10px; align-items:flex-start; font-size:14px; line-height:1.4; cursor:pointer;">
+          <input type="checkbox" id="mw-consent" ${consented ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--brass); flex:none; margin-top:1px;">
+          <span>Anyone recognizable in my photos has agreed to them being shown publicly.</span>
+        </label>
+        <input type="file" accept="image/*" multiple id="mw-input" style="display:none;">
+        <button type="button" class="btn btn-primary" id="mw-add" ${(!consented || full) ? 'disabled' : ''}>${full ? 'Limit reached (' + WORK_LIMIT + ' photos)' : 'Add photos'}</button>
+        <p class="foot-note-small" id="mw-status" style="margin:0;">${esc(statusMsg || (photos.length + ' of ' + WORK_LIMIT + ' photos'))}</p>
+      </div>
+      ${photos.length ? `<div class="mw-grid" id="mw-grid">${photos.map((p, i)=> `<div class="mw-ph"><img src="${esc(p.url)}" alt="My work, photo ${i + 1}" data-i="${i}"><button type="button" class="mw-x" data-rm="${i}" aria-label="Remove photo ${i + 1}">&times;</button></div>`).join('')}</div>` : '<p class="screen-sub" style="text-align:center;">No photos yet. Start with the one you\'re proudest of.</p>'}
+      <p class="foot-note-small">Only the first 5 show on a free listing. A Vono plan shows them all. Photos here are separate from client photos in Passport.</p>`;
+    main.querySelector('#mw-consent').addEventListener('change', function(){
+      try{ localStorage.setItem(consentKey(), this.checked ? '1' : '0'); }catch(e){}
+      main.querySelector('#mw-add').disabled = !this.checked || full;
+    });
+    main.querySelector('#mw-add').addEventListener('click', ()=> main.querySelector('#mw-input').click());
+    main.querySelector('#mw-input').addEventListener('change', async function(){
+      const files = Array.from(this.files || []); this.value = '';
+      if (!files.length || !profileCode) return;
+      const st = main.querySelector('#mw-status');
+      if (!dbAvailable){ st.textContent = "Live saving isn't connected right now."; return; }
+      const room = Math.max(0, WORK_LIMIT - photos.length);
+      const toUp = files.slice(0, room), skipped = files.length - toUp.length;
+      st.textContent = toUp.length > 1 ? 'Uploading photos…' : 'Uploading photo…';
+      const up = [];
+      for (let i = 0; i < toUp.length; i++){
+        try{
+          const f = await compressPhotoForUpload(toUp[i]);
+          const safe = (f.name || 'photo.jpg').replace(/[^a-zA-Z0-9_.-]/g, '_');
+          const path = `${profileCode}/${Date.now()}-${i}-${safe}`;
+          const { error } = await supabaseClient.storage.from('barber-photos').upload(path, f);
+          if (error) throw error;
+          const { data } = supabaseClient.storage.from('barber-photos').getPublicUrl(path);
+          up.push({ url: data.publicUrl, path });
+        }catch(err){ console.warn('work photo upload failed', err); st.textContent = "Couldn't upload one of those photos: " + ((err && err.message) || 'unknown error') + '.'; }
+      }
+      if (!up.length) return;
+      const next = photos.concat(up);
+      profile.portfolioPhotos = next;
+      const r = await persistProfile({ portfolioPhotos: next });
+      renderWork(r && r.ok ? ((up.length > 1 ? up.length + ' photos added.' : 'Photo added.') + (skipped ? ' ' + skipped + ' skipped. The limit is ' + WORK_LIMIT + '.' : '')) : ("Couldn't save: " + ((r && r.message) || 'try again.')));
+      refreshExtras();
+    });
+    main.querySelectorAll('[data-rm]').forEach(b=> b.addEventListener('click', async ()=>{
+      const i = parseInt(b.dataset.rm, 10), cur = (profile.portfolioPhotos || []).slice();
+      const gone = cur.splice(i, 1)[0];
+      if (gone && gone.path && dbAvailable){ try{ await supabaseClient.storage.from('barber-photos').remove([gone.path]); }catch(e){ console.warn('work photo remove failed', e); } }
+      profile.portfolioPhotos = cur;
+      const r = await persistProfile({ portfolioPhotos: cur });
+      renderWork(r && r.ok ? 'Photo removed.' : ("Couldn't save: " + ((r && r.message) || 'try again.')));
+      refreshExtras();
+    }));
+    main.querySelectorAll('.mw-grid img').forEach(im=> im.addEventListener('click', ()=>{ if (window.openLightbox) { try{ window.openLightbox(im.getAttribute('src')); }catch(e){} } }));
+  }
+  window.openMyWork = function(){
+    if (!profile) return;
+    openSub('My work', ()=>{ closeSub(); refreshExtras(); });
+    renderWork();
+  };
+
+  /* ---------------------------------------------------------
+     GRADUATION
+     --------------------------------------------------------- */
+  const SVC_SUGGEST = {
+    'Barber': [['Haircut',30],['Fade',45],['Beard trim',20],['Line-up',15],['Haircut & beard',45],['Kids cut',30]],
+    'Cosmetologist': [["Women's haircut",45],['Blowout',45],['Single-process color',90],['Highlights',120],['Deep conditioning',30],['Updo',60]],
+    'Nail Tech': [['Manicure',30],['Gel manicure',45],['Pedicure',45],['Acrylic full set',75],['Acrylic fill',60],['Dip powder',60]],
+    'Braider': [['Box braids',240],['Knotless braids',300],['Cornrows',120],['Twists',150],['Take-down',60]],
+    'Massage Therapist': [['30-minute massage',30],['60-minute massage',60],['90-minute massage',90],['Deep tissue (60 min)',60]],
+    'Esthetician': [['Classic facial',60],['Deep cleansing facial',75],['Brow wax',15],['Lip wax',10],['Chemical peel',45]],
+    'MUA': [['Natural makeup',45],['Full glam',60],['Bridal makeup',90],['Lash application',20]]
+  };
+  let gw = null;
+  function trialEligible(){ return !!profile && !profile.gradTrialUsedAt && ['none','canceled'].indexOf(profile.subscriptionStatus || 'none') >= 0; }
+  function defaultGradTitle(){
+    const f = (profile && profile.studentField) || '';
+    const k = examKeyFor(f);
+    const found = Object.keys(EXAM_KEYS).find(t=> EXAM_KEYS[t] === k);
+    return found || 'Barber';
+  }
+  function schoolRecordRows(){
+    const pace = window.__ahcPaceSummary ? window.__ahcPaceSummary() : { total:0, earned:0, reported:0, asOf:'' };
+    const svc = window.__ahcServicesSummary ? window.__ahcServicesSummary() : { total:0, done:0 };
+    const techs = Array.isArray(profile.techniques) ? profile.techniques : [];
+    const rows = [
+      ['Vono school record'],
+      ['Name', profile.name || ''],
+      ['Program', profile.studentField || ''],
+      ['Saved on', todayIso()],
+      [],
+      ['HOURS'],
+      ['Hours required', pace.total || 0],
+      ['Hours completed (estimated)', Math.round(pace.earned || 0)],
+      ['Last reported hours', Math.round(pace.reported || 0)],
+      ['Reported as of', pace.asOf || ''],
+      [],
+      ['SERVICES'],
+      ['Services required', svc.total || 0],
+      ['Services completed', Math.round(svc.done || 0)],
+      [],
+      ['LEDGER (your skill ratings, 1 to 10)'],
+      ['Technique', 'Category', 'Rated', 'Rating']
+    ];
+    techs.forEach(t=> rows.push([t.name || '', t.category || '', t.rated ? 'Yes' : 'No', t.rated ? t.rating : '']));
+    rows.push([], ['Note', 'A planning record you kept in Vono. It is not an official school transcript.']);
+    return rows;
+  }
+  function downloadSchoolRecord(){
+    const csv = schoolRecordRows().map(r=> r.map(csvCell).join(',')).join('\r\n');
+    const blob = new Blob([csv], { type:'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'vono-school-record.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    if (gw) gw.saved = true;
+  }
+  function gwProgress(step){
+    return `<div><div class="xq-top"><span>Step ${step} of 4</span></div><div class="shome-bar" aria-hidden="true"><span style="width:${step * 25}%;"></span></div></div>`;
+  }
+  function gwBack(){
+    if (!gw || gw.step <= 1){ gw = null; closeSub(); return; }
+    if (gw.step >= 5){ gw = null; closeSub(); showTab('home'); return; }
+    gw.step--; renderGw();
+  }
+  function renderGw(){
+    if (!gw) return;
+    const el = gw.trial;
+    if (gw.step === 1){
+      main.innerHTML = `${gwProgress(1)}
+        <div><h2 class="screen-title" style="margin:0;">Congratulations${firstName() ? ', ' + esc(firstName()) : ''}.</h2>
+        <p class="screen-sub" style="margin:6px 0 0;">Let's switch your account from Student to a working professional.</p></div>
+        <div class="field"><label for="gw-title">I'm a</label>
+          <select class="title-select" id="gw-title" style="width:100%;">${Object.keys(EXAM_KEYS).map(t=> `<option value="${esc(t)}"${t === gw.title ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select></div>
+        <div class="card" style="gap:10px;">
+          <strong>What you get</strong>
+          <ul class="gw-list">
+            ${el ? '<li><b>A free month of full access</b> to every feature in Vono. No card needed.</li>' : ''}
+            <li>Online booking with your own link and QR code</li>
+            <li>Business tools: earnings, clients, inventory, and more</li>
+            <li>A listing on Find a Pro so new clients can find you</li>
+            <li>Exam prep stays open to you</li>
+          </ul>
+        </div>
+        <p class="foot-note-small">Switching can't be undone. Pace and Ledger go away, so the last step saves a copy of your school record.</p>
+        <button type="button" class="btn btn-primary" id="gw-next">Continue</button>`;
+      main.querySelector('#gw-title').addEventListener('change', function(){ gw.title = this.value; gw.picks = {}; });
+      main.querySelector('#gw-next').addEventListener('click', ()=>{ gw.step = 2; renderGw(); });
+    } else if (gw.step === 2){
+      main.innerHTML = `${gwProgress(2)}
+        <div><h2 class="screen-title" style="margin:0;">Your license number</h2>
+        <p class="screen-sub" style="margin:6px 0 0;">Find a Pro needs it before your listing can go live. Got it already? Add it now. Still waiting on it? Skip, and add it any time in Account.</p></div>
+        <div class="field"><label for="gw-license">License number</label><div class="input-row"><input id="gw-license" type="text" placeholder="e.g. BB-123456" autocomplete="off" value="${esc(gw.license)}"></div></div>
+        <button type="button" class="btn btn-primary" id="gw-next">Continue</button>
+        <button type="button" class="btn btn-ghost" id="gw-skip">Skip for now</button>`;
+      main.querySelector('#gw-next').addEventListener('click', ()=>{ gw.license = main.querySelector('#gw-license').value.trim(); gw.step = 3; renderGw(); });
+      main.querySelector('#gw-skip').addEventListener('click', ()=>{ gw.license = ''; gw.step = 3; renderGw(); });
+    } else if (gw.step === 3){
+      const list = SVC_SUGGEST[gw.title] || [];
+      main.innerHTML = `${gwProgress(3)}
+        <div><h2 class="screen-title" style="margin:0;">Your first services</h2>
+        <p class="screen-sub" style="margin:6px 0 0;">Tick what you offer and set your price. These go on your booking page once you turn booking on. You can change all of it later.</p></div>
+        <div class="card" style="gap:0;" id="gw-svcs">
+          ${list.map((s, i)=> { const p = gw.picks[i] || {}; return `<div class="gw-svc"><label class="gw-name"><input type="checkbox" data-i="${i}" ${p.on ? 'checked' : ''}><span>${esc(s[0])}<br><span class="screen-sub" style="margin:0; font-size:12px;">${s[1]} min</span></span></label><input class="gw-price" type="number" inputmode="decimal" min="0" step="1" placeholder="$" data-p="${i}" value="${p.price != null ? esc(p.price) : ''}" aria-label="Price for ${esc(s[0])}"></div>`; }).join('')}
+        </div>
+        <p class="foot-note-small" id="gw-err" style="color:var(--behind); margin:0;" hidden></p>
+        <button type="button" class="btn btn-primary" id="gw-next">Continue</button>
+        <button type="button" class="btn btn-ghost" id="gw-skip">Skip for now</button>`;
+      const sync = ()=>{
+        gw.picks = {};
+        main.querySelectorAll('#gw-svcs input[type=checkbox]').forEach(cb=>{
+          const i = cb.dataset.i, pr = main.querySelector(`[data-p="${i}"]`).value;
+          gw.picks[i] = { on: cb.checked, price: pr };
+        });
+      };
+      main.querySelectorAll('#gw-svcs input[type=number]').forEach(inp=> inp.addEventListener('input', function(){
+        const i = this.dataset.p, cb = main.querySelector(`[data-i="${i}"]`);
+        if (this.value !== '' && cb && !cb.checked) cb.checked = true;
+      }));
+      main.querySelector('#gw-next').addEventListener('click', ()=>{
+        sync();
+        const bad = Object.keys(gw.picks).filter(i=> gw.picks[i].on && (gw.picks[i].price === '' || isNaN(parseFloat(gw.picks[i].price)) || parseFloat(gw.picks[i].price) < 0));
+        const err = main.querySelector('#gw-err');
+        if (bad.length){ err.hidden = false; err.textContent = 'Add a price for each service you ticked, or untick it.'; return; }
+        gw.step = 4; renderGw();
+      });
+      main.querySelector('#gw-skip').addEventListener('click', ()=>{ gw.picks = {}; gw.step = 4; renderGw(); });
+    } else if (gw.step === 4){
+      const ends = el ? new Date(Date.now() + 30 * 86400000).toISOString() : null;
+      main.innerHTML = `${gwProgress(4)}
+        <div><h2 class="screen-title" style="margin:0;">Save your school record</h2>
+        <p class="screen-sub" style="margin:6px 0 0;">Once you switch, Pace and Ledger are gone. Download a copy of your hours, services, and skill ratings first.</p></div>
+        <button type="button" class="btn btn-outline" id="gw-dl">${gw.saved ? 'Download again' : 'Download my school record'}</button>
+        <p class="foot-note-small" id="gw-dl-note" style="margin:0;">${gw.saved ? 'Saved to your downloads.' : 'A spreadsheet file (CSV). Open it in Excel, Numbers, or Google Sheets.'}</p>
+        <div class="card" style="gap:6px;">
+          <strong>Ready to switch</strong>
+          <span class="screen-sub" style="margin:0;">You'll be a ${esc(gw.title)}${el ? '. Your free month of full access starts today and runs to ' + esc(fmtDate(ends)) + '. No card needed.' : '.'}</span>
+        </div>
+        <p class="foot-note-small" id="gw-err" style="color:var(--behind); margin:0;" hidden></p>
+        <button type="button" class="btn btn-primary" id="gw-go">${el ? 'Switch and start my free month' : 'Switch to ' + esc(gw.title)}</button>
+        <button type="button" class="btn btn-ghost" id="gw-nofree" hidden>Switch without the free month</button>`;
+      main.querySelector('#gw-dl').addEventListener('click', ()=>{ downloadSchoolRecord(); renderGw(); });
+      main.querySelector('#gw-go').addEventListener('click', ()=> finalizeGrad(false));
+      main.querySelector('#gw-nofree').addEventListener('click', ()=> finalizeGrad(true));
+    } else if (gw.step === 5){
+      const d = gradTrialActive() ? gradTrialDaysLeft() : 0;
+      main.innerHTML = `
+        <div style="text-align:center; padding-top:12px;"><h2 class="screen-title" style="margin:0;">You're a ${esc(profile.title)} on Vono.</h2>
+        <p class="screen-sub" style="margin:8px 0 0;">${gradTrialActive() ? 'Your free month of full access runs to ' + esc(fmtDate(profile.trialEndsAt)) + ' (' + d + ' days).' : 'Welcome to the pro side.'}</p></div>
+        <div class="card" style="gap:0;">
+          <button type="button" class="ac-row" data-gdone="booking"><span class="ac-t"><b>Set up booking</b><span>Add hours and services, get your link</span></span></button>
+          <button type="button" class="ac-row" data-gdone="listing"><span class="ac-t"><b>Get on Find a Pro</b><span>Add your shop details and license number</span></span></button>
+          <button type="button" class="ac-row" data-gdone="home"><span class="ac-t"><b>Go to Home</b><span>Look around first</span></span></button>
+        </div>`;
+      main.querySelectorAll('[data-gdone]').forEach(b=> b.addEventListener('click', ()=>{
+        const go = b.dataset.gdone; gw = null; closeSub();
+        if (go === 'listing') showAccountScreen('listing'); else showTab(go);
+      }));
+    }
+    try{ window.scrollTo(0, 0); }catch(e){}
+  }
+  async function finalizeGrad(withoutTrial){
+    const btn = main.querySelector(withoutTrial ? '#gw-nofree' : '#gw-go');
+    const err = main.querySelector('#gw-err');
+    if (btn) btn.disabled = true;
+    err.hidden = true;
+    const title = gw.title, license = gw.license || '';
+    try{
+      if (!dbAvailable) throw new Error("Not connected right now.");
+      if (withoutTrial || !gw.trial){
+        const r = await persistProfile({ title, license: license || undefined });
+        if (!r.ok) throw new Error(r.message || 'Could not save.');
+        profile.title = title; if (license) profile.license = license;
+      } else {
+        const { data, error } = await supabaseClient.rpc('start_graduation_trial', { p_title: title, p_license: license || null });
+        if (error) throw error;
+        const r = data || {};
+        profile.title = r.title || title;
+        if (r.license) profile.license = r.license; else if (license) profile.license = license;
+        profile.subscriptionStatus = r.subscription_status || profile.subscriptionStatus;
+        profile.planTier = r.plan_tier || null;
+        profile.trialEndsAt = r.trial_ends_at || null;
+        profile.trialSource = r.trial_source || null;
+        profile.gradTrialUsedAt = r.grad_trial_used_at || null;
+      }
+      // Starter services (saved after the switch so a failed switch leaves nothing half-done).
+      const list = SVC_SUGGEST[title] || [];
+      const picked = Object.keys(gw.picks || {}).filter(i=> gw.picks[i].on && list[i]);
+      if (picked.length){
+        const gen = ()=> Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+        const add = picked.map(i=> ({ id: gen(), name: list[i][0], price: parseFloat(gw.picks[i].price) || 0, duration: list[i][1], description: '', vipPrice: null }));
+        const next = (profile.bookingServices || []).concat(add);
+        profile.bookingServices = next;
+        persistProfile({ bookingServices: next });
+      }
+      document.getElementById('tb-title').textContent = tbTitleText();
+      populateAccountTitleSelect(); populateAccountLicense(); populateNotificationsStatus(); populateAccountListing();
+      applyRoleVisibility();
+      try{ if (window.refreshCoachCategories) window.refreshCoachCategories(); }catch(e){}
+      gw.step = 5; renderGw();
+    }catch(e){
+      console.warn('graduation failed', e);
+      if (btn) btn.disabled = false;
+      err.hidden = false;
+      err.textContent = "Couldn't finish the switch: " + ((e && e.message) || 'try again') + '.';
+      const nf = main.querySelector('#gw-nofree'); if (nf && !withoutTrial && gw.trial) nf.hidden = false;
+    }
+  }
+  window.openGradWizard = function(title){
+    if (!profile || !isStudent()) return;
+    gw = { step:1, title: (EXAM_KEYS[title] ? title : defaultGradTitle()), license:'', picks:{}, saved:false, trial: trialEligible() };
+    openSub('Go pro', gwBack);
+    renderGw();
+  };
+
+  /* ---------------------------------------------------------
+     Student Home hooks
+     --------------------------------------------------------- */
+  function refreshExtras(){
+    if (!profile) return;
+    // Exam tile
+    const sub = document.getElementById('shome-exam-sub');
+    if (sub){
+      const days = daysUntil(ep().date);
+      sub.textContent = (days != null && days > 0) ? (days + (days === 1 ? ' day' : ' days') + ' to your exam') : (days === 0 ? 'Exam day' : 'Practice for your boards');
+    }
+    const w = document.getElementById('shome-work-sub');
+    if (w){ const n = (profile.portfolioPhotos || []).length; w.textContent = n ? (n + (n === 1 ? ' photo' : ' photos')) : 'Start your portfolio'; }
+    // Graduation card: near the end of the hours
+    const card = document.getElementById('shome-grad-card');
+    if (card){
+      const pace = window.__ahcPaceSummary ? window.__ahcPaceSummary() : { total:0, earned:0 };
+      card.hidden = !(isStudent() && pace.total > 0 && pace.earned / pace.total >= 0.9);
+    }
+  }
+  window.refreshStudentExtras = refreshExtras;
+  document.getElementById('btn-shome-exam').addEventListener('click', ()=> window.openExamPrep('home'));
+  document.getElementById('btn-shome-work').addEventListener('click', ()=> window.openMyWork());
+  document.getElementById('btn-shome-grad').addEventListener('click', ()=> window.openGradWizard());
+  document.getElementById('btn-shome-grad-link').addEventListener('click', ()=> window.openGradWizard());
+  document.getElementById('btn-coach-exam').addEventListener('click', ()=> window.openExamPrep('coach'));
+})();
+
 function applyRoleVisibility(){
   const show = isStudent();
   const paceBtn = document.querySelector('.tab-btn[data-tabbtn="pace"]');
@@ -4671,7 +5307,30 @@ function applyRoleVisibility(){
    ========================================================= */
 function hasActiveAccess(){
   if (!profile) return false;
+  if (gradTrialLapsed()) return false;
   return ['trialing', 'active', 'past_due'].includes(profile.subscriptionStatus);
+}
+// The free month a student gets on graduating (trial_source 'graduation') has no card behind it,
+// so nothing on Stripe's side ends it. Once it has run out (plus 6 hours of slack) it counts as over
+// everywhere in the app, and the server record is closed out by end_graduation_trial().
+function gradTrialLapsed(p){
+  p = p || profile;
+  if (!p || p.subscriptionStatus !== 'trialing' || p.trialSource !== 'graduation' || !p.trialEndsAt) return false;
+  return new Date(p.trialEndsAt).getTime() + 6 * 3600000 < Date.now();
+}
+function gradTrialActive(){
+  return !!profile && profile.subscriptionStatus === 'trialing' && profile.trialSource === 'graduation' && !gradTrialLapsed();
+}
+function gradTrialDaysLeft(){
+  if (!profile || !profile.trialEndsAt) return 0;
+  return Math.max(0, Math.ceil((new Date(profile.trialEndsAt).getTime() - Date.now()) / 86400000));
+}
+function endLapsedGradTrial(){
+  if (!gradTrialLapsed()) return;
+  profile.subscriptionStatus = 'none';
+  profile.planTier = null;
+  try{ if (dbAvailable && supabaseClient.rpc) supabaseClient.rpc('end_graduation_trial').then(()=>{}, ()=>{}); }catch(e){}
+  try{ setTimeout(()=> showToast('Your free month has ended. You\'re on Vono Basic now.'), 1200); }catch(e){}
 }
 function hasStudioAccess(){
   return hasActiveAccess() && profile.planTier === 'studio';
@@ -4724,7 +5383,15 @@ function renderPlanStatus(){
   const status = profile.subscriptionStatus || 'none';
   const tier = planTierLabel(profile.planTier);
   let text = "You're on Vono Basic -- Booking, Consult, and Refresher are yours free. Subscribe below to also message clients, unlock Business, your Find a Pro listing, and notifications.";
-  if (status === 'trialing'){
+  const gradTrial = gradTrialActive();
+  const offerLead = document.getElementById('account-plan-offer-lead');
+  if (offerLead) offerLead.textContent = gradTrial
+    ? "Add a plan now and you won't be charged until your free month ends. You keep everything you have today."
+    : "Try either plan free: you won't be charged until your trial ends, and you can cancel any time before that.";
+  if (gradTrial){
+    const d = gradTrialDaysLeft();
+    text = `Your graduation gift: a free month of full access to everything in Vono, no card needed. ${d} day${d === 1 ? '' : 's'} left. After that you move to Vono Basic (Booking, Consult, and Refresher stay free) unless you pick a plan below.`;
+  } else if (status === 'trialing'){
     let daysLeft = '';
     if (profile.trialEndsAt){
       const ms = new Date(profile.trialEndsAt).getTime() - Date.now();
@@ -4740,7 +5407,7 @@ function renderPlanStatus(){
     text = 'Your subscription has been canceled. Subscribe again below to regain access.';
   }
   if (statusEl) statusEl.textContent = text;
-  const showOffer = (status === 'none' || status === 'canceled');
+  const showOffer = (status === 'none' || status === 'canceled' || gradTrial);
   if (offerEl) offerEl.style.display = showOffer ? 'flex' : 'none';
   if (manageEl) manageEl.style.display = showOffer ? 'none' : 'flex';
   applyAccessGating();
@@ -13243,7 +13910,11 @@ function applyProfileRow(data){
   profile.subscriptionStatus = data.subscription_status || 'none';
   profile.planTier = data.plan_tier || null;
   profile.trialEndsAt = data.trial_ends_at || null;
+  profile.trialSource = data.trial_source || null;
+  profile.gradTrialUsedAt = data.grad_trial_used_at || null;
+  profile.examPrep = (data.exam_prep && typeof data.exam_prep === 'object') ? data.exam_prep : null;
   profileCode = data.code;
+  endLapsedGradTrial();
   profile.timezone = data.timezone || '';
   // First time here (or before this setting existed): remember the time zone this device is
   // in, so appointment reminders go out at the right hour for this pro. Only fills a blank --
@@ -14039,7 +14710,20 @@ document.getElementById('btn-notif-nudge-dismiss').addEventListener('click', ()=
 // itself once someone's on a paid plan (trialing counts), or once dismissed
 // (remembered per device, same pattern as the notifications nudge above).
 function trialNudgeDismissKey(){ return 'ahcTrialNudgeDismissed_' + (profileCode || ''); }
+function updateGradTrialBanner(){
+  const gb = document.getElementById('grad-trial-banner');
+  if (!gb) return;
+  const on = !!profile && !isStudent() && gradTrialActive();
+  gb.hidden = !on;
+  if (!on) return;
+  const d = gradTrialDaysLeft();
+  document.getElementById('grad-trial-banner-text').textContent = d <= 7
+    ? `Your free month ends in ${d} day${d === 1 ? '' : 's'}. Keep Business, messaging, and your Find a Pro booking with a plan.`
+    : `Your free month of full access: ${d} days left. Everything in Vono is open to you.`;
+}
+document.getElementById('btn-grad-trial-keep').addEventListener('click', ()=> showAccountScreen('plan'));
 function updateTrialNudgeBanner(){
+  updateGradTrialBanner();
   const el = document.getElementById('trial-nudge-banner');
   if (!el) return;
   if (!profile || isStudent() || hasActiveAccess()){ el.hidden = true; return; }
@@ -14335,6 +15019,10 @@ async function renderAcctHub(){
   const status = profile.subscriptionStatus || 'none';
   const tier = planTierLabel(profile.planTier);
   if (status === 'active'){ setAcctPill('acct-pill-plan','Active','good'); document.getElementById('acct-sub-plan').textContent = tier; }
+  else if (status === 'trialing' && gradTrialActive()){
+    const d = gradTrialDaysLeft();
+    setAcctPill('acct-pill-plan','Free month','good'); document.getElementById('acct-sub-plan').textContent = 'Free month, ' + d + ' day' + (d === 1 ? '' : 's') + ' left';
+  }
   else if (status === 'trialing'){
     let sub = tier + ' free trial';
     if (profile.trialEndsAt){ const d = Math.max(0, Math.ceil((new Date(profile.trialEndsAt).getTime() - Date.now())/86400000)); sub += ', ' + d + ' day' + (d === 1 ? '' : 's') + ' left'; }
@@ -14393,6 +15081,11 @@ document.getElementById('btn-save-profile').addEventListener('click', ()=>{
 document.getElementById('account-title-select').addEventListener('change', function(){
   const newTitle = this.value;
   if (newTitle === profile.title){ resetRoleChangePrompt(); return; }
+  if (isStudent() && newTitle !== 'Student' && window.openGradWizard){
+    this.value = profile.title;
+    window.openGradWizard(newTitle);
+    return;
+  }
   if (isStudent() && newTitle !== 'Student'){
     pendingRoleChange = newTitle;
     const warning = document.getElementById('account-role-warning');

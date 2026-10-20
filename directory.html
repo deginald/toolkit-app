@@ -739,8 +739,14 @@ document.getElementById('photo-lightbox').addEventListener('touchend', (e)=>{
 //  - Any other pro who switched their listing on is a "Basic" listing: still shown (below the
 //    subscribers) with their shop details and up to 5 portfolio photos, but with no online
 //    booking -- clients call or visit instead.
+// The free month given to graduating students has no card behind it, so it simply runs out
+// (6 hours of slack). Same rule as index.html.
+function gradTrialOver(p){
+  return !!p && p.subscription_status === 'trialing' && p.trial_source === 'graduation' && !!p.trial_ends_at
+    && new Date(p.trial_ends_at).getTime() + 6 * 3600000 < Date.now();
+}
 function hasActiveSubscription(p){
-  return !!p && ['trialing', 'active', 'past_due'].includes(p.subscription_status);
+  return !!p && ['trialing', 'active', 'past_due'].includes(p.subscription_status) && !gradTrialOver(p);
 }
 const BASIC_PHOTO_LIMIT = 5;
 function esc(s){
