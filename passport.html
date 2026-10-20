@@ -56,6 +56,7 @@
   .banner{ font-size:12.5px; padding:10px 16px; text-align:center; background:var(--brass-tint); color:var(--ink); border-bottom:1px solid var(--line); }
   .banner.action{ display:flex; align-items:center; justify-content:space-between; gap:12px; text-align:left; }
   .banner.action .link-btn{ flex:none; white-space:nowrap; }
+  body[data-screen="account"] #notif-nudge-banner{ display:none; }
 
   #passport-shell{ display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100svh; }
   .content{ flex:1; overflow-y:auto; padding:20px 20px 32px; display:flex; flex-direction:column; gap:18px; }
@@ -599,7 +600,7 @@
           </div>
           <div class="ac-danger">
             <button class="ac-danger-btn" id="btn-delete-account" type="button">Delete my account</button>
-            <small>Tap twice to confirm. This permanently deletes your Vono Passport and frees your code for someone else to use. It can't be undone.</small>
+            <small>Permanently deletes your Vono Passport. You'll be asked to confirm.</small>
           </div>
         </div>
 
@@ -712,6 +713,15 @@
   </div>
 
   <div id="toast" class="toast">Saved</div>
+  <div id="del-sheet" class="sheet-overlay" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="del-title">
+      <div class="sheet-grab"></div>
+      <div class="sheet-head"><h3 id="del-title">Delete your account?</h3></div>
+      <p class="screen-sub" style="margin:0;">This permanently deletes your Vono Passport and signs you out. It can't be undone. Your code is freed for someone else to use.</p>
+      <button type="button" class="btn" id="btn-del-confirm" style="background:#C9715F; color:#1a0b07; font-weight:800;">Yes, delete my account</button>
+      <button type="button" class="btn btn-outline" id="btn-del-cancel">Keep my account</button>
+    </div>
+  </div>
   <div id="appt-change-sheet" class="sheet-overlay" hidden>
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="cs-title">
       <div class="sheet-grab"></div>
@@ -2043,6 +2053,7 @@ let currentScreen = 'home';
 let detailReturn = 'home';
 function showScreen(name){
   currentScreen = name;
+  document.body.dataset.screen = name;
   document.querySelectorAll('.screen-body').forEach(el=>{
     el.style.display = el.dataset.screen === name ? 'flex' : 'none';
   });
@@ -3187,21 +3198,17 @@ document.getElementById('btn-notif-nudge-dismiss').addEventListener('click', ()=
   document.getElementById('notif-nudge-banner').hidden = true;
 });
 
-let deleteAccountArmed = false;
-document.getElementById('btn-delete-account').addEventListener('click', async function(){
-  if (!deleteAccountArmed){
-    deleteAccountArmed = true;
-    this.textContent = 'Tap again to permanently delete';
-    setTimeout(()=>{ if (deleteAccountArmed){ deleteAccountArmed = false; this.textContent = 'Delete my account'; } }, 4000);
-    return;
-  }
-  deleteAccountArmed = false;
+function closeDelSheet(){ document.getElementById('del-sheet').hidden = true; }
+document.getElementById('btn-delete-account').addEventListener('click', ()=>{ document.getElementById('del-sheet').hidden = false; });
+document.getElementById('btn-del-cancel').addEventListener('click', closeDelSheet);
+document.getElementById('del-sheet').addEventListener('click', e=>{ if (e.target.id === 'del-sheet') closeDelSheet(); });
+document.getElementById('btn-del-confirm').addEventListener('click', async function(){
   this.disabled = true;
   await deleteClientRow(clientCode);
   try{ localStorage.removeItem('passportClientCode'); }catch(e){}
   client = null; clientCode = null;
   this.disabled = false;
-  this.textContent = 'Delete my account';
+  closeDelSheet();
   document.getElementById('passport-shell').hidden = true;
   document.getElementById('auth-name').value = '';
   document.getElementById('auth-code').value = '';
