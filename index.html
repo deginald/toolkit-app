@@ -413,6 +413,47 @@
   .bk-hr-times{ display:flex; gap:10px; }
   .bk-hr-block.off .bk-hr-times{ opacity:.55; }
   .bk-hr-overlap{ margin:0; }
+
+  /* Booking home: today, week strip, day timeline, compact link row, checklist, QR sheet */
+  .bk-today{ display:flex; flex-direction:column; gap:6px; padding:14px; border:1px solid var(--brass); border-radius:16px; background:var(--paper); }
+  .bk-today-top{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+  .bk-today-top strong{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:19px; }
+  .bk-today-top span{ font-weight:800; color:var(--brass); font-variant-numeric:tabular-nums; }
+  .bk-today-next{ font-size:13px; color:var(--muted); }
+  .bk-today-next b{ color:var(--ink); }
+  .bk-weekbar{ display:flex; align-items:stretch; gap:6px; }
+  .bk-weekbar .bk-wk-nav{ flex:none; width:22px; border:0; background:none; color:var(--brass); font-size:22px; line-height:1; cursor:pointer; padding:0; font-family:inherit; }
+  .bk-weekbar .bk-wk-nav:disabled{ color:var(--line); cursor:default; }
+  .bk-chip{ flex:1; min-width:0; text-align:center; padding:7px 0 6px; border-radius:12px; border:1px solid var(--line); background:none; color:var(--ink); font-family:inherit; cursor:pointer; }
+  .bk-chip small{ display:block; font-size:10px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; opacity:.8; }
+  .bk-chip b{ display:block; font-size:16px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .bk-chip i{ display:flex; justify-content:center; gap:2px; height:6px; margin-top:3px; }
+  .bk-chip i em{ width:5px; height:5px; border-radius:50%; background:var(--brass); display:block; }
+  .bk-chip.today:not(.sel){ border-color:var(--brass); }
+  .bk-chip.sel{ background:var(--brass); border-color:var(--brass); color:#1a1405; }
+  .bk-chip.sel i em{ background:#1a1405; }
+  .bk-chip:focus-visible, .bk-gap:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .bk-appt.past{ opacity:.6; }
+  .bk-gap{ display:block; width:100%; text-align:left; border:1.5px dashed var(--line); border-radius:12px; background:none; color:var(--muted); font-family:inherit; font-size:13px; font-weight:600; padding:10px 12px; cursor:pointer; }
+  .bk-gap b{ color:var(--brass); font-weight:800; margin-left:6px; }
+  .bk-nextday{ display:block; width:100%; text-align:left; background:none; border:0; padding:0; color:var(--brass); font-family:inherit; font-weight:700; font-size:13.5px; cursor:pointer; margin-top:4px; }
+  .bk-linkrow{ display:flex; align-items:center; gap:10px; padding:12px 14px; border:1px solid var(--line); border-radius:14px; background:var(--paper); }
+  .bk-linkrow svg{ flex:none; width:20px; height:20px; color:var(--brass); }
+  .bk-linkrow .t{ flex:1; min-width:0; display:flex; flex-direction:column; }
+  .bk-linkrow .t b{ font-size:14.5px; }
+  .bk-linkrow .t span{ font-size:12px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bk-linkrow .btn{ flex:none; padding:6px 12px; font-size:13px; }
+  .bk-sheet{ position:fixed; inset:0; z-index:9400; display:flex; flex-direction:column; justify-content:flex-end; }
+  .bk-sheet[hidden]{ display:none; }
+  .bk-sheet-back{ position:absolute; inset:0; background:rgba(0,0,0,.55); }
+  .bk-sheet-box{ position:relative; background:var(--bg); border-top:1px solid var(--line); border-radius:22px 22px 0 0; padding:14px 16px calc(18px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .bk-sheet-box .grab{ width:40px; height:4px; border-radius:2px; background:var(--line); display:block; }
+  .bk-sheet-box > b{ font-family:'Libre Franklin',sans-serif; font-size:19px; }
+  .bk-sheet-qr{ background:#fff; border-radius:14px; padding:6px; line-height:0; }
+  .bk-sheet-qr canvas{ width:210px !important; height:210px !important; }
+  .bk-sheet-box .row{ display:flex; gap:10px; width:100%; }
+  .bk-sheet-box .row .btn{ flex:1; }
+  #bk-checklist .shome-step{ align-items:flex-start; }
   #bk-setup-body.bk-off .bk-onlyon{ display:none !important; }
   #bk-setup-body.bk-off .bk-onlyon + .biz-row{ border-top:0; }
   .bk-offwalk{ display:flex; align-items:center; gap:12px; padding:14px; border:1px solid var(--line); border-radius:16px; background:var(--paper); }
@@ -1685,7 +1726,7 @@
         <div id="booking-real-content">
         <div class="bk-head" id="bk-head">
           <div class="tab-head">
-            <p class="eyebrow-mini">Appointments</p>
+            <p class="eyebrow-mini" id="bk-eyebrow">Appointments</p>
             <h2>Booking</h2>
           </div>
           <label class="bk-switch" for="bk-enable-toggle">
@@ -1705,34 +1746,35 @@
 
             <!-- HOME: link, add, appointments, set-up rows -->
             <div class="bk-pane show" data-bk="home" id="bk-appts-section" style="gap:16px;">
+              <div id="bk-checklist" class="card" hidden style="gap:12px; border-color:var(--brass);"></div>
+              <div class="bk-today bk-onlyon" id="bk-today">
+                <div class="bk-today-top"><strong id="bk-today-title">Today</strong><span id="bk-today-amt"></span></div>
+                <div class="bk-today-next" id="bk-today-next"></div>
+              </div>
+              <div class="bk-weekbar bk-onlyon" id="bk-week" role="group" aria-label="Pick a day"></div>
+              <div class="bk-onlyon" style="display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                  <p class="eyebrow-mini" id="bk-day-label" style="margin:0;">Today</p>
+                  <button type="button" class="link-btn" id="btn-bk-view-calendar" style="padding:0;">View calendar</button>
+                </div>
+                <div id="bk-appts-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+                <p class="screen-sub" id="bk-appts-empty" style="display:none; margin:0;">Nothing booked yet.</p>
+                <button type="button" class="bk-nextday" id="bk-nextday" hidden></button>
+              </div>
+              <button class="btn btn-primary bk-add-btn bk-onlyon" id="btn-bk-manual-open" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>Add an appointment</span></button>
               <div id="bk-link-paywall" class="bk-onlyon" style="display:none; flex-direction:column; gap:10px; align-items:center; border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--surface); text-align:center;">
                 <p class="eyebrow-mini2" style="margin:0;">Your booking link</p>
                 <p class="screen-sub" style="margin:0;">Letting clients open this link and book you online is part of a paid Vono plan. On Basic, appointments still work, but the page this link leads to won't load for them. Try it free: you won't be charged until the trial ends.</p>
                 <button class="btn btn-primary" type="button" id="btn-bk-link-paywall-trial">Start free trial</button>
               </div>
-              <div id="bk-link-real" class="bk-linkcard bk-onlyon">
-                <button type="button" class="bk-qr-btn" id="btn-bk-qr-enlarge" aria-label="Enlarge QR code"><canvas id="bk-qr-canvas" width="220" height="220"></canvas></button>
-                <div class="bk-linkcard-body">
-                  <div class="bk-linkcard-top">
-                    <p class="bk-linkcard-title">Your booking link</p>
-                    <input type="text" class="bk-link-text" id="bk-link-input" readonly aria-label="Your booking link">
-                  </div>
-                  <div class="bk-linkcard-actions">
-                    <button class="btn btn-outline" id="btn-bk-copy-link" type="button">Copy</button>
-                    <button class="btn btn-outline" id="btn-bk-share-link" type="button">Share</button>
-                  </div>
-                  <p class="foot-note-small bk-copy-note" id="bk-copy-note"></p>
-                </div>
+              <div id="bk-link-real" class="bk-linkrow bk-onlyon">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div class="t"><b>Your booking link</b><span id="bk-link-short">&nbsp;</span></div>
+                <input type="text" id="bk-link-input" readonly hidden aria-label="Your booking link">
+                <button class="btn btn-outline" id="btn-bk-copy-link" type="button">Copy</button>
+                <button class="btn btn-outline" id="btn-bk-qr-enlarge" type="button" aria-label="Show QR code">QR</button>
               </div>
-              <button class="btn btn-primary bk-add-btn bk-onlyon" id="btn-bk-manual-open" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>Add an appointment</span></button>
-              <div class="bk-onlyon" style="display:flex; flex-direction:column; gap:10px;">
-                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                  <p class="eyebrow-mini" style="margin:0;">Upcoming appointments</p>
-                  <button type="button" class="link-btn" id="btn-bk-view-calendar" style="padding:0;">View calendar</button>
-                </div>
-                <div id="bk-appts-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-                <p class="screen-sub" id="bk-appts-empty" style="display:none;">Nothing booked yet.</p>
-              </div>
+              <p class="foot-note-small bk-copy-note bk-onlyon" id="bk-copy-note" style="margin:-8px 0 0;"></p>
               <p class="biz-glabel" style="margin-bottom:-6px;">Set up booking</p>
               <div class="biz-group">
                 <button type="button" class="biz-row bk-onlyon" data-bk-open="services"><span class="t"><b>Services</b><span id="bk-row-services-sub">&nbsp;</span></span><span class="biz-pill" id="bk-row-services-pill" hidden>Add</span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -1741,9 +1783,7 @@
                 <button type="button" class="biz-row bk-onlyon" data-bk-open="payment"><span class="t"><b>Payment links</b><span id="bk-row-payment-sub">&nbsp;</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                 <button type="button" class="biz-row bk-onlyon" data-bk-open="policy"><span class="t"><b>Cancellation policy</b><span id="bk-row-policy-sub">&nbsp;</span></span><span class="biz-pill" id="bk-row-policy-pill" hidden>Add</span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
               </div>
-              <div class="biz-group bk-onlyon">
-                <button type="button" class="biz-row" data-bk-open="lookup"><span class="t"><b>Look up a client</b><span id="bk-row-lookup-sub">Photo history and notes</span></span><svg class="biz-chev" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-              </div>
+              <button type="button" class="link-btn bk-onlyon" data-bk-open="lookup" style="align-self:center;">Look up a client</button>
             </div>
 
             <!-- ADD AN APPOINTMENT: who, what, when -->
@@ -3299,6 +3339,18 @@
     <div id="shared-list" style="display:flex; flex-direction:column; gap:14px;"></div>
     <p class="foot-note-small" id="shared-note" style="margin-top:8px;">This link reads live. If they update a rating later, reopening it shows the current numbers.</p>
   </div>
+  <div class="bk-sheet" id="bk-sheet" hidden role="dialog" aria-label="Your booking link">
+    <div class="bk-sheet-back" id="bk-sheet-back"></div>
+    <div class="bk-sheet-box">
+      <i class="grab" aria-hidden="true"></i>
+      <b>Your booking link</b>
+      <div class="bk-sheet-qr"><canvas id="bk-qr-canvas" width="220" height="220"></canvas></div>
+      <span class="screen-sub" id="bk-sheet-url" style="margin:0; word-break:break-all; text-align:center;"></span>
+      <div class="row"><button type="button" class="btn btn-primary" id="btn-bk-sheet-copy">Copy link</button><button type="button" class="btn btn-outline" id="btn-bk-share-link">Share</button></div>
+      <button type="button" class="btn btn-ghost" id="btn-bk-qr-save" style="width:100%;">Save QR to photos</button>
+      <button type="button" class="link-btn" id="btn-bk-sheet-close">Close</button>
+    </div>
+  </div>
   <div id="sub-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100svh;">
     <header class="topbar">
       <button type="button" class="link-btn" id="btn-sub-back">&larr; Back</button>
@@ -3822,6 +3874,7 @@ async function persistProfile(fields){
       console.warn('save affected 0 rows for code', profileCode);
       return { ok:false, message: "no matching account found on the server." };
     }
+    if (fields.bookingHours !== undefined) profile.bookingHoursSaved = true;
     return { ok:true };
   }catch(e){
     // keep working locally even if a save fails, but let the caller know it didn't really save
@@ -8576,52 +8629,73 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const pol = (profile.bookingPolicy || '').trim();
     setSub('bk-row-policy-sub', pol ? 'Added · ' + (pol.length > 38 ? pol.slice(0,38).trim()+'…' : pol) : 'Not set yet');
     const pp = root.querySelector('#bk-row-policy-pill'); if (pp) pp.hidden = !!pol;
+    renderBkChecklist();
   }
     function renderLinkAndQR(){
     const url = bookingUrl();
     root.querySelector('#bk-link-input').value = url;
-    const canvas = root.querySelector('#bk-qr-canvas');
+    const short = String(url || '').replace(/^https?:\/\//, '');
+    const shortEl = root.querySelector('#bk-link-short'); if (shortEl) shortEl.textContent = short;
+    const urlEl = document.getElementById('bk-sheet-url'); if (urlEl) urlEl.textContent = short;
+    const canvas = document.getElementById('bk-qr-canvas');
     if (window.QRCode && profileCode){
       window.QRCode.toCanvas(canvas, url, { width:220, margin:4, color:{ dark:'#1E2530', light:'#FFFFFF' } }, function(){});
     }
   }
-  root.querySelector('#btn-bk-copy-link').addEventListener('click', async ()=>{
+  function bkSharedKey(){ return 'vonoBkShared_' + (profileCode || ''); }
+  function bkMarkShared(){ try{ localStorage.setItem(bkSharedKey(), '1'); }catch(e){} renderBkChecklist(); }
+  async function bkCopyLink(){
     const note = root.querySelector('#bk-copy-note');
+    const input = root.querySelector('#bk-link-input');
     try{
-      await navigator.clipboard.writeText(root.querySelector('#bk-link-input').value);
-      note.textContent = 'Copied.';
+      await navigator.clipboard.writeText(input.value);
+      note.textContent = 'Link copied.';
+      showToast('Link copied');
     }catch(e){
-      root.querySelector('#bk-link-input').select();
-      note.textContent = 'Select and copy the link above.';
+      note.textContent = 'Copy this link: ' + input.value;
     }
-  });
-  root.querySelector('#btn-bk-share-link').addEventListener('click', async ()=>{
+    bkMarkShared();
+  }
+  root.querySelector('#btn-bk-copy-link').addEventListener('click', bkCopyLink);
+  document.getElementById('btn-bk-sheet-copy').addEventListener('click', async ()=>{ await bkCopyLink(); });
+  document.getElementById('btn-bk-share-link').addEventListener('click', async ()=>{
     const note = root.querySelector('#bk-copy-note');
     const url = root.querySelector('#bk-link-input').value;
     if (!url) return;
     if (navigator.share){
-      try{ await navigator.share({ title: 'Book with me on Vono', text: 'Book your next appointment with me:', url }); return; }
+      try{ await navigator.share({ title: 'Book with me on Vono', text: 'Book your next appointment with me:', url }); bkMarkShared(); return; }
       catch(e){ if (e && e.name === 'AbortError') return; }
     }
-    try{ await navigator.clipboard.writeText(url); note.textContent = 'Link copied. Paste it into a text or post.'; }
-    catch(e){ root.querySelector('#bk-link-input').select(); note.textContent = 'Select and copy the link above.'; }
+    try{ await navigator.clipboard.writeText(url); note.textContent = 'Link copied. Paste it into a text or post.'; showToast('Link copied'); bkMarkShared(); }
+    catch(e){ note.textContent = 'Copy this link: ' + url; }
   });
-  root.querySelector('#btn-bk-qr-enlarge').addEventListener('click', ()=>{
-    const canvas = root.querySelector('#bk-qr-canvas');
+  // The QR lives in a bottom sheet: big code, Copy, Share, and Save to photos.
+  function bkOpenSheet(){
+    if (!profileCode) return;
+    renderLinkAndQR();
+    document.getElementById('bk-sheet').hidden = false;
+    bkMarkShared();
+  }
+  function bkCloseSheet(){ document.getElementById('bk-sheet').hidden = true; }
+  root.querySelector('#btn-bk-qr-enlarge').addEventListener('click', bkOpenSheet);
+  document.getElementById('bk-sheet-back').addEventListener('click', bkCloseSheet);
+  document.getElementById('btn-bk-sheet-close').addEventListener('click', bkCloseSheet);
+  document.addEventListener('keydown', e=>{ if (e.key === 'Escape') bkCloseSheet(); });
+  document.getElementById('btn-bk-qr-save').addEventListener('click', ()=>{
+    const canvas = document.getElementById('bk-qr-canvas');
     if (!canvas || !profileCode) return;
-    const overlay = document.createElement('div');
-    overlay.className = 'bk-qr-lightbox';
-    overlay.setAttribute('role', 'dialog');
-    overlay.setAttribute('aria-label', 'Booking QR code');
-    const box = document.createElement('div');
-    const img = document.createElement('img');
-    img.alt = 'Your booking QR code';
-    img.src = canvas.toDataURL('image/png');
-    const cap = document.createElement('span');
-    cap.textContent = 'Tap anywhere to close';
-    box.appendChild(img); box.appendChild(cap); overlay.appendChild(box);
-    overlay.addEventListener('click', ()=> overlay.remove());
-    document.body.appendChild(overlay);
+    canvas.toBlob(async blob=>{
+      if (!blob) return;
+      try{
+        const file = new File([blob], 'vono-booking-qr.png', { type:'image/png' });
+        if (navigator.canShare && navigator.canShare({ files:[file] })){ await navigator.share({ files:[file], title:'My Vono booking QR code' }); return; }
+      }catch(e){ if (e && e.name === 'AbortError') return; }
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'vono-booking-qr.png';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(()=> URL.revokeObjectURL(a.href), 1000);
+      showToast('QR code saved');
+    }, 'image/png');
   });
   function renderSetupFromProfile(){
     root.querySelector('#bk-enable-toggle').checked = !!profile.bookingEnabled;
@@ -8647,7 +8721,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const walk = !!(profile.walkin && profile.walkin.on);
     // Never pull the screen out from under someone who is still inside Hours or Special dates.
     const inside = (typeof bkCurrentMode !== 'undefined') && bkCurrentMode !== 'home';
-    const visible = on || walk || inside;
+    const visible = on || walk || inside || bkChecklistActive();
     const body = root.querySelector('#bk-setup-body');
     body.style.display = visible ? 'flex' : 'none';
     body.classList.toggle('bk-off', !on);
@@ -8826,7 +8900,8 @@ async function saveAppointmentChange(id, core, extras){
         <p class="screen-sub" data-msg-status="${id}" style="margin:0;">&nbsp;</p>
       </div>` : `
       <p class="screen-sub" data-notify-locked-note="${id}" style="display:none; margin-top:8px;">Messaging clients needs Vono Pro or Studio. <button type="button" class="link-btn" data-notify-locked-cta="${id}" style="padding:0;">Try it free</button></p>`;
-    return `<div class="bk-appt${isNow?' now':''}" data-appt-row="${id}">
+    const isPast = !isNow && (a.appt_date < today || (a.appt_date === today && nowMin >= (a.end_time ? bkMinutes(a.end_time) : bkMinutes(a.start_time)+30)));
+    return `<div class="bk-appt${isNow?' now':''}${isPast?' past':''}" data-appt-row="${id}">
       <div class="bk-appt-time"><b>${bkEsc(tp.clock)}</b><i>${isNow ? 'NOW' : bkEsc(tp.period)}</i></div>
       <div class="bk-appt-main">
         <div class="bk-appt-name"><span>${bkEsc(a.client_name)}</span>${(a.changed_by === 'client' && a.changed_at && (Date.now() - new Date(a.changed_at).getTime()) < 3*86400000) ? '<span class="bk-tag">CHANGED BY CLIENT</span>' : ''}</div>
@@ -8843,32 +8918,192 @@ async function saveAppointmentChange(id, core, extras){
       </div>
     </div>`;
   }
+  /* ---- Booking home: today at a glance, a week strip, and the picked day as a timeline ---- */
+  let bkSelDay = null, bkWeekOff = 0;
+  function bkMonday(off){
+    const d = new Date(todayIso() + 'T00:00:00');
+    d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + (off || 0) * 7);
+    return d;
+  }
+  function bkFmtDur(m){
+    const h = Math.floor(m / 60), r = m % 60;
+    return h ? (h + ' hr' + (r ? ' ' + r + ' min' : '')) : (r + ' min');
+  }
+  function bkApptEnd(a){ return a.end_time ? bkMinutes(a.end_time) : bkMinutes(a.start_time) + 30; }
+  function bkChecklistState(){
+    const svcN = (profile.bookingServices || []).length;
+    let shared = false; try{ shared = localStorage.getItem(bkSharedKey()) === '1'; }catch(e){}
+    return [
+      { k:'services', done: svcN > 0, t:'Add your services', d: svcN ? (svcN + (svcN === 1 ? ' service' : ' services')) : 'A name, price, and time for each', cta:'Add my services' },
+      { k:'hours', done: !!profile.bookingHoursSaved, t:'Set your hours', d:'Pick the days and times you take clients', cta:'Set my hours' },
+      { k:'on', done: !!profile.bookingEnabled, t:'Turn booking on', d:"Flip the switch when you're ready", cta:'Turn booking on' },
+      { k:'share', done: shared, t:'Share your link', d:'Text it, post it, or print the QR', cta:'Share my link' }
+    ];
+  }
+  // The checklist is for someone setting up: it appears the first time services or hours are
+  // missing on this device and goes away once all four steps are done. A pro who already has
+  // services and hours (even with booking switched off) never sees it.
+  function bkChecklistActive(){
+    if (!profile) return false;
+    const st = bkChecklistState();
+    const early = !(st[0].done && st[1].done);
+    const key = 'vonoBkCl_' + (profileCode || '');
+    let started = false;
+    try{ started = localStorage.getItem(key) === '1'; }catch(e){}
+    if (early && !started){ started = true; try{ localStorage.setItem(key, '1'); }catch(e){} }
+    return started && st.some(x=> !x.done);
+  }
+  function renderBkChecklist(){
+    const el = root.querySelector('#bk-checklist');
+    if (!el || !profile) return;
+    if (!bkChecklistActive()){ el.hidden = true; return; }
+    const st = bkChecklistState();
+    const doneN = st.filter(x=> x.done).length;
+    const next = st.find(x=> !x.done);
+    el.hidden = false;
+    el.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:baseline;"><b style="font-family:'Libre Franklin',sans-serif; font-size:18px;">Get ready for clients</b><span style="font-size:12.5px; font-weight:800; color:var(--brass);">${doneN} of 4</span></div>
+      <div class="shome-bar" aria-hidden="true"><span style="width:${Math.max(4, doneN * 25)}%;"></span></div>
+      ${st.map((x, i)=> `<div class="shome-step ${x.done ? 'done' : (x === next ? 'next' : '')}"><div class="shome-step-dot">${x.done ? '✓' : (i + 1)}</div><div><strong>${bkEsc(x.t)}</strong><span class="sub">${bkEsc(x.d)}</span></div></div>`).join('')}
+      <button type="button" class="btn btn-primary" id="btn-bk-cl-cta">${bkEsc(next.cta)}</button>`;
+    el.querySelector('#btn-bk-cl-cta').addEventListener('click', e=>{
+      const open = m => { if (window.bkOpenPane) window.bkOpenPane(m); else showBookingSubtab(m); };
+      if (next.k === 'services') open('services');
+      else if (next.k === 'hours') open('hours');
+      else if (next.k === 'on') setBookingEnabled(true);
+      else if (hasActiveAccess()) bkOpenSheet();
+      else startCheckout('pro', e.currentTarget);
+    });
+  }
+  function bkHoursForDay(iso){
+    const h = aesHoursFor(iso);
+    if (!h || h.closed) return null;
+    const o = bkMinutes(h.open || '09:00'), c = bkMinutes(h.close || '18:00');
+    return c > o ? { open:o, close:c } : null;
+  }
+  function bkMinToHHMM(m){ return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
+  function bkGapHtml(from, to){
+    return `<button type="button" class="bk-gap" data-gap-start="${bkMinToHHMM(from)}">Open ${bkEsc(fmtTimeBk(bkMinToHHMM(from)))}–${bkEsc(fmtTimeBk(bkMinToHHMM(to)))} · ${bkEsc(bkFmtDur(to - from))}<b>+ Add</b></button>`;
+  }
+  function renderBkDay(){
+    if (!profile) return;
+    const listEl = root.querySelector('#bk-appts-list');
+    const emptyEl = root.querySelector('#bk-appts-empty');
+    const today = todayIso();
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    if (!bkSelDay) bkSelDay = today;
+    const byDate = {};
+    bkApptCache.forEach(a=>{ (byDate[a.appt_date] = byDate[a.appt_date] || []).push(a); });
+    const eb = root.querySelector('#bk-eyebrow');
+    if (eb) eb.textContent = new Date(today + 'T00:00:00').toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric' });
+    // Today card
+    const tl = byDate[today] || [];
+    const total = tl.reduce((sum, a)=> sum + (Number(a.total_price) || 0), 0);
+    root.querySelector('#bk-today-title').textContent = tl.length ? ('Today: ' + tl.length + ' booked') : 'Today: nothing booked';
+    root.querySelector('#bk-today-amt').textContent = tl.length ? '$' + (Math.round(total * 100) / 100) : '';
+    const upcoming = bkApptCache.filter(a=> a.appt_date > today || (a.appt_date === today && bkApptEnd(a) > nowMin));
+    const nx = upcoming[0];
+    const nextEl = root.querySelector('#bk-today-next');
+    if (!nx) nextEl.textContent = 'No upcoming appointments yet.';
+    else {
+      const svc = (nx.services || []).map(x=> x.name).join(' + ');
+      const t = fmtTimeBk(nx.start_time);
+      let when;
+      if (nx.appt_date === today){
+        const diff = bkMinutes(nx.start_time) - nowMin;
+        when = diff <= 0 ? 'in the chair now' : (diff < 60 ? 'in ' + diff + ' min' : 'in ' + bkFmtDur(Math.round(diff / 5) * 5));
+      } else when = bkDayLabel(nx.appt_date, today).title;
+      nextEl.innerHTML = 'Next: <b>' + bkEsc(nx.client_name) + '</b>' + (svc ? ', ' + bkEsc(svc) : '') + ', ' + bkEsc(t) + ' · ' + bkEsc(when);
+    }
+    // Week strip
+    const mon = bkMonday(bkWeekOff);
+    const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    let chips = `<button type="button" class="bk-wk-nav" id="bk-wk-prev" aria-label="Previous week"${bkWeekOff <= 0 ? ' disabled' : ''}>‹</button>`;
+    for (let i = 0; i < 7; i++){
+      const d = new Date(mon); d.setDate(mon.getDate() + i);
+      const iso = localIsoDate(d);
+      const n = (byDate[iso] || []).length;
+      chips += `<button type="button" class="bk-chip${iso === bkSelDay ? ' sel' : ''}${iso === today ? ' today' : ''}" data-day="${iso}" aria-pressed="${iso === bkSelDay}" aria-label="${bkEsc(d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' }))}, ${n} booked"><small>${dayNames[i]}</small><b>${d.getDate()}</b><i>${Array.from({ length: Math.min(n, 4) }).map(()=> '<em></em>').join('')}</i></button>`;
+    }
+    chips += `<button type="button" class="bk-wk-nav" id="bk-wk-next" aria-label="Next week"${bkWeekOff >= 26 ? ' disabled' : ''}>›</button>`;
+    root.querySelector('#bk-week').innerHTML = chips;
+    // The picked day
+    const items = (byDate[bkSelDay] || []).slice().sort((a, b)=> a.start_time < b.start_time ? -1 : 1);
+    const lab = bkDayLabel(bkSelDay, today);
+    root.querySelector('#bk-day-label').textContent = (lab.sub ? lab.title + ' · ' + lab.sub : lab.title) + (items.length ? ' · ' + items.length + ' booked' : '');
+    const hrs = bkHoursForDay(bkSelDay);
+    const isPastDay = bkSelDay < today;
+    const parts = [];
+    let cursor = hrs ? hrs.open : 0;
+    if (bkSelDay === today) cursor = Math.max(cursor, Math.ceil(nowMin / 15) * 15);
+    items.forEach(a=>{
+      const st = bkMinutes(a.start_time);
+      if (hrs && !isPastDay && st - cursor >= 30) parts.push(bkGapHtml(cursor, st));
+      parts.push(renderBkAppt(a, today, nowMin));
+      cursor = Math.max(cursor, bkApptEnd(a));
+    });
+    if (hrs && !isPastDay && hrs.close - cursor >= 30) parts.push(bkGapHtml(cursor, hrs.close));
+    listEl.innerHTML = parts.join('');
+    // Empty-day messages
+    const nextEmpty = root.querySelector('#bk-nextday');
+    nextEmpty.hidden = true;
+    if (items.length){ emptyEl.style.display = 'none'; }
+    else {
+      emptyEl.style.display = 'block';
+      emptyEl.textContent = isPastDay ? 'Nothing was booked this day.' : (!hrs ? 'Closed this day.' : 'Nothing booked yet.');
+      const later = Object.keys(byDate).filter(dt => dt > bkSelDay).sort()[0];
+      if (later){
+        const ll = bkDayLabel(later, today);
+        nextEmpty.hidden = false;
+        nextEmpty.dataset.day = later;
+        nextEmpty.textContent = 'Next booked: ' + (ll.sub ? ll.title + ', ' + ll.sub : ll.title) + ' (' + byDate[later].length + ') ›';
+      }
+    }
+    renderBkChecklist();
+  }
+  function bkPickDay(iso){
+    bkSelDay = iso;
+    const diffDays = Math.round((new Date(iso + 'T00:00:00') - bkMonday(0)) / 86400000);
+    bkWeekOff = Math.max(0, Math.floor(diffDays / 7));
+    renderBkDay();
+  }
+  root.querySelector('#bk-week').addEventListener('click', e=>{
+    const chip = e.target.closest('[data-day]');
+    if (chip){ bkSelDay = chip.dataset.day; renderBkDay(); return; }
+    const prev = e.target.closest('#bk-wk-prev'), next = e.target.closest('#bk-wk-next');
+    if (prev || next){
+      bkWeekOff = Math.max(0, Math.min(26, bkWeekOff + (next ? 1 : -1)));
+      bkSelDay = bkWeekOff === 0 ? todayIso() : localIsoDate(bkMonday(bkWeekOff));
+      renderBkDay();
+    }
+  });
+  window.__bkPickDay = bkPickDay; // test hook
+  root.querySelector('#bk-nextday').addEventListener('click', function(){ if (this.dataset.day) bkPickDay(this.dataset.day); });
+  async function bkAddAt(date, time){
+    resetManualCard(false);
+    showBookingSubtab('client');
+    root.querySelector('#bk-manual-date').value = (date && date >= todayIso()) ? date : todayIso();
+    if (time) root.querySelector('#bk-manual-time').value = time;
+    await loadManualExistingAppts();
+  }
+  root.querySelector('#bk-appts-list').addEventListener('click', e=>{
+    const gap = e.target.closest('[data-gap-start]');
+    if (gap) bkAddAt(bkSelDay, gap.dataset.gapStart);
+  });
   async function loadAppointments(){
     const listEl = root.querySelector('#bk-appts-list');
     const emptyEl = root.querySelector('#bk-appts-empty');
-    if (!dbAvailable || !profileCode){ listEl.innerHTML=''; emptyEl.style.display='block'; return; }
+    if (!dbAvailable || !profileCode){ bkApptCache = []; renderBkDay(); return; }
     try{
       const { data, error } = await supabaseClient.from('appointments').select('*').eq('barber_code', profileCode).eq('status','booked');
       if (error) throw error;
-      const today = todayIso();
-      const now = new Date();
-      const nowMin = now.getHours()*60 + now.getMinutes();
-      const appts = (data || []).filter(a=> a.appt_date >= today).sort((a,b)=> (a.appt_date+a.start_time) < (b.appt_date+b.start_time) ? -1 : 1);
-      bkApptCache = appts;
-      emptyEl.style.display = appts.length ? 'none' : 'block';
-      const days = [];
-      appts.forEach(a=>{
-        let d = days[days.length-1];
-        if (!d || d.date !== a.appt_date){ d = { date:a.appt_date, items:[] }; days.push(d); }
-        d.items.push(a);
-      });
-      listEl.innerHTML = days.map(d=>{
-        const lab = bkDayLabel(d.date, today);
-        const count = d.items.length + ' booked';
-        return `<div class="bk-day"><div class="bk-day-head"><strong>${bkEsc(lab.title)}</strong><span>${bkEsc((lab.sub ? lab.sub+' \u00b7 ' : '') + count)}</span></div>${d.items.map(a=>renderBkAppt(a, today, nowMin)).join('')}</div>`;
-      }).join('');
+      const weekStart = localIsoDate(bkMonday(0));
+      bkApptCache = (data || []).filter(a=> a.appt_date >= weekStart).sort((a,b)=> (a.appt_date+a.start_time) < (b.appt_date+b.start_time) ? -1 : 1);
+      renderBkDay();
     }catch(e){
       console.warn('load appointments failed', e);
+      bkApptCache = [];
+      renderBkDay();
       listEl.innerHTML = '';
       emptyEl.style.display = 'block';
     }
@@ -9714,10 +9949,7 @@ async function saveAppointmentChange(id, core, extras){
   // Adding an appointment is its own screen. It opens on "Who is it for?" because the client
   // comes first; once one is chosen it moves on to the Who / What / When screen.
   root.querySelector('#btn-bk-manual-open').addEventListener('click', async ()=>{
-    resetManualCard(false);
-    showBookingSubtab('client');
-    root.querySelector('#bk-manual-date').value = todayIso();
-    await loadManualExistingAppts();
+    await bkAddAt(bkSelDay || todayIso(), '');
   });
   root.querySelector('#btn-bk-manual-cancel').addEventListener('click', ()=> resetManualCard(true));
   root.querySelector('#btn-bk-who-choose').addEventListener('click', ()=> showBookingSubtab('client'));
@@ -13911,6 +14143,7 @@ function applyProfileRow(data){
   profile.planTier = data.plan_tier || null;
   profile.trialEndsAt = data.trial_ends_at || null;
   profile.trialSource = data.trial_source || null;
+  profile.bookingHoursSaved = !!(data.booking_hours && typeof data.booking_hours === 'object' && Object.keys(data.booking_hours).length);
   profile.gradTrialUsedAt = data.grad_trial_used_at || null;
   profile.examPrep = (data.exam_prep && typeof data.exam_prep === 'object') ? data.exam_prep : null;
   profileCode = data.code;
