@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-11-08T09-00-00Z">
+<meta name="app-build" content="2026-11-09T09-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -2078,13 +2078,14 @@
               </div>
               <div id="bk-payment-paywall" style="display:none; flex-direction:column; gap:14px;">
                 <p class="eyebrow-mini">Payment links <span style="text-transform:none; font-weight:600;">(optional)</span></p>
-                <p class="screen-sub" style="margin:0;">Letting clients pay you with Venmo, Cash App, Zelle, or Apple Pay is part of a paid Vono plan. Try it free: you won't be charged until the trial ends.</p>
+                <p class="screen-sub" style="margin:0;">Letting clients pay you with Venmo, Cash App, Square, Zelle, or Apple Pay is part of a paid Vono plan. Try it free: you won't be charged until the trial ends.</p>
                 <button class="btn btn-primary" type="button" id="btn-bk-payment-paywall-trial">Start free trial</button>
               </div>
               <div id="bk-payment-real-content" style="display:flex; flex-direction:column; gap:10px;">
                 <p class="screen-sub" style="margin:0;">Optional. Clients see these after they book.</p>
                 <div class="field"><label>Venmo username</label><div class="input-row"><input id="bk-pay-venmo" type="text" placeholder="e.g. your-venmo-username"></div></div>
                 <div class="field"><label>Cash App $cashtag</label><div class="input-row"><input id="bk-pay-cashapp" type="text" placeholder="e.g. $yourcashtag"></div></div>
+                <div class="field"><label>Square payment link <span style="text-transform:none; font-weight:600;">(paste the whole link)</span></label><div class="input-row"><input id="bk-pay-square" type="url" inputmode="url" autocapitalize="off" autocomplete="off" placeholder="e.g. https://square.link/u/AbCd1234"></div><p class="foot-note-small" style="margin:4px 0 0;">From Square: Payment Links, then Copy link. Clients tap it after they book.</p></div>
                 <div class="field"><label>Zelle <span style="text-transform:none; font-weight:600;">(phone or email, no direct link, shown as text)</span></label><div class="input-row"><input id="bk-pay-zelle" type="text" placeholder="e.g. (910) 555-0123"></div></div>
                 <div class="field"><label>Apple Pay / Apple Cash <span style="text-transform:none; font-weight:600;">(phone or email, no direct link, shown as text)</span></label><div class="input-row"><input id="bk-pay-applepay" type="text" placeholder="e.g. (910) 555-0123"></div></div>
                 <button class="btn btn-primary" id="btn-bk-save-payment" type="button">Save payment links</button>
@@ -3494,7 +3495,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="refreshers.js?v=2026-11-08T09-00-00Z"></script><script src="exam-bank.js?v=2026-11-08T09-00-00Z"></script><script>
+<script src="refreshers.js?v=2026-11-09T09-00-00Z"></script><script src="exam-bank.js?v=2026-11-09T09-00-00Z"></script><script>
 /* =========================================================
    SUPABASE SETUP
    Fill these in once the Supabase project exists: Project URL
@@ -3869,7 +3870,7 @@ function defaultProfile(name){
     bookingOverrides: [],
     vipDates: [],
     bookingPolicy: '',
-    paymentLinks: { venmo:'', cashapp:'', zelle:'', applepay:'' },
+    paymentLinks: { venmo:'', cashapp:'', square:'', zelle:'', applepay:'' },
     loyaltyTiers: [],
     notifyApptEvents: true,
     notifyRebookNudges: true,
@@ -4001,6 +4002,22 @@ function renderTimeZoneSelect(){
   if (!list.some(x => x[0] === cur)) list.push([cur, cur.replace(/_/g,' ')]);
   sel.innerHTML = list.map(x => `<option value="${x[0]}">${x[1]}</option>`).join('');
   sel.value = cur;
+}
+// A Square payment link must be a real https web address on one of Square's own sites. Anything
+// else (a username, a phone number, a link to another site) is refused so a client is never sent
+// somewhere the pro didn't mean. Returns the cleaned link, or '' when it isn't a Square link.
+function cleanSquareLink(raw){
+  let t = (raw || '').trim();
+  if (!t) return '';
+  if (!/^https?:\/\//i.test(t)) t = 'https://' + t.replace(/^\/+/, '');
+  let u;
+  try{ u = new URL(t); }catch(e){ return ''; }
+  if (u.protocol !== 'https:' && u.protocol !== 'http:') return '';
+  const h = u.hostname.toLowerCase();
+  const okHost = ['square.link','squareup.com','square.site'].some(d => h === d || h.endsWith('.' + d));
+  if (!okHost) return '';
+  u.protocol = 'https:';
+  return u.toString();
 }
 function sanitizeCode(raw){
   let c = (raw||'').trim().toLowerCase().replace(/[^a-z0-9_.~:@+-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
@@ -8855,7 +8872,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
     // payment links
     const pay = profile.paymentLinks || {};
-    const names = [pay.venmo && 'Venmo', pay.cashapp && 'Cash App', pay.zelle && 'Zelle', pay.applepay && 'Apple Pay'].filter(Boolean);
+    const names = [pay.venmo && 'Venmo', pay.cashapp && 'Cash App', pay.square && 'Square', pay.zelle && 'Zelle', pay.applepay && 'Apple Pay'].filter(Boolean);
     setSub('bk-row-payment-sub', names.length ? names.join(', ') : 'Optional. Not set up');
     // policy
     const pol = (profile.bookingPolicy || '').trim();
@@ -8941,6 +8958,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const pay = profile.paymentLinks || {};
     root.querySelector('#bk-pay-venmo').value = pay.venmo || '';
     root.querySelector('#bk-pay-cashapp').value = pay.cashapp || '';
+    root.querySelector('#bk-pay-square').value = pay.square || '';
     root.querySelector('#bk-pay-zelle').value = pay.zelle || '';
     root.querySelector('#bk-pay-applepay').value = pay.applepay || '';
     ['hours','payment','policy'].forEach(bkMarkSaved);
@@ -9009,9 +9027,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   });
   root.querySelector('#btn-bk-save-payment').addEventListener('click', async ()=>{
     const note = root.querySelector('#bk-payment-note');
+    const sqRaw = root.querySelector('#bk-pay-square').value.trim();
+    const sqClean = sqRaw ? cleanSquareLink(sqRaw) : '';
+    if (sqRaw && !sqClean){ note.textContent = "That doesn't look like a Square link. In Square, open Payment Links, tap Copy link, then paste the whole thing here."; return; }
+    if (sqClean) root.querySelector('#bk-pay-square').value = sqClean;
     const next = {
       venmo: root.querySelector('#bk-pay-venmo').value.trim(),
       cashapp: root.querySelector('#bk-pay-cashapp').value.trim(),
+      square: sqClean,
       zelle: root.querySelector('#bk-pay-zelle').value.trim(),
       applepay: root.querySelector('#bk-pay-applepay').value.trim()
     };
@@ -9032,7 +9055,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (!r.ok){ profile.bookingPolicy = prev; note.textContent = "Couldn't save: " + (r.message || 'try again.'); return; }
     bkMarkSaved('policy'); note.textContent = 'Saved.'; renderBkHome();
   });
-  ['#bk-pay-venmo','#bk-pay-cashapp','#bk-pay-zelle','#bk-pay-applepay'].forEach(sel=>
+  ['#bk-pay-venmo','#bk-pay-cashapp','#bk-pay-square','#bk-pay-zelle','#bk-pay-applepay'].forEach(sel=>
     root.querySelector(sel).addEventListener('input', ()=> bkMarkDirty('payment')));
   root.querySelector('#bk-policy').addEventListener('input', ()=> bkMarkDirty('policy'));
   // Back links: a page with unsaved changes asks once before letting go of them.
@@ -14452,7 +14475,7 @@ function applyProfileRow(data){
   profile.bookingOverrides = Array.isArray(data.booking_overrides) ? data.booking_overrides : [];
   profile.vipDates = Array.isArray(data.vip_dates) ? data.vip_dates : [];
   profile.bookingPolicy = data.booking_policy || '';
-  profile.paymentLinks = Object.assign({ venmo:'', cashapp:'', zelle:'', applepay:'' }, data.payment_links || {});
+  profile.paymentLinks = Object.assign({ venmo:'', cashapp:'', square:'', zelle:'', applepay:'' }, data.payment_links || {});
   profile.loyaltyTiers = Array.isArray(data.loyalty_tiers) ? data.loyalty_tiers : [];
   profile.notifyApptEvents = data.notify_appt_events !== false;
   profile.notifyRebookNudges = data.notify_rebook_nudges !== false;

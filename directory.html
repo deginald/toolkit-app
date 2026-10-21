@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono: Find a Pro</title>
-<meta name="app-build" content="2026-10-23T14-00-00Z">
+<meta name="app-build" content="2026-10-24T14-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest-directory.json">
@@ -1949,6 +1949,23 @@ document.getElementById('btn-bkc-confirm').addEventListener('click', async ()=>{
   }
 });
 
+// A Square payment link must be a real https web address on one of Square's own sites. Anything
+// else (a username, a phone number, a link to another site) is refused so a client is never sent
+// somewhere the pro didn't mean. Returns the cleaned link, or '' when it isn't a Square link.
+function cleanSquareLink(raw){
+  let t = (raw || '').trim();
+  if (!t) return '';
+  if (!/^https?:\/\//i.test(t)) t = 'https://' + t.replace(/^\/+/, '');
+  let u;
+  try{ u = new URL(t); }catch(e){ return ''; }
+  if (u.protocol !== 'https:' && u.protocol !== 'http:') return '';
+  const h = u.hostname.toLowerCase();
+  const okHost = ['square.link','squareup.com','square.site'].some(d => h === d || h.endsWith('.' + d));
+  if (!okHost) return '';
+  u.protocol = 'https:';
+  return u.toString();
+}
+
 function renderBkcSuccess(appt){
   const dateLabel = new Date(appt.appt_date+'T00:00:00').toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'});
   const vipPrefix = appt.is_vip ? '<span class="vip-badge" style="margin-bottom:6px;">✨ VIP Hours</span><br>' : '';
@@ -1959,6 +1976,8 @@ function renderBkcSuccess(appt){
   const links = [];
   if (pay.venmo) links.push(`<a class="btn btn-outline" style="text-decoration:none; text-align:center;" href="https://venmo.com/u/${encodeURIComponent(pay.venmo.replace(/^@/,''))}" target="_blank" rel="noopener">Pay with Venmo (@${esc(pay.venmo.replace(/^@/,''))})</a>`);
   if (pay.cashapp) links.push(`<a class="btn btn-outline" style="text-decoration:none; text-align:center;" href="https://cash.app/${encodeURIComponent(pay.cashapp.replace(/^\$/,'$'))}" target="_blank" rel="noopener">Pay with Cash App (${esc(pay.cashapp.startsWith('$')?pay.cashapp:'$'+pay.cashapp)})</a>`);
+  const sq = cleanSquareLink(pay.square);
+  if (sq) links.push(`<a class="btn btn-outline" style="text-decoration:none; text-align:center;" href="${esc(sq)}" target="_blank" rel="noopener">Pay with Square</a>`);
   if (pay.zelle) links.push(`<div class="summary-row"><span>Zelle</span><span>${esc(pay.zelle)}</span></div>`);
   if (pay.applepay) links.push(`<div class="summary-row"><span>Apple Pay / Cash</span><span>${esc(pay.applepay)}</span></div>`);
   payHolder.innerHTML = links.length ? (`<p class="eyebrow-mini2" style="margin:0;">Total due: $${appt.total_price}</p>` + links.join('')) : '';
