@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-11-06T09-00-00Z">
+<meta name="app-build" content="2026-11-07T09-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -119,6 +119,12 @@
   .home-headline{ font-family:'Libre Franklin',sans-serif; font-weight:800; font-size:32px; line-height:1.08; letter-spacing:-0.015em; margin:4px 0 0; color:var(--ink); text-wrap:balance; }
   .home-section-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
   .home-today-list{ display:flex; flex-direction:column; gap:8px; }
+  .home-photo-card{ display:flex; flex-direction:row; align-items:center; gap:14px; width:100%; text-align:left; padding:16px; border:1px solid var(--brass); border-radius:14px; background:var(--paper); color:var(--ink); font-family:inherit; cursor:pointer; }
+  .home-photo-card .hpc-ic{ flex:none; width:46px; height:46px; border-radius:12px; background:var(--brass-tint); color:var(--brass); display:flex; align-items:center; justify-content:center; }
+  .home-photo-card .hpc-tx{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .home-photo-card .hpc-tx b{ font-size:16px; }
+  .home-photo-card .hpc-tx span{ font-size:13px; color:var(--muted); line-height:1.35; }
+  .home-photo-card .hpc-chev{ flex:none; color:var(--brass); }
   .home-tiles{ display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
   .home-tile{ position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:9px; padding:16px 6px 14px; min-height:96px; border:1px solid var(--line); border-radius:14px; background:var(--paper); color:var(--ink); font-family:'Public Sans',sans-serif; font-weight:700; font-size:12.5px; cursor:pointer; }
   .home-tile svg{ width:28px; height:28px; color:var(--brass); flex:none; }
@@ -1125,6 +1131,11 @@
           <div class="home-today-list" id="home-today-list"></div>
           <button type="button" class="link-btn" id="btn-home-open-calendar" style="align-self:flex-start; padding:0;">View calendar</button>
         </div>
+        <button type="button" class="home-photo-card" id="btn-home-take-photo" data-home-go="lookup">
+          <span class="hpc-ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.2l1.1-1.6c.2-.3.6-.4.9-.4h4.6c.3 0 .7.1.9.4L16.3 6h1.2A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12.5" r="3.2" stroke="currentColor" stroke-width="1.6"/></svg></span>
+          <span class="hpc-tx"><b>Take client photo</b><span>Scan their QR code or enter their passport code</span></span>
+          <svg class="hpc-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
         <div class="home-tiles" id="home-tiles">
           <button type="button" class="home-tile" data-home-go="biz:clients" data-home-pro="1">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="9" cy="8.5" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 19c.5-3.2 2.7-5 5.5-5s5 1.8 5.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="17" cy="9.5" r="2.3" stroke="currentColor" stroke-width="1.6"/><path d="M16 14.2c2.6-.2 4.3 1.3 4.8 4.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -1654,7 +1665,6 @@
               <button class="btn btn-ghost" id="btn-consult-client-clear" type="button" style="width:100%;">Remove</button>
             </div>
           </div>
-          <div class="check-row" id="practice-row"><input type="checkbox" id="practice-toggle"><span>Practice mode (student training)</span></div>
           <div class="spacer"></div>
           <button class="btn btn-primary" id="btn-start">Begin consultation</button>
         </div>
@@ -1719,7 +1729,6 @@
             <h2 class="screen-title">Consultation logged</h2>
             <p class="screen-sub" id="complete-sub">&nbsp;</p>
           </div>
-          <div id="coach-notes"></div>
           <div class="spacer"></div>
           <button class="btn btn-primary" id="btn-restart">Start another consultation</button>
         </div>
@@ -3453,7 +3462,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="refreshers.js?v=2026-11-06T09-00-00Z"></script><script src="exam-bank.js?v=2026-11-06T09-00-00Z"></script><script>
+<script src="refreshers.js?v=2026-11-07T09-00-00Z"></script><script src="exam-bank.js?v=2026-11-07T09-00-00Z"></script><script>
 /* =========================================================
    SUPABASE SETUP
    Fill these in once the Supabase project exists: Project URL
@@ -4328,10 +4337,16 @@ document.addEventListener('click', (e)=>{
   }
   const go = e.target.closest && e.target.closest('[data-bk-go]');
   if (go && document.getElementById('tab-booking').contains(go)){
+    if (window.__lookupFromHome && getActiveBookingMode() === 'lookup' && go.dataset.bkGo === 'home'){
+      if (window.bkGoBack) window.bkGoBack('home'); else showBookingSubtab('home');
+      showTab('home');
+      return;
+    }
     if (window.bkGoBack) window.bkGoBack(go.dataset.bkGo); else showBookingSubtab(go.dataset.bkGo);
   }
 });
 function showTab(name){
+  window.__lookupFromHome = false;
   window.__activeScanStoppers.forEach(fn => { try{ fn(); }catch(e){} });
   if (!isStudent() && (name === 'pace' || name === 'ledger' || name === 'shome')) name = 'home';
   if (isStudent() && name === 'shome') name = 'home';
@@ -4604,6 +4619,12 @@ function showTab(name){
       if (todayBtn) todayBtn.click();
       const viewBtn = document.querySelector('#calendar-view-toggle [data-cal-view="' + viewName + '"]');
       if (viewBtn) viewBtn.click();
+      return;
+    }
+    if (target === 'lookup'){
+      showTab('booking');
+      showBookingSubtab('lookup');
+      window.__lookupFromHome = true;
       return;
     }
     if (target === 'account'){ showAccountScreen(); return; }
@@ -6785,7 +6806,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     {id:'patchloss', label:'Hair loss in patches', severe:true}
   ];
   let attachedClient = null; // { code, name, visits, hairProfile }
-  const qstate = { practice:false, texture:null, conditions:[], scalp:[], duration:null, severe:[], visitedTriage:false };
+  const qstate = { texture:null, conditions:[], scalp:[], duration:null, severe:[], visitedTriage:false };
   function toggleSet(arr, id, exclusive){
     const idx = arr.indexOf(id);
     if (exclusive){ return idx===-1 ? [id] : []; }
@@ -6995,7 +7016,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     root.querySelector('#consult-client-lookup-status').textContent = '';
     renderClientAttach();
   });
-  root.querySelector('#practice-toggle').addEventListener('change', e=>{ qstate.practice = e.target.checked; });
   root.querySelector('#btn-start').addEventListener('click', ()=>{
     if (attachedClient && attachedClient.hairProfile && attachedClient.hairProfile.texture){
       qstate.texture = attachedClient.hairProfile.texture;
@@ -7163,13 +7183,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
       const outcome = btn.dataset.finish;
       let sub = outcome === 'refer' ? 'Referral recommended. No product suggested.' : `${buildRecommendations().length} recommendation(s) logged.`;
-      const coach = root.querySelector('#coach-notes');
-      if (qstate.practice){
-        const tip = outcome === 'refer'
-          ? "Good catch. Recognizing when NOT to recommend a product is the harder half of this skill."
-          : "Solid consultation. You covered texture, condition, and scalp. Next time, also ask about styling habits and product buildup before finalizing recommendations.";
-        coach.innerHTML = `<div class="coach-box"><span class="cb-label">Coaching notes</span><p>${tip}</p></div>`;
-      } else { coach.innerHTML = ''; }
       if (attachedClient){
         const ok = await saveConsultVisit(outcome);
         sub += ok ? ` Saved to ${attachedClient.name}'s Vono Passport.` : " Couldn't save to their Vono Passport. Try again.";
