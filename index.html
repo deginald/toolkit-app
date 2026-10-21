@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-11-09T09-00-00Z">
+<meta name="app-build" content="2026-11-10T09-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1795,6 +1795,7 @@
                 <button class="btn btn-outline" id="btn-bk-copy-link" type="button">Copy</button>
                 <button class="btn btn-outline" id="btn-bk-qr-enlarge" type="button" aria-label="Show QR code">QR</button>
               </div>
+              <button type="button" class="btn btn-outline bk-onlyon" id="btn-bk-invite" style="width:100%; display:flex; gap:8px; align-items:center; justify-content:center;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4 3.5V16A2.5 2.5 0 0 1 4 13.5v-7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span>Invite a client</span></button>
               <p class="foot-note-small bk-copy-note bk-onlyon" id="bk-copy-note" style="margin:-8px 0 0;"></p>
               <p class="biz-glabel" style="margin-bottom:-6px;">Set up booking</p>
               <div class="biz-group">
@@ -2420,6 +2421,7 @@
           <div class="biz-pane-head"><button type="button" class="link-btn" data-biz-back>&larr; Business</button><h2>My Clients</h2></div>
           <div class="screen-body show" data-screen="dashboard" id="myclients-list-view" style="gap:14px;">
             <p class="foot-note-small" style="margin:0;">Tap a client to look them up again in Consult, or tick the box to message them.</p>
+            <button type="button" class="btn btn-primary" id="btn-myclients-invite" style="width:100%; display:flex; gap:8px; align-items:center; justify-content:center;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4 3.5V16A2.5 2.5 0 0 1 4 13.5v-7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span>Invite a new client</span></button>
             <div class="input-row"><input id="myclients-search" type="text" placeholder="Search by name or code"></div>
             <label class="check-row" style="padding:6px 2px; flex:none; gap:7px; align-self:flex-start; background:transparent; border:0;">
               <input type="checkbox" id="myclients-select-all">
@@ -3436,6 +3438,23 @@
       <button type="button" class="link-btn" id="btn-bk-sheet-close">Close</button>
     </div>
   </div>
+  <div class="bk-sheet" id="inv-sheet" hidden role="dialog" aria-label="Invite">
+    <div class="bk-sheet-back" id="inv-sheet-back"></div>
+    <div class="bk-sheet-box" style="align-items:stretch; max-height:92vh; overflow-y:auto;">
+      <i class="grab" aria-hidden="true" style="align-self:center;"></i>
+      <b id="inv-title">Invite a new client</b>
+      <p class="screen-sub" id="inv-intro" style="margin:0;">&nbsp;</p>
+      <div style="border:1px solid var(--line); border-radius:12px; background:var(--paper); padding:12px 14px;">
+        <p class="eyebrow-mini2" style="margin:0 0 6px;">Your message</p>
+        <div id="inv-msg" style="font-size:14.5px; line-height:1.5; color:var(--ink); word-break:break-word;"></div>
+      </div>
+      <div class="field" style="margin:0;"><label for="inv-phone" id="inv-phone-label">Their phone number <span style="text-transform:none; font-weight:600;">(optional)</span></label><div class="input-row"><input id="inv-phone" type="tel" inputmode="tel" autocomplete="off" placeholder="(910) 555-0123"></div><p class="foot-note-small" style="margin:4px 0 0;">Only used to open your text. Vono never saves it.</p></div>
+      <button type="button" class="btn btn-primary" id="btn-inv-sms" style="width:100%;">Open in Messages</button>
+      <div class="row"><button type="button" class="btn btn-outline" id="btn-inv-share">Share&hellip;</button><button type="button" class="btn btn-outline" id="btn-inv-copy">Copy message</button></div>
+      <p class="foot-note-small" id="inv-note" style="margin:0; text-align:center;">&nbsp;</p>
+      <button type="button" class="link-btn" id="btn-inv-close" style="align-self:center;">Close</button>
+    </div>
+  </div>
   <div id="sub-screen" hidden style="display:flex; flex-direction:column; flex:1; min-height:100vh; min-height:100svh;">
     <header class="topbar">
       <button type="button" class="link-btn" id="btn-sub-back">&larr; Back</button>
@@ -3495,7 +3514,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="refreshers.js?v=2026-11-09T09-00-00Z"></script><script src="exam-bank.js?v=2026-11-09T09-00-00Z"></script><script>
+<script src="refreshers.js?v=2026-11-10T09-00-00Z"></script><script src="exam-bank.js?v=2026-11-10T09-00-00Z"></script><script>
 /* =========================================================
    SUPABASE SETUP
    Fill these in once the Supabase project exists: Project URL
@@ -8893,6 +8912,18 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
   function bkSharedKey(){ return 'vonoBkShared_' + (profileCode || ''); }
   function bkMarkShared(){ try{ localStorage.setItem(bkSharedKey(), '1'); }catch(e){} renderBkChecklist(); }
+  window.vonoBookingUrl = bookingUrl;
+  window.vonoInviteNew = function(){
+    const who = ((profile && profile.name) || '').trim();
+    openInviteSheet({
+      title: 'Invite a new client',
+      intro: 'Text them your booking link. They can book, and start their own Vono Passport.',
+      message: "Hi! It's " + (who || 'your barber') + ". You can book with me and keep your appointments in one place on Vono: " + bookingUrl(),
+      phoneLabel: 'Their phone number',
+      onSent: bkMarkShared
+    });
+  };
+  root.querySelector('#btn-bk-invite').addEventListener('click', ()=>{ if (profileCode) window.vonoInviteNew(); });
   async function bkCopyLink(){
     const note = root.querySelector('#bk-copy-note');
     const input = root.querySelector('#bk-link-input');
@@ -11735,6 +11766,7 @@ async function saveAppointmentChange(id, core, extras){
           </div>
           <span class="screen-sub" style="margin:0;">${c.code}${c.lastDate ? ' &middot; last visit ' + fmtVisitDate(c.lastDate) : ''}</span>
           <button type="button" class="link-btn" data-open-routine="${c.code}" style="align-self:flex-start; padding:0; font-size:12px;">${routineLabelFor(c.code)}</button>
+          <button type="button" class="link-btn" data-text-app="${c.code}" style="align-self:flex-start; padding:0; font-size:12px; font-weight:700;">Text them the app</button>
         </div>
       </div>`).join('');
     updateSelectAllState();
@@ -11763,6 +11795,7 @@ async function saveAppointmentChange(id, core, extras){
       emptyEl.textContent = "Couldn't load your clients right now.";
     }
   }
+  root.querySelector('#btn-myclients-invite').addEventListener('click', ()=>{ if (window.vonoInviteNew) window.vonoInviteNew(); });
   root.querySelector('#myclients-search').addEventListener('input', function(){
     renderMyClients(this.value);
   });
@@ -11770,6 +11803,20 @@ async function saveAppointmentChange(id, core, extras){
     // A checkbox click bubbles up to this same handler -- let its own change
     // handler manage selection and don't also navigate into Consult.
     if (e.target.closest('[data-select-client]')) return;
+    const txBtn = e.target.closest('[data-text-app]');
+    if (txBtn){
+      const c = myClients.find(x => x.code === txBtn.dataset.textApp);
+      if (!c) return;
+      const first = (c.name || '').trim().split(/\s+/)[0] || 'there';
+      const who = ((profile && profile.name) || '').trim();
+      openInviteSheet({
+        title: 'Text ' + first + ' the app',
+        intro: 'Sends their passport code, so they can open their hair history and photos.',
+        message: 'Hi ' + first + ", it's " + (who || 'your barber') + '. Your Vono Passport keeps your hair history and photos in one place. Your code is ' + c.code + '. Open it here: ' + AHC_CANONICAL_APP_URL + 'passport.html',
+        phoneLabel: first + "'s phone number"
+      });
+      return;
+    }
     const rtBtn = e.target.closest('[data-open-routine]');
     if (rtBtn){ openRoutine(rtBtn.dataset.openRoutine); return; }
     const card = e.target.closest('[data-open-client]');
@@ -11784,7 +11831,7 @@ async function saveAppointmentChange(id, core, extras){
     }, 50);
   });
   root.querySelector('#myclients-list').addEventListener('keydown', (e)=>{
-    if (e.target.closest('[data-select-client]') || e.target.closest('[data-open-routine]')) return;
+    if (e.target.closest('[data-select-client]') || e.target.closest('[data-open-routine]') || e.target.closest('[data-text-app]')) return;
     const card = e.target.closest('[data-open-client]');
     if (!card) return;
     if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); card.click(); }
@@ -14924,6 +14971,51 @@ function setShareAppDevice(device){
   document.getElementById('share-app-steps-ios').style.display = device === 'ios' ? 'flex' : 'none';
   document.getElementById('share-app-steps-android').style.display = device === 'ios' ? 'none' : 'flex';
 }
+// ---- Invite sheet: a ready-written text for a new client (booking link) or an existing client (their
+// passport code). A phone number typed here is used only to address the text and is never saved.
+let inviteCtx = null;
+function inviteSmsHref(phone, body){
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || '');
+  let num = String(phone || '').trim();
+  const plus = num.charAt(0) === '+' ? '+' : '';
+  num = plus + num.replace(/\D/g, '');
+  return 'sms:' + num + (isIOS ? '&' : '?') + 'body=' + encodeURIComponent(body);
+}
+function openInviteSheet(opts){
+  inviteCtx = opts;
+  document.getElementById('inv-title').textContent = opts.title;
+  document.getElementById('inv-intro').textContent = opts.intro;
+  document.getElementById('inv-msg').textContent = opts.message;
+  document.getElementById('inv-phone').value = '';
+  document.getElementById('inv-phone-label').firstChild.textContent = (opts.phoneLabel || 'Their phone number') + ' ';
+  document.getElementById('inv-note').textContent = ' ';
+  document.getElementById('btn-inv-share').style.display = navigator.share ? '' : 'none';
+  document.getElementById('inv-sheet').hidden = false;
+}
+function closeInviteSheet(){ document.getElementById('inv-sheet').hidden = true; inviteCtx = null; }
+function inviteSent(){ try{ if (inviteCtx && inviteCtx.onSent) inviteCtx.onSent(); }catch(e){} }
+document.getElementById('inv-sheet-back').addEventListener('click', closeInviteSheet);
+document.getElementById('btn-inv-close').addEventListener('click', closeInviteSheet);
+document.addEventListener('keydown', e=>{ if (e.key === 'Escape' && inviteCtx) closeInviteSheet(); });
+document.getElementById('btn-inv-sms').addEventListener('click', ()=>{
+  if (!inviteCtx) return;
+  const href = inviteSmsHref(document.getElementById('inv-phone').value, inviteCtx.message);
+  window.__lastInviteSms = href;
+  inviteSent();
+  const a = document.createElement('a'); a.href = href; a.style.display = 'none';
+  document.body.appendChild(a); a.click(); a.remove();
+});
+document.getElementById('btn-inv-share').addEventListener('click', async ()=>{
+  if (!inviteCtx || !navigator.share) return;
+  try{ await navigator.share({ text: inviteCtx.message }); inviteSent(); }
+  catch(e){ /* closed the share sheet: nothing to do */ }
+});
+document.getElementById('btn-inv-copy').addEventListener('click', async ()=>{
+  if (!inviteCtx) return;
+  const note = document.getElementById('inv-note');
+  try{ await navigator.clipboard.writeText(inviteCtx.message); note.textContent = 'Copied. Paste it into a text.'; inviteSent(); }
+  catch(e){ note.textContent = 'Select the message above and copy it.'; }
+});
 function openSharePanel(){
   const url = shareAppUrl();
   document.getElementById('share-app-link-input').value = url;
