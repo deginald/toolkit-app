@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-11-07T09-00-00Z">
+<meta name="app-build" content="2026-11-08T09-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1893,6 +1893,38 @@
                   <div class="field" style="margin-top:12px;"><div class="input-row"><input id="bk-lookup-code" type="text" placeholder="Their passport code" data-lookup-field="1"></div></div>
                   <button class="btn btn-outline" id="btn-bk-lookup" type="button" style="margin-top:8px; width:100%;">Look up</button>
                   <p class="screen-sub" id="bk-lookup-status" style="margin-top:6px;">&nbsp;</p>
+                  <div id="bk-lookup-newlink" style="border-top:1px solid var(--line); padding-top:12px; margin-top:4px; text-align:center;">
+                    <p class="screen-sub" style="margin:0 0 4px;">Don't have a code yet?</p>
+                    <button type="button" class="link-btn" id="btn-bk-lookup-new" style="font-weight:700;">First time here? Start their Vono Passport</button>
+                  </div>
+                </div>
+                <div id="bk-lookup-newname" style="display:none; flex-direction:column; gap:12px;">
+                  <p class="screen-sub" style="margin:0;">New client. Takes about 20 seconds.</p>
+                  <div class="field"><label>Client's name</label><div class="input-row"><input id="bk-lookup-new-name" type="text" placeholder="e.g. Jordan Smith"></div></div>
+                  <div class="field"><label>Last 4 of their phone</label><div class="input-row"><input id="bk-lookup-new-last4" type="tel" inputmode="numeric" autocomplete="off" placeholder="e.g. 4821"></div><p class="foot-note-small" style="margin:0;">Makes the code easy for them to remember.</p></div>
+                  <div class="field">
+                    <label>Their passport code</label>
+                    <div class="input-row"><input id="bk-lookup-new-code" type="text" placeholder="e.g. jordan4821" readonly><button type="button" class="link-btn code-edit" id="bk-lookup-code-edit">Edit</button></div>
+                    <div class="code-sugs" id="bk-lookup-code-sugs"></div>
+                    <p class="foot-note-small" id="bk-lookup-code-say" style="margin:0;"></p>
+                  </div>
+                  <button class="btn btn-primary" id="btn-bk-lookup-create" type="button" style="width:100%;">Start their Vono Passport</button>
+                  <button class="btn btn-ghost" id="btn-bk-lookup-newclient-back" type="button" style="width:100%;">Back</button>
+                  <p class="screen-sub" id="bk-lookup-create-status" style="margin:0;">&nbsp;</p>
+                </div>
+                <div id="bk-lookup-newdone" style="display:none; flex-direction:column; gap:12px;">
+                  <div style="border:1px solid var(--brass); border-radius:12px; background:var(--brass-tint); padding:12px 14px;">
+                    <p class="eyebrow-mini2" id="bk-lookup-done-label" style="margin:0 0 4px;">Passport code</p>
+                    <div id="bk-lookup-done-code" style="font-size:24px; font-weight:800; letter-spacing:0.02em; word-break:break-all;"></div>
+                    <p class="screen-sub" style="margin:4px 0 0;">Tell them to keep this. They can open their passport with it, or by scanning their QR code.</p>
+                  </div>
+                  <p class="eyebrow-mini2" id="bk-lookup-done-ask" style="margin:2px 0 0;">Before you take a photo, ask</p>
+                  <label class="check-row"><input type="checkbox" id="bk-lookup-done-record"><span>OK to save before/after photos to their Vono Passport</span></label>
+                  <label class="check-row"><input type="checkbox" id="bk-lookup-done-marketing"><span>Also OK to use them in my portfolio or marketing (separate, optional)</span></label>
+                  <p class="foot-note-small" style="margin:0;">Two separate questions. A yes to the first isn't a yes to the second.</p>
+                  <button class="btn btn-primary" id="btn-bk-lookup-done-continue" type="button" style="width:100%;">Continue to photos</button>
+                  <button class="btn btn-ghost" id="btn-bk-lookup-done-skip" type="button" style="width:100%;">Skip photos for now</button>
+                  <p class="screen-sub" id="bk-lookup-done-status" style="margin:0;">&nbsp;</p>
                 </div>
                 <div id="bk-lookup-scanpanel" style="display:none; flex-direction:column; gap:10px;">
                   <div style="position:relative; border-radius:12px; overflow:hidden; background:#000; aspect-ratio:1/1; max-width:280px; margin:0 auto; width:100%;">
@@ -3462,7 +3494,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="refreshers.js?v=2026-11-07T09-00-00Z"></script><script src="exam-bank.js?v=2026-11-07T09-00-00Z"></script><script>
+<script src="refreshers.js?v=2026-11-08T09-00-00Z"></script><script src="exam-bank.js?v=2026-11-08T09-00-00Z"></script><script>
 /* =========================================================
    SUPABASE SETUP
    Fill these in once the Supabase project exists: Project URL
@@ -9024,6 +9056,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     bkLeaveWarned = false;
     if (mode === 'home'){ renderBkHome(); updateEnabledVisibility(); }
     if (mode === 'services') renderServices();
+    if (mode === 'lookup' && !bkLookupClient && window.__bkLookupReset) window.__bkLookupReset();
     if (mode === 'special') renderSpecial();
   };
     const BARBER_CANNED_MESSAGES = [
@@ -9904,7 +9937,7 @@ async function saveAppointmentChange(id, core, extras){
     statusEl.textContent = 'Looking up…';
     try{
       const found = await withCodeAlt(getClientByCode, code); const data = found.data; code = found.code;
-      if (!data){ statusEl.textContent = 'No client found with that code.'; return; }
+      if (!data){ statusEl.textContent = 'No client found with that code. Start their passport below.'; return; }
       bkLookupClient = {
         code,
         name: data.name || 'Client',
@@ -9929,14 +9962,100 @@ async function saveAppointmentChange(id, core, extras){
       statusEl.textContent = "Couldn't look that up. Try again.";
     }
   }
+  // ---- First-time client: start a Vono Passport right from the lookup, then ask photo consent
+  // BEFORE the camera is offered. Same name + last-4 code builder Consult uses.
+  const bkLookupCodeUi = wireNewClientCodeFields(root, 'bk-lookup');
+  function bkLookupShow(which){
+    ['search','newname','newdone','result'].forEach(k=>{
+      const el = root.querySelector('#bk-lookup-' + k);
+      if (el) el.style.display = (k === which) ? (k === 'search' ? '' : 'flex') : 'none';
+    });
+  }
+  function openBkLookupNew(prefillCode){
+    bkLookupShow('newname');
+    bkLookupCodeUi.reset(prefillCode || '');
+    root.querySelector('#bk-lookup-create-status').textContent = ' ';
+    root.querySelector('#bk-lookup-new-name').focus();
+  }
+  root.querySelector('#btn-bk-lookup-new').addEventListener('click', ()=> openBkLookupNew(''));
+  root.querySelector('#btn-bk-lookup-newclient-back').addEventListener('click', ()=> bkLookupShow('search'));
+  root.querySelector('#btn-bk-lookup-create').addEventListener('click', async ()=>{
+    const statusEl = root.querySelector('#bk-lookup-create-status');
+    const name = root.querySelector('#bk-lookup-new-name').value.trim();
+    const code = sanitizeCode(root.querySelector('#bk-lookup-new-code').value);
+    if (!name){ statusEl.textContent = 'Enter their name first.'; return; }
+    if (!code){ statusEl.textContent = 'Enter a code for them first.'; return; }
+    if (!dbAvailable){ statusEl.textContent = "Live save isn't connected right now."; return; }
+    statusEl.textContent = 'Checking that code…';
+    try{
+      const taken = await clientCodeTaken(code);
+      if (taken){ statusEl.textContent = 'That code is already taken. Try one of these:'; bkLookupCodeUi.showTaken(); return; }
+      const { error } = await supabaseClient.from('clients').insert({ code, name, visits: [] });
+      if (error) throw error;
+    }catch(e){
+      console.warn('create client failed', e);
+      statusEl.textContent = "Couldn't save: " + ((e && e.message) || 'try again.');
+      return;
+    }
+    bkLookupClient = { code, name, visits: [], barberCodes: [], photoConsentRecord: false, photoConsentRecordAt: '', photoConsentMarketing: false, photoConsentMarketingAt: '' };
+    bkLookupActiveVisitId = null;
+    statusEl.textContent = ' ';
+    root.querySelector('#bk-lookup-done-label').textContent = name + "'s passport code";
+    root.querySelector('#bk-lookup-done-ask').textContent = 'Before you take a photo, ask ' + (name.split(/\s+/)[0] || 'them');
+    root.querySelector('#bk-lookup-done-code').textContent = code;
+    root.querySelector('#bk-lookup-done-record').checked = false;
+    root.querySelector('#bk-lookup-done-marketing').checked = false;
+    root.querySelector('#bk-lookup-done-status').textContent = ' ';
+    bkLookupShow('newdone');
+  });
+  root.querySelector('#btn-bk-lookup-done-skip').addEventListener('click', ()=>{
+    const code = bkLookupClient && bkLookupClient.code;
+    bkLookupClient = null; bkLookupActiveVisitId = null;
+    root.querySelector('#bk-lookup-code').value = '';
+    bkLookupShow('search');
+    root.querySelector('#bk-lookup-status').textContent = code ? ('Passport started. Their code is ' + code + '.') : ' ';
+  });
+  root.querySelector('#btn-bk-lookup-done-continue').addEventListener('click', async ()=>{
+    if (!bkLookupClient) return;
+    const statusEl = root.querySelector('#bk-lookup-done-status');
+    const recordChecked = root.querySelector('#bk-lookup-done-record').checked;
+    const marketingChecked = root.querySelector('#bk-lookup-done-marketing').checked;
+    if (marketingChecked && !recordChecked){ statusEl.textContent = "Portfolio/marketing needs the first OK too."; return; }
+    if (recordChecked || marketingChecked){
+      if (!dbAvailable){ statusEl.textContent = "Live saving isn't connected right now."; return; }
+      statusEl.textContent = 'Saving…';
+      const nowIso = new Date().toISOString();
+      const update = { photoConsentRecord: recordChecked, photoConsentMarketing: marketingChecked };
+      if (recordChecked) update.photoConsentRecordAt = nowIso;
+      if (marketingChecked) update.photoConsentMarketingAt = nowIso;
+      try{
+        await recordClientVisit(bkLookupClient.code, update);
+      }catch(e){
+        console.warn('save photo consent failed', e);
+        statusEl.textContent = "Couldn't save: try again.";
+        return;
+      }
+      bkLookupClient.photoConsentRecord = recordChecked;
+      bkLookupClient.photoConsentMarketing = marketingChecked;
+      if (recordChecked) bkLookupClient.photoConsentRecordAt = nowIso;
+      if (marketingChecked) bkLookupClient.photoConsentMarketingAt = nowIso;
+    }
+    root.querySelector('#bk-lookup-name').textContent = bkLookupClient.name;
+    root.querySelector('#bk-lookup-upload-status').textContent = ' ';
+    root.querySelector('#bk-lookup-notes').value = '';
+    root.querySelector('#bk-lookup-consent-form').style.display = 'none';
+    renderBkLookupConsent();
+    renderBkLookupPhotos();
+    bkLookupShow('result');
+  });
+  window.__bkLookupReset = function(){ bkLookupShow('search'); };
   root.querySelector('#btn-bk-lookup').addEventListener('click', ()=> performBkLookup());
   root.querySelector('#btn-bk-lookup-clear').addEventListener('click', ()=>{
     bkLookupClient = null;
     bkLookupActiveVisitId = null;
     root.querySelector('#bk-lookup-code').value = '';
     root.querySelector('#bk-lookup-status').textContent = '';
-    root.querySelector('#bk-lookup-result').style.display = 'none';
-    root.querySelector('#bk-lookup-search').style.display = '';
+    bkLookupShow('search');
   });
 
   // -- QR scanning for the client lookup card, mirroring the same scan pattern used for
