@@ -97,28 +97,32 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const targetUrl = (event.notification.data && event.notification.data.url) || './';
-  const messageId = event.notification.data && event.notification.data.messageId;
-  const kind = event.notification.data && event.notification.data.kind;
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        // Reuse an already-open tab for this app instead of opening a new one,
-        // if one happens to be open. Since focusing a client doesn't navigate
-        // it, tell the already-open page which message to show via postMessage
-        // instead of relying on the URL (which only a freshly opened window reads).
-        if (client.url.includes(self.registration.scope) && 'focus' in client) {
-          if (kind === 'job_message' && 'postMessage' in client){
-            client.postMessage({ type: 'show-job-message' });
-          } else if (messageId && 'postMessage' in client){
-            client.postMessage({ type: 'show-quick-message', id: messageId });
-          }
-          return client.focus();
-        }
+  const d = event.notification.data || {};
+  // An absolute address, so opening a window works the same on every phone.
+  let targetUrl = './';
+  try{ targetUrl = new URL(d.url || './', self.registration.scope).href; }catch(e){}
+  const messageId = d.messageId;
+  const kind = d.kind;
+  // Tell an already-open copy of the app what to show (focusing a window does not navigate it).
+  const tell = (client) => {
+    try{
+      if (kind === 'job_message') client.postMessage({ type: 'show-job-message' });
+      else if (kind === 'license_reminder') client.postMessage({ type: 'open-pane', pane: 'license' });
+      else if (messageId) client.postMessage({ type: 'show-quick-message', id: messageId });
+    }catch(e){}
+  };
+  event.waitUntil((async () => {
+    let list = [];
+    try{ list = await self.clients.matchAll({ type: 'window', includeUncontrolled: true }); }catch(e){}
+    for (const client of list){
+      if (client.url && client.url.includes(self.registration.scope) && 'focus' in client){
+        tell(client);
+        // If the phone refuses to bring that window forward, fall through and open a fresh one.
+        try{ const f = await client.focus(); if (f) return; }catch(e){}
       }
-      if (self.clients.openWindow) {
-        return self.clients.openWindow(targetUrl);
-      }
-    })
-  );
+    }
+    if (self.clients.openWindow){
+      try{ await self.clients.openWindow(targetUrl); }catch(e){ console.warn('openWindow failed', e); }
+    }
+  })());
 });
