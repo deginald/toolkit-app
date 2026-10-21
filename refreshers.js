@@ -11,7 +11,7 @@
      sP  timer with a real time (title, text, "~10 min")
      sF  final step (no photo needed)
 
-   Lists: cuts, chemical, safety (barbering and cosmetology), massage and
+   Lists: biz (Business basics, shown to every field), cuts, chemical, safety (barbering and cosmetology), massage and
    msafety (massage therapy), and for each of nail, braid, esth and mua a
    technique list (nailt, braidt, estht, muat) and a Consult & Safety list.
    A refresher marked crafts:[...] only shows for the crafts named.
@@ -517,6 +517,34 @@ muat: [
       {kind:'timer', badge:'kind-safety', label:'Step 14a', title:'Disinfect tools & implements', body:'Before you remove your gloves, thoroughly clean all tools and implements that came in contact with blood or other body fluids, and completely immerse them in an EPA-registered hospital disinfectant solution.', seconds:60, real:'10 min'},
       {kind:'safety', badge:'kind-safety', label:'Step 14b', title:'Remove your gloves safely', body:"Blood may carry pathogens, so never touch an open sore or a wound. Remove one glove by holding it in your other gloved hand, sliding a finger under the glove at its base, and pulling it over the other contaminated glove, never allowing either glove to come into contact with your skin."},
       {kind:'safety', badge:'kind-safety', label:'Step 15', title:'Wash up & follow up', body:'Wash your hands with soap and warm water before returning to the service. Recommend that the client see a physician if any signs of redness, swelling, pain, or irritation develop.'}
+    ]}
+  ],
+  // Business basics: for every field, students and pros. General information, not tax or legal advice.
+  biz: [
+    { id:'biz-pricing', name:'Pricing a Service', category:'biz', steps:[
+      sC('Price for the whole job', 'A price has to cover your time, the supplies you use, and your share of what it costs to run your business. It is not only what the shop down the street charges.', 'Why it matters'),
+      sK('Know your numbers', ['The pay you want per hour','How long the service really takes, from hello to clean-up','What products and supplies the service uses','Your monthly costs: rent or booth fee, insurance, license, tools'], 'Gather'),
+      { kind:'calc', badge:'kind-tech', label:'Try it', title:'Work out your lowest price', body:'Put in your own numbers. This is the lowest price that pays you what you want and covers your costs.' },
+      sT('Check your market', 'Look at three to five pros nearby with similar training and experience. You do not have to match them. Many new pros start a little under and raise prices as their book fills.', 'Market'),
+      sT('Raise prices on a schedule', 'Give regular clients a month of notice and raise by a small amount once or twice a year, or whenever you are booked most days. A steady small raise goes over better than a big surprise.', 'Growth'),
+      Object.assign(sF('Put it in writing', 'Add your prices to Booking, then Services, so clients see them before they book. Look at them again every six months.'), { action:'booking' })
+    ]},
+    { id:'biz-chair', name:'Booth Rent, Commission, or Employee', category:'biz', steps:[
+      sR('Three ways to work in a shop', ['Employee: the shop sets prices, brings in clients and withholds taxes from your pay','Commission: you and the shop split each service at an agreed percentage','Booth or chair rent: you pay a set fee, keep what you earn and run your own business'], 'Overview'),
+      sT('Employee', 'Usually the steadiest. The shop often supplies the clients, products and tools, and takes taxes out of your pay. You give up some control over prices, hours and how you work.', 'Option 1'),
+      sT('Commission', 'You earn a percentage of what you bring in. Ask what the percentage covers: products, card fees, tips and laundry. Ask how often you are paid.', 'Option 2'),
+      sT('Booth or chair rent', 'You are self-employed. You set your prices and hours, buy your supplies, track your own income and costs, and set aside your own tax money. The rent is due whether or not you are busy.', 'Option 3'),
+      sK('Ask before you sign', ['Is the agreement in writing?','What does the rent or split include: towels, laundry, products, card fees?','Who sets prices, and who keeps the client list if you leave?','How are tips handled?','What happens when you are sick or on vacation?'], 'Questions'),
+      sS('Check your state’s rules', 'Rules for booth rental and for who counts as an employee differ by state and licensing board. Confirm with your state board and a tax preparer before you choose.', 'Check the rules'),
+      Object.assign(sF('Keep the records', 'If you rent a chair or split with a shop, write down every payment. Vono Pro has a Rent and commission tracker in the Business tab for exactly this.'), { action:'rentcomm' })
+    ]},
+    { id:'biz-tax', name:'What to Track for Taxes', category:'biz', steps:[
+      sR('Three things to keep', ['Money in: services, walk-ins, tips and retail','Money out: supplies, rent, insurance, license and CE fees, tools and advertising','Miles driven for work, if you travel to clients or make supply runs'], 'Overview'),
+      sT('Money in', 'Write down every payment, including cash and tips. Appointments booked in Vono show in Earnings, and Walk-ins keeps the rest.', 'Track it'),
+      sT('Money out', 'Keep every receipt and take a photo of it the day you get it. Log what you spend in Costs, with a category, so it is ready at tax time.', 'Track it'),
+      sT('Set money aside', 'If you are self-employed, nobody takes tax out of your pay. Many pros move a share of every payment into a separate savings account. Ask a tax preparer what share fits you and when estimated payments are due.', 'Plan ahead'),
+      sT('Keep it', 'Keep your records and receipts in one place. Ask your tax preparer how long to hold on to them. This is general information to help you get organized, not tax advice.', 'Records'),
+      Object.assign(sF('Start your Costs list', 'Costs is free on every Vono plan. Add what you spend as you go and export it when your preparer asks.'), { action:'costs' })
     ]}
   ]
 };

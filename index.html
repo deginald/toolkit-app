@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-11-04T09-00-00Z">
+<meta name="app-build" content="2026-11-05T09-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -194,6 +194,14 @@
   .mw-grid{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; }
   .mw-grid .mw-ph{ position:relative; aspect-ratio:1; border-radius:10px; overflow:hidden; background:var(--surface); }
   .mw-grid img{ width:100%; height:100%; object-fit:cover; display:block; cursor:pointer; }
+  .mw-slots{ display:grid; gap:6px; }
+  .mw-slot{ position:relative; aspect-ratio:1; border-radius:12px; border:1.5px dashed var(--line); background:transparent center/cover no-repeat; color:var(--muted); font-family:inherit; font-size:11.5px; font-weight:700; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:pointer; padding:0; overflow:hidden; }
+  .mw-slot.done{ border:1px solid var(--line); color:#F5F0E6; }
+  .mw-slot:disabled{ opacity:.5; cursor:default; }
+  .mw-slot .mw-plus{ font-size:20px; line-height:1; color:var(--brass); }
+  .mw-slot .mw-sl{ position:relative; text-shadow:0 1px 3px #000; }
+  .mw-slot:not(.done) .mw-sl{ text-shadow:none; }
+  .mw-grid .mw-cap{ position:absolute; left:4px; bottom:4px; font-size:10.5px; font-weight:700; background:rgba(0,0,0,.6); color:#fff; padding:2px 6px; border-radius:6px; }
   .mw-grid button.mw-x{ position:absolute; top:4px; right:4px; width:26px; height:26px; border-radius:50%; border:0; background:rgba(0,0,0,0.6); color:#fff; font-size:16px; line-height:1; cursor:pointer; }
   .shome-step{ display:flex; align-items:center; gap:12px; }
   .shome-step-dot{ width:30px; height:30px; border-radius:50%; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:var(--muted); flex:none; }
@@ -725,6 +733,8 @@
   .checkpoint-photo-wrap{ position:relative; width:72px; height:72px; flex-shrink:0; }
   .checkpoint-photo{ width:100%; height:100%; border-radius:9px; object-fit:cover; display:block; cursor:pointer; background:var(--line); }
   .checkpoint-photo-remove{ position:absolute; top:-7px; right:-7px; width:24px; height:24px; border-radius:50%; border:none; background:var(--ink); color:var(--surface); font-size:15px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(0,0,0,0.3); }
+  .checkpoint-photo-wrap.lp-school .checkpoint-photo{ outline:2px solid var(--brass); outline-offset:-2px; }
+  .lp-first{ position:absolute; top:-7px; left:-7px; width:22px; height:22px; border-radius:50%; border:none; background:var(--brass); color:#1a1405; font-size:12px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
   .listing-photo-move-btn{ position:absolute; bottom:-7px; width:22px; height:22px; border-radius:50%; border:none; background:var(--ink); color:var(--surface); font-size:12px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(0,0,0,0.3); }
   .listing-photo-move-prev{ left:-7px; }
   .listing-photo-move-next{ right:-7px; }
@@ -1546,6 +1556,7 @@
             <button type="button" class="mode-btn" data-cat="esth" style="display:none">Consult &amp; Safety</button>
             <button type="button" class="mode-btn" data-cat="muat" style="display:none">Techniques</button>
             <button type="button" class="mode-btn" data-cat="mua" style="display:none">Consult &amp; Safety</button>
+            <button type="button" class="mode-btn" data-cat="biz">Business</button>
           </div>
           <div class="tech-list" id="tech-list"></div>
           <button type="button" class="shome-tile" id="btn-coach-exam" style="width:100%; margin-top:6px;"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><div><strong>Exam prep</strong><span>Practice 10 board-style questions</span></div></button>
@@ -1746,6 +1757,7 @@
 
             <!-- HOME: link, add, appointments, set-up rows -->
             <div class="bk-pane show" data-bk="home" id="bk-appts-section" style="gap:16px;">
+              <div id="bk-license-card" class="card tip" hidden style="gap:8px;"></div>
               <div id="bk-checklist" class="card" hidden style="gap:12px; border-color:var(--brass);"></div>
               <div class="bk-today bk-onlyon" id="bk-today">
                 <div class="bk-today-top"><strong id="bk-today-title">Today</strong><span id="bk-today-amt"></span></div>
@@ -3092,6 +3104,7 @@
         <p class="ac-glabel">You</p>
         <div class="ac-group">
           <button type="button" class="ac-row" data-acct-open="profile"><span class="ac-t"><b>Profile</b><span id="acct-sub-profile">Name, status, license number</span></span><svg class="ac-chev" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="ac-row" data-acct-open="license" id="acct-row-license" hidden><span class="ac-t"><b>License &amp; renewal</b><span id="acct-sub-license">&nbsp;</span></span><span class="ac-pill" id="acct-pill-license"></span><svg class="ac-chev" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <button type="button" class="ac-row" data-acct-open="listing"><span class="ac-t"><b>Public listing</b><span>Your Find a Pro profile</span></span><span class="ac-pill" id="acct-pill-listing"></span><svg class="ac-chev" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         </div>
         <p class="ac-glabel" id="acct-business-label">Business</p>
@@ -3243,6 +3256,7 @@
           <div class="checkpoint-photo-grid" id="listing-photos-grid" style="justify-content:flex-start;"></div>
           <input type="file" accept="image/*" multiple id="listing-photos-input" style="display:none;">
           <button class="btn btn-outline" id="btn-listing-add-photos" type="button" style="margin-top:10px; width:100%;">Add photos</button>
+          <p class="foot-note-small" id="listing-photos-school-note" hidden></p>
           <p class="foot-note-small" id="listing-photos-status">&nbsp;</p>
           <p class="foot-note-small" id="listing-photos-over" hidden>Only the first 5 photos show on a Basic listing. A Vono plan shows them all.</p>
         </div>
@@ -3251,6 +3265,34 @@
         <a class="btn btn-outline" id="btn-view-listing" style="display:none; text-align:center; text-decoration:none;" target="_blank" rel="noopener">View my public listing</a>
       </div>
 </div>
+      <div class="ac-pane" data-acct-pane="license">
+        <div class="ac-card">
+          <p class="screen-sub" id="lic-number-line" style="margin:0;"></p>
+          <div class="field"><label for="lic-expires">License expires on</label><div class="input-row"><input id="lic-expires" type="date"></div></div>
+        </div>
+        <div class="ac-card">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;"><b>Continuing education</b><span id="ce-summary" style="font-size:13px; color:var(--muted);"></span></div>
+          <div class="shome-bar"><span id="ce-bar" style="width:0%;"></span></div>
+          <div class="field"><label for="ce-required">Hours required this renewal</label><div class="input-row"><input id="ce-required" type="text" inputmode="decimal" placeholder="e.g. 8"></div></div>
+          <div id="ce-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+          <div id="ce-add" style="display:flex; flex-direction:column; gap:10px; border-top:1px solid var(--line); padding-top:12px;">
+            <div class="field"><label for="ce-name">Course</label><div class="input-row"><input id="ce-name" type="text" placeholder="e.g. Infection control" autocomplete="off"></div></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div class="field"><label for="ce-hours">Hours</label><div class="input-row"><input id="ce-hours" type="text" inputmode="decimal" placeholder="2"></div></div>
+              <div class="field"><label for="ce-date">Date taken</label><div class="input-row"><input id="ce-date" type="date"></div></div>
+            </div>
+            <button type="button" class="btn btn-outline" id="btn-ce-add">+ Log this course</button>
+            <p class="foot-note-small" id="ce-status" style="margin:0;">&nbsp;</p>
+          </div>
+        </div>
+        <div class="ac-card">
+          <b>Remind me</b>
+          <div id="lic-chips" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+          <span class="foot-note-small" style="margin:0;" id="lic-push-note">By push notification. Turn on notifications under Notifications if you haven't.</span>
+        </div>
+        <button type="button" class="btn btn-primary" id="btn-lic-save">Save</button>
+        <p class="foot-note-small" id="lic-status" style="margin:0;">You enter your own dates and hours. Vono doesn't look up your state's rules.</p>
+      </div>
       <div class="ac-pane" data-acct-pane="plan">
       <div id="account-plan-section" style="display:flex; flex-direction:column; gap:10px;">
         <p class="screen-sub" id="account-plan-status">&nbsp;</p>
@@ -3411,7 +3453,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="refreshers.js?v=2026-11-04T09-00-00Z"></script><script src="exam-bank.js?v=2026-11-04T09-00-00Z"></script><script>
+<script src="refreshers.js?v=2026-11-05T09-00-00Z"></script><script src="exam-bank.js?v=2026-11-05T09-00-00Z"></script><script>
 /* =========================================================
    SUPABASE SETUP
    Fill these in once the Supabase project exists: Project URL
@@ -3792,6 +3834,11 @@ function defaultProfile(name){
     notifyRebookNudges: true,
     notifyApptReminders: true,
     apptReminderHours: 24,
+    licenseExpires: '',
+    ceRequired: 0,
+    ceLog: [],
+    ceCycleStart: '',
+    licenseRemindDays: [90, 60, 30, 7],
     timezone: '',
     subscriptionStatus: 'none',
     planTier: null,
@@ -3875,6 +3922,11 @@ async function persistProfile(fields){
   if (fields.notifyRebookNudges !== undefined) row.notify_rebook_nudges = fields.notifyRebookNudges;
   if (fields.notifyApptReminders !== undefined) row.notify_appt_reminders = fields.notifyApptReminders;
   if (fields.apptReminderHours !== undefined) row.appt_reminder_hours = fields.apptReminderHours;
+  if (fields.licenseExpires !== undefined) row.license_expires = fields.licenseExpires || null;
+  if (fields.ceRequired !== undefined) row.ce_required = fields.ceRequired || null;
+  if (fields.ceLog !== undefined) row.ce_log = fields.ceLog;
+  if (fields.ceCycleStart !== undefined) row.ce_cycle_start = fields.ceCycleStart || null;
+  if (fields.licenseRemindDays !== undefined) row.license_remind_days = fields.licenseRemindDays;
   if (fields.timezone !== undefined) row.timezone = fields.timezone;
   if (fields.examPrep !== undefined) row.exam_prep = fields.examPrep;
   try{
@@ -4298,6 +4350,7 @@ function showTab(name){
   if (name === 'booking' || name === 'business') applyAccessGating();
   if (name === 'booking'){
     if (window.initBookingTab) window.initBookingTab();
+    if (window.updateLicenseCard) window.updateLicenseCard();
   }
   if (name === 'business' && hasActiveAccess()) showBusinessSubtab('home');
   if (name === 'business' && !isStudent() && !hasActiveAccess() && window.refreshFreeCostsRow) window.refreshFreeCostsRow();
@@ -5025,13 +5078,83 @@ function showTab(name){
      --------------------------------------------------------- */
   const WORK_LIMIT = 14;
   function consentKey(){ return 'vonoWorkConsent_' + (profileCode || ''); }
+  function guideSeenKey(){ return 'vonoPhotoGuide_' + (profileCode || ''); }
+  // Photo guide wording. One entry per field; anything else gets "default". Tip order is the same
+  // everywhere: light, background, angles, finish, phone, permission.
+  const PG_TIPS_COMMON = {
+    light: ['Face a window', 'Soft daylight on the work. No flash, no overhead shop lights, and no bright window behind your client.'],
+    bg: ['Plain background', 'A clean wall or a closed door. Move cups, capes and product out of the frame.'],
+    phone: ['Phone at eye level', 'Hold it level with the work, about an arm and a half away, and turn it upright. Wipe the lens first.'],
+    ask: ['Ask first', 'Get a yes from your client every time. Faces are optional. Back, side and close-up shots work well.']
+  };
+  const PHOTO_GUIDE = {
+    'Barber': { eyebrow:'Barbering', title:'Photos clients want to book', noun:'haircut', shots:['Front','Left','Right','Back','Top'],
+      angles:['Five angles','Front, both sides, back, and top. The fade blend and the neckline are what other barbers and clients look at first.'],
+      finish:['Finish it first','Brush off loose hair, clean the neckline, and style it dry. Shoot after the last touch-up, not before.'],
+      dont:'Filters, mirrors, cluttered counters.' },
+    'Cosmetologist': { eyebrow:'Cosmetology', title:'Photos clients want to book', noun:'style', shots:['Front','Side','Back','Close-up'],
+      angles:['Four views','Front, side, back, and a close-up of the color or texture. Shoot hair down first, then up if it is an updo.'],
+      finish:['Finish it first','Style it fully and brush out tangles. For color, shoot in daylight, since shop lights shift the tone.'],
+      dont:'Filters that change the color, wet hair, cluttered stations.' },
+    'Nail Tech': { eyebrow:'Nails', title:'Photos clients want to book', noun:'set', shots:['Top of hand','Side','Close-up','Full set'],
+      angles:['Four shots','The whole hand from above, the side profile for length and shape, one close-up, then all ten nails together.'],
+      finish:['Clean up first','Wipe away product and cuticle oil, and push back the skin. Shoot after you have buffed and topcoated.'],
+      dont:'Fingers curled, busy tablecloths, heavy filters.' },
+    'Braider': { eyebrow:'Braiding', title:'Photos clients want to book', noun:'style', shots:['Front','Side','Back','Parts'],
+      angles:['Four views','Front, side, back, and a close-up of the parts and the base so your neatness shows.'],
+      finish:['Finish it first','Seal the ends, tidy the edges, and shake the style out so it falls naturally before you shoot.'],
+      dont:'Harsh shadows on the parts, mirrors, cluttered backgrounds.' },
+    'Esthetician': { eyebrow:'Esthetics', title:'Photos clients want to book', noun:'treatment', shots:['Before','After','Close-up'],
+      angles:['Same angle, same light','Take the before and the after from the same spot with the same light so the change is honest. One close-up of the skin.'],
+      finish:['Bare skin, no filters','Remove products that add shine and skip filters. Clients trust honest results more than retouched ones.'],
+      dont:'Filters, smoothing apps, different lighting before and after.' },
+    'MUA': { eyebrow:'Makeup', title:'Photos clients want to book', noun:'look', shots:['Front','Side','Eyes','Lips'],
+      angles:['Four shots','Front, a three-quarter side view, a close-up of the eyes, and a close-up of the lips.'],
+      finish:['Finish it first','Set the makeup and check for fallout under the eyes. Shoot in daylight, because ring lights hide blending.'],
+      dont:'Beauty filters, ring-light glare, colored room light.' },
+    'default': { eyebrow:'Your work', title:'Photos clients want to book', noun:'work', shots:['Setup','Result','Close-up'],
+      angles:['Two or three shots','One wide shot, one close-up of the finished work, and one of your setup if it helps.'],
+      finish:['Finish it first','Tidy up and put the last touches on before you shoot.'],
+      dont:'Filters, clutter, dim or colored light.' }
+  };
+  function guideFor(){ return PHOTO_GUIDE[currentCraft()] || PHOTO_GUIDE['default']; }
+  function guideTips(g){ return [PG_TIPS_COMMON.light, PG_TIPS_COMMON.bg, g.angles, g.finish, PG_TIPS_COMMON.phone, PG_TIPS_COMMON.ask]; }
+  function renderPhotoGuide(thenAdd){
+    const g = guideFor();
+    openSub('Photo guide', ()=>{ openSub('My work', ()=>{ closeSub(); refreshExtras(); }); renderWork(); });
+    main.innerHTML = `
+      <div><p class="eyebrow-mini">${esc(g.eyebrow)}</p><h2 class="screen-title" style="margin:0;">${esc(g.title)}</h2></div>
+      <div id="pg-tips" style="display:flex; flex-direction:column; gap:14px;">${guideTips(g).map((t, i)=> `
+        <div style="display:flex; gap:12px; align-items:flex-start;"><span style="flex:none; width:26px; height:26px; border-radius:50%; background:var(--brass-tint); color:var(--brass); font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center;">${i + 1}</span>
+        <div><b style="font-size:14.5px;">${esc(t[0])}</b><div style="font-size:13px; color:var(--muted); line-height:1.45; margin-top:2px;">${esc(t[1])}</div></div></div>`).join('')}</div>
+      <div style="display:flex; gap:10px;">
+        <div class="card" style="flex:1; gap:6px; padding:10px;"><b style="color:var(--good); font-size:12px; letter-spacing:.06em;">DO</b><span style="font-size:12.5px; line-height:1.4;">Even light, a straight angle, finished ${esc(g.noun)}.</span></div>
+        <div class="card" style="flex:1; gap:6px; padding:10px;"><b style="color:var(--behind); font-size:12px; letter-spacing:.06em;">DON'T</b><span style="font-size:12.5px; line-height:1.4;">${esc(g.dont)}</span></div>
+      </div>
+      <button type="button" class="btn btn-primary" id="pg-done">${thenAdd ? 'Got it, add photos' : 'Back to My work'}</button>`;
+    main.querySelector('#pg-done').addEventListener('click', ()=>{
+      try{ localStorage.setItem(guideSeenKey(), '1'); }catch(e){}
+      openSub('My work', ()=>{ closeSub(); refreshExtras(); });
+      renderWork();
+      if (thenAdd){ const btn = main.querySelector('#mw-add'); if (btn && !btn.disabled) btn.click(); }
+    });
+  }
   function renderWork(statusMsg){
     const photos = Array.isArray(profile.portfolioPhotos) ? profile.portfolioPhotos : [];
+    const g = guideFor();
     let consented = false; try{ consented = localStorage.getItem(consentKey()) === '1'; }catch(e){}
+    let seen = false; try{ seen = localStorage.getItem(guideSeenKey()) === '1'; }catch(e){}
     const full = photos.length >= WORK_LIMIT;
+    const slotPhoto = (label)=>{ for (let i = photos.length - 1; i >= 0; i--){ if (photos[i].label === label) return photos[i]; } return null; };
+    const slots = g.shots.map((l, i)=>{
+      const p = slotPhoto(l);
+      return `<button type="button" class="mw-slot${p ? ' done' : ''}" data-slot="${esc(l)}" ${(!consented || full) ? 'disabled' : ''} aria-label="${p ? 'Replace' : 'Add'} ${esc(l)} photo"${p ? ` style="background-image:url('${esc(p.url)}');"` : ''}>${p ? '' : '<span class="mw-plus">+</span>'}<span class="mw-sl">${esc(l)}</span></button>`;
+    }).join('');
     main.innerHTML = `
       <div><p class="eyebrow-mini">Portfolio</p><h2 class="screen-title" style="margin:0;">My work</h2>
-      <p class="screen-sub" style="margin:6px 0 0;">Save photos of your best work while you're in school. When you go pro they're ready for your Find a Pro listing.</p></div>
+      <p class="screen-sub" style="margin:6px 0 0;">Photos you add here come with you when you go pro, ready for your Find a Pro listing.</p></div>
+      <div class="card tip" style="gap:8px;"><b style="font-size:15px;">Shoot it like a pro</b><span style="font-size:13px; line-height:1.45;">Window light, a plain background, a few angles. Two minutes per client.</span><button type="button" class="btn btn-outline" id="mw-guide" style="align-self:flex-start; padding:8px 14px; font-size:13.5px;">See the photo guide</button></div>
+      <div class="card" style="gap:10px;"><b style="font-size:14.5px;">Shots for a ${esc(g.noun)}</b><div class="mw-slots" style="grid-template-columns:repeat(${g.shots.length}, minmax(0,1fr));">${slots}</div><span class="foot-note-small" style="margin:0;">Tap a slot to take or choose that shot. Skip any you don't need.</span></div>
       <div class="card" style="gap:10px;">
         <label style="display:flex; gap:10px; align-items:flex-start; font-size:14px; line-height:1.4; cursor:pointer;">
           <input type="checkbox" id="mw-consent" ${consented ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--brass); flex:none; margin-top:1px;">
@@ -5041,15 +5164,27 @@ function showTab(name){
         <button type="button" class="btn btn-primary" id="mw-add" ${(!consented || full) ? 'disabled' : ''}>${full ? 'Limit reached (' + WORK_LIMIT + ' photos)' : 'Add photos'}</button>
         <p class="foot-note-small" id="mw-status" style="margin:0;">${esc(statusMsg || (photos.length + ' of ' + WORK_LIMIT + ' photos'))}</p>
       </div>
-      ${photos.length ? `<div class="mw-grid" id="mw-grid">${photos.map((p, i)=> `<div class="mw-ph"><img src="${esc(p.url)}" alt="My work, photo ${i + 1}" data-i="${i}"><button type="button" class="mw-x" data-rm="${i}" aria-label="Remove photo ${i + 1}">&times;</button></div>`).join('')}</div>` : '<p class="screen-sub" style="text-align:center;">No photos yet. Start with the one you\'re proudest of.</p>'}
+      ${photos.length ? `<div class="mw-grid" id="mw-grid">${photos.map((p, i)=> `<div class="mw-ph"><img src="${esc(p.url)}" alt="My work, photo ${i + 1}${p.label ? ', ' + esc(p.label) : ''}" data-i="${i}">${p.label ? `<span class="mw-cap">${esc(p.label)}</span>` : ''}<button type="button" class="mw-x" data-rm="${i}" aria-label="Remove photo ${i + 1}">&times;</button></div>`).join('')}</div>` : ''}
       <p class="foot-note-small">Only the first 5 show on a free listing. A Vono plan shows them all. Photos here are separate from client photos in Passport.</p>`;
+    let pendingLabel = '';
+    const askGuideFirst = ()=> !seen && !photos.length;
+    main.querySelector('#mw-guide').addEventListener('click', ()=> renderPhotoGuide(false));
     main.querySelector('#mw-consent').addEventListener('change', function(){
       try{ localStorage.setItem(consentKey(), this.checked ? '1' : '0'); }catch(e){}
-      main.querySelector('#mw-add').disabled = !this.checked || full;
+      renderWork(statusMsg);
     });
-    main.querySelector('#mw-add').addEventListener('click', ()=> main.querySelector('#mw-input').click());
+    main.querySelector('#mw-add').addEventListener('click', ()=>{
+      if (askGuideFirst()){ renderPhotoGuide(true); return; }
+      pendingLabel = ''; main.querySelector('#mw-input').click();
+    });
+    main.querySelectorAll('[data-slot]').forEach(b=> b.addEventListener('click', ()=>{
+      if (askGuideFirst()){ renderPhotoGuide(true); return; }
+      pendingLabel = b.dataset.slot; main.querySelector('#mw-input').click();
+    }));
     main.querySelector('#mw-input').addEventListener('change', async function(){
-      const files = Array.from(this.files || []); this.value = '';
+      const label = pendingLabel; pendingLabel = '';
+      let files = Array.from(this.files || []); this.value = '';
+      if (label) files = files.slice(0, 1);
       if (!files.length || !profileCode) return;
       const st = main.querySelector('#mw-status');
       if (!dbAvailable){ st.textContent = "Live saving isn't connected right now."; return; }
@@ -5065,7 +5200,10 @@ function showTab(name){
           const { error } = await supabaseClient.storage.from('barber-photos').upload(path, f);
           if (error) throw error;
           const { data } = supabaseClient.storage.from('barber-photos').getPublicUrl(path);
-          up.push({ url: data.publicUrl, path });
+          const rec = { url: data.publicUrl, path };
+          if (label) rec.label = label;
+          if (isStudent()) rec.school = true;
+          up.push(rec);
         }catch(err){ console.warn('work photo upload failed', err); st.textContent = "Couldn't upload one of those photos: " + ((err && err.message) || 'unknown error') + '.'; }
       }
       if (!up.length) return;
@@ -5185,10 +5323,12 @@ function showTab(name){
         <div><h2 class="screen-title" style="margin:0;">Your license number</h2>
         <p class="screen-sub" style="margin:6px 0 0;">Find a Pro needs it before your listing can go live. Got it already? Add it now. Still waiting on it? Skip, and add it any time in Account.</p></div>
         <div class="field"><label for="gw-license">License number</label><div class="input-row"><input id="gw-license" type="text" placeholder="e.g. BB-123456" autocomplete="off" value="${esc(gw.license)}"></div></div>
+        <div class="field"><label for="gw-expires">License expires on (optional)</label><div class="input-row"><input id="gw-expires" type="date" value="${esc(gw.expires || '')}"></div></div>
+        <p class="foot-note-small" style="margin:0;">With the date, Vono reminds you before it's time to renew, and you can log continuing education hours too.</p>
         <button type="button" class="btn btn-primary" id="gw-next">Continue</button>
         <button type="button" class="btn btn-ghost" id="gw-skip">Skip for now</button>`;
-      main.querySelector('#gw-next').addEventListener('click', ()=>{ gw.license = main.querySelector('#gw-license').value.trim(); gw.step = 3; renderGw(); });
-      main.querySelector('#gw-skip').addEventListener('click', ()=>{ gw.license = ''; gw.step = 3; renderGw(); });
+      main.querySelector('#gw-next').addEventListener('click', ()=>{ gw.license = main.querySelector('#gw-license').value.trim(); gw.expires = main.querySelector('#gw-expires').value || ''; gw.step = 3; renderGw(); });
+      main.querySelector('#gw-skip').addEventListener('click', ()=>{ gw.license = ''; gw.expires = ''; gw.step = 3; renderGw(); });
     } else if (gw.step === 3){
       const list = SVC_SUGGEST[gw.title] || [];
       main.innerHTML = `${gwProgress(3)}
@@ -5277,6 +5417,8 @@ function showTab(name){
         profile.trialSource = r.trial_source || null;
         profile.gradTrialUsedAt = r.grad_trial_used_at || null;
       }
+      // License expiry date, if given (saved after the switch; a failure here never blocks graduating).
+      if (gw.expires){ try{ const lr = await persistProfile({ licenseExpires: gw.expires }); if (lr && lr.ok) profile.licenseExpires = gw.expires; }catch(e){ console.warn('license expiry save failed', e); } }
       // Starter services (saved after the switch so a failed switch leaves nothing half-done).
       const list = SVC_SUGGEST[title] || [];
       const picked = Object.keys(gw.picks || {}).filter(i=> gw.picks[i].on && list[i]);
@@ -5302,7 +5444,7 @@ function showTab(name){
   }
   window.openGradWizard = function(title){
     if (!profile || !isStudent()) return;
-    gw = { step:1, title: (EXAM_KEYS[title] ? title : defaultGradTitle()), license:'', picks:{}, saved:false, trial: trialEligible() };
+    gw = { step:1, title: (EXAM_KEYS[title] ? title : defaultGradTitle()), license:'', expires:'', picks:{}, saved:false, trial: trialEligible() };
     openSub('Go pro', gwBack);
     renderGw();
   };
@@ -6265,6 +6407,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 (function(){
   const root = document.getElementById('tab-coach');
   // The wording for every refresher lives in refreshers.js (loaded before this script).
+  const esc = (v)=> (v==null?'':String(v)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const COACH_TECHNIQUES = window.VONO_REFRESHERS || { cuts:[], chemical:[], safety:[], massage:[], msafety:[], nailt:[], nail:[], braidt:[], braid:[], estht:[], esth:[], muat:[], mua:[] };
   const REFRESHERS_MISSING = !window.VONO_REFRESHERS;
   const LEDGER_MAP = { 'skin-fade':'skin-fade', 'womens-layers':'womens-layered', 'beard-trim':'beard-trim', 'relaxer':'relaxer', 'color':'color', 'perm':'perm', 'bleach':'bleach', 'exposure-incident':'exposure' };
@@ -6281,6 +6424,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     estht: svg('<path d="M12 3.5c.7 4.2 1.8 5.3 6 6-4.2.7-5.3 1.8-6 6-.7-4.2-1.8-5.3-6-6 4.2-.7 5.3-1.8 6-6Z" '+ST+'/><path d="M18.5 16.5v3M17 18h3" '+ST+'/>'),
     muat: svg('<path d="M15.5 3.5 20.5 8.5 11 18l-5 .5.5-5 9-10Z" '+ST+'/><path d="M5.5 21c1.2-.3 2.2-1 2.8-2" '+ST+'/>')
   };
+  ICONS.biz = svg('<path d="M12 3v18M16 7c-1-1.5-2.5-2-4-2-2.5 0-4 1.2-4 3s1.5 2.5 4 3 4 1.2 4 3-1.5 3-4 3c-1.8 0-3.3-.6-4.3-2" '+ST+'/>');
   ICONS.msafety = ICONS.nail = ICONS.braid = ICONS.esth = ICONS.mua = ICONS.safety;
   const CATEGORY_INTRO = {
     cuts:'Cuts to practice and review, one step at a time.',
@@ -6295,7 +6439,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     estht:'Facials, waxing and extractions, step by step.',
     esth:'Intake, contraindications, sanitation and patch tests.',
     muat:'Skin prep, eyes, lashes and finishing, step by step.',
-    mua:'Allergy checks, kit hygiene and reaction response.'
+    mua:'Allergy checks, kit hygiene and reaction response.',
+    biz:'Pricing, how you work in a shop, and what to keep for taxes. General information, not legal or tax advice.'
   };
   const CRAFT_EYEBROW = { 'Barber':'Barber refreshers', 'Cosmetologist':'Cosmetology refreshers', 'Nail Tech':'Nail tech refreshers', 'Braider':'Braiding refreshers', 'Massage Therapist':'Massage refreshers', 'Esthetician':'Esthetics refreshers', 'MUA':'Makeup refreshers' };
   // Rough time to read through a refresher: about 40 seconds a step, a minute for a checklist.
@@ -6395,8 +6540,40 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
           <button class="btn btn-primary" id="timer-toggle">${t.running ? 'Pause' : (t.mode === 'up' ? 'Start stopwatch' : 'Start timer')}</button>
         </div></div>`;
     }
+    if (step.kind === 'calc'){
+      const c = cstate.calc || (cstate.calc = { rate:'30', mins:'45', sup:'2', ovh:'4.50' });
+      const inp = (id, lab, val, mode)=> `<div class="field" style="margin:0;"><label for="${id}">${lab}</label><div class="input-row"><input id="${id}" type="text" inputmode="${mode || 'decimal'}" value="${esc(val)}"></div></div>`;
+      html += `<div class="card" style="gap:10px;" id="bz-calc">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">${inp('bz-rate','Pay you want per hour ($)', c.rate)}${inp('bz-mins','Minutes it takes', c.mins, 'numeric')}${inp('bz-sup','Supplies used ($)', c.sup)}${inp('bz-ovh','Share of your costs ($)', c.ovh)}</div>
+        <div style="display:flex; justify-content:space-between; font-size:14px;"><span>Your time</span><b id="bz-time">$0.00</b></div>
+        <div style="display:flex; justify-content:space-between; font-size:14px;"><span>Supplies and your share of costs</span><b id="bz-extra">$0.00</b></div>
+        <div style="display:flex; justify-content:space-between; font-size:15px; border-top:1px solid var(--line); padding-top:8px;"><b>Lowest price that works</b><b id="bz-total" style="color:var(--brass);">$0.00</b></div>
+        <span class="foot-note-small" style="margin:0;">Your share of costs: add up a month of rent or booth fee, insurance, license and tools, then divide by the number of services you do in a month.</span></div>`;
+    }
+    if (step.action){
+      const lab = { costs:'Open Costs', booking:'Open Services', rentcomm:'Open Rent and commission' }[step.action] || 'Open';
+      html += isStudent() ? `<p class="foot-note-small" style="margin:6px 0 0;">${step.action === 'booking' ? 'You will find Services in the Booking tab once you go pro.' : 'You will find this in the Business tab once you go pro.'}</p>` : `<button type="button" class="btn btn-primary" id="step-action" data-act="${step.action}" style="margin-top:6px;">${lab}</button>`;
+    }
     html += `</div>`;
     holder.innerHTML = html;
+    if (step.kind === 'calc'){
+      const num = v=> { const n = parseFloat(String(v).replace(/[^0-9.]/g, '')); return isFinite(n) ? n : 0; };
+      const money = n=> '$' + n.toFixed(2);
+      const upd = ()=>{
+        const c = cstate.calc;
+        const t = num(c.rate) * (num(c.mins) / 60), x = num(c.sup) + num(c.ovh);
+        holder.querySelector('#bz-time').textContent = money(t); holder.querySelector('#bz-extra').textContent = money(x); holder.querySelector('#bz-total').textContent = money(t + x);
+      };
+      [['bz-rate','rate'],['bz-mins','mins'],['bz-sup','sup'],['bz-ovh','ovh']].forEach(p=> holder.querySelector('#' + p[0]).addEventListener('input', function(){ cstate.calc[p[1]] = this.value; upd(); }));
+      upd();
+    }
+    const actBtn = holder.querySelector('#step-action');
+    if (actBtn) actBtn.addEventListener('click', ()=>{
+      const a = actBtn.dataset.act;
+      stopElapsed(); showScreen('picker');
+      if (a === 'costs' || a === 'rentcomm'){ showTab('business'); setTimeout(()=>{ const free = document.getElementById('btn-free-costs'); const r = (a === 'costs' && free && free.offsetParent !== null) ? free : document.querySelector('[data-biz-open="' + (a === 'costs' ? 'costs' : 'rentcomm') + '"]'); if (r && r.offsetParent !== null) r.click(); }, 60); }
+      else if (a === 'booking'){ showTab('booking'); setTimeout(()=>{ const r = document.querySelector('[data-bk-open="services"]'); if (r) r.click(); }, 60); }
+    });
     if (step.kind === 'checklist'){
       holder.querySelectorAll('.check-item').forEach(el=>{
         el.querySelector('input').addEventListener('change', ()=>{
@@ -6571,10 +6748,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if (!walking) window.initCoachTab();
   };
   // Which refresher lists each craft sees. Crafts with one list get no toggle bar.
-  const CRAFT_CATS = { 'Massage Therapist':['massage','msafety'], 'Nail Tech':['nailt','nail'], 'Braider':['braidt','braid'], 'Esthetician':['estht','esth'], 'MUA':['muat','mua'] };
+  const CRAFT_CATS = { 'Massage Therapist':['massage','msafety','biz'], 'Nail Tech':['nailt','nail','biz'], 'Braider':['braidt','braid','biz'], 'Esthetician':['estht','esth','biz'], 'MUA':['muat','mua','biz'] };
   window.initCoachTab = function(){
     const craft = (typeof currentCraft === 'function') ? currentCraft() : '';
-    const cats = CRAFT_CATS[craft] || ['cuts','chemical','safety'];
+    const cats = CRAFT_CATS[craft] || ['cuts','chemical','safety','biz'];
     root.querySelectorAll('.mode-btn[data-cat]').forEach(b=>{ b.style.display = cats.includes(b.dataset.cat) ? '' : 'none'; });
     const bar = root.querySelector('.mode-toggle');
     if (bar) bar.style.display = cats.length > 1 ? '' : 'none';
@@ -14149,6 +14326,11 @@ function applyProfileRow(data){
   profile.notifyRebookNudges = data.notify_rebook_nudges !== false;
   profile.notifyApptReminders = data.notify_appt_reminders !== false;
   profile.apptReminderHours = Number(data.appt_reminder_hours) || 24;
+  profile.licenseExpires = data.license_expires ? String(data.license_expires).slice(0, 10) : '';
+  profile.ceRequired = Number(data.ce_required) || 0;
+  profile.ceLog = Array.isArray(data.ce_log) ? data.ce_log : [];
+  profile.ceCycleStart = data.ce_cycle_start ? String(data.ce_cycle_start).slice(0, 10) : '';
+  profile.licenseRemindDays = Array.isArray(data.license_remind_days) ? data.license_remind_days.map(Number).filter(n=> n > 0) : [90, 60, 30, 7];
   profile.subscriptionStatus = data.subscription_status || 'none';
   profile.planTier = data.plan_tier || null;
   profile.trialEndsAt = data.trial_ends_at || null;
@@ -15086,8 +15268,9 @@ function renderListingPhotos(){
   const grid = document.getElementById('listing-photos-grid');
   const photos = Array.isArray(profile.portfolioPhotos) ? profile.portfolioPhotos : [];
   grid.innerHTML = photos.map((p, idx) => `
-    <div class="checkpoint-photo-wrap">
+    <div class="checkpoint-photo-wrap${p.school ? ' lp-school' : ''}">
       <img class="checkpoint-photo" src="${p.url}" alt="Portfolio photo ${idx+1}">
+      ${idx > 0 ? `<button type="button" class="lp-first" data-first-listing-photo="${idx}" aria-label="Show this photo first">&#9733;</button>` : ''}
       <button type="button" class="checkpoint-photo-remove" data-remove-listing-photo="${idx}" aria-label="Remove this photo">&times;</button>
       <button type="button" class="listing-photo-move-btn listing-photo-move-prev" data-move-listing-photo="${idx}" data-move-dir="-1" aria-label="Move this photo earlier"${idx===0 ? ' disabled' : ''}>&larr;</button>
       <button type="button" class="listing-photo-move-btn listing-photo-move-next" data-move-listing-photo="${idx}" data-move-dir="1" aria-label="Move this photo later"${idx===photos.length-1 ? ' disabled' : ''}>&rarr;</button>
@@ -15106,6 +15289,20 @@ function renderListingPhotos(){
       profile.portfolioPhotos = photos;
       const result = await persistProfile({ portfolioPhotos: photos });
       statusEl.textContent = (result && result.ok) ? 'Photo removed.' : ("Couldn't save: " + ((result && result.message) || 'try again.'));
+      renderListingPhotos();
+    });
+  });
+  grid.querySelectorAll('[data-first-listing-photo]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const idx = parseInt(btn.dataset.firstListingPhoto, 10);
+      const photos = (profile.portfolioPhotos || []).slice();
+      if (idx <= 0 || idx >= photos.length) return;
+      photos.unshift(photos.splice(idx, 1)[0]);
+      profile.portfolioPhotos = photos;
+      const statusEl = document.getElementById('listing-photos-status');
+      statusEl.textContent = 'Saving new order…';
+      const result = await persistProfile({ portfolioPhotos: photos });
+      statusEl.textContent = (result && result.ok) ? 'That photo now shows first.' : ("Couldn't save: " + ((result && result.message) || 'try again.'));
       renderListingPhotos();
     });
   });
@@ -15133,6 +15330,9 @@ function renderListingPhotos(){
   addBtn.disabled = atLimit;
   addBtn.textContent = atLimit ? `Limit reached (${limit} photos)` : 'Add photos';
   document.getElementById('listing-photos-hint').textContent = `(optional, up to ${limit})`;
+  const nSchool = photos.filter(p=> p && p.school).length;
+  const schoolNote = document.getElementById('listing-photos-school-note');
+  if (schoolNote){ schoolNote.hidden = !nSchool; schoolNote.textContent = nSchool + (nSchool === 1 ? ' photo came' : ' photos came') + ' with you from your school portfolio (outlined in gold). Tap the star on any photo to show it first.'; }
   const countEl = document.getElementById('listing-photos-count');
   if (countEl){
     countEl.textContent = hasActiveAccess() ? '' : ` (${Math.min(photos.length, limit)} of ${limit})`;
@@ -15221,13 +15421,143 @@ let acctPane = null;
 function acctScrollTop(){
   try{ window.scrollTo(0,0); const m = document.getElementById('acct-main'); if (m) m.scrollTop = 0; document.documentElement.scrollTop = 0; document.body.scrollTop = 0; }catch(e){}
 }
-const ACCT_TITLES = { profile:'Profile', listing:'Public listing', plan:'Subscription', notifications:'Notifications' };
+/* =========================================================
+   LICENSE & RENEWAL (professionals)
+   You type in your own expiry date and CE hours; nothing is looked up. A daily job
+   (send-license-reminders) sends the push reminders; this module is the Account pane,
+   the days-left row, and the card on Booking.
+   ========================================================= */
+(function(){
+  const REMIND_CHOICES = [90, 60, 30, 14, 7];
+  const lesc = v=> (v==null?'':String(v)).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function todayLocalISO(){ const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function dayNum(iso){ const p = String(iso).slice(0, 10).split('-').map(Number); return Math.round(Date.UTC(p[0], p[1] - 1, p[2]) / 86400000); }
+  function fmtDay(iso){ try{ const p = String(iso).slice(0, 10).split('-').map(Number); return new Date(Date.UTC(p[0], p[1] - 1, p[2])).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric', timeZone:'UTC' }); }catch(e){ return iso; } }
+  function fmtShort(iso){ try{ const p = String(iso).slice(0, 10).split('-').map(Number); return new Date(Date.UTC(p[0], p[1] - 1, p[2])).toLocaleDateString('en-US', { month:'short', day:'numeric', timeZone:'UTC' }); }catch(e){ return iso; } }
+  function daysLeft(){ if (!profile || !profile.licenseExpires) return null; return dayNum(profile.licenseExpires) - dayNum(todayLocalISO()); }
+  function cycleLog(){ const start = profile.ceCycleStart || ''; return (Array.isArray(profile.ceLog) ? profile.ceLog : []).filter(e=> !start || String(e.date || '') > start); }
+  function ceDone(){ return Math.round(cycleLog().reduce((n, e)=> n + (parseFloat(e.hours) || 0), 0) * 100) / 100; }
+  function num(v){ const n = parseFloat(String(v).replace(/[^0-9.]/g, '')); return isFinite(n) ? n : 0; }
+  function hrs(n){ return (Math.round(n * 100) / 100) + (n === 1 ? ' hr' : ' hrs'); }
+  function ceLine(){
+    const req = Number(profile.ceRequired) || 0; if (!req) return '';
+    const done = ceDone(), left = Math.max(0, Math.round((req - done) * 100) / 100);
+    return left ? ('CE: ' + done + ' of ' + req + ' hours done. ' + left + ' to go.') : ('CE: all ' + req + ' hours done.');
+  }
+  window.renderLicenseRow = function(){
+    const row = document.getElementById('acct-row-license'); if (!row || !profile) return;
+    row.hidden = isStudent();
+    if (isStudent()) return;
+    const d = daysLeft();
+    let sub = 'Add your expiry date and CE hours';
+    if (d !== null){
+      sub = (d < 0 ? 'Expired ' : 'Expires ') + fmtDay(profile.licenseExpires);
+      const req = Number(profile.ceRequired) || 0; if (req) sub += ' · CE ' + ceDone() + ' of ' + req + ' hours';
+    }
+    document.getElementById('acct-sub-license').textContent = sub;
+    if (d === null) setAcctPill('acct-pill-license', 'Set up', 'warn');
+    else if (d < 0) setAcctPill('acct-pill-license', 'Expired', 'warn');
+    else if (d <= 90) setAcctPill('acct-pill-license', d + (d === 1 ? ' day' : ' days'), 'warn');
+    else setAcctPill('acct-pill-license', '', '');
+  };
+  let chosen = [];
+  function renderChips(){
+    document.getElementById('lic-chips').innerHTML = REMIND_CHOICES.map(n=> `<button type="button" data-lc="${n}" aria-pressed="${chosen.includes(n)}" style="padding:8px 12px; border-radius:999px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; ${chosen.includes(n) ? 'background:var(--brass); color:#1a1405; border:1px solid var(--brass);' : 'background:transparent; color:var(--muted); border:1px solid var(--line);'}">${n} days</button>`).join('');
+    document.querySelectorAll('#lic-chips [data-lc]').forEach(b=> b.addEventListener('click', ()=>{
+      const n = parseInt(b.dataset.lc, 10); chosen = chosen.includes(n) ? chosen.filter(x=> x !== n) : chosen.concat(n).sort((a, b2)=> b2 - a); renderChips();
+    }));
+  }
+  function renderCeList(){
+    const items = cycleLog().slice().sort((a, b)=> String(b.date || '').localeCompare(String(a.date || '')));
+    const req = Number(profile.ceRequired) || 0, done = ceDone();
+    document.getElementById('ce-summary').textContent = req ? (done + ' of ' + req + ' hours') : (done ? (done + ' hours logged') : '');
+    document.getElementById('ce-bar').style.width = req ? Math.min(100, Math.round(done / req * 100)) + '%' : '0%';
+    document.getElementById('ce-list').innerHTML = items.length ? items.map(e=> `<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:14px;"><span>${lesc(e.name || 'Course')}<br><small style="color:var(--muted);">${e.date ? lesc(fmtDay(e.date)) : 'No date'}</small></span><span style="display:flex; align-items:center; gap:10px;"><b>${lesc(hrs(parseFloat(e.hours) || 0))}</b><button type="button" class="link-btn" data-ce-rm="${lesc(e.id)}" aria-label="Remove ${lesc(e.name || 'course')}" style="padding:0;">&times;</button></span></div>`).join('') : '<span class="foot-note-small" style="margin:0;">No courses logged yet.</span>';
+    document.querySelectorAll('#ce-list [data-ce-rm]').forEach(b=> b.addEventListener('click', async ()=>{
+      profile.ceLog = (profile.ceLog || []).filter(e=> e.id !== b.dataset.ceRm);
+      const r = await persistProfile({ ceLog: profile.ceLog });
+      document.getElementById('ce-status').textContent = r && r.ok ? 'Course removed.' : ("Couldn't save: " + ((r && r.message) || 'try again.'));
+      renderCeList(); window.renderLicenseRow(); window.updateLicenseCard();
+    }));
+  }
+  window.renderLicensePane = function(){
+    if (!profile) return;
+    document.getElementById('lic-number-line').textContent = profile.license ? ('License number: ' + profile.license + '. Change it under Profile.') : 'No license number saved yet. Add it under Profile.';
+    document.getElementById('lic-expires').value = profile.licenseExpires || '';
+    document.getElementById('ce-required').value = profile.ceRequired ? String(profile.ceRequired) : '';
+    document.getElementById('ce-date').value = todayLocalISO();
+    chosen = (Array.isArray(profile.licenseRemindDays) ? profile.licenseRemindDays : [90, 60, 30, 7]).filter(n=> REMIND_CHOICES.includes(n)).sort((a, b)=> b - a);
+    renderChips(); renderCeList();
+  };
+  document.getElementById('btn-lic-save').addEventListener('click', async ()=>{
+    const st = document.getElementById('lic-status');
+    const exp = document.getElementById('lic-expires').value || '';
+    const req = num(document.getElementById('ce-required').value);
+    const changedExp = exp !== (profile.licenseExpires || '');
+    profile.licenseExpires = exp; profile.ceRequired = req; profile.licenseRemindDays = chosen.slice();
+    st.textContent = 'Saving…';
+    const r = await persistProfile({ licenseExpires: exp, ceRequired: req, licenseRemindDays: chosen });
+    st.textContent = r && r.ok ? 'Saved.' : ("Couldn't save: " + ((r && r.message) || 'try again.'));
+    renderCeList(); window.renderLicenseRow(); window.updateLicenseCard();
+    void changedExp;
+  });
+  document.getElementById('btn-ce-add').addEventListener('click', async ()=>{
+    const st = document.getElementById('ce-status');
+    const name = document.getElementById('ce-name').value.trim();
+    const h = num(document.getElementById('ce-hours').value);
+    const date = document.getElementById('ce-date').value || todayLocalISO();
+    if (!name){ st.textContent = 'Add the course name.'; return; }
+    if (!(h > 0)){ st.textContent = 'Add how many hours it was.'; return; }
+    const entry = { id: 'ce' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name, hours: h, date };
+    profile.ceLog = (Array.isArray(profile.ceLog) ? profile.ceLog : []).concat(entry);
+    document.getElementById('ce-name').value = ''; document.getElementById('ce-hours').value = '';
+    st.textContent = 'Saving…';
+    const r = await persistProfile({ ceLog: profile.ceLog });
+    st.textContent = r && r.ok ? 'Course logged.' : ("Couldn't save: " + ((r && r.message) || 'try again.'));
+    renderCeList(); window.renderLicenseRow(); window.updateLicenseCard();
+  });
+  document.getElementById('ce-required').addEventListener('input', function(){ profile.ceRequired = num(this.value); renderCeList(); });
+  // Card on Booking: shows from 90 days out until the date is updated.
+  window.updateLicenseCard = function(){
+    const el = document.getElementById('bk-license-card'); if (!el) return;
+    const d = profile && !isStudent() ? daysLeft() : null;
+    if (d === null || d > 90){ el.hidden = true; el.innerHTML = ''; return; }
+    el.hidden = false;
+    const expired = d < 0;
+    const when = expired ? ('License expired ' + fmtShort(profile.licenseExpires)) : ('License renews ' + fmtShort(profile.licenseExpires));
+    const pill = expired ? 'Expired' : (d + (d === 1 ? ' day' : ' days'));
+    const ce = ceLine();
+    el.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;"><b style="font-size:15px;">${lesc(when)}</b><span style="font-size:12.5px; font-weight:800; color:var(--brass);">${lesc(pill)}</span></div>
+      ${ce ? `<span style="font-size:13px; line-height:1.45;">${lesc(ce)}</span>` : ''}
+      <div id="lic-card-renew" hidden style="display:none; flex-direction:column; gap:8px;"><div class="field"><label for="lic-card-date">New expiry date</label><div class="input-row"><input id="lic-card-date" type="date"></div></div><div style="display:flex; gap:10px;"><button type="button" class="btn btn-primary" id="lic-card-save" style="padding:8px 14px; font-size:13.5px;">Save new date</button><button type="button" class="btn btn-ghost" id="lic-card-cancel" style="padding:8px 14px; font-size:13.5px;">Cancel</button></div><span class="foot-note-small" id="lic-card-status" style="margin:0;"></span></div>
+      <div id="lic-card-btns" style="display:flex; gap:10px;"><button type="button" class="btn btn-outline" id="lic-card-log" style="padding:8px 14px; font-size:13.5px;">Log a course</button><button type="button" class="btn btn-ghost" id="lic-card-renewed" style="padding:8px 14px; font-size:13.5px;">I've renewed</button></div>`;
+    const q = id=> el.querySelector('#' + id);
+    q('lic-card-log').addEventListener('click', ()=> showAccountScreen('license'));
+    q('lic-card-renewed').addEventListener('click', ()=>{ q('lic-card-btns').style.display = 'none'; const box = q('lic-card-renew'); box.hidden = false; box.style.display = 'flex'; });
+    q('lic-card-cancel').addEventListener('click', ()=>{ q('lic-card-renew').style.display = 'none'; q('lic-card-btns').style.display = 'flex'; });
+    q('lic-card-save').addEventListener('click', async ()=>{
+      const v = q('lic-card-date').value, st = q('lic-card-status');
+      if (!v || dayNum(v) <= dayNum(todayLocalISO())){ st.textContent = 'Pick the new expiry date. It has to be in the future.'; return; }
+      st.textContent = 'Saving…';
+      const prev = { e: profile.licenseExpires, c: profile.ceCycleStart };
+      profile.licenseExpires = v; profile.ceCycleStart = todayLocalISO();
+      const r = await persistProfile({ licenseExpires: v, ceCycleStart: profile.ceCycleStart });
+      if (!(r && r.ok)){ profile.licenseExpires = prev.e; profile.ceCycleStart = prev.c; st.textContent = "Couldn't save: " + ((r && r.message) || 'try again.'); return; }
+      showToast('Renewal saved. Next one is ' + fmtDay(v));
+      window.updateLicenseCard(); window.renderLicenseRow();
+    });
+  };
+  // Opening the pane fills it in.
+  document.querySelectorAll('[data-acct-open="license"]').forEach(b=> b.addEventListener('click', ()=> window.renderLicensePane()));
+})();
+const ACCT_TITLES = { profile:'Profile', license:'License & renewal', listing:'Public listing', plan:'Subscription', notifications:'Notifications' };
 function showAcctPane(name){
   if (!ACCT_TITLES[name]) { showAcctHub(); return; }
   acctPane = name;
   document.getElementById('acct-hub').classList.add('off');
   document.querySelectorAll('.ac-pane').forEach(el=>{ el.classList.toggle('on', el.dataset.acctPane === name); });
   document.getElementById('acct-topbar-title').textContent = ACCT_TITLES[name];
+  if (name === 'license' && window.renderLicensePane) window.renderLicensePane();
   acctScrollTop();
 }
 function showAcctHub(){
@@ -15251,6 +15581,7 @@ async function renderAcctHub(){
   document.getElementById('acct-who-sub').textContent = tbTitleText() || '';
   document.getElementById('acct-avatar').textContent = ((profile.name || '?').trim().charAt(0) || '?').toUpperCase();
   document.getElementById('acct-sub-profile').textContent = student ? 'Name and status' : 'Name, status, license number';
+  if (window.renderLicenseRow) window.renderLicenseRow();
   // Public listing
   if (!listingEligible()) setAcctPill('acct-pill-listing', 'Not available yet', 'muted');
   else if (profile.publicListing) setAcctPill('acct-pill-listing', 'Live', 'good');
