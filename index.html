@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-11-10T09-00-00Z">
+<meta name="app-build" content="2026-11-12T09-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -3514,7 +3514,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="refreshers.js?v=2026-11-10T09-00-00Z"></script><script src="exam-bank.js?v=2026-11-10T09-00-00Z"></script><script>
+<script src="refreshers.js?v=2026-11-12T09-00-00Z"></script><script src="exam-bank.js?v=2026-11-12T09-00-00Z"></script><script>
 /* =========================================================
    SUPABASE SETUP
    Fill these in once the Supabase project exists: Project URL
@@ -4941,7 +4941,7 @@ function showTab(name){
   const EXAM_LABEL = { barber:'Barber', cosmetologist:'Cosmetology', nailt:'Nail Technology', estht:'Esthetics', massage:'Massage Therapy', braider:'Braiding', mua:'Makeup Artistry' };
   const EXAM_ORDER = ['barber','cosmetologist','nailt','estht','massage','braider','mua'];
   const EXAM_NOTE = {
-    barber:"Original practice questions written to the topics on NIC's published Barber exam outline. They aren't real exam questions.",
+    barber:"Practice questions for the Barber exam. They aren't real exam questions.",
     cosmetologist:"Original practice questions written to the topics on NIC's published Cosmetology exam outline. They aren't real exam questions.",
     nailt:"Original practice questions written to the topics on NIC's published Nail Technology exam outline. They aren't real exam questions.",
     estht:"Original practice questions written to the topics on NIC's published Esthetics exam outline. They aren't real exam questions.",
@@ -5065,7 +5065,7 @@ function showTab(name){
   function renderExamPicker(){
     main.innerHTML = `
       <div><p class="eyebrow-mini">Exam prep</p><h2 class="screen-title" style="margin:0;">Which exam?</h2>
-      <p class="screen-sub" style="margin:6px 0 0;">Each one has ${QUIZ_SIZE * 10} practice questions.</p></div>
+      <p class="screen-sub" style="margin:6px 0 0;">Hundreds of practice questions, a fresh mix every time.</p></div>
       <div style="display:flex; flex-direction:column; gap:10px;">
         ${EXAM_ORDER.map(k=> `<button type="button" class="shome-tile" data-xk="${k}" style="width:100%;"><div><strong>${esc(EXAM_LABEL[k])}</strong><span>${examBank(k).length} questions</span></div></button>`).join('')}
       </div>`;
