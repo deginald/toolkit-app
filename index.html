@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Vono</title>
-<meta name="app-build" content="2026-11-12T09-00-00Z">
+<meta name="app-build" content="2026-11-13T09-00-00Z">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -3514,7 +3514,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-<script src="refreshers.js?v=2026-11-12T09-00-00Z"></script><script src="exam-bank.js?v=2026-11-12T09-00-00Z"></script><script>
+<script src="refreshers.js?v=2026-11-13T09-00-00Z"></script><script src="exam-bank.js?v=2026-11-13T09-00-00Z"></script><script>
 /* =========================================================
    SUPABASE SETUP
    Fill these in once the Supabase project exists: Project URL
@@ -4951,6 +4951,71 @@ function showTab(name){
   };
   const QUIZ_SIZE = 10;
   let xKey = '';          // which exam is open
+  let xArea = '';         // chosen practice area ('' = all areas)
+  // Practice areas group the bank's detailed topics. Massage and Makeup use their topics as the areas.
+  const AREA_MAP = {
+    barber:[
+      ['Infection control & safety',['Infection Control','Bloodborne Pathogens & OSHA','Bacteria & Viruses','Parasites & Fungi','Chemical Safety']],
+      ['Science & anatomy',['Anatomy of Skin & Hair','Hair Growth Cycle','Chemistry & Electricity','Anatomy & Physiology']],
+      ['Skin & scalp',['Hair & Scalp Disorders','Skin Disorders','Skin Care & Facials','Hair Analysis']],
+      ['Haircutting & design',['Haircutting','Hair Design','Consultation']],
+      ['Styling & hair systems',['Thermal Services','Hairpieces & Wigs']],
+      ['Shaving & beards',['Shaving','Beard Trimming']],
+      ['Chemical services',['Hair Color','Chemical Texture']],
+      ['Tools & shampoo',['Implements & Equipment','Shampoo & Scalp Care']],
+      ['Business & professional',['Professional Practice','History & Licensing']]
+    ],
+    cosmetologist:[
+      ['Infection control & safety',['Infection Control','Bloodborne Pathogens & SDS','Microbiology','Safety']],
+      ['Science & products',['Anatomy & Physiology','Chemistry & pH','Electricity','Product Ingredients']],
+      ['Hair & scalp science',['Trichology','Scalp & Hair Disorders']],
+      ['Consultation & shampooing',['Consultation','Shampoo & Scalp Care']],
+      ['Cutting & styling',['Haircutting','Thermal Styling','Wet Styling','Braiding & Updos','Wigs & Extensions']],
+      ['Color & chemical services',['Hair Color','Hair Lightening','Perms & Relaxers']],
+      ['Skin, makeup & hair removal',['Skin Types','Facial Treatments','Hair Removal','Makeup','Skin Anatomy','Skin Disorders']],
+      ['Nails',['Nail Structure','Nail Disorders','Manicure & Pedicure','Nail Sanitation','Nail Enhancements']]
+    ],
+    nailt:[
+      ['Infection control & safety',['Infection Control & Safety']],
+      ['Anatomy & physiology',['Anatomy & Physiology']],
+      ['Chemistry',['Chemistry']],
+      ['Tools & materials',['Tools, Implements & Materials']],
+      ['Pre- & post-service',['Pre-Service Procedures','Post-Service']],
+      ['Manicure & pedicure',['Manicure & Pedicure Services']],
+      ['Nail enhancements',['Nail Enhancements']]
+    ],
+    estht:[
+      ['Infection control & safety',['Infection Control','Bloodborne Pathogens','OSHA & SDS','Microbiology']],
+      ['Skin science',['Skin Histology','Skin Lesions','Skin Disorders','Pigmentation Disorders','Skin Types & Fitzpatrick','Nutrition & Aging']],
+      ['Body systems',['Muscles','Nerves & Circulation','Bones']],
+      ['Chemistry & machines',['Chemistry & pH','Cosmetic Ingredients','Electricity & Machines']],
+      ['Consultation & professional practice',['Consultation & Contraindications','Sun Protection & Aftercare','Professional Ethics']],
+      ['Facials & skin treatments',['Facial Procedures','Massage','Masks','Exfoliation','Extractions']],
+      ['Hair removal, makeup & lashes',['Hair Removal','Makeup & Color Theory','Lash & Brow Services']]
+    ],
+    braider:[
+      ['Infection control & sanitation',['Disinfection','Bloodborne Pathogens','Hand Hygiene','Safety Data Sheets','Cross-Contamination','Contagious Conditions']],
+      ['Chemical & product safety',['Chemical Safety','Patch Tests','Allergies','Adhesives','Products']],
+      ['Hair & scalp science',['Hair Structure','Growth Cycle','Porosity','Hair Analysis','Scalp Conditions','Curl Patterns']],
+      ['Consultation & preparation',['Consultation','Preparation','Parting and Sectioning']],
+      ['Braiding techniques',['Cornrows','Braiding Basics','Box Braids','Knotless Braids','Feed-In Technique','Crochet Braids','Twists','Locs']],
+      ['Extensions & safe technique',['Heat Sealing Safety','Safe Tension','Extension Hair','Sealing Ends','Take-Down']],
+      ['Finishing & aftercare',['Maintenance','Edges','Aftercare','Protective Styling','Finishing']],
+      ['Business & professional',['Scope of Practice','Record Keeping','Ethics','Pricing and Time','Client Communication']]
+    ]
+  };
+  function areasFor(k){
+    const bank = examBank(k), spec = AREA_MAP[k] || [];
+    const byTopic = {}, order = [];
+    spec.forEach(a=>{ order.push(a[0]); a[1].forEach(t=>{ byTopic[t] = a[0]; }); });
+    const out = {}, seenNames = [];
+    bank.forEach((q, i)=>{
+      const a = byTopic[q.t] || q.t || 'Other';
+      if (!out[a]){ out[a] = []; seenNames.push(a); }
+      out[a].push(i);
+    });
+    return order.filter(n=> out[n]).concat(seenNames.filter(n=> order.indexOf(n) < 0)).map(n=> ({ name:n, idxs:out[n] }));
+  }
   let xq = null;         // active session
   function examBank(k){ const b = window.VONO_EXAMS && window.VONO_EXAMS[k]; return Array.isArray(b) ? b : []; }
   function examKeyFor(craft){
@@ -4986,13 +5051,21 @@ function showTab(name){
     const a = new Date(todayIso() + 'T00:00:00'), b = new Date(iso + 'T00:00:00');
     return Math.round((b - a) / 86400000);
   }
-  function pickSession(k, n){
+  function pickSession(k, n, areaName){
     const bank = examBank(k), e = ep();
-    const all = bank.map((_, i)=> i);
+    const areaList = areasFor(k);
+    const areaOf = {}; areaList.forEach(a=> a.idxs.forEach(i=>{ areaOf[i] = a.name; }));
+    const area = areaName ? areaList.find(a=> a.name === areaName) : null;
+    const all = area ? area.idxs.slice() : bank.map((_, i)=> i);
+    n = Math.min(n, all.length);
     let seen = new Set(e.seen[k] || []);
     let fresh = all.filter(i=> !seen.has(i));
     let fresh_round = false;
-    if (!fresh.length){ e.seen[k] = []; seen = new Set(); fresh = all.slice(); fresh_round = true; }
+    if (!fresh.length){
+      const inAll = new Set(all);
+      e.seen[k] = area ? (e.seen[k] || []).filter(i=> !inAll.has(i)) : [];
+      seen = new Set(e.seen[k]); fresh = all.slice(); fresh_round = true;
+    }
     let pick = shuffle(fresh).slice(0, n);
     if (pick.length < n){
       const missSet = new Set(e.miss[k] || []);
@@ -5003,18 +5076,33 @@ function showTab(name){
     return { items: shuffle(pick).map(i=>{
       const q = bank[i];
       const opts = shuffle(q.c.map((text, idx)=> ({ text, ok: idx === q.a })));
-      return { i, q: q.q, t: q.t || '', why: q.why || '', opts, picked: -1 };
-    }), pos: 0, fresh_round };
+      return { i, q: q.q, t: q.t || '', a: areaOf[i] || '', why: q.why || '', opts, picked: -1 };
+    }), pos: 0, fresh_round, area: area ? area.name : '' };
   }
   function renderExamHome(){
     const bank = examBank(xKey), e = ep();
     const seenN = (e.seen[xKey] || []).length;
     const hist = e.hist.filter(h=> h.k === xKey);
     const last5 = hist.slice(-5);
-    const avg = last5.length ? Math.round(last5.reduce((s, h)=> s + h.s, 0) / (last5.length * QUIZ_SIZE) * 100) : null;
+    const avg = last5.length ? Math.round(last5.reduce((s, h)=> s + h.s, 0) / last5.reduce((s, h)=> s + (h.n || QUIZ_SIZE), 0) * 100) : null;
+    const areaList = areasFor(xKey);
+    if (xArea && !areaList.some(a=> a.name === xArea)) xArea = '';
+    const seenSet = new Set(e.seen[xKey] || []);
+    const areaInfo = ()=>{
+      const a = xArea ? areaList.find(x=> x.name === xArea) : null;
+      const total = a ? a.idxs.length : bank.length;
+      const seenIn = a ? a.idxs.filter(i=> seenSet.has(i)).length : seenN;
+      const size = Math.min(QUIZ_SIZE, total);
+      return {
+        btn: a ? 'Start ' + size + ' on ' + a.name : 'Start ' + size + ' questions',
+        sub: a ? total + ' questions in this area. You\'ve seen ' + seenIn + '. Your overall progress still counts.' : total + ' questions across all areas. You\'ve seen ' + seenIn + '.'
+      };
+    };
+    const ai = areaInfo();
+    const areaOfIdx = {}; areaList.forEach(a=> a.idxs.forEach(i=>{ areaOfIdx[i] = a.name; }));
     const days = daysUntil(e.date);
     const topicCount = {};
-    (e.miss[xKey] || []).forEach(i=>{ const t = bank[i] && bank[i].t; if (t) topicCount[t] = (topicCount[t] || 0) + 1; });
+    (e.miss[xKey] || []).forEach(i=>{ const t = areaOfIdx[i]; if (t) topicCount[t] = (topicCount[t] || 0) + 1; });
     const weak = Object.keys(topicCount).sort((a, b)=> topicCount[b] - topicCount[a]).slice(0, 3);
     let countdown;
     if (!e.date) countdown = 'Set your exam date to see a countdown.';
@@ -5030,8 +5118,14 @@ function showTab(name){
       </div>
       <div class="card" style="gap:10px;">
         <strong>Practice quiz</strong>
-        <span class="screen-sub" style="margin:0;">${QUIZ_SIZE} questions, a new mix each time. You see the answer and why after each one.</span>
-        <button type="button" class="btn btn-primary" id="xp-start">Start ${QUIZ_SIZE} questions</button>
+        <span class="screen-sub" style="margin:0;">${QUIZ_SIZE} questions, a new mix each time. Practice all areas, or pick one to focus on.</span>
+        <label class="eyebrow-mini2" for="xp-area" style="margin:2px 0 -4px;">Area</label>
+        <select class="title-select" id="xp-area" style="width:100%; margin:0; padding:10px 30px 10px 12px;">
+          <option value=""${xArea ? '' : ' selected'}>All areas (${bank.length})</option>
+          ${areaList.map(a=> `<option value="${esc(a.name)}"${a.name === xArea ? ' selected' : ''}>${esc(a.name)} (${a.idxs.length})</option>`).join('')}
+        </select>
+        <span class="screen-sub" id="xp-areasub" style="margin:0; font-size:12.5px;">${esc(ai.sub)}</span>
+        <button type="button" class="btn btn-primary" id="xp-start">${esc(ai.btn)}</button>
       </div>
       <div class="card" style="gap:10px;">
         <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px;">
@@ -5044,13 +5138,20 @@ function showTab(name){
         <div class="card shome-stat"><span class="screen-sub" style="margin:0;">Questions seen</span><p class="big">${seenN} <small>of ${bank.length}</small></p><div class="shome-bar"><span style="width:${bank.length ? Math.round(seenN / bank.length * 100) : 0}%;"></span></div></div>
         <div class="card shome-stat"><span class="screen-sub" style="margin:0;">Recent average</span><p class="big">${avg == null ? '-' : avg + '%'}</p><span class="screen-sub" style="margin:0; font-size:12px;">${hist.length} quiz${hist.length === 1 ? '' : 'zes'} taken</span></div>
       </div>
-      ${weak.length ? `<div class="card" style="gap:6px;"><strong>Worth another look</strong><span class="screen-sub" style="margin:0;">${weak.map(esc).join(', ')}</span></div>` : ''}
+      ${weak.length ? `<div class="card" style="gap:10px;"><strong>Worth another look</strong><span class="screen-sub" style="margin:0;">Tap an area to practice it.</span><div class="chip-grid" style="gap:8px;">${weak.map(w=> `<button type="button" class="chip" data-wk="${esc(w)}" style="font-size:13px;">${esc(w)}</button>`).join('')}</div></div>` : ''}
       <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
         <button type="button" class="link-btn" id="xp-switch" style="padding:0;">Practice a different exam</button>
         ${seenN || hist.length ? '<button type="button" class="link-btn" id="xp-reset" style="padding:0;">Reset my progress</button>' : ''}
       </div>
       <p class="foot-note-small">Practice only. Your state board's exam is the one that counts, so use your school's study guide too.</p>`;
     main.querySelector('#xp-start').addEventListener('click', startQuiz);
+    main.querySelector('#xp-area').addEventListener('change', function(){
+      xArea = this.value || '';
+      const i2 = areaInfo();
+      main.querySelector('#xp-start').textContent = i2.btn;
+      main.querySelector('#xp-areasub').textContent = i2.sub;
+    });
+    main.querySelectorAll('[data-wk]').forEach(b=> b.addEventListener('click', ()=>{ xArea = b.dataset.wk; startQuiz(); }));
     main.querySelector('#xp-date').addEventListener('change', async function(){
       const e2 = ep(); e2.date = this.value || ''; renderExamHome(); await saveEp(); refreshExtras();
     });
@@ -5069,12 +5170,12 @@ function showTab(name){
       <div style="display:flex; flex-direction:column; gap:10px;">
         ${EXAM_ORDER.map(k=> `<button type="button" class="shome-tile" data-xk="${k}" style="width:100%;"><div><strong>${esc(EXAM_LABEL[k])}</strong><span>${examBank(k).length} questions</span></div></button>`).join('')}
       </div>`;
-    main.querySelectorAll('[data-xk]').forEach(b=> b.addEventListener('click', ()=>{ xKey = b.dataset.xk; renderExamHome(); }));
+    main.querySelectorAll('[data-xk]').forEach(b=> b.addEventListener('click', ()=>{ xKey = b.dataset.xk; xArea = ''; renderExamHome(); }));
   }
   function startQuiz(){
     if (!examBank(xKey).length){ showToast("Practice questions aren't loaded. Refresh the app and try again."); return; }
-    xq = pickSession(xKey, QUIZ_SIZE);
-    if (xq.fresh_round) showToast("You've seen every question. Starting a fresh round.");
+    xq = pickSession(xKey, QUIZ_SIZE, xArea);
+    if (xq.fresh_round) showToast(xArea ? "You've seen every question in this area. Starting it over." : "You've seen every question. Starting a fresh round.");
     renderQuestion();
   }
   function renderQuestion(){
@@ -5083,7 +5184,7 @@ function showTab(name){
     main.innerHTML = `
       <div class="xq-top"><span id="xq-count">Question ${xq.pos + 1} of ${n}</span><button type="button" class="link-btn" id="xq-end" style="padding:0;">End quiz</button></div>
       <div class="shome-bar" aria-hidden="true"><span style="width:${Math.round(xq.pos / n * 100)}%;"></span></div>
-      ${it.t ? `<p class="xq-topic">${esc(it.t)}</p>` : ''}
+      ${(it.t || it.a) ? `<p class="xq-topic">${esc(it.a && it.t && it.a !== it.t ? it.a + ' · ' + it.t : (it.t || it.a))}</p>` : ''}
       <h3 class="xq-q" id="xq-q">${esc(it.q)}</h3>
       <div class="xq-choices" role="group" aria-labelledby="xq-q">
         ${it.opts.map((o, k)=> `<button type="button" class="xq-choice" data-k="${k}"><b>${letters[k]}</b><span>${esc(o.text)}</span></button>`).join('')}
@@ -5127,10 +5228,11 @@ function showTab(name){
     const items = xq.items, n = items.length;
     const score = items.filter(it=> it.picked >= 0 && it.opts[it.picked].ok).length;
     const e = ep();
-    e.hist.push({ d: todayIso(), k: xKey, s: score });
+    e.hist.push({ d: todayIso(), k: xKey, s: score, n: n });
     if (e.hist.length > 60) e.hist = e.hist.slice(-60);
     const missed = items.filter(it=> !(it.picked >= 0 && it.opts[it.picked].ok));
-    const msg = score >= 9 ? 'Strong. Keep this up.' : (score >= 7 ? 'Solid. A little more practice and you\'re there.' : (score >= 5 ? 'Getting there. Go over the ones you missed.' : 'Keep at it. Read the answers below, then try again.'));
+    const pct = n ? score / n : 0;
+    const msg = pct >= 0.9 ? 'Strong. Keep this up.' : (pct >= 0.7 ? 'Solid. A little more practice and you\'re there.' : (pct >= 0.5 ? 'Getting there. Go over the ones you missed.' : 'Keep at it. Read the answers below, then try again.'));
     const topicCount = {};
     missed.forEach(it=>{ if (it.t) topicCount[it.t] = (topicCount[it.t] || 0) + 1; });
     const topics = Object.keys(topicCount).sort((a, b)=> topicCount[b] - topicCount[a]);
@@ -5144,7 +5246,7 @@ function showTab(name){
         const right = it.opts.find(o=> o.ok);
         return `<div class="xq-miss"><p><b>${esc(it.q)}</b></p><p style="color:var(--good); font-weight:700;">${esc(right ? right.text : '')}</p><p style="color:var(--muted);">${esc(it.why)}</p></div>`;
       }).join('')}</div>` : '<p class="screen-sub">Perfect round. No misses to review.</p>'}
-      <button type="button" class="btn btn-primary" id="xq-again">Practice ${QUIZ_SIZE} more</button>
+      <button type="button" class="btn btn-primary" id="xq-again">Practice ${n} more</button>
       <button type="button" class="btn btn-outline" id="xq-done">Done</button>`;
     main.querySelector('#xq-again').addEventListener('click', startQuiz);
     main.querySelector('#xq-done').addEventListener('click', ()=>{ renderExamHome(); });
@@ -5157,10 +5259,11 @@ function showTab(name){
     const back = ()=>{ xq = null; saveEp(); closeSub(); refreshExtras(); if (returnTab) showTab(returnTab); };
     openSub('Exam prep', back);
     const k = examKeyFor(currentCraft());
-    if (k){ xKey = k; renderExamHome(); } else renderExamPicker();
+    if (k){ xKey = k; xArea = ''; renderExamHome(); } else renderExamPicker();
   };
   // Test hooks (also handy for checking the bank): not used by the app itself.
-  window.__examPick = function(k, n){ return pickSession(k, n || QUIZ_SIZE).items.map(it=> it.i); };
+  window.__examPick = function(k, n, area){ return pickSession(k, n || QUIZ_SIZE, area || '').items.map(it=> it.i); };
+  window.__examAreas = function(k){ return areasFor(k).map(a=> ({ name:a.name, idxs:a.idxs })); };
 
   /* ---------------------------------------------------------
      MY WORK (student portfolio)
